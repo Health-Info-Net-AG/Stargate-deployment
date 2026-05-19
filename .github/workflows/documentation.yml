@@ -11,6 +11,25 @@ permissions:
   pages: write
 
 jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        # https://github.com/actions/checkout/releases/tag/v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          # 0 is required to scan full git history
+          fetch-depth: 0
+
+      - name: Run Gitleaks on docs/
+        # https://github.com/gacts/gitleaks/releases/tag/v1.3.2
+        uses: gacts/gitleaks@c9a0338361dc45a01aa7ebaaa5330179f3c62873
+        with:
+          # Scan only the docs folder
+          path: ./docs
+          # Fail workflow if secrets found
+          fail-on-error: true
+
   documentation:
     name: Build documentation
     runs-on: ubuntu-latest
