@@ -186,24 +186,28 @@ load_customer_config() {
   MXENGINE_VERSION="${MXENGINE_VERSION:-dev}"
   DASHBOARD_VERSION="${DASHBOARD_VERSION:-dev}"
 
+  WG_LOCAL_IP="10.0.0.1"
+  KEYCLOAK_PUBLIC_URL=http://localhost:8180
+  DASHBOARD_PUBLIC_URL=http://localhost:3000
+
   # Derive WG_LOCAL_IP and MXENGINE_PUBLIC_ADDRESS from SERVER_STATIC_IP
-  SERVER_STATIC_IP="${SERVER_STATIC_IP:-}"
-  if [ -z "$SERVER_STATIC_IP" ] && [ -n "$WG_LOCAL_IP" ] && [ "$WG_LOCAL_IP" != "10.0.0.1" ]; then
-    # Backward compatibility: if SERVER_STATIC_IP not set but WG_LOCAL_IP is, use that
-    SERVER_STATIC_IP="$WG_LOCAL_IP"
-  fi
+  # SERVER_STATIC_IP="${SERVER_STATIC_IP:-}"
+  # if [ -z "$SERVER_STATIC_IP" ] && [ -n "$WG_LOCAL_IP" ] && [ "$WG_LOCAL_IP" != "10.0.0.1" ]; then
+  #   # Backward compatibility: if SERVER_STATIC_IP not set but WG_LOCAL_IP is, use that
+  #   SERVER_STATIC_IP="$WG_LOCAL_IP"
+  # fi
 
-  if [ -z "$SERVER_STATIC_IP" ]; then
-    echo "ERROR: SERVER_STATIC_IP is required."
-    echo "  Set it to this server's real static public IP address."
-    echo "  Example: SERVER_STATIC_IP=\"203.0.113.10\""
-    exit 1
-  fi
+  # if [ -z "$SERVER_STATIC_IP" ]; then
+  #   echo "ERROR: SERVER_STATIC_IP is required."
+  #   echo "  Set it to this server's real static public IP address."
+  #   echo "  Example: SERVER_STATIC_IP=\"203.0.113.10\""
+  #   exit 1
+  # fi
 
-  WG_LOCAL_IP="${WG_LOCAL_IP:-$SERVER_STATIC_IP}"
-  MXENGINE_PUBLIC_ADDRESS="${MXENGINE_PUBLIC_ADDRESS:-http://${SERVER_STATIC_IP}:8084}"
-  KEYCLOAK_PUBLIC_URL="${KEYCLOAK_PUBLIC_URL:-https://${SERVER_STATIC_IP}:8180}"
-  DASHBOARD_PUBLIC_URL="${DASHBOARD_PUBLIC_URL:-https://${SERVER_STATIC_IP}}"
+  # WG_LOCAL_IP="${WG_LOCAL_IP:-$SERVER_STATIC_IP}"
+  # MXENGINE_PUBLIC_ADDRESS="${MXENGINE_PUBLIC_ADDRESS:-http://${SERVER_STATIC_IP}:8084}"
+  # KEYCLOAK_PUBLIC_URL="${KEYCLOAK_PUBLIC_URL:-https://${SERVER_STATIC_IP}:8180}"
+  # DASHBOARD_PUBLIC_URL="${DASHBOARD_PUBLIC_URL:-https://${SERVER_STATIC_IP}}"
 
   OUTBOUND_SEALER_MX_DOMAIN="${OUTBOUND_SEALER_MX_DOMAIN:-hintest.ch}"
   CERT_CA_IRISAGENT_DOMAIN="${CERT_CA_IRISAGENT_DOMAIN:-hintest.ch}"
@@ -276,7 +280,6 @@ DASHBOARD_VERSION="$DASHBOARD_VERSION"
 POSTFIXCONF_VERSION="$POSTFIXCONF_VERSION"
 
 # Mail Outbound Path
-SERVER_STATIC_IP="$SERVER_STATIC_IP"
 MXENGINE_PUBLIC_ADDRESS="$MXENGINE_PUBLIC_ADDRESS"
 OUTBOUND_SEALER_MX_DOMAIN="$OUTBOUND_SEALER_MX_DOMAIN"
 CERT_CA_IRISAGENT_DOMAIN="$CERT_CA_IRISAGENT_DOMAIN"
@@ -822,7 +825,6 @@ echo "  Until the peer is registered, S/MIME cert issuance will fail."
 echo ""
 echo "  WireGuard Public Key: ${WG_PUBKEY_FOR_HIN:-<not yet available - run: docker compose logs irisagent | grep \"wireguard public key\">}"
 echo "  DEPLOYMENT_NAME:      $DEPLOYMENT_NAME"
-echo "  SERVER_STATIC_IP:     $SERVER_STATIC_IP"
 echo "  WG_INTERFACE_PORT:    $WG_INTERFACE_PORT"
 echo ""
 echo "  After HIN confirms registration, regenerate the certificate from the dashboard."
