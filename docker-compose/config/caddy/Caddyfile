@@ -46,16 +46,9 @@
 	}
 }
 
-# TLS termination for the dashboard — legacy port kept for compatibility.
+# Redirect legacy port 3000 → standard HTTPS port 443.
 :3000 {
 	tls /etc/caddy/ssl/server.crt /etc/caddy/ssl/server.key
 
-	respond /api/internal/* 404
-
-	reverse_proxy dashboard:3000 {
-		header_up Host              {host}
-		header_up X-Real-IP         {remote_host}
-		header_up X-Forwarded-Proto https
-		header_up X-Forwarded-Port  3000
-	}
+	redir https://{host}{uri} permanent
 }
