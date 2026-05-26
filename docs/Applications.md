@@ -7,7 +7,7 @@
 * **irisagent** - IRIS Agent service (port 8083, WireGuard: 19818/tcp)
 * **mxengine** - MX Engine service (port 8084, SMTP: 1587)
 * **postfixconf** - Postfix mail relay with configuration daemon (port 25, API: 8080)
-* **dashboard** - Web-based admin UI for onboarding, domain management, and monitoring (port 3000)
+* **dashboard** - Web-based admin UI for onboarding, domain management, and monitoring (port 443)
 * **policy-sync** - Syncs OPA/Rego policies from Git repository to database (runs continuously)
 
 ## Infrastructure

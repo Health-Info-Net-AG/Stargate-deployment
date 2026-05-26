@@ -184,7 +184,7 @@ WG_TRANSPORT_MODE=tcp
 
 | Service | URL/Port |
 |---------|----------|
-| Dashboard | <https://localhost:3000> |
+| Dashboard | <https://localhost> |
 | smimekeys-client | <http://localhost:8081> |
 | policy | <http://localhost:8082> |
 | irisagent | <http://localhost:8083> |

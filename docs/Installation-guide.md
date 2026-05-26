@@ -135,7 +135,7 @@ Ensure that the VM has a network connection with a static IP address.
 Open a browser and enter the IP address and port configured for the VM. You should see the initial setup screen.
 
 ```
-https://<VM IP address>:3000
+https://<VM IP address>
 ```
 
 ### Step 7 - Enter setup key

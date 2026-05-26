@@ -599,7 +599,7 @@ services:
       - autoheal=true
 
   # Caddy reverse proxy — terminates TLS for Keycloak (:8180) and the
-  # dashboard (:443 and :3000), and redirects plain HTTP (:80) to HTTPS.
+  # dashboard (:443), and redirects plain HTTP (:80) to HTTPS.
   caddy:
     image: caddy:2-alpine
     container_name: stargate-caddy
@@ -614,7 +614,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "3000:3000"
       - "8180:8180"
     networks:
       - stargate-network

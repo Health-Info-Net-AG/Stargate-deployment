@@ -138,7 +138,7 @@ APISIX_ADMIN_KEY=""  # Auto-generated if empty
 
 # Public-facing URLs (must be reachable from the end-user's browser)
 KEYCLOAK_PUBLIC_URL=""      # Default: https://<SERVER_STATIC_IP>:8180
-DASHBOARD_PUBLIC_URL=""     # Default: https://<SERVER_STATIC_IP>:3000
+DASHBOARD_PUBLIC_URL=""     # Default: https://<SERVER_STATIC_IP>
 
 # Show developer pages in the dashboard UI
 DASHBOARD_SHOW_DEV_PAGES="true"

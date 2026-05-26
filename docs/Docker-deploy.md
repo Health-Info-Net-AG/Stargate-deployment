@@ -134,7 +134,7 @@ After install completes, the stack is running but no mail domains, S/MIME certif
 
 ## Step 4: Onboard via the dashboard
 
-After installation, complete onboarding through the dashboard at `https://<SERVER_STATIC_IP>:3000`. The dashboard walks you through three pages in order:
+After installation, complete onboarding through the dashboard at `https://<SERVER_STATIC_IP>`. The dashboard walks you through three pages in order:
 
 ### `/installation` — WireGuard peer setup
 
