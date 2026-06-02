@@ -212,9 +212,16 @@ load_customer_config() {
   OUTBOUND_SEALER_MX_DOMAIN="${OUTBOUND_SEALER_MX_DOMAIN:-hintest.ch}"
   CERT_CA_IRISAGENT_DOMAIN="${CERT_CA_IRISAGENT_DOMAIN:-hintest.ch}"
 
-  OUTBOUND_SMTP_HOST="${OUTBOUND_SMTP_HOST:-postfixconf}"
+  OUTBOUND_SMTP_HOST="${OUTBOUND_SMTP_HOST:-stalwart}"
   OUTBOUND_SMTP_PORT="${OUTBOUND_SMTP_PORT:-10026}"
-  POSTFIXCONF_VERSION="${POSTFIXCONF_VERSION:-latest}"
+  MTACONF_VERSION="${MTACONF_VERSION:-dev}"
+
+  # Stalwart MTA
+  STALWART_ADMIN_PASSWORD="${STALWART_ADMIN_PASSWORD:-$(generate_password)}"
+  MTACONF_SVC_USER="${MTACONF_SVC_USER:-mtaconf-svc}"
+  MTACONF_SVC_DOMAIN="${MTACONF_SVC_DOMAIN:-${OUTBOUND_SEALER_MX_DOMAIN:-hintest.ch}}"
+  MTACONF_SVC_PASSWORD="${MTACONF_SVC_PASSWORD:-$(generate_password)}"
+  STALWART_HOSTNAME="${STALWART_HOSTNAME:-mail.${MTACONF_SVC_DOMAIN}}"
 
   LOKI_URL="${LOKI_URL:-}"
 
@@ -277,7 +284,14 @@ POLICY_VERSION="$POLICY_VERSION"
 IRISAGENT_VERSION="$IRISAGENT_VERSION"
 MXENGINE_VERSION="$MXENGINE_VERSION"
 DASHBOARD_VERSION="$DASHBOARD_VERSION"
-POSTFIXCONF_VERSION="$POSTFIXCONF_VERSION"
+MTACONF_VERSION="$MTACONF_VERSION"
+
+# Stalwart MTA
+STALWART_ADMIN_PASSWORD="$STALWART_ADMIN_PASSWORD"
+MTACONF_SVC_USER="$MTACONF_SVC_USER"
+MTACONF_SVC_DOMAIN="$MTACONF_SVC_DOMAIN"
+MTACONF_SVC_PASSWORD="$MTACONF_SVC_PASSWORD"
+STALWART_HOSTNAME="$STALWART_HOSTNAME"
 
 # Mail Outbound Path
 SERVER_STATIC_IP="$SERVER_STATIC_IP"
@@ -697,7 +711,7 @@ if [ -f "$KEYS_FILE" ]; then
   sleep 5
 
   # Onboarding (domains, S/MIME CSR, irisagent peer config) is now performed
-  # via the dashboard at /installation, /onboarding, and /postfix.
+  # via the dashboard at /installation, /onboarding, and /mail.
 
   # Setup backup cron job
   setup_backup_cron
@@ -756,7 +770,7 @@ echo ""
 echo "  Vault UI:          http://localhost:8200"
 echo "  MinIO Console:     http://localhost:9001"
 echo "  PostgreSQL:        localhost:5432"
-echo "  Postfix SMTP:      localhost:25"
+echo "  Stalwart SMTP:     localhost:25"
 echo ""
 echo "  Monitoring:"
 echo "  -----------"

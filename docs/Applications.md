@@ -6,7 +6,8 @@
 * **policy** - Policy service (port 8082)
 * **irisagent** - IRIS Agent service (port 8083, WireGuard: 19818/tcp)
 * **mxengine** - MX Engine service (port 8084, SMTP: 1587)
-* **postfixconf** - Postfix mail relay with configuration daemon (port 25, API: 8080)
+* **stalwart** - Stalwart MTA mail server (port 25, 10026)
+* **mtaconf** - MTA configuration daemon (API: 8080)
 * **dashboard** - Web-based admin UI for onboarding, domain management, and monitoring (port 443)
 * **policy-sync** - Syncs OPA/Rego policies from Git repository to database (runs continuously)
 
@@ -17,7 +18,7 @@
 * **MinIO** - S3-compatible storage (API: 9000, Console: 9001)
 * **Keycloak** - Identity provider and OIDC authentication (port 8180)
 * **APISIX** - API gateway with OIDC bearer auth (port 9080)
-* **NATS** - Inter-service messaging (triggers Postfix reloads from dashboard)
+* **NATS** - Inter-service messaging (triggers Stalwart reloads from dashboard)
 
 ## Init Containers
 

@@ -5,8 +5,8 @@ This guide covers all DNS records required for a working Stargate deployment. Co
 Throughout this guide:
 
 - `<STARGATE_IP>` - your Stargate server's public static IP address (`SERVER_STATIC_IP` in `customer-config.sh`)
-- `<MAIL_HOSTNAME>` - the FQDN of the Stargate relay (e.g. `mail.example.ch`; configured via the dashboard's `/postfix` page)
-- `<YOUR_DOMAIN>` - your mail domain (e.g. `example.ch`; configured via the dashboard's `/postfix` page)
+- `<MAIL_HOSTNAME>` - the FQDN of the Stargate relay (e.g. `mail.example.ch`; configured via the dashboard's `/mail` page)
+- `<YOUR_DOMAIN>` - your mail domain (e.g. `example.ch`; configured via the dashboard's `/mail` page)
 
 ---
 
@@ -73,9 +73,9 @@ example.ch.    MX    20    example-ch.mail.protection.outlook.com.
 !!! info
     The lower MX number means higher priority. Stargate at priority 15 receives mail before Exchange Online at priority 20.
 
-**Why**: The Stargate intercepts inbound mail, processes S/MIME, then forwards to the next MX (Exchange). The second MX record is also used by the Stargate's Postfix to know where to relay processed mail.
+**Why**: The Stargate intercepts inbound mail, processes S/MIME, then forwards to the next MX (Exchange). The second MX record is also used by Stalwart to know where to relay processed mail.
 
-**Important**: If the Stargate is the **only** MX record for a domain, Postfix will filter out its own hostname and have no delivery target. Always keep a second MX pointing to your actual mail server.
+**Important**: If the Stargate is the **only** MX record for a domain, Stalwart will filter out its own hostname and have no delivery target. Always keep a second MX pointing to your actual mail server.
 
 ### SPF Record
 
@@ -114,7 +114,7 @@ example.ch.    TXT    "v=spf1 ip4:128.140.117.200 ip4:193.247.208.66 include:spf
 !!! warning "SPF lookup limit"
     The total `include:` chain in an SPF record must stay under **10 DNS lookups**. Adding `ip4:` entries does not count toward this limit. Check your count with [MXToolbox SPF lookup](https://mxtoolbox.com/spf.aspx).
 
-**How the Stargate uses SPF**: The Postfix container resolves each domain's SPF record at startup to auto-populate `mynetworks` (the list of IPs allowed to relay through the Stargate without authentication). This is how Microsoft 365 outbound IPs get whitelisted automatically - they appear in the `include:spf.protection.outlook.com` chain.
+**How the Stargate uses SPF**: The mtaconf daemon resolves each domain's SPF record to auto-populate the list of IPs allowed to relay through the Stargate without authentication. This is how Microsoft 365 outbound IPs get whitelisted automatically - they appear in the `include:spf.protection.outlook.com` chain.
 
 ---
 
@@ -176,7 +176,7 @@ selector2._domainkey.<YOUR_DOMAIN>.    CNAME    selector2-<YOUR_DOMAIN_DASHED>._
 
 ## Multi-Domain Setup
 
-For deployments handling multiple mail domains (configured via the dashboard's `/postfix` page), each domain needs its own set of DNS records.
+For deployments handling multiple mail domains (configured via the dashboard's `/mail` page), each domain needs its own set of DNS records.
 
 ### Per-Domain Records
 
@@ -203,7 +203,7 @@ domain2.ch    MX    15    mail.domain2.ch.
 domain2.ch    MX    20    exchange2.domain2.ch.
 ```
 
-Alternatively, configure explicit per-domain relay targets via the dashboard's `/postfix` page (relay host field per domain) to override MX-based routing.
+Alternatively, configure explicit per-domain relay targets via the dashboard's `/mail` page (relay host field per domain) to override MX-based routing.
 
 ---
 
@@ -274,12 +274,12 @@ Online tools:
 
 ### "Client host rejected: Access denied" (554 5.7.1)
 
-Postfix is rejecting the sending server because its IP is not in `mynetworks`. This usually means:
+Stalwart is rejecting the sending server because its IP is not in the allowed relay list. This usually means:
 
 - The SPF record for your domain does not include the sending server's IP range
-- The Postfix configuration has not been reloaded since the SPF record was updated
+- The mail configuration has not been reloaded since the SPF record was updated
 
-Reload the Postfix configuration via the dashboard's `/postfix` page (submit the config again), or restart the container: `docker compose restart postfixconf`
+Reload the mail configuration via the dashboard's `/mail` page (submit the config again), or restart the container: `docker compose restart stalwart`
 
 ### Mail flagged as spam / "can't verify sender"
 
@@ -290,7 +290,7 @@ Reload the Postfix configuration via the dashboard's `/postfix` page (submit the
 
 ### MX lookup returns only the Stargate
 
-If the Stargate is the only MX for a domain, Postfix filters out its own hostname and has no relay target. Add a second MX record pointing to your mail server:
+If the Stargate is the only MX for a domain, Stalwart filters out its own hostname and has no relay target. Add a second MX record pointing to your mail server:
 
 ```plain
 example.ch.    MX    15    mail.example.ch.          ← Stargate (inbound)

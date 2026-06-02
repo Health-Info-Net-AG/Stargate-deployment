@@ -43,7 +43,7 @@ HIN's objective in this process is to ensure a secure, smooth and fully validate
 | 6 | Access via the browser | Customer |
 | 7 | Enter setup key | Customer |
 | 8 | Initial Configuration and Domain Setup | Customer |
-| 9 | Configure Postfix | Customer |
+| 9 | Configure Mail Relay | Customer |
 | 10 | Backend Service Health Check | Customer |
 | 11 | Log in to the dashboard | Customer |
 | 12 | Enter Keycloak credentials | Customer |
@@ -172,19 +172,19 @@ Check that the public IP address displayed in the "Endpoint" field is correct. I
 
 Click on "Save configuration".
 
-### Step 9 - Configure Postfix
+### Step 9 - Configure Mail Relay
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-On this screen, configure your Postfix mail settings for the secure mail relay setup.
+On this screen, configure your mail relay settings for the secure mail relay setup.
 
-![Postfix configuration screen](assets/installation-guide/step9-postfix-config.png)
+![Mail configuration screen](assets/installation-guide/step9-mail-config.png)
 
 The following options are available:
 
 | Option | Description |
 |--------|-------------|
-| **Include SPF** | The system reads the SPF record from DNS, extracts the defined networks, and automatically adds them to the mynetworks configuration in Postfix. This allows messages originating from those networks to be accepted. |
+| **Include SPF** | The system reads the SPF record from DNS, extracts the defined networks, and automatically adds them to the allowed relay networks. This allows messages originating from those networks to be accepted. |
 | **Include Docker** | Similar to the previous option, this applies predefined settings intended for VM and Docker installations. For Kubernetes installations, this option must remain disabled. |
 | **Hostname** | If multiple domains are configured, the first domain in the list is automatically used as the hostname. This setting only defines the hostname of the instance. |
 | **Domain** | The system reads the configured domain and its MX records. Based on this information, the relay configuration is automatically created. When a message is received for processing, the system determines to which SMTP server the message must be forwarded for final delivery. |
@@ -192,7 +192,7 @@ The following options are available:
 Additional actions:
 
 - Add additional domains by clicking "Add domain", if required.
-- Optionally expand the Advanced section to configure additional Postfix parameters.
+- Optionally expand the Advanced section to configure additional mail relay parameters.
 
 !!! note
     Ensure that all relay host and domain configurations are correct before proceeding.

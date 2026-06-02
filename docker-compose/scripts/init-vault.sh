@@ -113,7 +113,7 @@ else
   vault secrets enable -address=http://vault:8200 -path=secret-policy kv-v2 || echo "secret-policy already exists"
   vault secrets enable -address=http://vault:8200 -path=secret-irisagent kv-v2 || echo "secret-irisagent already exists"
   vault secrets enable -address=http://vault:8200 -path=secret-mxengine kv-v2 || echo "secret-mxengine already exists"
-  vault secrets enable -address=http://vault:8200 -path=secret-postfixconf kv-v2 || echo "secret-postfixconf already exists"
+  vault secrets enable -address=http://vault:8200 -path=secret-mtaconf kv-v2 || echo "secret-mtaconf already exists"
   
   echo "Vault mounts created!"
   

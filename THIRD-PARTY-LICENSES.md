@@ -70,14 +70,14 @@ This document lists the licenses of third-party software components used in the 
 
 ---
 
-## Postfix
+## Stalwart Mail Server
 
-- **Component:** Postfix Mail Transfer Agent
-- **Image:** `boky/postfix:latest` (based on official Postfix)
-- **License:** Postfix License (IPLR - Independent Postfix License)
-- **Copyright:** Copyright (c) 1991-2024, Internet Systems Consortium, Inc.
-- **Source:** https://www.postfix.org/
-- **License Text:** https://www.postfix.org/LICENSE.html
+- **Component:** Stalwart Mail Server (MTA)
+- **Image:** `stalwartlabs/stalwart:v0.16`
+- **License:** GNU Affero General Public License v3.0 (AGPL-3.0)
+- **Copyright:** Copyright (c) 2020-2026 Stalwart Labs Ltd.
+- **Source:** https://github.com/stalwartlabs/stalwart
+- **License Text:** https://github.com/stalwartlabs/stalwart/blob/main/LICENSE
 
 ---
 
@@ -111,7 +111,7 @@ This document lists the licenses of third-party software components used in the 
 | Alloy | Apache 2.0 | Permissive |
 | MinIO | AGPL v3 | Copyleft |
 | HashiCorp Vault | BUSL 1.1 | Source-available |
-| Postfix | IPLR | Permissive |
+| Stalwart | AGPL v3 | Copyleft |
 | Alpine Linux | GPL v2+ | Copyleft (base OS) |
 
 All components are used as unmodified Docker containers. No source code from these projects has been modified or incorporated into this repository.

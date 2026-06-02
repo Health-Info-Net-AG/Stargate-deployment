@@ -92,7 +92,7 @@ This connector routes outbound mail from Exchange Online to the Stargate relay s
 4. **Connector name**: Enter a descriptive name, e.g.:
 
    ```plain
-   From Office 365 to postfix relay server
+   From Office 365 to Stargate relay server
    ```
 
    - Check **"Retain Internal Exchange email headers"**
@@ -138,7 +138,7 @@ This connector accepts mail from the Stargate relay server into Exchange Online.
 3. **Connector name**: Enter a descriptive name, e.g.:
 
    ```plain
-   Receive mail from postfix relay server
+   Receive mail from Stargate relay server
    ```
 
    - Check **"Retain internal Exchange email headers"**
@@ -161,8 +161,8 @@ After creating both connectors, the Connectors page should show:
 
 | Status | Name | From | To |
 |--------|------|------|-----|
-| On | Receive mail from postfix relay server | Your org | O365 |
-| On | From Office 365 to postfix relay server | O365 | Your org |
+| On | Receive mail from Stargate relay server | Your org | O365 |
+| On | From Office 365 to Stargate relay server | O365 | Your org |
 
 ### Step C: Create the Transport Rule
 
@@ -175,7 +175,7 @@ The transport rule redirects all outbound mail through the Stargate outbound con
 3. **Rule name**: Enter a descriptive name, e.g.:
 
    ```plain
-   Relay all mail to postfix except mail coming from it
+   Relay all mail to Stargate except mail coming from it
    ```
 
 4. **Apply this rule if**: Select **"The recipient..."** → **"is external/internal"** → **"Outside the organization"**
@@ -184,7 +184,7 @@ The transport rule redirects all outbound mail through the Stargate outbound con
 !!! note
     This condition ensures only outbound mail (to external recipients) is redirected through Stargate.
 
-5. **Do the following**: Select **"Redirect the message to..."** → **"the following connector"** → select the outbound connector created in Step A (e.g. "From Office 365 to postfix relay server")
+5. **Do the following**: Select **"Redirect the message to..."** → **"the following connector"** → select the outbound connector created in Step A (e.g. "From Office 365 to Stargate relay server")
    - Click **"Save"**
 
 6. **Except if**: Click **"+"** to add an exception
@@ -197,7 +197,7 @@ The transport rule redirects all outbound mail through the Stargate outbound con
 
 7. Review the rule summary. It should show:
    - **Apply this rule if**: The recipient is located Outside the organization
-   - **Do the following**: Redirect the message to the connector "From Office 365 to postfix relay server"
+   - **Do the following**: Redirect the message to the connector "From Office 365 to Stargate relay server"
    - **Except if**: The sender IP address is in one of these ranges: `<STARGATE_IP>`
 
 8. Click **"Next"**, then **"Next"** again, then **"Finish"**, then **"Done"**
@@ -294,7 +294,7 @@ New-TransportRule -Name "Relay outbound via Stargate" `
 
 ### Automatic Configuration (Default)
 
-By default, the Stargate Postfix container automatically discovers where to deliver processed mail by looking up MX records for each domain configured via the dashboard's `/postfix` page. It filters out its own hostname and uses the remaining MX entries as delivery targets.
+By default, Stalwart automatically discovers where to deliver processed mail by looking up MX records for each domain configured via the dashboard's `/mail` page. It filters out its own hostname and uses the remaining MX entries as delivery targets.
 
 This works when:
 
@@ -303,7 +303,7 @@ This works when:
 
 ### Manual Override via the dashboard
 
-If you want all outbound mail from Stargate to go to a single Exchange endpoint (e.g. Exchange Online Protection), set the relay host through the dashboard's `/postfix` page (e.g. `[smtp.office365.com]`). The dashboard sends the value to `postfixconf`'s REST API and the daemon applies it as a global `relayhost`.
+If you want all outbound mail from Stargate to go to a single Exchange endpoint (e.g. Exchange Online Protection), set the relay host through the dashboard's `/mail` page (e.g. `[smtp.office365.com]`). The dashboard sends the value to mtaconf's REST API and the daemon applies it to Stalwart.
 
 !!! note
     A single relay host sends all mail through one server and does not support per-domain routing. For multiple domains routing through different Exchange servers, use the per-domain relay map on the same dashboard page (configures `sender_dependent_relayhost_maps` under the hood) - see [Multi-Domain Setup](#multi-domain-setup) below.
@@ -324,30 +324,24 @@ Each domain's MX records tell Stargate where to deliver processed mail for that 
 
 ### Verify Stargate Configuration
 
-After setup, verify the Postfix configuration:
+After setup, verify the Stalwart configuration:
 
 #### Check relay configuration
 
 ```bash
-docker exec stargate-postfixconf postconf | grep -E 'relayhost|mynetworks|relay_domains|content_filter'
-```
-
-#### Check transport maps
-
-```bash
-docker exec stargate-postfixconf postconf transport_maps
+docker logs stargate-stalwart --tail 50 | grep -i relay
 ```
 
 #### Check mail queue (should be empty when everything is working)
 
 ```bash
-docker exec stargate-postfixconf mailq
+docker exec stargate-stalwart stalwart-cli -u http://localhost:8080 queue list
 ```
 
 #### Send a test email and check logs
 
 ```bash
-docker logs stargate-postfixconf --tail 50
+docker logs stargate-stalwart --tail 50
 ```
 
 ## Troubleshooting
@@ -368,7 +362,7 @@ docker logs stargate-postfixconf --tail 50
 
 - Check port 25 is open on the Stargate server's firewall
 - Verify SPF record includes the Stargate IP
-- Check Stargate Postfix logs: `docker logs stargate-postfixconf`
+- Check Stalwart logs: `docker logs stargate-stalwart`
 
 ### Exchange Online rejecting mail from Stargate
 

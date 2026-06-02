@@ -85,7 +85,7 @@ IRISAGENT_VERSION="v0.0.5"
 MXENGINE_VERSION="v0.0.42"
 POLICY_SYNC_VERSION="dev"
 DASHBOARD_VERSION="v0.0.36-test"
-POSTFIXCONF_VERSION="v0.0.14"
+MTACONF_VERSION="dev"
 
 # ==============================================================================
 # OPTIONAL: Advanced Mail Configuration
@@ -94,8 +94,8 @@ POSTFIXCONF_VERSION="v0.0.14"
 # Sealer MX domain for outbound seal delivery
 OUTBOUND_SEALER_MX_DOMAIN="hin"
 
-# External SMTP host for outbound delivery (default: postfixconf)
-# Set if the customer uses an external Postfix server
+# SMTP host for outbound delivery (default: stalwart)
+# Override only if using an external MTA
 OUTBOUND_SMTP_HOST=""
 # External SMTP port for outbound delivery (default: 10026)
 OUTBOUND_SMTP_PORT=""
@@ -148,6 +148,23 @@ DASHBOARD_SHOW_DEV_PAGES="true"
 DASHBOARD_ROOT_URL="https://apisix.hin.ch"
 # Root domain (used for cross-instance service discovery)
 DASHBOARD_ROOT_DOMAIN="hin"
+
+# ==============================================================================
+# OPTIONAL: Stalwart MTA Configuration
+# ==============================================================================
+# Stalwart is the mail transfer agent (replaces postfixconf).
+# Credentials are auto-generated if left empty.
+
+# Recovery admin password (used for initial setup and CLI access)
+STALWART_ADMIN_PASSWORD=""  # Auto-generated if empty
+
+# Service account for mtaconf (the config daemon that manages Stalwart)
+MTACONF_SVC_USER="mtaconf-svc"
+MTACONF_SVC_DOMAIN=""  # Defaults to OUTBOUND_SEALER_MX_DOMAIN
+MTACONF_SVC_PASSWORD=""  # Auto-generated if empty
+
+# Stalwart hostname (appears in SMTP banners)
+STALWART_HOSTNAME=""  # Defaults to mail.<MTACONF_SVC_DOMAIN>
 
 # ==============================================================================
 # OPTIONAL: Dozzle - Real-time Log Viewer

@@ -26,7 +26,8 @@ The beta phase will be announced separately. During beta, the system will still 
 * **policy** - Policy service (port 8082)
 * **irisagent** - IRIS Agent service (port 8083, WireGuard: 19818/tcp)
 * **mxengine** - MX Engine service (port 8084, SMTP: 1587)
-* **postfixconf** - Postfix mail relay with configuration daemon (port 25, API: 8080)
+* **stalwart** - Stalwart MTA mail server (port 25, 10026)
+* **mtaconf** - MTA configuration daemon (API: 8080)
 * **dashboard** - Web-based admin UI for onboarding, domain management, and monitoring (port 443)
 * **policy-sync** - Syncs OPA/Rego policies from Git repository to database (runs continuously)
 

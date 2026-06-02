@@ -53,11 +53,11 @@ vrgnservices.eu descriptive text "v=spf1 ip4:128.140.117.200 include:spf.protect
     * MX records pointing to your mail servers
     * SPF record defining allowed sending networks
 
-The script installs all components and starts them. Mail domains and the Postfix hostname are then configured at runtime via the dashboard's `/postfix` page (the daemon extracts the necessary mail relay settings from DNS based on those domains).
+The script installs all components and starts them. Mail domains and the Stalwart hostname are then configured at runtime via the dashboard's `/mail` page (the mtaconf daemon extracts the necessary mail relay settings from DNS based on those domains).
 
 ## Set up Exchange
 
-We need to configure connectors and a transport rule in Exchange to relay all outgoing mail to the postfix relay and allow incoming mail from it.
+We need to configure connectors and a transport rule in Exchange to relay all outgoing mail to the Stargate relay and allow incoming mail from it.
 
 Navigate to [https://admin.exchange.microsoft.com/#/connectors](https://admin.exchange.microsoft.com/#/connectors)
 
@@ -69,7 +69,7 @@ Select "Connection from": "Office 365" "Connection to": "your organization&#39;s
 
 ![screenshot](./assets/new_connector_outgoing1.png)
 
-Name it something like "From Office 365 to postfix relay sever" and check "Retain Internal Exchange email headers", click "Next".
+Name it something like "From Office 365 to Stargate relay server" and check "Retain Internal Exchange email headers", click "Next".
 
 ![screenshot](./assets/new_connector_outgoing2.png)
 
@@ -77,7 +77,7 @@ Select "Only when I have a transport rule set up that redirects messages to this
 
 ![screenshot](./assets/new_connector_outgoing3.png)
 
-Enter the IP address of the postfix relay server, click "+", click "Next".
+Enter the IP address of the Stargate relay server, click "+", click "Next".
 
 ![screenshot](./assets/new_connector_outgoing4.png)
 
@@ -103,11 +103,11 @@ Create incoming mail connector, choose "Connection from": "Your organization's e
 
 ![screenshot](./assets/new_connector_incoming1.png)
 
-Name it something like "Receive mail from postfix relay server" and check "Retain internal Exchange email headers", click "Next.
+Name it something like "Receive mail from Stargate relay server" and check "Retain internal Exchange email headers", click "Next.
 
 ![screenshot](./assets/new_connector_incoming2.png)
 
-Select "By verifying that the IP address of the sending server matches one of the following IP addresses, type the IP address of postfix, click "+", click "Next".
+Select "By verifying that the IP address of the sending server matches one of the following IP addresses, type the IP address of the Stargate server, click "+", click "Next".
 
 ![screenshot](./assets/new_connector_incoming3.png)
 
@@ -131,15 +131,15 @@ Click "+Add a rule" --> "Create a new rule".
 
 ![screenshot](./assets/new_transport_rule1.png)
 
-Name it something like "Relay all mail to postfix except mail coming from it", choose "Apply rule if" "The recipient:" "is external/internal" "Outside the organization", click "Save".  
+Name it something like "Relay all mail to Stargate except mail coming from it", choose "Apply rule if" "The recipient:" "is external/internal" "Outside the organization", click "Save".  
 
 ![screenshot](./assets/new_transport_rule2.png)
 
-Choose "Do the following" "Redirect message to the following connector" "From Office 365 to postfix relay server", click "Save".
+Choose "Do the following" "Redirect message to the following connector" "From Office 365 to Stargate relay server", click "Save".
 
 ![screenshot](./assets/new_transport_rule3.png)
 
-Choose "Except if The sender IP address is in any of these ranges" enter the IP address of the postfix server, click "Add", check the IP address and click "Save".
+Choose "Except if The sender IP address is in any of these ranges" enter the IP address of the Stargate server, click "Add", check the IP address and click "Save".
 
 This is needed to prevent mail loops, as this rule also applies to other domains hosted in Office 365.  
 

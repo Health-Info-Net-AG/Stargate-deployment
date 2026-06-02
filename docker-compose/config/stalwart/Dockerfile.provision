@@ -1,0 +1,20 @@
+FROM debian:trixie-slim
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates curl python3 && \
+    rm -rf /var/lib/apt/lists/*
+ARG STALWART_CLI_VERSION=v1.0.7
+ARG TARGETARCH
+RUN set -eux; \
+    case "${TARGETARCH:-$(dpkg --print-architecture)}" in \
+        amd64) t=x86_64-unknown-linux-musl ;; \
+        arm64) t=aarch64-unknown-linux-musl ;; \
+        *) echo "unsupported arch: ${TARGETARCH}"; exit 1 ;; \
+    esac; \
+    curl -sSL "https://github.com/stalwartlabs/cli/releases/download/${STALWART_CLI_VERSION}/stalwart-cli-${t}.tar.xz" \
+        -o /tmp/cli.tar.xz; \
+    python3 -c "import tarfile; tarfile.open('/tmp/cli.tar.xz','r:xz').extractall('/tmp')"; \
+    install -m 0755 "/tmp/stalwart-cli-${t}/stalwart-cli" /opt/stalwart-cli; \
+    rm -rf /tmp/cli.tar.xz "/tmp/stalwart-cli-${t}"
+COPY provision.sh /usr/local/bin/stalwart-provision
+RUN chmod 0755 /usr/local/bin/stalwart-provision
+ENTRYPOINT ["stalwart-provision"]

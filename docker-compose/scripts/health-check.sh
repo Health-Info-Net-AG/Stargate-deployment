@@ -43,7 +43,8 @@ EXPECTED_RUNNING=(
   stargate-policy
   stargate-irisagent
   stargate-mxengine
-  stargate-postfixconf
+  stargate-stalwart
+  stargate-mtaconf
   stargate-alloy
   stargate-node-exporter
 )
@@ -193,40 +194,32 @@ fi
 echo ""
 
 # ------------------------------------------------------------------
-# 7. Postfix
+# 7. Stalwart MTA
 # ------------------------------------------------------------------
-echo "--- Postfix ---"
+echo "--- Stalwart MTA ---"
 
-pf_status=$(docker exec stargate-postfixconf postfix status 2>&1)
-if echo "$pf_status" | grep -q "is running"; then
-  pass "Postfix running"
+# Check management API reachable
+stalwart_health=$(docker exec stargate-stalwart curl -sf http://127.0.0.1:8080/healthz 2>/dev/null)
+if [ $? -eq 0 ]; then
+  pass "Stalwart management API reachable"
 else
-  fail "Postfix not running"
+  fail "Stalwart management API unreachable"
 fi
 
-# Check port 25 is listening (use netstat since ss may not be available)
-port25=$(docker exec stargate-postfixconf sh -c 'netstat -tlnp 2>/dev/null || ss -tlnp 2>/dev/null' | grep ":25 ")
+# Check port 25 is listening
+port25=$(docker exec stargate-stalwart sh -c 'ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null' | grep ":25 ")
 if [ -n "$port25" ]; then
   pass "Port 25 listening"
 else
-  fail "Port 25 not listening"
+  fail "Port 25 not listening (provision may not have run yet)"
 fi
 
 # Check reinjection port 10026
-port10026=$(docker exec stargate-postfixconf sh -c 'netstat -tlnp 2>/dev/null || ss -tlnp 2>/dev/null' | grep ":10026 ")
+port10026=$(docker exec stargate-stalwart sh -c 'ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null' | grep ":10026 ")
 if [ -n "$port10026" ]; then
   pass "Port 10026 (reinjection) listening"
 else
-  fail "Port 10026 (reinjection) not listening"
-fi
-
-# Check mail queue
-queue=$(docker exec stargate-postfixconf mailq 2>/dev/null)
-if echo "$queue" | grep -q "Mail queue is empty"; then
-  pass "Mail queue empty"
-else
-  queue_count=$(echo "$queue" | grep -c "^[A-F0-9]" 2>/dev/null || echo "?")
-  warn "Mail queue has $queue_count message(s)"
+  fail "Port 10026 (reinjection) not listening (provision may not have run yet)"
 fi
 
 echo ""

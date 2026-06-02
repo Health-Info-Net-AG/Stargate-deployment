@@ -14,9 +14,9 @@ upstreams:
       "smimekeys-client:8080": 1
     type: roundrobin
 
-  - id: "postfixconf"
+  - id: "mtaconf"
     nodes:
-      "postfixconf:8080": 1
+      "mtaconf:8080": 1
     type: roundrobin
 
   - id: "irisagent"
@@ -63,12 +63,12 @@ routes:
       proxy-rewrite:
         regex_uri: ["^/smimekeys/(.*)", "/$1"]
 
-  - id: "postfixconf-liveness"
-    uri: "/postfix/liveness"
-    upstream_id: "postfixconf"
+  - id: "mtaconf-liveness"
+    uri: "/mtaconf/liveness"
+    upstream_id: "mtaconf"
     plugins:
       proxy-rewrite:
-        regex_uri: ["^/postfix/(.*)", "/$1"]
+        regex_uri: ["^/mtaconf/(.*)", "/$1"]
 
   - id: "irisagent-liveness"
     uri: "/irisagent/liveness"
@@ -83,24 +83,14 @@ routes:
   # reachable by any container. Restriction mirrors the k8s cluster-internal
   # model; tighten by removing APISIX host-port exposure if needed.
   # ==================
-  - id: "irisagent-connections"
+  - id: "irisagent-internal"
     uris:
       - "/irisagent/v1/connections"
       - "/irisagent/v1/connections/*"
-    upstream_id: "irisagent"
-    priority: 100
-    plugins:
-      proxy-rewrite:
-        regex_uri: ["^/irisagent/(.*)", "/$1"]
-      ip-restriction:
-        whitelist:
-          - "127.0.0.1"
-          - "172.16.0.0/12"
-
-  - id: "irisagent-peers"
-    uris:
       - "/irisagent/v1/peers"
       - "/irisagent/v1/peers/*"
+      - "/irisagent/v1/wg/public-key"
+      - "/irisagent/v1/message"
     upstream_id: "irisagent"
     priority: 100
     plugins:
@@ -111,32 +101,10 @@ routes:
           - "127.0.0.1"
           - "172.16.0.0/12"
 
-  - id: "irisagent-wg-public-key"
-    uri: "/irisagent/v1/wg/public-key"
-    upstream_id: "irisagent"
-    priority: 100
-    plugins:
-      proxy-rewrite:
-        regex_uri: ["^/irisagent/(.*)", "/$1"]
-      ip-restriction:
-        whitelist:
-          - "127.0.0.1"
-          - "172.16.0.0/12"
-
-  - id: "irisagent-message"
-    uri: "/irisagent/v1/message"
-    upstream_id: "irisagent"
-    priority: 100
-    plugins:
-      proxy-rewrite:
-        regex_uri: ["^/irisagent/(.*)", "/$1"]
-      ip-restriction:
-        whitelist:
-          - "127.0.0.1"
-          - "172.16.0.0/12"
-
-  - id: "smimekeys-peer-sync"
-    uri: "/smimekeys/v1/certs/peers/sync"
+  - id: "smimekeys-internal"
+    uris:
+      - "/smimekeys/v1/certs/peers/sync"
+      - "/smimekeys/v1/rootca"
     upstream_id: "smimekeys"
     priority: 100
     plugins:
@@ -174,13 +142,13 @@ routes:
       proxy-rewrite:
         regex_uri: ["^/smimekeys/(.*)", "/$1"]
 
-  - id: "postfixconf-route"
-    uri: "/postfix/*"
-    upstream_id: "postfixconf"
+  - id: "mtaconf-route"
+    uri: "/mtaconf/*"
+    upstream_id: "mtaconf"
     plugin_config_id: "oidc-bearer"
     plugins:
       proxy-rewrite:
-        regex_uri: ["^/postfix/(.*)", "/$1"]
+        regex_uri: ["^/mtaconf/(.*)", "/$1"]
 
   - id: "irisagent-route"
     uri: "/irisagent/*"

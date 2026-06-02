@@ -493,7 +493,7 @@ services:
       SEALER: "false"
       OUTBOUND_SEALER_MX_DOMAIN: "${OUTBOUND_SEALER_MX_DOMAIN}"
       OUTBOUND_SEAL_ADDR: ""
-      OUTBOUND_SMTP_HOST: "${OUTBOUND_SMTP_HOST:-postfixconf}"
+      OUTBOUND_SMTP_HOST: "${OUTBOUND_SMTP_HOST:-stalwart}"
       OUTBOUND_SMTP_PORT: "${OUTBOUND_SMTP_PORT:-10026}"
       OUTBOUND_SMIME_HOST: ""
       OUTBOUND_SMIME_PORT: ""
@@ -597,7 +597,7 @@ services:
 
       VAULT_ADDRESS: "http://vault:8200"
       VAULT_TOKEN: "${VAULT_TOKEN}"
-      VAULT_MOUNT_PATH: "secret-postfixconf"
+      VAULT_MOUNT_PATH: "secret-mtaconf"
 
     networks:
       - stargate-network
@@ -679,36 +679,76 @@ services:
     labels:
       - autoheal=true
 
-  postfixconf:
-    image: healthinfonetag/postfixconf:${POSTFIXCONF_VERSION:-dev}
-    container_name: stargate-postfixconf
+  # ===================
+  # Stalwart MTA (replaces postfixconf)
+  # ===================
+
+  stalwart:
+    image: stalwartlabs/stalwart:v0.16
+    container_name: stargate-stalwart
     restart: unless-stopped
     depends_on:
-      dashboard:
-        condition: service_started
-      vault-init:
-        condition: service_completed_successfully
-      smimekeys-client:
-        condition: service_started
+      postgres:
+        condition: service_healthy
     environment:
-      # Required: smimekeys backend the daemon queries per recipient
-      SMIMEKEYS_ADDR: "http://smimekeys-client:8080"
-      # Required by boky/postfix base — sender domains are managed dynamically
-      # by the daemon at runtime, no static list at boot
-      ALLOW_EMPTY_SENDER_DOMAINS: "true"
-      # MXEngine integration (Docker service name and port)
-      MXENGINE_HOST: "${MXENGINE_HOST:-mxengine}"
-      MXENGINE_PORT: "${MXENGINE_PORT:-1587}"
-      DASHBOARD_CONFIG_URL: "http://dashboard:3000/api/internal/installation-config?service=postfix"
-      # Vault
-      VAULT_ADDRESS: "http://vault:8200"
-      VAULT_TOKEN: "${VAULT_TOKEN}"
-      VAULT_MOUNT_PATH: "secret-postfixconf"
+      STALWART_RECOVERY_ADMIN: "admin:${STALWART_ADMIN_PASSWORD}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-postgres}"
     volumes:
-      - postfix_spool:/var/spool/postfix
+      - ./config/stalwart/config.json:/etc/stalwart/config.json:ro
+      - stalwart_data:/var/lib/stalwart
     ports:
       - "25:25"
       - "10026:10026"
+    networks:
+      - stargate-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:8080/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    labels:
+      - autoheal=true
+
+  stalwart-provision:
+    build:
+      context: ./config/stalwart
+      dockerfile: Dockerfile.provision
+    container_name: stargate-stalwart-provision
+    restart: "no"
+    depends_on:
+      stalwart:
+        condition: service_healthy
+    environment:
+      STALWART_URL: "http://stalwart:8080"
+      STALWART_RECOVERY_ADMIN: "admin:${STALWART_ADMIN_PASSWORD}"
+      MTACONF_SVC_USER: "${MTACONF_SVC_USER:-mtaconf-svc}"
+      MTACONF_SVC_DOMAIN: "${MTACONF_SVC_DOMAIN}"
+      MTACONF_SVC_PASSWORD: "${MTACONF_SVC_PASSWORD}"
+      STALWART_HOSTNAME: "${STALWART_HOSTNAME:-mail.local}"
+    networks:
+      - stargate-network
+
+  mtaconf:
+    image: registry.vereign.io/svdh/mtaconf:${MTACONF_VERSION:-dev}
+    container_name: stargate-mtaconf
+    restart: unless-stopped
+    depends_on:
+      stalwart-provision:
+        condition: service_completed_successfully
+      vault-init:
+        condition: service_completed_successfully
+    environment:
+      STALWART_URL: "http://stalwart:8080"
+      STALWART_USER: "${MTACONF_SVC_USER:-mtaconf-svc}@${MTACONF_SVC_DOMAIN}"
+      STALWART_PASSWORD: "${MTACONF_SVC_PASSWORD}"
+      STALWART_CLI_PATH: "/opt/stalwart-cli"
+      VAULT_ADDRESS: "http://vault:8200"
+      VAULT_TOKEN: "${VAULT_TOKEN}"
+      VAULT_MOUNT_PATH: "secret-mtaconf"
+      HTTP_ADDR: ":8080"
+      DASHBOARD_CONFIG_URL: "http://dashboard:3000/api/internal/installation-config?service=mtaconf"
+      LOG_LEVEL: "info"
     networks:
       - stargate-network
     labels:
@@ -818,7 +858,7 @@ volumes:
   postgres_data:
   vault_data:
   minio_data:
-  postfix_spool:
+  stalwart_data:
   loki_data:
   alloy_data:
   textfile_collector:
