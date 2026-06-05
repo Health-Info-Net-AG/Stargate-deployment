@@ -3,14 +3,12 @@
 
 set -euo pipefail
 
-MODE="${1:?usage: generate-release-notes.sh <build|milestone> <tag>}"
-TAG="${2:?usage: generate-release-notes.sh <build|milestone> <tag>}"
+TAG="${1:?usage: generate-release-notes.sh <tag>}"
 
 PROD_FILE="docker-compose/customer-config-prod.example.sh"
 PREPROD_FILE="docker-compose/customer-config-preprod.example.sh"
 
 SEMVER_RE='^v[0-9]+\.[0-9]+\.[0-9]+$'              # v1.0.0 (manual milestones)
-CALVER_RE='^v[0-9]{4}\.[0-9]{2}\.[0-9]{2}-[0-9]{4}$' # v2026.06.03-1549 (auto builds)
 
 
 prev_tag() {
@@ -18,25 +16,11 @@ prev_tag() {
     | grep -E "$2" | grep -Fvx "$TAG" | head -n1 || true
 }
 
-case "$MODE" in
-  build)
-    REF="HEAD"
-    HEADER="Stargate image build ${TAG}"
-    ORIGIN_WORD="Built from"
-    PREV_TAG="$(prev_tag "$REF" "${CALVER_RE}|${SEMVER_RE}")"
-    ;;
-  milestone)
-    REF="$TAG"
-    HEADER="Stargate release ${TAG}"
-    ORIGIN_WORD="Tagged at"
-    # Roll up since the previous semver tag, ignoring CalVer build tags.
-    PREV_TAG="$(prev_tag "$REF" "$SEMVER_RE")"
-    ;;
-  *)
-    echo "unknown mode: ${MODE} (expected build|milestone)" >&2
-    exit 1
-    ;;
-esac
+REF="$TAG"
+HEADER="Stargate release ${TAG}"
+ORIGIN_WORD="Tagged at"
+# Roll up since the previous semver tag.
+PREV_TAG="$(prev_tag "$REF" "$SEMVER_RE")"
 
 if [ -n "$PREV_TAG" ]; then
   RANGE="${PREV_TAG}..${REF}"
