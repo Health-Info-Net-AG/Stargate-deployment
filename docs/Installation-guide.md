@@ -178,7 +178,7 @@ Click on "Save configuration".
 
 On this screen, configure your mail relay settings for the secure mail relay setup.
 
-![Mail configuration screen](assets/installation-guide/step9-mail-config.png)
+![Mail configuration screen](assets/installation-guide/step9-postfix-config.png)
 
 The following options are available:
 
