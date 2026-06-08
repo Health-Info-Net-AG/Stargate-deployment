@@ -4,13 +4,14 @@ Deploy Stargate on Azure
 
 ## Azure Port 25 (SMTP) Requirements
 
-> **Warning:** Before beginning installation on Microsoft Azure, review the following requirements related to outbound SMTP connectivity on port 25. Skipping this step may result in email delivery failures after installation.
+!!! warning
+    Before beginning installation on Microsoft Azure, review the following requirements related to outbound SMTP connectivity on port 25. Skipping this step may result in email delivery failures after installation.
 
 Whether port 25 is available depends on your Azure subscription type:
 
-- **Enterprise Agreement (EA) or MCA-E** - Outbound SMTP on port 25 is not blocked. Note that external domains may still reject emails - this is outside Azure's control.
-- **Enterprise Dev/Test** - Blocked by default, but can be removed. To request removal, go to *Diagnose and Solve* > *Cannot send email (SMTP-Port 25)* in the Azure Virtual Network resource in the Azure portal.
-- **All other subscription types** - Blocked and **cannot be unblocked**.
+- :white_check_mark: **Enterprise Agreement (EA) or MCA-E** - Outbound SMTP on port 25 is not blocked. Note that external domains may still reject emails - this is outside Azure's control.
+- :white_check_mark: **Enterprise Dev/Test** - Blocked by default, but can be removed. To request removal, go to *Diagnose and Solve* > *Cannot send email (SMTP-Port 25)* in the Azure Virtual Network resource in the Azure portal.
+- :x: **All other subscription types** - Blocked and **cannot be unblocked**.
 
 Reference: [Troubleshoot outbound SMTP connectivity in Azure](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity)
 

@@ -2,8 +2,12 @@
 
 This guide explains how to configure Microsoft Exchange (Online and On-Premises) to route mail through the Stargate gateway for S/MIME signing and encryption.
 
-!!! tip "Internal reference"
-    This guide is based on the [Stargate mail relay setup](https://plan.vereign.com/projects/mail-gateway/wiki/stargate-mail-relay-setup) wiki page (by Zdravko Komitov).
+<!-- Internal reference
+     This guide is based on the [Stargate mail relay setup](https://plan.vereign.com/projects/mail-gateway/wiki/stargate-mail-relay-setup) wiki page (by Zdravko Komitov). -->
+
+![Mesh node](assets/hin-mesh-node-orange-rgb-1.jpg){ width=32%; }
+![O365 as MX Server](assets/hin-mesh-node-orange-rgb-2.png){ width=32%; }
+![Different MX Server](assets/hin-mesh-node-orange-rgb-3.png){ width=32%; }
 
 ## Overview
 

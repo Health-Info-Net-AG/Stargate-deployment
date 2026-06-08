@@ -77,7 +77,7 @@ extra:
       link: https://hub.docker.com/r/healthinfonetag/
 
 extra_javascript:
-  - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
+  - javascripts/tablesort.min.js
   - javascripts/tablesort.js
 
 # Extensions

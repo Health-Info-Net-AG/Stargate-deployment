@@ -4,7 +4,7 @@
 
 * **smimekeys-client** - S/MIME keys client service (port 8081)
 * **policy** - Policy service (port 8082)
-* **irisagent** - IRIS Agent service (port 8083, WireGuard: 19818/tcp)
+* **irisagent** - IRIS Agent service (port 8083, WireGuard: 19818/udp, 19818/tcp)
 * **mxengine** - MX Engine service (port 8084, SMTP: 1587)
 * **stalwart** - Stalwart MTA mail server (port 25, 10026)
 * **mtaconf** - MTA configuration daemon (API: 8080)

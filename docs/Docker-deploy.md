@@ -162,7 +162,8 @@ Generates the S/MIME signing key and CSR via the smimekeys service and submits t
 
 Submits hostname and the list of relay domains to the `mtaconf` service over its REST API. The daemon applies the configuration to Stalwart without restarting the container.
 
-> **Adding or changing domains** later: re-open the `/mail` page in the dashboard, edit the domain list, and submit. The daemon applies the change at runtime - no script invocation, no `.env` edit, no service restart needed.
+!!! tip "Adding or changing domains later"
+    Ee-open the `/mail` page in the dashboard, edit the domain list, and submit. The daemon applies the change at runtime - no script invocation, no `.env` edit, no service restart needed.
 
 ## Step 5: WireGuard Peer Registration
 

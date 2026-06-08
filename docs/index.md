@@ -29,17 +29,11 @@
 
 ### Server Requirements
 
-#### Minimum
-
-* **2** CPU cores
-* **4 GB** RAM
-* **20 GB** storage
-
-#### Recommended
-
-* **4** CPU cores
-* **8 GB** RAM
-* **30 GB** storage
+|      | Minimum | Recommended |
+| :--- | :-----: | :---------: |
+| CPU, Cores| 2 | 4 |
+| RAM, GB | 4 | 8 |
+| SSD, GB | 20 | 30 |
 
 #### Common Requirements
 
@@ -59,21 +53,21 @@
 
 | Port | Protocol | Purpose |
 |------|----------|---------|
-| 25 | TCP | SMTP - receiving mail from external servers |
-| 8084 | TCP | HTTP - seal callback from remote sealer service |
-| 19818 | TCP+UDP | WireGuard - encrypted tunnel for agent-to-agent communication |
+| `25` | TCP | SMTP - receiving mail from external servers |
+| `8084` | TCP | HTTP - seal callback from remote sealer service |
+| `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication. Read our [Security Assessment WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
 
 #### Outbound Network Access (server must reach)
 
 | Destination | Port | Purpose |
 |-------------|------|---------|
-| hub.docker.com | 443 | Docker image registry |
-| mxengine-dev.k8s.vereign-cdn.com | 443 | Remote sealer service |
-| smimekeys-ca-dev.k8s.vereign-cdn.com | 443 | S/MIME CA service |
-| loki.example.com | 443 | Log shipping (Alloy → Loki, optional) |
-| vereign-issuer.vrgnservices.eu | 443 | Issuer service |
-| vereign-verifier.vrgnservices.eu | 4433 | Verifier service |
-| Destination mail servers | 25 | Outbound mail delivery (via MX lookup) |
+| hub.docker.com | `433`| Docker image registry |
+| mxengine-dev.k8s.vereign-cdn.com | `433`| Remote sealer service |
+| smimekeys-ca-dev.k8s.vereign-cdn.com | `433`| S/MIME CA service |
+| loki.example.com | `433`| Log shipping (Alloy → Loki, optional) |
+| vereign-issuer.vrgnservices.eu | `433`| Issuer service |
+| vereign-verifier.vrgnservices.eu | `4433` | Verifier service |
+| Destination mail servers | `25` | Outbound mail delivery (via MX lookup) |
 
 ## Contact us
 
@@ -88,4 +82,4 @@
 ---
 
 [![documentation](https://img.shields.io/github/check-runs/Health-Info-Net-AG/Stargate-deployment/main?nameFilter=Build%20documentation&style=for-the-badge&label=Documentation%20Build)](https://github.com/Health-Info-Net-AG/Stargate-deployment/actions/workflows/documentation.yml)
-[![commit](https://img.shields.io/endpoint?style=for-the-badge&url=https://health-info-net-ag.github.io/Stargate-deployment/badges/build.json)](ttps://github.com/Health-Info-Net-AG/Stargate-deployment)
+[![commit](https://img.shields.io/endpoint?style=for-the-badge&url=https://health-info-net-ag.github.io/Stargate-deployment/badges/build.json)](https://github.com/Health-Info-Net-AG/Stargate-deployment)
