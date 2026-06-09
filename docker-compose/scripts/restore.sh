@@ -1,27 +1,19 @@
 #!/bin/bash
-set -e
+set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-BACKUP_DIR="$PROJECT_DIR/backups"
+INVOCATION_DIR="$PWD"  # caller's working directory, captured before the cd below
 SECRETS_DIR="$PROJECT_DIR/secrets"
 ENV_FILE="$PROJECT_DIR/.env"
 CONFIG_FILE="$PROJECT_DIR/customer-config.sh"
-KEYS_FILE="$SECRETS_DIR/vault-keys.json"
 
-# Determine Linux distribution for package manager
-if [ -f /etc/os-release ]; then
-  DIST_ID=$(grep ^ID= /etc/os-release | cut -f2 -d= | sed 's/"//g')
-else
-  echo "File /etc/os-release not found, cannot determine Linux distribution."
-  exit 1
-fi
+# Shared helpers (use SCRIPT_DIR/PROJECT_DIR defined above).
+. "$SCRIPT_DIR/lib/systemd.sh"
+. "$SCRIPT_DIR/lib/docker.sh"
 
-if [[ $DIST_ID == debian || $DIST_ID == ubuntu || $DIST_ID == linuxmint || $DIST_ID == kali ]]; then
-  PKGMGR=apt
-else
-  PKGMGR=dnf
-fi
+# Detect distribution / package manager (sets DIST_ID, PKGMGR).
+detect_distro
 
 cd "$PROJECT_DIR"
 
@@ -48,7 +40,7 @@ usage() {
   echo "  5. Start infrastructure services (PostgreSQL, Vault, MinIO)"
   echo "  6. Restore the database"
   echo "  7. Restore Vault keys and unseal"
-  echo "  8. Start application services"
+  echo "  8. Start application services (via the 'stargate' systemd unit)"
   echo ""
   exit 1
 }
@@ -60,13 +52,23 @@ fi
 
 BACKUP_FILE="$1"
 
-# Resolve relative path
-if [[ ! "$BACKUP_FILE" = /* ]]; then
+# Resolve the backup path. An absolute path is used as-is; otherwise try, in
+# order: relative to the directory the command was run from, relative to the
+# project root (the documented `backups/<file>` form), then the project's
+# backups/ dir by bare filename.
+if [[ "$BACKUP_FILE" = /* ]]; then
+  :  # absolute, use as-is
+elif [ -f "$INVOCATION_DIR/$BACKUP_FILE" ]; then
+  BACKUP_FILE="$INVOCATION_DIR/$BACKUP_FILE"
+elif [ -f "$PROJECT_DIR/$BACKUP_FILE" ]; then
   BACKUP_FILE="$PROJECT_DIR/$BACKUP_FILE"
+elif [ -f "$PROJECT_DIR/backups/$(basename "$BACKUP_FILE")" ]; then
+  BACKUP_FILE="$PROJECT_DIR/backups/$(basename "$BACKUP_FILE")"
 fi
 
 if [ ! -f "$BACKUP_FILE" ]; then
-  echo "ERROR: Backup file not found: $BACKUP_FILE"
+  echo "ERROR: Backup file not found: $1"
+  echo "  Searched: $INVOCATION_DIR/, $PROJECT_DIR/, and $PROJECT_DIR/backups/"
   exit 1
 fi
 
@@ -77,59 +79,9 @@ echo ""
 echo "Backup file: $BACKUP_FILE"
 echo ""
 
-# ==============================================================================
-# Docker Installation (same as install.sh)
-# ==============================================================================
-install_docker() {
-  echo "Installing Docker from official repository..."
-  if [[ $PKGMGR == apt ]]; then
-    sudo $PKGMGR update -y && sudo $PKGMGR upgrade -y
-    sudo $PKGMGR remove -y docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc 2>/dev/null || true
-    sudo $PKGMGR install -y ca-certificates curl
-    sudo install -m 0755 -d /etc/apt/keyrings
-    sudo curl -fsSL https://download.docker.com/linux/$DIST_ID/gpg -o /etc/apt/keyrings/docker.asc
-    sudo chmod a+r /etc/apt/keyrings/docker.asc
-    echo \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/$DIST_ID \
-      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    sudo $PKGMGR update -y
-  else
-    sudo $PKGMGR update -y
-    sudo $PKGMGR remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine podman runc 2>/dev/null || true
-    sudo rpm --import https://download.docker.com/linux/rhel/gpg
-    sudo $PKGMGR -y install dnf-plugins-core
-    sudo $PKGMGR config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
-  fi
-  sudo $PKGMGR install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin jq
-  echo "Docker installed successfully!"
-  sudo systemctl enable --now docker
-  docker --version
-  docker compose version
-}
+# install_docker() and setup_systemd_service() are provided by lib/ (sourced above).
 
-check_dependencies() {
-  local missing=()
-  
-  if ! command -v docker &> /dev/null; then
-    missing+=("docker")
-  fi
-  
-  if ! docker compose version &> /dev/null 2>&1; then
-    missing+=("docker-compose-plugin")
-  fi
-  
-  if ! command -v jq &> /dev/null; then
-    missing+=("jq")
-  fi
-  
-  if [ ${#missing[@]} -gt 0 ]; then
-    echo "Missing dependencies: ${missing[*]}"
-    echo ""
-    echo "Installing Docker and dependencies..."
-    install_docker
-  fi
-}
+# check_dependencies() is provided by lib/docker.sh (sourced above).
 
 # ==============================================================================
 # 1. Stop Running Services
@@ -172,8 +124,10 @@ echo "Extracting to: $RESTORE_DIR"
 
 tar -xzf "$BACKUP_FILE" -C "$RESTORE_DIR"
 
-# Find the backup subdirectory (timestamp folder)
-BACKUP_CONTENT=$(find "$RESTORE_DIR" -mindepth 1 -maxdepth 1 -type d | head -1)
+# Find the backup subdirectory (timestamp folder). `|| true`: `head` closes the
+# pipe early, which can SIGPIPE `find` and abort under `set -eo pipefail`; the
+# empty-result case is handled by the check below.
+BACKUP_CONTENT=$(find "$RESTORE_DIR" -mindepth 1 -maxdepth 1 -type d | head -1 || true)
 
 if [ -z "$BACKUP_CONTENT" ]; then
   echo "ERROR: Invalid backup structure - no subdirectory found"
@@ -187,10 +141,11 @@ echo "  ✓ Backup extracted"
 if [ -f "$BACKUP_CONTENT/manifest.json" ]; then
   echo ""
   echo "Backup manifest:"
-  cat "$BACKUP_CONTENT/manifest.json" | jq .
+  # Display only -- don't let a malformed manifest abort restore under pipefail.
+  jq . "$BACKUP_CONTENT/manifest.json" 2>/dev/null || cat "$BACKUP_CONTENT/manifest.json" || true
   echo ""
-  
-  BACKUP_VERSION=$(jq -r '.backup_version // "1.0"' "$BACKUP_CONTENT/manifest.json")
+
+  BACKUP_VERSION=$(jq -r '.backup_version // "1.0"' "$BACKUP_CONTENT/manifest.json" 2>/dev/null || echo "1.0")
   if [ "$BACKUP_VERSION" != "2.0" ]; then
     echo "WARNING: Backup version $BACKUP_VERSION may not be fully compatible"
   fi
@@ -230,6 +185,7 @@ if [ -f "$CONFIG_FILE" ]; then
 fi
 
 cp "$BACKUP_CONTENT/config/customer-config.sh" "$CONFIG_FILE"
+chmod 600 "$CONFIG_FILE"  # holds VAULT_TOKEN, WG private key, passwords
 echo "  ✓ customer-config.sh restored"
 
 # Source the restored config
@@ -368,9 +324,23 @@ MXENGINE_VERSION=$MXENGINE_VERSION
 MTACONF_VERSION=$MTACONF_VERSION
 DASHBOARD_VERSION=$DASHBOARD_VERSION
 DOZZLE_VERSION=$DOZZLE_VERSION
+CLAMAV_VERSION=${CLAMAV_VERSION:-1.4}
 
 # Deployment
+CUSTOMER_NAME=$CUSTOMER_NAME
 DEPLOYMENT_NAME=$DEPLOYMENT_NAME
+
+# Stalwart MTA
+STALWART_ADMIN_PASSWORD=$STALWART_ADMIN_PASSWORD
+MTACONF_SVC_PASSWORD=$MTACONF_SVC_PASSWORD
+
+# Mail Outbound Path
+SERVER_STATIC_IP=$SERVER_STATIC_IP
+MXENGINE_PUBLIC_ADDRESS=$MXENGINE_PUBLIC_ADDRESS
+OUTBOUND_SEALER_MX_DOMAIN=$OUTBOUND_SEALER_MX_DOMAIN
+CERT_CA_IRISAGENT_DOMAIN=$CERT_CA_IRISAGENT_DOMAIN
+OUTBOUND_SMTP_HOST=$OUTBOUND_SMTP_HOST
+OUTBOUND_SMTP_PORT=$OUTBOUND_SMTP_PORT
 
 # Logging
 LOKI_URL=$LOKI_URL
@@ -400,8 +370,10 @@ POLICY_SYNC_INTERVAL=${POLICY_SYNC_INTERVAL:-1h}
 # WireGuard Local Configuration
 WG_LOCAL_IP=$WG_LOCAL_IP
 WG_INTERFACE_PORT=$WG_INTERFACE_PORT
+WG_TRANSPORT_MODE=${WG_TRANSPORT_MODE:-tcp}
 WG_PRIVATE_KEY=${WG_PRIVATE_KEY:-}
 EOF
+chmod 600 "$ENV_FILE"  # holds all secrets
 
 echo "  ✓ Environment file generated"
 echo ""
@@ -449,151 +421,130 @@ echo ""
 
 # Verify databases exist
 echo "Verifying databases..."
-for DB in smimekeys_client policy irisagent mxengine dashboard keycloak; do
+MISSING_DBS=0
+for DB in smimekeys_client policy irisagent mxengine dashboard keycloak stalwart; do
   if docker exec stargate-postgres psql -U "$POSTGRES_USER" -lqt | cut -d \| -f 1 | grep -qw "$DB"; then
     echo "  ✓ $DB exists"
   else
     echo "  ✗ $DB missing"
+    MISSING_DBS=$((MISSING_DBS + 1))
   fi
 done
+# The full-dump restore pipes through `head`, so its exit status can't be
+# trusted; treat a missing expected DB as a hard restore failure instead of
+# printing a green checkmark over lost data.
+if [ "$MISSING_DBS" -gt 0 ]; then
+  echo ""
+  echo "ERROR: $MISSING_DBS expected database(s) missing after restore — the full dump did not apply cleanly."
+  echo "  Inspect the restore output above and $BACKUP_CONTENT/database/full_dump.sql"
+  exit 1
+fi
 echo ""
 
 # ==============================================================================
-# 9. Handle Vault (unseal existing or initialize fresh)
+# 9. Handle Vault (initialize fresh or unseal existing, then restore secrets)
 # ==============================================================================
 echo "============================================"
 echo "  9. Setting up Vault"
 echo "============================================"
 echo ""
 
-echo "Waiting for Vault to be ready..."
-for i in {1..30}; do
-  if curl -s http://localhost:8200/v1/sys/health > /dev/null 2>&1; then
-    break
-  fi
-  sleep 2
-done
+# vault-init is idempotent: it initializes a fresh Vault, or unseals an existing
+# one using the restored vault-keys.json. Running it unconditionally keeps all
+# init/unseal logic in one place (init-vault.sh, reached over the docker network
+# -- Vault's 8200 port is not published to the host) and ensures the token sync
+# and secret restore below run on every path, not only on a fresh install.
+#
+# Detached + `docker wait` captures the init container's exit code; compose's
+# `depends_on: vault (service_healthy)` makes vault-init wait for Vault first.
+echo "Initializing / unsealing Vault via vault-init..."
+docker compose up -d vault-init
 
-# Check if Vault is initialized
-VAULT_STATUS=$(curl -s http://localhost:8200/v1/sys/seal-status)
-INITIALIZED=$(echo "$VAULT_STATUS" | jq -r '.initialized')
-SEALED=$(echo "$VAULT_STATUS" | jq -r '.sealed')
+VAULT_INIT_EXIT=$(docker wait stargate-vault-init 2>/dev/null) || VAULT_INIT_EXIT=1
+if [ "$VAULT_INIT_EXIT" != "0" ]; then
+  echo "  ✗ vault-init exited with code $VAULT_INIT_EXIT"
+  echo "    Check logs: docker compose logs vault-init"
+  exit 1
+fi
 
-if [ "$INITIALIZED" = "true" ]; then
-  echo "  Vault is already initialized"
-  
-  if [ "$SEALED" = "true" ]; then
-    if [ -f "$SECRETS_DIR/vault-keys.json" ]; then
-      echo "  Unsealing Vault with restored keys..."
-      UNSEAL_KEYS=$(jq -r '.unseal_keys_b64[]' "$SECRETS_DIR/vault-keys.json")
-      for key in $UNSEAL_KEYS; do
-        curl -s --request POST --data "{\"key\": \"$key\"}" http://localhost:8200/v1/sys/unseal > /dev/null
-      done
-      echo "  ✓ Vault unsealed"
-    else
-      echo "  ✗ ERROR: Vault is sealed but no keys file found!"
-      echo "    Cannot unseal Vault automatically."
-      exit 1
-    fi
-  else
-    echo "  ✓ Vault is already unsealed"
+if [ ! -f "$SECRETS_DIR/vault-keys.json" ]; then
+  echo "  ✗ ERROR: vault-keys.json not found after vault-init"
+  exit 1
+fi
+
+# vault-init may have generated a fresh token (fresh VM) or kept the restored
+# one; sync whatever is current into .env and customer-config.sh.
+ROOT_TOKEN=$(jq -r '.root_token' "$SECRETS_DIR/vault-keys.json")
+echo "  ✓ Vault ready"
+sed -i "s/^VAULT_TOKEN=.*/VAULT_TOKEN=\"$ROOT_TOKEN\"/" "$ENV_FILE"
+if grep -q '^VAULT_TOKEN=' "$CONFIG_FILE"; then
+  sed -i "s|^VAULT_TOKEN=.*|VAULT_TOKEN=\"$ROOT_TOKEN\"|" "$CONFIG_FILE"
+else
+  echo "" >> "$CONFIG_FILE"
+  echo "VAULT_TOKEN=\"$ROOT_TOKEN\"" >> "$CONFIG_FILE"
+fi
+echo "  ✓ Vault token synced to .env and customer-config.sh"
+
+# -----------------------------------------------------------------
+# Restore Vault KV secrets from backup (runs on every path)
+# -----------------------------------------------------------------
+if [ -d "$BACKUP_CONTENT/vault" ]; then
+  echo ""
+  echo "  Restoring Vault secrets from backup..."
+  RESTORED_SECRETS=0
+  for mount_dir in "$BACKUP_CONTENT/vault"/*/; do
+    [ -d "$mount_dir" ] || continue
+    mount_name=$(basename "$mount_dir")
+    echo "    Restoring: $mount_name..."
+    for secret_file in "$mount_dir"*.json; do
+      [ -f "$secret_file" ] || continue
+      key_name=$(basename "$secret_file" .json)
+      SECRET_DATA=$(jq -r '.data.data // empty' "$secret_file" 2>/dev/null)
+      if [ -n "$SECRET_DATA" ]; then
+        if echo "$SECRET_DATA" | docker exec -i -e VAULT_TOKEN="$ROOT_TOKEN" stargate-vault \
+          vault kv put -address=http://127.0.0.1:8200 "$mount_name/$key_name" - > /dev/null 2>&1; then
+          echo "      ✓ $key_name"
+          ((RESTORED_SECRETS++)) || true
+        else
+          echo "      ✗ Failed to restore $key_name"
+        fi
+      fi
+    done
+  done
+  if [ "$RESTORED_SECRETS" -gt 0 ]; then
+    echo ""
+    echo "  ✓ $RESTORED_SECRETS Vault secrets restored"
   fi
 else
-  # Fresh Vault - needs initialization
-  echo "  Vault is not initialized (fresh VM)"
-  echo "  Running Vault initialization..."
-  
-  # Run vault-init to initialize Vault.
-  # Use detached + `docker wait` so we capture the init container's exit
-  # code; `docker compose ps | grep running` never matches (status reads
-  # "Up ..." for live containers and the row disappears once they exit).
-  docker compose up -d vault-init
+  echo ""
+  echo "  ⚠ No Vault secrets in backup (older backup format)"
+  echo "    S/MIME keys and other secrets will need to be regenerated"
+fi
+echo ""
 
-  VAULT_INIT_EXIT=$(docker wait stargate-vault-init 2>/dev/null) || VAULT_INIT_EXIT=1
-  if [ "$VAULT_INIT_EXIT" != "0" ]; then
-    echo "  ✗ vault-init exited with code $VAULT_INIT_EXIT"
-    echo "    Check logs: docker compose logs vault-init"
-    exit 1
-  fi
+# ==============================================================================
+# 9b. Restore MinIO objects (message archives, irisagent objects)
+# ==============================================================================
+echo "============================================"
+echo "  Restoring MinIO objects"
+echo "============================================"
+echo ""
 
-  # Check if new keys were generated
-  if [ -f "$SECRETS_DIR/vault-keys.json" ]; then
-    NEW_TOKEN=$(jq -r '.root_token' "$SECRETS_DIR/vault-keys.json")
-    
-    echo "  ✓ Vault initialized with new token"
-    echo ""
-    echo "  IMPORTANT: New Vault token generated!"
-    echo "  Token: $NEW_TOKEN"
-    echo ""
-    
-    # Update .env with new token
-    sed -i "s/^VAULT_TOKEN=.*/VAULT_TOKEN=$NEW_TOKEN/" "$ENV_FILE"
-    echo "  ✓ Updated .env with new token"
-    
-    # Update customer-config.sh with new token
-    if grep -q '^VAULT_TOKEN=' "$CONFIG_FILE"; then
-      sed -i "s|^VAULT_TOKEN=.*|VAULT_TOKEN=\"$NEW_TOKEN\"|" "$CONFIG_FILE"
-    else
-      echo "" >> "$CONFIG_FILE"
-      echo "VAULT_TOKEN=\"$NEW_TOKEN\"" >> "$CONFIG_FILE"
-    fi
-    echo "  ✓ Updated customer-config.sh with new token"
-    
-    # Update ROOT_TOKEN for any subsequent operations
-    ROOT_TOKEN="$NEW_TOKEN"
-    
-    # -----------------------------------------------------------------
-    # Restore Vault secrets from backup (if present)
-    # -----------------------------------------------------------------
-    if [ -d "$RESTORE_DIR/vault" ]; then
-      echo ""
-      echo "  Restoring Vault secrets from backup..."
-      
-      RESTORED_SECRETS=0
-      
-      # Iterate through each mount directory
-      for mount_dir in "$RESTORE_DIR/vault"/*/; do
-        [ -d "$mount_dir" ] || continue
-        
-        mount_name=$(basename "$mount_dir")
-        echo "    Restoring: $mount_name..."
-        
-        # Iterate through each secret JSON file
-        for secret_file in "$mount_dir"*.json; do
-          [ -f "$secret_file" ] || continue
-          
-          key_name=$(basename "$secret_file" .json)
-          
-          # Extract just the data portion from the backup
-          SECRET_DATA=$(jq -r '.data.data // empty' "$secret_file" 2>/dev/null)
-          
-          if [ -n "$SECRET_DATA" ]; then
-            # Write the secret back to Vault
-            if echo "$SECRET_DATA" | docker exec -i -e VAULT_TOKEN="$ROOT_TOKEN" stargate-vault \
-              vault kv put -address=http://127.0.0.1:8200 "$mount_name/$key_name" - > /dev/null 2>&1; then
-              echo "      ✓ $key_name"
-              ((RESTORED_SECRETS++)) || true
-            else
-              echo "      ✗ Failed to restore $key_name"
-            fi
-          fi
-        done
-      done
-      
-      if [ $RESTORED_SECRETS -gt 0 ]; then
-        echo ""
-        echo "  ✓ $RESTORED_SECRETS Vault secrets restored"
-      fi
-    else
-      echo ""
-      echo "  ⚠ No Vault secrets in backup (older backup format)"
-      echo "    S/MIME keys and other secrets will need to be regenerated"
-    fi
+MC_IMAGE="minio/mc:RELEASE.2025-08-13T08-35-41Z"
+if [ -d "$BACKUP_CONTENT/minio/${S3_BUCKET_NAME}" ]; then
+  # Mirror objects back via a throwaway mc container sharing minio's network
+  # namespace; mc mirror recreates the destination bucket if needed. (minio-init
+  # in section 10 re-applies the bucket's anonymous-download policy afterwards.)
+  if docker run --rm --network "container:stargate-minio" \
+      -e "MC_HOST_local=http://${MINIO_ROOT_USER}:${MINIO_ROOT_PASSWORD}@127.0.0.1:9000" \
+      -v "$BACKUP_CONTENT/minio:/backup" \
+      "$MC_IMAGE" mirror --quiet --overwrite "/backup/${S3_BUCKET_NAME}" "local/${S3_BUCKET_NAME}"; then
+    echo "  ✓ MinIO objects restored"
   else
-    echo "  ✗ ERROR: Vault initialization failed!"
-    echo "    Check logs: docker compose logs vault-init"
-    exit 1
+    echo "  ✗ WARNING: MinIO restore failed (archived objects may be missing)"
   fi
+else
+  echo "  - No MinIO objects in backup; skipping"
 fi
 echo ""
 
@@ -605,8 +556,11 @@ echo "  10. Starting Application Services"
 echo "============================================"
 echo ""
 
-echo "Starting all services..."
-docker compose up -d
+# Install and enable the systemd unit, then start the stack through it
+# (`enable --now` runs start.sh). This both brings everything up now and makes
+# the stack auto-start on boot, so the post-restore state matches the boot
+# state instead of relying on a one-off `docker compose up -d`.
+setup_systemd_service
 
 echo ""
 echo "Waiting for services to initialize..."
@@ -659,7 +613,7 @@ echo "  ------------------"
 echo "  ✓ Customer configuration"
 echo "  ✓ Database (all tables and data)"
 echo "  ✓ Vault keys"
-if [ -d "$RESTORE_DIR/vault" ]; then
+if [ -d "$BACKUP_CONTENT/vault" ]; then
   echo "  ✓ Vault secrets (S/MIME keys, WG keys, etc.)"
 fi
 if [ $CERT_COUNT -gt 0 ]; then
@@ -675,6 +629,12 @@ echo "  smimekeys-client:  http://localhost:8081"
 echo "  policy:            http://localhost:8082"
 echo "  irisagent:         http://localhost:8083"
 echo "  mxengine:          http://localhost:8084"
+echo ""
+echo "  Service management:"
+echo "  -------------------"
+echo "  The 'stargate' systemd unit is enabled (auto-starts on boot)."
+echo "  systemctl {start|stop|status|restart} stargate"
+echo "  ./scripts/start.sh  |  ./scripts/stop.sh"
 echo ""
 echo "  If services show errors, wait a minute and check:"
 echo "    docker compose logs -f <service-name>"

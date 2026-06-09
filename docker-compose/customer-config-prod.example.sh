@@ -3,7 +3,7 @@
 # Stargate Customer Configuration - TEMPLATE
 # ==============================================================================
 # Copy this file to customer-config.sh and fill in your values:
-#   cp customer-config.example customer-config.sh
+#   cp customer-config-prod.example.sh customer-config.sh
 #
 # IMPORTANT: Replace ALL placeholder values below with your actual configuration!
 # ==============================================================================

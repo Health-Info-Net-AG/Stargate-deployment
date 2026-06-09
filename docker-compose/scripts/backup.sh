@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
@@ -8,41 +8,27 @@ SECRETS_DIR="$PROJECT_DIR/secrets"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 BACKUP_SUBDIR="$BACKUP_DIR/$TIMESTAMP"
 
-# Load environment variables from .env without sourcing it as a shell script.
-# Docker Compose .env files use shell-like KEY=VALUE syntax but do NOT require
-# quoting values that contain spaces or shell metacharacters. Sourcing such a
-# file with `source` causes bash to interpret the unquoted tail as a command
-# (e.g. `WG_PEER_DESCRIPTION=WireGuard peer connection` -> bash tries to run
-# `peer connection`). Under `set -e` this aborts the entire script.
-#
-# We only need POSTGRES_USER, POSTGRES_PASSWORD and VAULT_TOKEN here, so read
-# them out individually with a small helper that strips optional surrounding
-# quotes.
-read_env_var() {
-  local key="$1" file="$2" line value
-  [ -f "$file" ] || return 0
-  line=$(grep -E "^${key}=" "$file" 2>/dev/null | tail -1) || return 0
-  [ -n "$line" ] || return 0
-  value="${line#${key}=}"
-  # Strip a single pair of surrounding double or single quotes if present.
-  if [[ "$value" =~ ^\".*\"$ ]]; then
-    value="${value#\"}"
-    value="${value%\"}"
-  elif [[ "$value" =~ ^\'.*\'$ ]]; then
-    value="${value#\'}"
-    value="${value%\'}"
-  fi
-  printf '%s' "$value"
-}
+# read_env_var() reads one KEY from .env without sourcing the file (Compose
+# .env values may be unquoted and would break `source` under `set -e`). We only
+# need POSTGRES_USER, POSTGRES_PASSWORD and VAULT_TOKEN here.
+. "$SCRIPT_DIR/lib/env.sh"
 
 if [ -f "$PROJECT_DIR/.env" ]; then
   POSTGRES_USER=$(read_env_var POSTGRES_USER "$PROJECT_DIR/.env")
   POSTGRES_PASSWORD=$(read_env_var POSTGRES_PASSWORD "$PROJECT_DIR/.env")
   VAULT_TOKEN=$(read_env_var VAULT_TOKEN "$PROJECT_DIR/.env")
+  MINIO_ROOT_USER=$(read_env_var MINIO_ROOT_USER "$PROJECT_DIR/.env")
+  MINIO_ROOT_PASSWORD=$(read_env_var MINIO_ROOT_PASSWORD "$PROJECT_DIR/.env")
+  S3_BUCKET_NAME=$(read_env_var S3_BUCKET_NAME "$PROJECT_DIR/.env")
 fi
 
 POSTGRES_USER="${POSTGRES_USER:-postgres}"
 POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-postgres}"
+MINIO_ROOT_USER="${MINIO_ROOT_USER:-minioadmin}"
+MINIO_ROOT_PASSWORD="${MINIO_ROOT_PASSWORD:-minioadmin}"
+S3_BUCKET_NAME="${S3_BUCKET_NAME:-stargate-bucket}"
+# Pinned mc image used for MinIO object backup/restore (matches docker-compose).
+MC_IMAGE="minio/mc:RELEASE.2025-08-13T08-35-41Z"
 
 echo "============================================"
 echo "  Stargate Full Backup"
@@ -73,9 +59,10 @@ echo "============================================"
 echo ""
 
 echo "Creating full database dump..."
-docker exec stargate-postgres pg_dumpall -U "$POSTGRES_USER" > "$BACKUP_SUBDIR/database/full_dump.sql"
-
-if [ $? -eq 0 ]; then
+# Test the command directly: under `set -e` a separate `if [ $? -eq 0 ]` check
+# is dead code (a failure would abort before it runs). Putting the command in
+# the `if` both suppresses set -e for it and makes the error path reachable.
+if docker exec stargate-postgres pg_dumpall -U "$POSTGRES_USER" > "$BACKUP_SUBDIR/database/full_dump.sql"; then
   DUMP_SIZE=$(du -h "$BACKUP_SUBDIR/database/full_dump.sql" | cut -f1)
   echo "  ✓ Full database dump created ($DUMP_SIZE)"
 else
@@ -86,7 +73,7 @@ fi
 # Also create individual dumps for easier partial restore if needed
 echo ""
 echo "Creating individual database dumps..."
-DATABASES=("smimekeys_client" "policy" "irisagent" "mxengine" "dashboard" "keycloak")
+DATABASES=("smimekeys_client" "policy" "irisagent" "mxengine" "dashboard" "keycloak" "stalwart")
 for DB in "${DATABASES[@]}"; do
   echo "  Backing up: $DB..."
   docker exec stargate-postgres pg_dump -U "$POSTGRES_USER" "$DB" > "$BACKUP_SUBDIR/database/${DB}.sql" 2>/dev/null || true
@@ -216,7 +203,7 @@ else
     VAULT_SECRETS_COUNT=0
     
     # List of KV mounts to backup
-    VAULT_MOUNTS=("secret-smimekeys-client" "secret-irisagent" "secret-policy" "secret-mxengine")
+    VAULT_MOUNTS=("secret-smimekeys-client" "secret-irisagent" "secret-policy" "secret-mxengine" "secret-mtaconf")
     
     for mount in "${VAULT_MOUNTS[@]}"; do
       echo "  Backing up: $mount..."
@@ -262,11 +249,42 @@ else
 fi
 
 # ==============================================================================
-# 6. Create Backup Manifest
+# 6. MinIO Object Storage (message archives, irisagent objects)
 # ==============================================================================
 echo ""
 echo "============================================"
-echo "  6. Creating Backup Manifest"
+echo "  6. Backing up MinIO objects"
+echo "============================================"
+echo ""
+
+MINIO_OBJ_COUNT=0
+mkdir -p "$BACKUP_SUBDIR/minio"
+if docker ps --format '{{.Names}}' | grep -q "stargate-minio"; then
+  # Mirror the bucket out via a throwaway mc container that shares the minio
+  # container's network namespace, so 127.0.0.1:9000 reaches it without
+  # depending on the bridge-network name. MC_HOST_local carries the credentials.
+  if docker run --rm --network "container:stargate-minio" \
+      -e "MC_HOST_local=http://${MINIO_ROOT_USER}:${MINIO_ROOT_PASSWORD}@127.0.0.1:9000" \
+      -v "$BACKUP_SUBDIR/minio:/backup" \
+      "$MC_IMAGE" mirror --quiet --overwrite "local/${S3_BUCKET_NAME}" "/backup/${S3_BUCKET_NAME}"; then
+    # Count under the always-present minio/ dir (an empty bucket leaves no
+    # bucket subdir, and `find` on a missing path exits non-zero -> would abort
+    # the script under `set -eo pipefail`).
+    MINIO_OBJ_COUNT=$(find "$BACKUP_SUBDIR/minio" -type f 2>/dev/null | wc -l)
+    echo "  ✓ MinIO bucket '${S3_BUCKET_NAME}' backed up ($MINIO_OBJ_COUNT objects)"
+  else
+    echo "  ✗ WARNING: MinIO backup failed (objects will not be in this archive)"
+  fi
+else
+  echo "  - MinIO container not running; skipping object backup"
+fi
+
+# ==============================================================================
+# 7. Create Backup Manifest
+# ==============================================================================
+echo ""
+echo "============================================"
+echo "  7. Creating Backup Manifest"
 echo "============================================"
 echo ""
 
@@ -285,7 +303,8 @@ cat > "$BACKUP_SUBDIR/manifest.json" << EOF
     "vault_secrets": ${VAULT_SECRETS_COUNT:-0},
     "customer_config": $([ -f "$BACKUP_SUBDIR/config/customer-config.sh" ] && echo "true" || echo "false"),
     "smime_csr": $([ -f "$BACKUP_SUBDIR/secrets/signing-key.csr" ] && echo "true" || echo "false"),
-    "certificates": $CERT_COUNT
+    "certificates": $CERT_COUNT,
+    "minio_objects": ${MINIO_OBJ_COUNT:-0}
   }
 }
 EOF
@@ -293,16 +312,19 @@ EOF
 echo "  ✓ manifest.json created"
 
 # ==============================================================================
-# 7. Create Compressed Archive
+# 8. Create Compressed Archive
 # ==============================================================================
 echo ""
 echo "============================================"
-echo "  7. Creating Compressed Archive"
+echo "  8. Creating Compressed Archive"
 echo "============================================"
 echo ""
 
 cd "$BACKUP_DIR"
 tar -czf "${TIMESTAMP}.tar.gz" "$TIMESTAMP"
+# The archive contains Vault unseal keys/root token, KV secrets, and the WG
+# private key -- restrict it to the owner (it is not encrypted).
+chmod 600 "${TIMESTAMP}.tar.gz"
 rm -rf "$TIMESTAMP"
 
 ARCHIVE_PATH="$BACKUP_DIR/${TIMESTAMP}.tar.gz"

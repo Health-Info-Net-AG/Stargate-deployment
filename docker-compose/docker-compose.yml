@@ -72,7 +72,7 @@ services:
       - autoheal=true
 
   minio:
-    image: minio/minio:latest
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
     container_name: stargate-minio
     restart: unless-stopped
     environment:
@@ -96,7 +96,7 @@ services:
 
   # MinIO bucket initialization
   minio-init:
-    image: minio/mc:latest
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
     container_name: stargate-minio-init
     depends_on:
       minio:
@@ -125,8 +125,6 @@ services:
         condition: service_healthy
     environment:
       VAULT_ADDR: "http://vault:8200"
-      # Predefined root token for reproducible deployments (used only during first init)
-      VAULT_ROOT_TOKEN: ${VAULT_TOKEN:-}
       # WireGuard private key (optional - if set, will be written to Vault for irisagent)
       WG_PRIVATE_KEY: ${WG_PRIVATE_KEY:-}
     volumes:
@@ -136,8 +134,6 @@ services:
     networks:
       - stargate-network
 
-  # IRISAGENT connection initialization container
-  # Creates WireGuard peer connection in database for tunnel communication
   keycloak:
     image: quay.io/keycloak/keycloak:26.5.3
     container_name: stargate-keycloak
@@ -181,7 +177,7 @@ services:
   # Idempotent: if the admin already changed their password (auth with the
   # configured value fails), the script exits cleanly without touching anything.
   keycloak-init:
-    image: alpine:latest
+    image: alpine:3.22
     container_name: stargate-keycloak-init
     depends_on:
       keycloak:
@@ -198,7 +194,7 @@ services:
   # Generates /config/apisix/generated/apisix.yaml from the template by
   # substituting KEYCLOAK_APISIX_CLIENT_SECRET with envsubst.
   apisix-init:
-    image: alpine:latest
+    image: alpine:3.22
     container_name: stargate-apisix-init
     volumes:
       - ./config/apisix/apisix.yaml.template:/templates/apisix.yaml.template:ro
@@ -654,7 +650,7 @@ services:
   # ===================
 
   node-exporter:
-    image: prom/node-exporter:latest
+    image: prom/node-exporter:v1.11.1
     container_name: stargate-node-exporter
     restart: unless-stopped
     volumes:
@@ -677,7 +673,7 @@ services:
 
   # Collects app versions from /liveness endpoints for node-exporter
   version-collector:
-    image: alpine:latest
+    image: alpine:3.22
     container_name: stargate-version-collector
     restart: unless-stopped
     depends_on:
@@ -705,6 +701,31 @@ services:
   # ===================
   # Stalwart MTA (replaces postfixconf)
   # ===================
+
+  clamav:
+    image: clamav/clamav:${CLAMAV_VERSION:-1.4}
+    container_name: stargate-clamav
+    restart: unless-stopped
+    environment:
+      # Start clamav-milter (disabled by default in this image).
+      CLAMAV_NO_MILTERD: "false"
+    volumes:
+      # Persist the virus signature DB so it is not re-downloaded on every restart (freshclam keeps it current in the background).
+      - clamav_data:/var/lib/clamav
+      - ./config/clamav/clamav-milter.conf:/etc/clamav/clamav-milter.conf:ro
+    mem_limit: 2g
+    healthcheck:
+      # clamdcheck.sh pings clamd; only healthy once the signature DB is loaded.
+      test: ["CMD", "clamdcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      # First boot downloads the full signature DB before clamd accepts pings.
+      start_period: 300s
+    networks:
+      - stargate-network
+    labels:
+      - autoheal=true
 
   stalwart:
     image: stalwartlabs/stalwart:v0.16
@@ -748,10 +769,14 @@ services:
     depends_on:
       stalwart:
         condition: service_healthy
+      clamav:
+        condition: service_healthy
     environment:
       STALWART_URL: "http://stalwart:8080"
       STALWART_RECOVERY_ADMIN: "admin:${STALWART_ADMIN_PASSWORD}"
       MTACONF_SVC_PASSWORD: "${MTACONF_SVC_PASSWORD}"
+      CLAMAV_MILTER_HOST: "clamav"
+      CLAMAV_MILTER_PORT: "7357"
     networks:
       - stargate-network
 
@@ -890,6 +915,7 @@ volumes:
   vault_data:
   minio_data:
   stalwart_data:
+  clamav_data:
   loki_data:
   alloy_data:
   textfile_collector:

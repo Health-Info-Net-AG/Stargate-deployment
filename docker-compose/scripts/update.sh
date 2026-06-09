@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -eo pipefail
 
 # ==============================================================================
 # Stargate Update Script
@@ -22,6 +22,7 @@ ENV_FILE="$PROJECT_DIR/.env"
 
 # Source install.sh for shared functions (load_customer_config, generate_env_file, etc.)
 STARGATE_SOURCE_ONLY=1 source "$SCRIPT_DIR/install.sh"
+. "$SCRIPT_DIR/lib/env.sh"
 
 # Parse arguments
 ENV_ONLY=false
@@ -54,7 +55,7 @@ echo ""
 # Preserve VAULT_TOKEN from current .env (tied to Vault unseal state)
 EXISTING_VAULT_TOKEN=""
 if [ -f "$ENV_FILE" ]; then
-  EXISTING_VAULT_TOKEN=$(grep '^VAULT_TOKEN=' "$ENV_FILE" | cut -d= -f2- | tr -d '"' || true)
+  EXISTING_VAULT_TOKEN=$(read_env_var VAULT_TOKEN "$ENV_FILE")
 fi
 
 # Fall back to vault-keys.json if .env has no token
@@ -81,7 +82,7 @@ generate_env_file
 
 # Restore VAULT_TOKEN (generate_env_file writes it blank)
 if [ -n "$EXISTING_VAULT_TOKEN" ]; then
-  sed -i "s|^VAULT_TOKEN=.*|VAULT_TOKEN=$EXISTING_VAULT_TOKEN|" "$ENV_FILE"
+  sed -i "s|^VAULT_TOKEN=.*|VAULT_TOKEN=\"$EXISTING_VAULT_TOKEN\"|" "$ENV_FILE"
   echo "Preserved VAULT_TOKEN from previous .env"
   echo ""
 fi
@@ -104,7 +105,7 @@ docker compose up -d
 # Handle Dozzle enable/disable and credential updates
 update_dozzle() {
   local dozzle_enabled
-  dozzle_enabled=$(grep -m1 '^DOZZLE_ENABLED=' "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d '"' | tr -d "'" || true)
+  dozzle_enabled=$(read_env_var DOZZLE_ENABLED "$CONFIG_FILE")
 
   local dozzle_running
   dozzle_running=$(docker compose --profile dozzle ps --format '{{.Name}}' 2>/dev/null | grep -q stargate-dozzle && echo "true" || echo "false")
@@ -120,12 +121,12 @@ update_dozzle() {
 
   # Dozzle is enabled - regenerate users.yml if credentials changed
   local dozzle_username dozzle_password
-  dozzle_username=$(grep -m1 '^DOZZLE_USERNAME=' "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d '"' | tr -d "'" || true)
-  dozzle_password=$(grep -m1 '^DOZZLE_PASSWORD=' "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d '"' | tr -d "'" || true)
+  dozzle_username=$(read_env_var DOZZLE_USERNAME "$CONFIG_FILE")
+  dozzle_password=$(read_env_var DOZZLE_PASSWORD "$CONFIG_FILE")
   dozzle_username="${dozzle_username:-admin}"
 
   if [ -z "$dozzle_password" ]; then
-    dozzle_password=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 16)
+    dozzle_password=$(generate_password 16)
     if grep -q '^DOZZLE_PASSWORD=' "$CONFIG_FILE"; then
       sed -i "s|^DOZZLE_PASSWORD=.*|DOZZLE_PASSWORD=\"$dozzle_password\"|" "$CONFIG_FILE"
     else

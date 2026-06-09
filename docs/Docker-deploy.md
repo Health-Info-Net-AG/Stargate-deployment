@@ -23,10 +23,10 @@ Please refer to [Recommended Requirements](./index.md#recommended)
 
 Before installation, create and fill in the customer configuration file:
 
-Copy the template:
+Copy the template (use `customer-config-prod.example.sh` for a production host):
 
 ```bash
-cp customer-config.example customer-config.sh
+cp customer-config-preprod.example.sh customer-config.sh
 ```
 
 Edit the config file:
@@ -119,7 +119,7 @@ cd /path/to/stargate
 Create customer config from template and fill in required settings ([see Step 1](#step-1-configure-customer-settings))
 
 ```bash
-cp customer-config.example customer-config.sh
+cp customer-config-preprod.example.sh customer-config.sh   # or customer-config-prod.example.sh
 nano customer-config.sh   # Fill in required settings (see Step 1)
 ```
 
@@ -156,14 +156,14 @@ Performs the nonce/HIN handshake to establish a WireGuard peer connection, and s
 
 ### `/onboarding` — S/MIME certificate
 
-Generates the S/MIME signing key and CSR via the smimekeys service and submits the CSR to the CA over the now-established WireGuard tunnel. Replaces the previous `onboard.sh --regenerate-cert` flow.
+Generates the S/MIME signing key and CSR via the smimekeys service and submits the CSR to the CA over the now-established WireGuard tunnel. (This replaces the previous script-based certificate flow.)
 
 ### `/mail` — Mail domains and relay configuration
 
 Submits hostname and the list of relay domains to the `mtaconf` service over its REST API. The daemon applies the configuration to Stalwart without restarting the container.
 
 !!! tip "Adding or changing domains later"
-    Ee-open the `/mail` page in the dashboard, edit the domain list, and submit. The daemon applies the change at runtime - no script invocation, no `.env` edit, no service restart needed.
+    Re-open the `/mail` page in the dashboard, edit the domain list, and submit. The daemon applies the change at runtime - no script invocation, no `.env` edit, no service restart needed.
 
 ## Step 5: WireGuard Peer Registration
 
@@ -248,21 +248,28 @@ See `Exchange-integration.md` for full step-by-step instructions including scree
 
 ## Subsequent Starts (after reboot)
 
+The installer enables a `stargate` systemd unit, so the stack starts
+automatically on boot. To start it manually:
+
 ```bash
-./scripts/start.sh
+sudo systemctl start stargate
 ```
 
-The start script:
+This runs `start.sh`, which:
 
 1. Starts infrastructure services
 2. Unseals Vault using stored keys
 3. Starts application services
 
+(`./scripts/start.sh` still works directly if you prefer.)
+
 ## Stop Services
 
 ```bash
-./scripts/stop.sh
+sudo systemctl stop stargate
 ```
+
+(or `./scripts/stop.sh` directly)
 
 This stops containers but preserves all data.
 
@@ -311,7 +318,7 @@ After any restart, run `./scripts/start.sh` to unseal Vault. The script uses the
     Delete everything (volumes, secrets, config)
 
     ```bash
-    ./scripts/stop.sh --purge
+    ./scripts/purge.sh
     ```
 
     Or manually remove volumes. The -v flag removes volumes
@@ -340,7 +347,7 @@ After any restart, run `./scripts/start.sh` to unseal Vault. The script uses the
 
 | File | Purpose |
 |------|---------|
-| `customer-config.example` | Template for customer settings (copy to `customer-config.sh`) |
+| `customer-config-preprod.example.sh` / `customer-config-prod.example.sh` | Per-environment templates for customer settings (copy one to `customer-config.sh`) |
 | `customer-config.sh` | Customer-specific settings (created from template, fill in before install) |
 | `.env` | Generated environment file (created by `install.sh`) |
 | `secrets/vault-keys.json` | Vault unseal keys and root token (back up securely!) |

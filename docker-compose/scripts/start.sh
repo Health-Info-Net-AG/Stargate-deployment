@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
@@ -7,6 +7,8 @@ SECRETS_DIR="$PROJECT_DIR/secrets"
 KEYS_FILE="$SECRETS_DIR/vault-keys.json"
 ENV_FILE="$PROJECT_DIR/.env"
 CONFIG_FILE="$PROJECT_DIR/customer-config.sh"
+
+. "$SCRIPT_DIR/lib/env.sh"
 
 cd "$PROJECT_DIR"
 
@@ -31,7 +33,7 @@ fi
 
 if ! command -v jq &> /dev/null; then
   echo "ERROR: jq is not installed."
-  echo "Please install jq: sudo apt install jq"
+  echo "Please install jq (e.g. 'sudo dnf install jq' or 'sudo apt install jq')."
   exit 1
 fi
 
@@ -39,9 +41,9 @@ fi
 ROOT_TOKEN=$(jq -r '.root_token' "$KEYS_FILE")
 if grep -q "^VAULT_TOKEN=" "$ENV_FILE" 2>/dev/null; then
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' "s/^VAULT_TOKEN=.*/VAULT_TOKEN=$ROOT_TOKEN/" "$ENV_FILE"
+    sed -i '' "s/^VAULT_TOKEN=.*/VAULT_TOKEN=\"$ROOT_TOKEN\"/" "$ENV_FILE"
   else
-    sed -i "s/^VAULT_TOKEN=.*/VAULT_TOKEN=$ROOT_TOKEN/" "$ENV_FILE"
+    sed -i "s/^VAULT_TOKEN=.*/VAULT_TOKEN=\"$ROOT_TOKEN\"/" "$ENV_FILE"
   fi
 fi
 
@@ -70,7 +72,7 @@ docker compose up -d
 
 # Start Dozzle if enabled
 if [ -f "$CONFIG_FILE" ]; then
-  DOZZLE_ENABLED_VALUE=$(grep -m1 '^DOZZLE_ENABLED=' "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d '"' | tr -d "'")
+  DOZZLE_ENABLED_VALUE=$(read_env_var DOZZLE_ENABLED "$CONFIG_FILE")
   if [ "$DOZZLE_ENABLED_VALUE" = "true" ]; then
     echo "Starting Dozzle log viewer..."
     docker compose --profile dozzle up -d
@@ -93,7 +95,4 @@ echo "  smimekeys-client:  http://localhost:8081"
 echo "  policy:            http://localhost:8082"
 echo "  irisagent:         http://localhost:8083"
 echo "  mxengine:          http://localhost:8084"
-echo ""
-echo "  Vault UI:          http://localhost:8200"
-echo "  MinIO Console:     http://localhost:9001"
 echo ""

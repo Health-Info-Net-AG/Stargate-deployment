@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -eo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 SECRETS_DIR="$PROJECT_DIR/secrets"
@@ -7,90 +7,19 @@ KEYS_FILE="$SECRETS_DIR/vault-keys.json"
 ENV_FILE="$PROJECT_DIR/.env"
 CONFIG_FILE="$PROJECT_DIR/customer-config.sh"
 
-# Determine Linux distribution:
-if [ -f /etc/os-release ]; then
-	DIST_ID=$(grep ^ID= /etc/os-release |cut -f2 -d=|sed s/\"//g)
-else
-	echo "File /etc/os-release not found, cannot determine Linux distribution."
-	exit 1
-fi
+# Shared helpers (use SCRIPT_DIR/PROJECT_DIR defined above).
+. "$SCRIPT_DIR/lib/systemd.sh"
+. "$SCRIPT_DIR/lib/docker.sh"
+. "$SCRIPT_DIR/lib/env.sh"
 
-if [[ $DIST_ID == debian || $DIST_ID == ubuntu || $DIST_ID == linuxmint || $DIST_ID == kali  ]] ; then
-	PKGMGR=apt
-else
-	PKGMGR=dnf
-fi
+# install_docker() is provided by lib/docker.sh (sourced above).
+# NOTE: the installer's prologue (distro detection, banner, already-installed
+# check) lives in the "Main Installation" section below, AFTER the
+# STARGATE_SOURCE_ONLY guard. This lets other scripts (e.g. update.sh) source
+# this file purely for its functions without running the installer or exiting
+# early when an installation already exists.
 
-cd "$PROJECT_DIR"
-
-echo "============================================"
-echo "  Stargate Installation"
-echo "============================================"
-echo ""
-
-# Check if already installed
-if [ -f "$KEYS_FILE" ]; then
-  echo "ERROR: Installation already completed."
-  echo "Vault keys found at: $KEYS_FILE"
-  echo ""
-  echo "To start services, use: ./scripts/start.sh"
-  echo "To reinstall, first run: ./scripts/purge.sh"
-  exit 1
-fi
-
-install_docker() {
-  echo "Installing Docker from official repository..."
-  if [[ $PKGMGR == apt ]] ; then
-	  sudo $PKGMGR update -y && sudo $PKGMGR upgrade -y
-	  sudo $PKGMGR remove -y docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc 2>/dev/null || true
-	  sudo $PKGMGR install -y ca-certificates curl
-	  # Add Docker's official GPG key
-	  sudo install -m 0755 -d /etc/apt/keyrings
-	  sudo curl -fsSL https://download.docker.com/linux/$DIST_ID/gpg -o /etc/apt/keyrings/docker.asc
-	  sudo chmod a+r /etc/apt/keyrings/docker.asc
-	  # Add the repository
-	    echo \
-		    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/$DIST_ID \
-		    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-		    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-	  sudo $PKGMGR update -y
-  else
-	  sudo $PKGMGR update -y
-	  sudo $PKGMGR remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine podman runc
-	  sudo rpm --import https://download.docker.com/linux/rhel/gpg
-	  sudo $PKGMGR -y install dnf-plugins-core
-	  sudo $PKGMGR config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
-  fi
-  # Install Docker
-  sudo $PKGMGR install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin jq
-  echo "Docker installed successfully!"
-  sudo systemctl enable --now docker
-  docker --version
-  docker compose version
-}
-
-check_dependencies() {
-  local missing=()
-
-  if ! command -v docker &> /dev/null; then
-    missing+=("docker")
-  fi
-
-  if ! docker compose version &> /dev/null 2>&1; then
-    missing+=("docker-compose-plugin")
-  fi
-
-  if ! command -v jq &> /dev/null; then
-    missing+=("jq")
-  fi
-
-  if [ ${#missing[@]} -gt 0 ]; then
-    echo "Missing dependencies: ${missing[*]}"
-    echo ""
-    echo "Installing Docker and dependencies..."
-    install_docker
-  fi
-}
+# check_dependencies() is provided by lib/docker.sh (sourced above).
 
 # Function to update .env file with vault token
 update_env_token() {
@@ -106,31 +35,28 @@ update_env_token() {
 # Generate a random password
 generate_password() {
   local length=${1:-24}
-  tr -dc 'A-Za-z0-9' < /dev/urandom | head -c "$length"
+  # openssl (already required by this script) gives finite CSPRNG output, so
+  # unlike `tr < /dev/urandom | head` there is no early-closed pipe and no
+  # "tr: write error: Broken pipe" under systemd/rc.local. Encode twice the
+  # bytes we need, keep only alphanumerics, and trim to length.
+  local random
+  random=$(openssl rand -base64 "$((length * 2))" | LC_ALL=C tr -dc 'A-Za-z0-9')
+  printf '%s' "${random:0:length}"
 }
 
-# Generate UUID v7 (time-ordered UUID)
-# Format: tttttttt-tttt-7xxx-yxxx-xxxxxxxxxxxx
-# where t=timestamp(ms), 7=version, y=variant(8-b), x=random
-generate_uuid7() {
-  # Get current timestamp in milliseconds
-  local ts_ms=$(date +%s%3N)
-  # Convert to hex (48 bits = 12 hex chars)
-  local ts_hex=$(printf '%012x' "$ts_ms")
-  # Generate random bytes (need 10 bytes = 20 hex chars) using od (more portable than xxd)
-  local rand=$(head -c 10 /dev/urandom | od -An -tx1 | tr -d ' \n')
-  # Build UUID v7:
-  # Positions: tttttttt-tttt-7rrr-Vrrr-rrrrrrrrrrrr
-  # Extract parts
-  local time_high="${ts_hex:0:8}"
-  local time_mid="${ts_hex:8:4}"
-  local rand_a="${rand:0:3}"
-  local variant_byte=$((0x80 | (0x${rand:3:2} & 0x3f)))
-  local variant_hex=$(printf '%02x' "$variant_byte")
-  local rand_b="${rand:5:2}"
-  local rand_c="${rand:7:12}"
-  # Format: xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx
-  echo "${time_high}-${time_mid}-7${rand_a}-${variant_hex}${rand_b}-${rand_c}"
+# Resolve an auto-generated secret WITHOUT rotating it on re-runs:
+#   1. a value set in customer-config.sh wins;
+#   2. else reuse the value already in .env -- so update.sh (or a re-install)
+#      does NOT regenerate a password the running services and data volumes
+#      still use, which would break Postgres/MinIO/Stalwart auth;
+#   3. else generate a fresh one.
+# Usage: VAR="$(resolve_secret "$VAR" ENV_KEY [length])"
+resolve_secret() {
+  local current="$1" key="$2" len="${3:-24}" existing
+  if [ -n "$current" ]; then printf '%s' "$current"; return; fi
+  existing="$(read_env_var "$key" "$ENV_FILE")"
+  if [ -n "$existing" ]; then printf '%s' "$existing"; return; fi
+  generate_password "$len"
 }
 
 # ==============================================================================
@@ -143,18 +69,19 @@ load_customer_config() {
   echo "============================================"
   echo ""
 
-  # Bootstrap customer-config.sh from the example if it doesn't exist yet,
-  # so a fresh deployment works with zero manual setup. The customer can edit
-  # the file later to override defaults or set optional knobs (LOKI_URL,
-  # OUTBOUND_SMTP_HOST, etc.). Generated values (vault token, IP, etc.) get
-  # written back here as install progresses.
+  # Bootstrap customer-config.sh if it doesn't exist yet, so a fresh install
+  # works with zero manual setup. VM images bake their prod/preprod config at
+  # build time, so this only fires for manual installs -- default to the preprod
+  # template. Generated values (vault token, IP, etc.) get written back here as
+  # install progresses.
   if [ ! -f "$CONFIG_FILE" ]; then
-    echo "customer-config.sh not found, bootstrapping from customer-config.example..."
-    cp "$PROJECT_DIR/customer-config.example" "$CONFIG_FILE"
+    echo "customer-config.sh not found, bootstrapping from customer-config-preprod.example.sh..."
+    cp "$PROJECT_DIR/customer-config-preprod.example.sh" "$CONFIG_FILE"
   fi
 
   # Source the config file
   source "$CONFIG_FILE"
+  chmod 600 "$CONFIG_FILE"  # holds VAULT_TOKEN, WG private key, passwords
 
   # Sensible defaults for identification fields. Customer can override in
   # customer-config.sh; if left empty, derive from the system hostname so
@@ -164,9 +91,9 @@ load_customer_config() {
 
   # Set defaults for optional fields
   POSTGRES_USER="${POSTGRES_USER:-postgres}"
-  POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-$(generate_password)}"
+  POSTGRES_PASSWORD="$(resolve_secret "$POSTGRES_PASSWORD" POSTGRES_PASSWORD)"
   MINIO_ROOT_USER="${MINIO_ROOT_USER:-minioadmin}"
-  MINIO_ROOT_PASSWORD="${MINIO_ROOT_PASSWORD:-$(generate_password)}"
+  MINIO_ROOT_PASSWORD="$(resolve_secret "$MINIO_ROOT_PASSWORD" MINIO_ROOT_PASSWORD)"
   S3_BUCKET_NAME="${S3_BUCKET_NAME:-stargate-bucket}"
 
   SMIMEKEYS_VERSION="${SMIMEKEYS_VERSION:-dev}"
@@ -174,6 +101,8 @@ load_customer_config() {
   IRISAGENT_VERSION="${IRISAGENT_VERSION:-dev}"
   MXENGINE_VERSION="${MXENGINE_VERSION:-dev}"
   DASHBOARD_VERSION="${DASHBOARD_VERSION:-dev}"
+  CLAMAV_VERSION="${CLAMAV_VERSION:-1.4}"
+  DOZZLE_VERSION="${DOZZLE_VERSION:-v10.5.0}"
 
   # Derive WG_LOCAL_IP and MXENGINE_PUBLIC_ADDRESS from SERVER_STATIC_IP
   SERVER_STATIC_IP="${SERVER_STATIC_IP:-}"
@@ -221,17 +150,17 @@ load_customer_config() {
   # provision.sh — they are deliberately not customer-config knobs.
   # The operator's real mail hostname is set later via mtaconf when
   # the dashboard form is submitted.
-  STALWART_ADMIN_PASSWORD="${STALWART_ADMIN_PASSWORD:-$(generate_password)}"
-  MTACONF_SVC_PASSWORD="${MTACONF_SVC_PASSWORD:-$(generate_password)}"
+  STALWART_ADMIN_PASSWORD="$(resolve_secret "$STALWART_ADMIN_PASSWORD" STALWART_ADMIN_PASSWORD)"
+  MTACONF_SVC_PASSWORD="$(resolve_secret "$MTACONF_SVC_PASSWORD" MTACONF_SVC_PASSWORD)"
 
   LOKI_URL="${LOKI_URL:-}"
 
   # Keycloak / APISIX / Dashboard
   KEYCLOAK_ADMIN_USER="${KEYCLOAK_ADMIN_USER:-admin}"
-  KEYCLOAK_ADMIN_PASSWORD="${KEYCLOAK_ADMIN_PASSWORD:-$(generate_password)}"
-  KEYCLOAK_APISIX_CLIENT_SECRET="${KEYCLOAK_APISIX_CLIENT_SECRET:-$(generate_password 32)}"
-  KEYCLOAK_DASHBOARD_CLIENT_SECRET="${KEYCLOAK_DASHBOARD_CLIENT_SECRET:-$(generate_password 32)}"
-  APISIX_ADMIN_KEY="${APISIX_ADMIN_KEY:-$(generate_password 32)}"
+  KEYCLOAK_ADMIN_PASSWORD="$(resolve_secret "$KEYCLOAK_ADMIN_PASSWORD" KEYCLOAK_ADMIN_PASSWORD)"
+  KEYCLOAK_APISIX_CLIENT_SECRET="$(resolve_secret "$KEYCLOAK_APISIX_CLIENT_SECRET" KEYCLOAK_APISIX_CLIENT_SECRET 32)"
+  KEYCLOAK_DASHBOARD_CLIENT_SECRET="$(resolve_secret "$KEYCLOAK_DASHBOARD_CLIENT_SECRET" KEYCLOAK_DASHBOARD_CLIENT_SECRET 32)"
+  APISIX_ADMIN_KEY="$(resolve_secret "$APISIX_ADMIN_KEY" APISIX_ADMIN_KEY 32)"
   DASHBOARD_SHOW_DEV_PAGES="${DASHBOARD_SHOW_DEV_PAGES:-false}"
 
   # WireGuard local configuration
@@ -286,6 +215,8 @@ IRISAGENT_VERSION="$IRISAGENT_VERSION"
 MXENGINE_VERSION="$MXENGINE_VERSION"
 DASHBOARD_VERSION="$DASHBOARD_VERSION"
 MTACONF_VERSION="$MTACONF_VERSION"
+CLAMAV_VERSION="$CLAMAV_VERSION"
+DOZZLE_VERSION="$DOZZLE_VERSION"
 
 # Stalwart MTA
 STALWART_ADMIN_PASSWORD="$STALWART_ADMIN_PASSWORD"
@@ -333,6 +264,7 @@ WG_TRANSPORT_MODE="$WG_TRANSPORT_MODE"
 # WireGuard Private Key (optional - if set, written to Vault for irisagent)
 WG_PRIVATE_KEY="${WG_PRIVATE_KEY:-}"
 EOF
+  chmod 600 "$ENV_FILE"  # holds all generated secrets
 
   echo "Environment file created: $ENV_FILE"
   echo ""
@@ -409,49 +341,7 @@ generate_keycloak_realm() {
   echo ""
 }
 
-# Function to create and enable a systemd service for start/stop
-setup_systemd_service() {
-  local service_name="stargate"
-  local service_file="/etc/systemd/system/${service_name}.service"
-
-  echo ""
-  echo "============================================"
-  echo "  Setting up systemd Service"
-  echo "============================================"
-  echo ""
-
-  cat > "$service_file" << EOF
-[Unit]
-Description=Stargate Deployment
-After=docker.service network-online.target
-Requires=docker.service
-
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-WorkingDirectory=${PROJECT_DIR}
-ExecStart=${SCRIPT_DIR}/start.sh
-ExecStop=${SCRIPT_DIR}/stop.sh
-TimeoutStartSec=300
-TimeoutStopSec=120
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-  chmod 644 "$service_file"
-  chcon -t bin_t "$SCRIPT_DIR"/*.sh 2>/dev/null || true
-  systemctl daemon-reload
-  systemctl enable --now "$service_name"
-
-  echo "systemd service created:  $service_file"
-  echo "Service enabled:          $service_name.service"
-  echo ""
-  echo "  Start:   sudo systemctl start $service_name"
-  echo "  Stop:    sudo systemctl stop $service_name"
-  echo "  Status:  sudo systemctl status $service_name"
-  echo ""
-}
+# setup_systemd_service() is provided by lib/systemd.sh (sourced above).
 
 # Function to setup backup cron job
 setup_backup_cron() {
@@ -537,8 +427,8 @@ save_wireguard_key_to_config() {
     if grep -q '^WG_PRIVATE_KEY=' "$CONFIG_FILE"; then
       sed -i "s|^WG_PRIVATE_KEY=.*|WG_PRIVATE_KEY=\"$WG_KEY\"|" "$CONFIG_FILE"
     else
-      # Add after WireGuard Configuration section header
-      sed -i "/^# Local WireGuard IP address/i WG_PRIVATE_KEY=\"$WG_KEY\"\n" "$CONFIG_FILE"
+      # No WG_PRIVATE_KEY line in the config (unusual) -- append it.
+      echo "WG_PRIVATE_KEY=\"$WG_KEY\"" >> "$CONFIG_FILE"
     fi
     echo "WireGuard private key saved to customer-config.sh"
     echo ""
@@ -625,6 +515,27 @@ setup_dozzle() {
 # executing the installer. Usage: STARGATE_SOURCE_ONLY=1 source install.sh
 if [ "${STARGATE_SOURCE_ONLY:-}" = "1" ]; then
   return 0 2>/dev/null || exit 0
+fi
+
+# Detect distribution / package manager (sets DIST_ID, PKGMGR) -- must run
+# before check_dependencies, which may call install_docker.
+detect_distro
+
+cd "$PROJECT_DIR"
+
+echo "============================================"
+echo "  Stargate Installation"
+echo "============================================"
+echo ""
+
+# Check if already installed
+if [ -f "$KEYS_FILE" ]; then
+  echo "ERROR: Installation already completed."
+  echo "Vault keys found at: $KEYS_FILE"
+  echo ""
+  echo "To start services, use: ./scripts/start.sh"
+  echo "To reinstall, first run: ./scripts/purge.sh"
+  exit 1
 fi
 
 # Check dependencies first
@@ -727,8 +638,11 @@ if [ -f "$KEYS_FILE" ]; then
   # Create and enable systemd service for auto-start on boot
   setup_systemd_service
 
-  # Save WireGuard key to customer-config.sh for persistence
-  save_wireguard_key_to_config
+  # Save WireGuard key to customer-config.sh for persistence.
+  # `|| true`: the key may not be in Vault yet (irisagent still starting); that's
+  # a warning, not fatal -- don't let `set -e` abort the installer before the
+  # completion banner / Dozzle setup.
+  save_wireguard_key_to_config || true
 
   # Setup Dozzle if enabled
   setup_dozzle
@@ -773,10 +687,7 @@ echo "  smimekeys-client:  http://localhost:8081"
 echo "  policy:            http://localhost:8082"
 echo "  irisagent:         http://localhost:8083"
 echo "  mxengine:          http://localhost:8084"
-echo "  mxengine SMTP:     localhost:1587"
 echo ""
-echo "  Vault UI:          http://localhost:8200"
-echo "  MinIO Console:     http://localhost:9001"
 echo "  PostgreSQL:        localhost:5432"
 echo "  Stalwart SMTP:     localhost:25"
 echo ""

@@ -7,6 +7,7 @@
 * **irisagent** - IRIS Agent service (port 8083, WireGuard: 19818/udp, 19818/tcp)
 * **mxengine** - MX Engine service (port 8084, SMTP: 1587)
 * **stalwart** - Stalwart MTA mail server (port 25, 10026)
+* **clamav** - ClamAV antivirus; scans mail at Stalwart's SMTP DATA stage via the milter protocol (port 7357)
 * **mtaconf** - MTA configuration daemon (API: 8080)
 * **dashboard** - Web-based admin UI for onboarding, domain management, and monitoring (port 443)
 * **policy-sync** - Syncs OPA/Rego policies from Git repository to database (runs continuously)
@@ -14,8 +15,8 @@
 ## Infrastructure
 
 * **PostgreSQL** - Database (port 5432)
-* **Vault** - Secrets management (port 8200)
-* **MinIO** - S3-compatible storage (API: 9000, Console: 9001)
+* **Vault** - Secrets management (internal port 8200, not published to the host)
+* **MinIO** - S3-compatible storage (API on host port 9000; console not published to the host)
 * **Keycloak** - Identity provider and OIDC authentication (port 8180)
 * **APISIX** - API gateway with OIDC bearer auth (port 9080)
 * **NATS** - Inter-service messaging (triggers Stalwart reloads from dashboard)

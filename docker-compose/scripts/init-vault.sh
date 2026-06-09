@@ -73,10 +73,6 @@ else
   # Note: Custom root tokens are no longer supported in Vault 1.19+
   # The root token will be auto-generated
   INIT_ARGS="-address=http://vault:8200 -key-shares=5 -key-threshold=3 -format=json"
-  if [ -n "$VAULT_ROOT_TOKEN" ]; then
-    echo "Note: VAULT_ROOT_TOKEN is set but custom root tokens are no longer supported in Vault 1.19+"
-    echo "A new root token will be generated. Update your .env file after initialization."
-  fi
   
   # Initialize Vault with 5 key shares and 3 key threshold
   vault operator init $INIT_ARGS > "$KEYS_FILE"

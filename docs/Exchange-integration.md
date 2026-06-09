@@ -116,7 +116,7 @@ This connector routes outbound mail from Exchange Online to the Stargate relay s
    - Click **"Next"**
 
 !!! note
-    Stargate uses opportunistic TLS (`smtpd_tls_security_level = may`). Selecting "any digital certificate" ensures connectivity even with self-signed certificates.
+    Stargate's MTA (Stalwart) accepts opportunistic TLS on inbound connections. Selecting "any digital certificate" ensures connectivity even with self-signed certificates.
 
 8. **Validation email**: Enter a valid email address for your domain (e.g. `user@<YOUR_DOMAIN>`)
    - Click **"+"**, then click **"Validate"**

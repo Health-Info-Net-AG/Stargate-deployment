@@ -27,6 +27,7 @@ The beta phase will be announced separately. During beta, the system will still 
 * **irisagent** - IRIS Agent service (port 8083, WireGuard: 19818/tcp)
 * **mxengine** - MX Engine service (port 8084, SMTP: 1587)
 * **stalwart** - Stalwart MTA mail server (port 25, 10026)
+* **clamav** - ClamAV antivirus; scans mail at Stalwart's SMTP DATA stage via the milter protocol (internal port 7357)
 * **mtaconf** - MTA configuration daemon (API: 8080)
 * **dashboard** - Web-based admin UI for onboarding, domain management, and monitoring (port 443)
 * **policy-sync** - Syncs OPA/Rego policies from Git repository to database (runs continuously)

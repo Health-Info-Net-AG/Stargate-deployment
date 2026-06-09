@@ -20,7 +20,7 @@ TEMP_FILE="/tmp/docker_logs.tmp"
 LIMIT_MB=20
 LIMIT_BYTES=$((LIMIT_MB * 1024 * 1024))
 
-echo "We will collect logs now with following arguments: ${args[@]}"
+echo "We will collect logs now with following arguments: ${args[*]}"
 
 # Add timestamp when logs were collected, overwrite if file exist
 echo -e "$(date -Ins)\n\n######\n" > "$TEMP_FILE"

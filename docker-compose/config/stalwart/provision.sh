@@ -86,6 +86,34 @@ create_listener() {
     --field "useTls=${tls}"
 }
 
+# Content-filtering scope for the two SMTP listeners ('smtp' :25, 'reinject'
+# :10026). Stalwart's enable/enableSpamFilter take an Expression: yield "true"
+# on a match, else "false". NOTE: 'match' is a Stalwart List, patched as an
+# integer-keyed object ({"0": ...}) and NOT a JSON array -- an array is rejected
+# with `invalidPatch: Invalid value for object property`.
+SMTP_LISTENER_COND="listener == 'smtp' || listener == 'reinject'"
+SMTP_LISTENERS="{\"match\":{\"0\":{\"if\":\"${SMTP_LISTENER_COND}\",\"then\":\"true\"}},\"else\":\"false\"}"
+
+create_milter() {
+  local name="$1" host="$2" port="$3"
+
+  # MtaMilter has no 'name' property; its id is server-assigned. Identify an existing milter by its hostname (the only stable, operator-set key).
+  if cli query MtaMilter 2>/dev/null | grep -Fq "$host"; then
+    log "milter '$name' (${host}) already exists"
+    return 0
+  fi
+
+  log "creating milter: $name (${host}:${port}, DATA stage, both SMTP listeners)"
+  # stages is a Map<MtaStage> ({"<stage>": true}), not a list. The object id is assigned by Stalwart on create -- there is no settable name/id field.
+  cli create MtaMilter \
+    --field "hostname=${host}" \
+    --field "port=${port}" \
+    --field 'stages={"data":true}' \
+    --field "enable=${SMTP_LISTENERS}" \
+    --field "useTls=false" \
+    --field "tempFailOnError=true"
+}
+
 # SMTP inbound (port 25) - receives external mail
 create_listener "smtp" "0.0.0.0:25" "smtp" "false"
 
@@ -114,6 +142,20 @@ if ! cli query Tracer 2>/dev/null | grep -Fq "Stdout"; then
     --field "buffered=false" \
     --field "lossy=false"
 fi
+
+# =============================================================================
+# 2c. Content filtering: anti-virus (ClamAV milter) + anti-spam (built-in)
+# =============================================================================
+# Anti-virus: ClamAV rejects infected mail at SMTP (OnInfected Reject in clamav-milter.conf); tempFailOnError defers mail if ClamAV is down instead of passing it unscanned (fail-closed).
+create_milter "clamav" "${CLAMAV_MILTER_HOST:-clamav}" "${CLAMAV_MILTER_PORT:-7357}"
+
+# Anti-spam: Stalwart's builtin in tag-only mode. scoreReject and scoreDiscard are 0 so the filter never rejects or drops mail, only annotates messages with X-Spam-* headers, you can raise scoreReject for hard rejection.
+log "enabling built-in spam filter (tag-only: scoreReject=0, scoreDiscard=0)"
+cli update SpamSettings singleton --field "enable=true" --field "scoreReject=0" --field "scoreDiscard=0"
+
+# The spam filter engages at the DATA stage, for the SMTP listeners.
+log "enabling spam filter at DATA stage on the SMTP listeners"
+cli update MtaStageData singleton --field "enableSpamFilter=${SMTP_LISTENERS}"
 
 # =============================================================================
 # 3. Ensure the domain exists
