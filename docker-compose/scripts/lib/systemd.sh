@@ -33,7 +33,13 @@ RemainAfterExit=yes
 WorkingDirectory=${PROJECT_DIR}
 ExecStart=${SCRIPT_DIR}/start.sh
 ExecStop=${SCRIPT_DIR}/stop.sh
-TimeoutStartSec=300
+# The first (cold) bring-up is gated by depends_on healthchecks -- notably
+# clamav, whose signature-DB load alone has a 300s start_period -- so the
+# oneshot can legitimately take many minutes. A reboot bypasses this (Docker's
+# restart policy ignores depends_on), but `systemctl start` / a restore goes
+# through the gated `docker compose up -d`. Keep the timeout well above the
+# slowest dependency so it isn't killed mid-bring-up.
+TimeoutStartSec=600
 TimeoutStopSec=120
 
 [Install]
