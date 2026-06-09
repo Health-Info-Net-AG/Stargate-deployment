@@ -402,17 +402,24 @@ echo "Starting PostgreSQL, Vault, MinIO..."
 docker compose up -d postgres vault minio
 
 echo "Waiting for PostgreSQL to be ready..."
-for i in {1..30}; do
-  if docker exec stargate-postgres pg_isready -U "$POSTGRES_USER" > /dev/null 2>&1; then
+# Probe over TCP (-h 127.0.0.1), NOT the Unix socket. On a fresh data volume the
+# postgres image first runs a temporary socket-only server to execute the init
+# scripts, then shuts it down and starts the real server on TCP. A socket
+# pg_isready answers "ready" during that init phase, so the restore would race
+# the init -> real-server restart. Waiting for TCP avoids that race.
+pg_ready=false
+for i in {1..60}; do
+  if docker exec stargate-postgres pg_isready -h 127.0.0.1 -U "$POSTGRES_USER" > /dev/null 2>&1; then
     echo "  ✓ PostgreSQL is ready"
+    pg_ready=true
     break
   fi
-  echo "  Waiting... ($i/30)"
+  echo "  Waiting... ($i/60)"
   sleep 2
 done
 
-if ! docker exec stargate-postgres pg_isready -U "$POSTGRES_USER" > /dev/null 2>&1; then
-  echo "ERROR: PostgreSQL failed to start"
+if [ "$pg_ready" != true ]; then
+  echo "ERROR: PostgreSQL did not become ready (TCP) in time"
   exit 1
 fi
 echo ""
@@ -426,9 +433,23 @@ echo "============================================"
 echo ""
 
 echo "Restoring full database dump..."
-docker exec -i stargate-postgres psql -U "$POSTGRES_USER" -d postgres < "$BACKUP_CONTENT/database/full_dump.sql" 2>&1 | grep -v "already exists" | grep -v "^CREATE" | head -20 || true
-
-echo "  ✓ Database restored"
+# Capture psql's real exit status (a dropped connection -> non-zero) rather than
+# masking it behind the noise filter, so a mid-restore failure (server restart /
+# OOM) is reported here instead of as cryptic "database is starting up" errors
+# in the verify step below. No ON_ERROR_STOP: pg_dumpall's CREATE DATABASE lines
+# harmlessly conflict with the init-script databases ("already exists").
+if docker exec -i stargate-postgres psql -U "$POSTGRES_USER" -d postgres \
+     < "$BACKUP_CONTENT/database/full_dump.sql" > /tmp/stargate-restore.log 2>&1; then
+  grep -vE 'already exists|^CREATE' /tmp/stargate-restore.log | head -20 || true
+  echo "  ✓ Database restore completed"
+  rm -f /tmp/stargate-restore.log
+else
+  echo "  ✗ ERROR: PostgreSQL restore failed -- the server likely restarted or"
+  echo "    ran out of memory mid-restore. Last lines of output:"
+  tail -20 /tmp/stargate-restore.log
+  rm -f /tmp/stargate-restore.log
+  exit 1
+fi
 echo ""
 
 # Verify databases exist
