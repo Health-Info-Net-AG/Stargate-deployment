@@ -186,24 +186,30 @@ echo ""
 # ------------------------------------------------------------------
 echo "--- Stalwart MTA ---"
 
-# Check management API reachable
-if docker exec stargate-stalwart curl -sf http://127.0.0.1:8080/healthz >/dev/null 2>&1; then
+# Check management API reachable (matches the container's own healthcheck path)
+if docker exec stargate-stalwart curl -sf http://127.0.0.1:8080/healthz/live >/dev/null 2>&1; then
   pass "Stalwart management API reachable"
 else
   fail "Stalwart management API unreachable"
 fi
 
-# Check port 25 is listening
-port25=$(docker exec stargate-stalwart sh -c 'ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null' | grep ":25 ")
-if [ -n "$port25" ]; then
+# Check the SMTP listeners. The stalwart image has no ss/netstat, so read
+# /proc/net/tcp{,6} inside the container (always present) and look for a socket
+# in LISTEN state (st=0A) on the port in hex. 25=0x0019, 10026=0x272A.
+stalwart_listening() {  # $1 = decimal port
+  local hexport
+  hexport=$(printf ':%04X' "$1")
+  docker exec stargate-stalwart sh -c 'cat /proc/net/tcp /proc/net/tcp6 2>/dev/null' \
+    | awk '$4 == "0A" { print $2 }' | grep -qi "$hexport\$"
+}
+
+if stalwart_listening 25; then
   pass "Port 25 listening"
 else
   fail "Port 25 not listening (provision may not have run yet)"
 fi
 
-# Check reinjection port 10026
-port10026=$(docker exec stargate-stalwart sh -c 'ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null' | grep ":10026 ")
-if [ -n "$port10026" ]; then
+if stalwart_listening 10026; then
   pass "Port 10026 (reinjection) listening"
 else
   fail "Port 10026 (reinjection) not listening (provision may not have run yet)"
