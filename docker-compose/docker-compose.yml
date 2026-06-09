@@ -713,7 +713,7 @@ services:
       # Persist the virus signature DB so it is not re-downloaded on every restart (freshclam keeps it current in the background).
       - clamav_data:/var/lib/clamav
       - ./config/clamav/clamav-milter.conf:/etc/clamav/clamav-milter.conf:ro
-    mem_limit: 2g
+    mem_limit: 3g
     healthcheck:
       # clamdcheck.sh pings clamd; only healthy once the signature DB is loaded.
       test: ["CMD", "clamdcheck.sh"]
@@ -770,7 +770,7 @@ services:
       stalwart:
         condition: service_healthy
       clamav:
-        condition: service_healthy
+        condition: service_started
     environment:
       STALWART_URL: "http://stalwart:8080"
       STALWART_RECOVERY_ADMIN: "admin:${STALWART_ADMIN_PASSWORD}"

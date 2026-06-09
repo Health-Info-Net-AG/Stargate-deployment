@@ -11,6 +11,7 @@ CONFIG_FILE="$PROJECT_DIR/customer-config.sh"
 # Shared helpers (use SCRIPT_DIR/PROJECT_DIR defined above).
 . "$SCRIPT_DIR/lib/systemd.sh"
 . "$SCRIPT_DIR/lib/docker.sh"
+. "$SCRIPT_DIR/lib/env.sh"
 
 # Detect distribution / package manager (sets DIST_ID, PKGMGR).
 detect_distro
@@ -289,9 +290,20 @@ WG_LOCAL_IP="${WG_LOCAL_IP:-10.0.0.1}"
 WG_INTERFACE_PORT="${WG_INTERFACE_PORT:-19818}"
 WG_PRIVATE_KEY="${WG_PRIVATE_KEY:-}"
 
-# If we have the old .env, try to preserve generated passwords
-if [ -f "$BACKUP_CONTENT/config/.env" ]; then
-  source "$BACKUP_CONTENT/config/.env"
+# Preserve the auto-generated credentials from the backed-up .env. They live
+# only in .env (not customer-config.sh), so they must come from the backup to
+# match the restored data volumes. Read them with read_env_var rather than
+# `source`-ing the .env: a Compose .env may hold unquoted values (e.g. a
+# CUSTOMER_NAME with a space) that `source` would execute as commands and
+# abort the restore under `set -eo pipefail`.
+BACKUP_ENV="$BACKUP_CONTENT/config/.env"
+if [ -f "$BACKUP_ENV" ]; then
+  for _k in POSTGRES_USER POSTGRES_PASSWORD MINIO_ROOT_USER MINIO_ROOT_PASSWORD \
+            STALWART_ADMIN_PASSWORD MTACONF_SVC_PASSWORD KEYCLOAK_ADMIN_PASSWORD \
+            KEYCLOAK_APISIX_CLIENT_SECRET KEYCLOAK_DASHBOARD_CLIENT_SECRET APISIX_ADMIN_KEY; do
+    _v=$(read_env_var "$_k" "$BACKUP_ENV")
+    if [ -n "$_v" ]; then printf -v "$_k" '%s' "$_v"; fi
+  done
   echo "  ✓ Loaded credentials from backup .env"
 fi
 

@@ -116,7 +116,7 @@ load_customer_config() {
   # This can be a private IP if the VM is behind NAT - that's fine.
   if [ -z "$SERVER_STATIC_IP" ]; then
     SERVER_STATIC_IP=$(ip -4 route get 1.1.1.1 2>/dev/null \
-      | awk '{for(i=1;i<=NF;i++) if($i=="src"){print $(i+1); exit}}')
+      | awk '{for(i=1;i<=NF;i++) if($i=="src"){print $(i+1); exit}}' || true)
     if [ -n "$SERVER_STATIC_IP" ]; then
       echo "Auto-detected SERVER_STATIC_IP=$SERVER_STATIC_IP"
       # Persist back to customer-config.sh so subsequent runs are idempotent.
@@ -418,8 +418,9 @@ save_wireguard_key_to_config() {
     return 1
   fi
 
-  # Get the public key from irisagent logs
-  WG_PUBKEY=$(docker logs stargate-irisagent 2>&1 | grep "wireguard public key:" | head -1 | sed 's/.*wireguard public key: //' | tr -d '[:space:]')
+  # Get the public key from irisagent logs (display-only). `|| true`: grep exits
+  # non-zero if the line isn't present yet, which would abort under pipefail.
+  WG_PUBKEY=$(docker logs stargate-irisagent 2>&1 | grep "wireguard public key:" | head -1 | sed 's/.*wireguard public key: //' | tr -d '[:space:]' || true)
 
   # Check if WG_PRIVATE_KEY is already set in customer-config.sh
   if grep -q '^WG_PRIVATE_KEY=""' "$CONFIG_FILE" || grep -q "^WG_PRIVATE_KEY=\$" "$CONFIG_FILE" || ! grep -q '^WG_PRIVATE_KEY=' "$CONFIG_FILE"; then

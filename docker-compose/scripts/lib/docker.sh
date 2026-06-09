@@ -63,7 +63,7 @@ check_dependencies() {
     missing+=("docker")
   fi
 
-  if ! docker compose version &> /dev/null 2>&1; then
+  if ! docker compose version &> /dev/null; then
     missing+=("docker-compose-plugin")
   fi
 
