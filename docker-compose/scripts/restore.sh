@@ -278,15 +278,25 @@ KEYCLOAK_ADMIN_PASSWORD="${KEYCLOAK_ADMIN_PASSWORD:-}"
 KEYCLOAK_APISIX_CLIENT_SECRET="${KEYCLOAK_APISIX_CLIENT_SECRET:-}"
 KEYCLOAK_DASHBOARD_CLIENT_SECRET="${KEYCLOAK_DASHBOARD_CLIENT_SECRET:-}"
 APISIX_ADMIN_KEY="${APISIX_ADMIN_KEY:-}"
-KEYCLOAK_PUBLIC_URL="${KEYCLOAK_PUBLIC_URL:-}"
-DASHBOARD_PUBLIC_URL="${DASHBOARD_PUBLIC_URL:-}"
+# IP-derived public URLs (and WG_LOCAL_IP below) live only in .env -- they are
+# empty in customer-config.sh and derived at install time. Restore must
+# re-derive them from SERVER_STATIC_IP, or Keycloak/dashboard/mxengine fall back
+# to localhost. Mirror install.sh: use the configured IP, else auto-detect.
+SERVER_STATIC_IP="${SERVER_STATIC_IP:-}"
+if [ -z "$SERVER_STATIC_IP" ]; then
+  SERVER_STATIC_IP=$(ip -4 route get 1.1.1.1 2>/dev/null \
+    | awk '{for(i=1;i<=NF;i++) if($i=="src"){print $(i+1); exit}}' || true)
+fi
+KEYCLOAK_PUBLIC_URL="${KEYCLOAK_PUBLIC_URL:-https://${SERVER_STATIC_IP}:8180}"
+DASHBOARD_PUBLIC_URL="${DASHBOARD_PUBLIC_URL:-https://${SERVER_STATIC_IP}}"
+MXENGINE_PUBLIC_ADDRESS="${MXENGINE_PUBLIC_ADDRESS:-http://${SERVER_STATIC_IP}:8084}"
 DASHBOARD_SHOW_DEV_PAGES="${DASHBOARD_SHOW_DEV_PAGES:-false}"
 DASHBOARD_ROOT_URL="${DASHBOARD_ROOT_URL:-}"
 DASHBOARD_ROOT_DOMAIN="${DASHBOARD_ROOT_DOMAIN:-}"
 DEPLOYMENT_NAME="${DEPLOYMENT_NAME:-stargate}"
 
 # WireGuard local configuration
-WG_LOCAL_IP="${WG_LOCAL_IP:-10.0.0.1}"
+WG_LOCAL_IP="${WG_LOCAL_IP:-$SERVER_STATIC_IP}"
 WG_INTERFACE_PORT="${WG_INTERFACE_PORT:-19818}"
 WG_PRIVATE_KEY="${WG_PRIVATE_KEY:-}"
 
