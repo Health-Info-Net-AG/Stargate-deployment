@@ -3,7 +3,7 @@
   "images": {
     "SMIMEKEYS_VERSION": "v0.0.19",
     "POLICY_VERSION": "v0.0.7",
-    "IRISAGENT_VERSION": "v0.0.6",
+    "IRISAGENT_VERSION": "v0.0.5",
     "MXENGINE_VERSION": "v0.0.45-test",
     "POLICY_SYNC_VERSION": "dev",
     "DASHBOARD_VERSION": "v0.0.16",
