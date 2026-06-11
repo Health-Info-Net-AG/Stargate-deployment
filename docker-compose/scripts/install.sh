@@ -156,6 +156,9 @@ load_customer_config() {
 
   LOKI_URL="${LOKI_URL:-}"
 
+  # Stargate deployment release tag — auto-detected from git on this repo
+  APP_VERSION="$(detect_app_version "$PROJECT_DIR")"
+
   # Keycloak / APISIX / Dashboard
   KEYCLOAK_ADMIN_USER="${KEYCLOAK_ADMIN_USER:-admin}"
   KEYCLOAK_ADMIN_PASSWORD="$(resolve_secret "$KEYCLOAK_ADMIN_PASSWORD" KEYCLOAK_ADMIN_PASSWORD)"
@@ -256,6 +259,9 @@ DASHBOARD_PUBLIC_URL="$DASHBOARD_PUBLIC_URL"
 DASHBOARD_SHOW_DEV_PAGES="$DASHBOARD_SHOW_DEV_PAGES"
 DASHBOARD_ROOT_URL="$DASHBOARD_ROOT_URL"
 DASHBOARD_ROOT_DOMAIN="$DASHBOARD_ROOT_DOMAIN"
+
+# Stargate deployment release tag (refreshed by start.sh on every boot)
+APP_VERSION="$APP_VERSION"
 
 # WireGuard Local Configuration
 WG_LOCAL_IP="$WG_LOCAL_IP"

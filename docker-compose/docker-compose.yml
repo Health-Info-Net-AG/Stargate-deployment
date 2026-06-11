@@ -115,7 +115,11 @@ services:
     ports:
       - "8333:8333"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9333/cluster/status || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:9333/cluster/status || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -610,6 +614,9 @@ services:
       SHOW_DEV_PAGES: "${DASHBOARD_SHOW_DEV_PAGES:-false}"
       IS_ROOT: "false"
 
+      # Stargate deployment release tag (server-side; read at runtime).
+      APP_VERSION: "${APP_VERSION:-unknown}"
+
       # Base URL used by the auth library to construct the OAuth redirect_uri.
       # Must match the URL the browser uses to reach the dashboard.
       NEXTAUTH_URL: "${DASHBOARD_PUBLIC_URL:-https://localhost}"
@@ -640,6 +647,9 @@ services:
       #monitoring
       LOKI_URL: "http://loki:3100"
       LOG_LEVEL: "info"
+
+      # version
+      VM_VERSION: "${git describe --tags --abbrev=0}"
 
     networks:
       - stargate-network

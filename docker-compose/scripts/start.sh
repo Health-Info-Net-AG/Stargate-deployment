@@ -12,8 +12,13 @@ CONFIG_FILE="$PROJECT_DIR/customer-config.sh"
 
 cd "$PROJECT_DIR"
 
+# Refresh APP_VERSION every start so a `git pull` to a newer tag is reflected
+# in the dashboard without re-running install.sh. Exported so docker compose
+# substitutes it ahead of any stale value in .env.
+export APP_VERSION="$(detect_app_version "$PROJECT_DIR")"
+
 echo "============================================"
-echo "  Stargate - Starting Services"
+echo "  Stargate - Starting Services ($APP_VERSION)"
 echo "============================================"
 echo ""
 
