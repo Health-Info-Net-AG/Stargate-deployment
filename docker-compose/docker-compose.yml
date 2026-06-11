@@ -925,6 +925,32 @@ services:
     labels:
       - autoheal=true
 
+  # Ops Agent - executes infrastructure commands (updates, restarts) from dashboard via NATS
+  ops-agent:
+    image: registry.vereign.io/svdh/stargate-ops:${OPS_AGENT_VERSION:-dev}
+    container_name: stargate-ops-agent
+    restart: unless-stopped
+    depends_on:
+      nats:
+        condition: service_healthy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/stargate
+    environment:
+      NATS_URL: "nats://nats:4222"
+      COMPOSE_PROJECT_DIR: "/stargate"
+      LOG_LEVEL: "info"
+    networks:
+      - stargate-network
+    healthcheck:
+      test: ["CMD-SHELL", "test -S /var/run/docker.sock"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    labels:
+      - autoheal=true
+
   # Dozzle - Real-time log viewer for all containers
   # Access at: http://localhost:8090
   dozzle:

@@ -87,6 +87,7 @@ MXENGINE_VERSION="v0.0.45"
 POLICY_SYNC_VERSION="latest"
 DASHBOARD_VERSION="v0.0.16"
 MTACONF_VERSION="v0.0.5"
+OPS_AGENT_VERSION="dev"
 
 
 # ==============================================================================

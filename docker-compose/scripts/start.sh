@@ -66,8 +66,7 @@ while [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]; do
 
   # Check if Vault container is running and responsive
   # vault status exits 0=unsealed, 1=error, 2=sealed
-  docker exec stargate-vault vault status > /dev/null 2>&1
-  STATUS_EXIT=$?
+  STATUS_EXIT=$(docker exec stargate-vault vault status > /dev/null 2>&1; echo $?)
   if [ "$STATUS_EXIT" -eq 1 ] || [ "$STATUS_EXIT" -eq 125 ] || [ "$STATUS_EXIT" -eq 126 ] || [ "$STATUS_EXIT" -eq 127 ]; then
     echo "  Vault not ready yet (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
     sleep 2
