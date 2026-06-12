@@ -648,9 +648,6 @@ services:
       LOKI_URL: "http://loki:3100"
       LOG_LEVEL: "info"
 
-      # version
-      VM_VERSION: "${git describe --tags --abbrev=0}"
-
     networks:
       - stargate-network
     read_only: true
