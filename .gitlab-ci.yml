@@ -9,6 +9,7 @@ workflow:
 
 stages:
   - build
+  - manifest
   - release
 
 execute_script:
@@ -26,10 +27,41 @@ execute_script:
 
 # Milestone release for manually pushed/UI-created semver tags (v1.0.0).
 # Rolls up changes since the previous semver tag.
+generate_manifest:
+  stage: manifest
+  tags:
+    - linux
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - |
+      CONFIG="docker-compose/customer-config-prod.example.sh"
+      KEYS="SMIMEKEYS_VERSION POLICY_VERSION IRISAGENT_VERSION MXENGINE_VERSION POLICY_SYNC_VERSION DASHBOARD_VERSION MTACONF_VERSION"
+      echo "{" > manifest.json
+      echo "  \"version\": \"${CI_COMMIT_TAG}\"," >> manifest.json
+      echo "  \"images\": {" >> manifest.json
+      FIRST=true
+      for KEY in $KEYS; do
+        VALUE=$(grep "^${KEY}=" "$CONFIG" | tail -1 | cut -d'"' -f2)
+        if [ -n "$VALUE" ]; then
+          if [ "$FIRST" = true ]; then FIRST=false; else echo "," >> manifest.json; fi
+          printf "    \"%s\": \"%s\"" "$KEY" "$VALUE" >> manifest.json
+        fi
+      done
+      echo "" >> manifest.json
+      echo "  }" >> manifest.json
+      echo "}" >> manifest.json
+    - cat manifest.json
+  artifacts:
+    paths:
+      - manifest.json
+
 release_milestone:
   stage: release
   tags:
     - linux
+  needs:
+    - generate_manifest
   variables:
     GIT_DEPTH: 0
   rules:
@@ -51,3 +83,15 @@ release_milestone:
         409) echo "Release ${CI_COMMIT_TAG} already exists, skipping."; cat response.json ;;
         *)   echo "Release creation failed with HTTP ${HTTP_STATUS}:"; cat response.json; exit 1 ;;
       esac
+    - |
+      echo "Uploading manifest.json as release asset..."
+      curl --silent --show-error \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --upload-file manifest.json \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/manifest/${CI_COMMIT_TAG}/manifest.json"
+      curl --silent --show-error \
+        --request POST \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --data "name=manifest.json" \
+        --data "url=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/manifest/${CI_COMMIT_TAG}/manifest.json" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"
