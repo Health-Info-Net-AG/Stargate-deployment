@@ -11,13 +11,7 @@
 # Create and enable the 'stargate' systemd unit so the stack auto-starts on boot
 # and can be managed with `systemctl {start,stop,status,restart} stargate`.
 setup_systemd_service() {
-  local service_name="${1:-stargate}"
-  # An empty unit name makes `systemctl enable` print the cryptic
-  # "Too few arguments." Refuse it here with an actionable message instead.
-  if [ -z "$service_name" ]; then
-    echo "ERROR: setup_systemd_service called with an empty unit name" >&2
-    return 1
-  fi
+  local service_name="stargate"
   local service_file="/etc/systemd/system/${service_name}.service"
 
   echo ""

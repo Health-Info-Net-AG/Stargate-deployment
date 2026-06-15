@@ -54,6 +54,12 @@ if [ "$confirmation" = "DELETE ALL DATA" ]; then
   rm -rf "$PROJECT_DIR/dozzle"
 
   echo ""
+  echo "Removing backup cron job..."
+  # Mirrors setup_backup_cron() in install.sh, which installs this /etc/cron.d
+  # drop-in. crond drops the schedule as soon as the file is gone -- no reload.
+  sudo rm -f /etc/cron.d/stargate-backup
+
+  echo ""
   echo "Removing systemd service..."
   sudo systemctl disable --now stargate 2>/dev/null || true
   sudo rm -f /etc/systemd/system/stargate.service

@@ -60,7 +60,11 @@ read_env_var() {
 # HOME is already set.
 # -----------------------------------------------------------------------------
 if [ -z "${HOME:-}" ]; then
-  HOME="$(getent passwd "$(id -u)" 2>/dev/null | cut -d: -f6)"
+  # `|| true`: this is a bare assignment, so its exit status is the pipeline's.
+  # Under `set -eo pipefail`, a uid with no passwd entry makes getent exit
+  # non-zero (cut still exits 0) and would abort here -- on exactly the path
+  # the /root fallback below exists to handle. Neutralize it so the fallback runs.
+  HOME="$(getent passwd "$(id -u)" 2>/dev/null | cut -d: -f6)" || true
   export HOME="${HOME:-/root}"
 fi
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
