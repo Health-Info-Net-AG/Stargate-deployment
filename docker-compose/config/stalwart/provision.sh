@@ -158,6 +158,36 @@ log "enabling spam filter at DATA stage on the SMTP listeners"
 cli update MtaStageData singleton --field "enableSpamFilter=${SMTP_LISTENERS}"
 
 # =============================================================================
+# 2d. Rate limiting: global inbound + outbound throttles (5000/hour each)
+# =============================================================================
+# Each throttle is global (no `key` => applies server-wide). When the limit is
+# exceeded Stalwart rejects further inbound mail with `451 4.4.5 Rate limit
+# exceeded` and defers outbound delivery until the rate drops below 5000/1h.
+# `rate` is a {count, period} object (count 1..1000000, period a Duration like
+# "1h"). The throttle id is server-assigned, so we identify an existing one by
+# its operator-set `description`, mirroring the milter/account reconcile pattern.
+RATE='{"count":5000,"period":"1h"}'
+
+ensure_throttle() {
+  local type="$1" desc="$2"
+  local id
+  id=$(cli query "$type" 2>/dev/null | awk -v d="$desc" 'NR>1 && index($0, d) {print $1; exit}') || true
+  if [ -n "$id" ]; then
+    log "${type} '${desc}' exists (id=${id}); reconciling rate to 5000/1h"
+    cli update "$type" "$id" --field "rate=${RATE}" --field "enable=true"
+  else
+    log "creating ${type} '${desc}': 5000/1h (global)"
+    cli create "$type" \
+      --field "description=${desc}" \
+      --field "rate=${RATE}" \
+      --field "enable=true"
+  fi
+}
+
+ensure_throttle MtaInboundThrottle "Global inbound rate limit"
+ensure_throttle MtaOutboundThrottle "Global outbound rate limit"
+
+# =============================================================================
 # 3. Ensure the domain exists
 # =============================================================================
 DID=$(cli query domain 2>/dev/null | awk -v d="$DOMAIN" 'NR>1 && index($0, d) {print $1; exit}') || true

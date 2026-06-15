@@ -11,7 +11,13 @@
 # Create and enable the 'stargate' systemd unit so the stack auto-starts on boot
 # and can be managed with `systemctl {start,stop,status,restart} stargate`.
 setup_systemd_service() {
-  local service_name="stargate"
+  local service_name="${1:-stargate}"
+  # An empty unit name makes `systemctl enable` print the cryptic
+  # "Too few arguments." Refuse it here with an actionable message instead.
+  if [ -z "$service_name" ]; then
+    echo "ERROR: setup_systemd_service called with an empty unit name" >&2
+    return 1
+  fi
   local service_file="/etc/systemd/system/${service_name}.service"
 
   echo ""
@@ -36,8 +42,8 @@ ExecStop=${SCRIPT_DIR}/stop.sh
 # The first (cold) bring-up is gated by depends_on healthchecks -- notably
 # clamav, whose signature-DB load alone has a 300s start_period -- so the
 # oneshot can legitimately take many minutes. A reboot bypasses this (Docker's
-# restart policy ignores depends_on), but `systemctl start` / a restore goes
-# through the gated `docker compose up -d`. Keep the timeout well above the
+# restart policy ignores depends_on), but 'systemctl start' / a restore goes
+# through the gated 'docker compose up -d'. Keep the timeout well above the
 # slowest dependency so it isn't killed mid-bring-up.
 TimeoutStartSec=600
 TimeoutStopSec=120

@@ -358,19 +358,29 @@ setup_backup_cron() {
   echo "Setting up daily backup cron job..."
 
   BACKUP_SCRIPT="$SCRIPT_DIR/backup.sh"
-  CRON_JOB="0 2 * * * $BACKUP_SCRIPT >> $PROJECT_DIR/backups/cron.log 2>&1"
 
-  # Check if cron job already exists
-  if crontab -l 2>/dev/null | grep -q "$BACKUP_SCRIPT"; then
-    echo "Backup cron job already exists."
-  else
-    # Add cron job
-    (crontab -l 2>/dev/null; echo "$CRON_JOB") | crontab -
-    echo "Daily backup scheduled at 2:00 AM"
-  fi
-
-  # Create backups directory
+  # Create backups directory (target for the cron log).
   mkdir -p "$PROJECT_DIR/backups"
+
+  # Use a system crontab drop-in (/etc/cron.d) instead of `crontab -l`/`crontab -`.
+  # The per-user crontab tool resolves the target user -- and that user's home /
+  # spool -- from the environment (LOGNAME/USER/HOME), which is not populated
+  # the usual way when this runs from rc.local at boot, so it cannot deduce
+  # root's crontab. A drop-in names the user explicitly in field 6 and needs no
+  # environment; rewriting it on every run keeps it idempotent.
+  local cron_file="/etc/cron.d/stargate-backup"
+  cat > "$cron_file" << EOF
+# Stargate daily backup -- managed by install.sh, do not edit by hand.
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+0 2 * * * root $BACKUP_SCRIPT >> $PROJECT_DIR/backups/cron.log 2>&1
+EOF
+  chmod 644 "$cron_file"
+  # SELinux (Alma/RHEL, enforcing): apply the cron spool context so crond will
+  # read the file. No-op / harmless on systems without SELinux.
+  restorecon "$cron_file" 2>/dev/null || true
+
+  echo "Daily backup scheduled at 2:00 AM ($cron_file)"
 }
 
 # Function to save Vault token to customer-config.sh for persistence
@@ -533,20 +543,41 @@ detect_distro
 
 cd "$PROJECT_DIR"
 
+# Distinguish a manual console run from a non-interactive boot run (rc.local).
+# rc.local has no controlling terminal, so stdin is not a tty there; an explicit
+# STARGATE_BOOT=1 from rc.local makes the intent unambiguous even if stdin is
+# redirected. INTERACTIVE=1 only for a human running this on the console.
+if [ "${STARGATE_BOOT:-}" = "1" ] || [ ! -t 0 ]; then
+  INTERACTIVE=0
+else
+  INTERACTIVE=1
+fi
+
+# Check if already installed.
+if [ -f "$KEYS_FILE" ]; then
+  # On boot (rc.local) an existing install is the normal steady state -- the
+  # systemd unit brings the stack up -- so exit quietly with no output. Only a
+  # human running this on the console gets the banner and the error guidance.
+  if [ "$INTERACTIVE" = "1" ]; then
+    echo "============================================"
+    echo "  Stargate Installation"
+    echo "============================================"
+    echo ""
+    echo "ERROR: Installation already completed."
+    echo "Vault keys found at: $KEYS_FILE"
+    echo ""
+    echo "To start services, use: ./scripts/start.sh"
+    echo "To reinstall, first run: ./scripts/purge.sh"
+    exit 1
+  fi
+  exit 0
+fi
+
+# Fresh install -- show the banner for both manual and boot runs.
 echo "============================================"
 echo "  Stargate Installation"
 echo "============================================"
 echo ""
-
-# Check if already installed
-if [ -f "$KEYS_FILE" ]; then
-  echo "ERROR: Installation already completed."
-  echo "Vault keys found at: $KEYS_FILE"
-  echo ""
-  echo "To start services, use: ./scripts/start.sh"
-  echo "To reinstall, first run: ./scripts/purge.sh"
-  exit 1
-fi
 
 # Check dependencies first
 check_dependencies
