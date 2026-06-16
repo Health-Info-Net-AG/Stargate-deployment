@@ -1,7 +1,7 @@
 {
   "id": "stargate",
   "realm": "stargate",
-  "displayName": "Stargate",
+  "displayName": "HIN Gateway",
   "enabled": true,
   "sslRequired": "none",
   "registrationAllowed": false,
@@ -10,9 +10,9 @@
   "resetPasswordAllowed": false,
   "editUsernameAllowed": false,
   "bruteForceProtected": true,
-  "accessTokenLifespan": 3600,
-  "ssoSessionIdleTimeout": 3600,
-  "ssoSessionMaxLifespan": 3600,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
   "roles": {
     "realm": [
       {
