@@ -89,13 +89,13 @@ load_customer_config() {
   echo ""
 
   # Bootstrap customer-config.sh if it doesn't exist yet, so a fresh install
-  # works with zero manual setup. VM images bake their prod/preprod config at
-  # build time, so this only fires for manual installs -- default to the preprod
-  # template. Generated values (vault token, IP, etc.) get written back here as
+  # works with zero manual setup. VM images bake their config at build time, so
+  # this only fires for manual installs -- default to the prod template.
+  # Generated values (vault token, IP, etc.) get written back here as
   # install progresses.
   if [ ! -f "$CONFIG_FILE" ]; then
-    echo "customer-config.sh not found, bootstrapping from customer-config-preprod.example.sh..."
-    cp "$PROJECT_DIR/customer-config-preprod.example.sh" "$CONFIG_FILE"
+    echo "customer-config.sh not found, bootstrapping from customer-config-prod.example.sh..."
+    cp "$PROJECT_DIR/customer-config-prod.example.sh" "$CONFIG_FILE"
   fi
 
   # Source the config file

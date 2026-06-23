@@ -98,19 +98,10 @@ sync_customer_config() {
 
 # detect_example_file PROJECT_DIR CONFIG_FILE
 #
-# Determines which example template matches the active config (prod vs preprod).
-# Heuristic: checks CERT_CA_IRISAGENT_DOMAIN - "hin" means prod, anything else
-# means preprod. Falls back to preprod if undetermined.
+# Returns the example template used to sync new variables into the active
+# config. There is a single prod template.
 detect_example_file() {
   local project_dir="$1" config="$2"
-  local domain
 
-  domain=$(grep "^CERT_CA_IRISAGENT_DOMAIN=" "$config" 2>/dev/null \
-    | tail -1 | sed 's/^[^=]*=//; s/^"//; s/"$//')
-
-  if [ "$domain" = "hin" ]; then
-    echo "$project_dir/customer-config-prod.example.sh"
-  else
-    echo "$project_dir/customer-config-preprod.example.sh"
-  fi
+  echo "$project_dir/customer-config-prod.example.sh"
 }

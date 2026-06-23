@@ -23,10 +23,10 @@ Please refer to [Recommended Requirements](./index.md#recommended)
 
 Before installation, create and fill in the customer configuration file:
 
-Copy the template (use `customer-config-prod.example.sh` for a production host):
+Copy the template:
 
 ```bash
-cp customer-config-preprod.example.sh customer-config.sh
+cp customer-config-prod.example.sh customer-config.sh
 ```
 
 Edit the config file:
@@ -119,7 +119,7 @@ cd /path/to/stargate
 Create customer config from template and fill in required settings ([see Step 1](#step-1-configure-customer-settings))
 
 ```bash
-cp customer-config-preprod.example.sh customer-config.sh   # or customer-config-prod.example.sh
+cp customer-config-prod.example.sh customer-config.sh
 nano customer-config.sh   # Fill in required settings (see Step 1)
 ```
 
@@ -349,7 +349,7 @@ The `start.sh` script (and the systemd service) automatically unseal Vault using
 
 | File | Purpose |
 |------|---------|
-| `customer-config-preprod.example.sh` / `customer-config-prod.example.sh` | Per-environment templates for customer settings (copy one to `customer-config.sh`) |
+| `customer-config-prod.example.sh` | Template for customer settings (copy to `customer-config.sh`) |
 | `customer-config.sh` | Customer-specific settings (created from template, fill in before install) |
 | `.env` | Generated environment file (created by `install.sh`) |
 | `secrets/vault-keys.json` | Vault unseal keys and root token (back up securely!) |

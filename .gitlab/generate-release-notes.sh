@@ -6,7 +6,6 @@ set -euo pipefail
 TAG="${1:?usage: generate-release-notes.sh <tag>}"
 
 PROD_FILE="docker-compose/customer-config-prod.example.sh"
-PREPROD_FILE="docker-compose/customer-config-preprod.example.sh"
 
 SEMVER_RE='^v[0-9]+\.[0-9]+\.[0-9]+$'              # v1.0.0 (manual milestones)
 
@@ -49,11 +48,9 @@ parse_versions() {
 }
 
 TMP_PROD="$(mktemp)"
-TMP_PREPROD="$(mktemp)"
-trap 'rm -f "$TMP_PROD" "$TMP_PREPROD"' EXIT
+trap 'rm -f "$TMP_PROD"' EXIT
 
 git show "${REF}:${PROD_FILE}" 2>/dev/null | parse_versions > "$TMP_PROD" || true
-git show "${REF}:${PREPROD_FILE}" 2>/dev/null | parse_versions > "$TMP_PREPROD" || true
 
 echo "## ${HEADER}"
 echo
@@ -65,20 +62,9 @@ if [ -n "${CI_PIPELINE_URL:-}" ]; then
 fi
 echo "### Service versions"
 echo
-echo "| Service | Prod | Preprod |"
-echo "|---------|------|---------|"
-# Merge the two key/value lists; prod file defines the row order,
-# preprod-only keys are appended.
-awk -F'\t' '
-  NR == FNR { if (!($1 in seen)) { order[++n] = $1; seen[$1] = 1 }; prod[$1] = $2; next }
-            { if (!($1 in seen)) { order[++n] = $1; seen[$1] = 1 }; preprod[$1] = $2 }
-  END {
-    for (i = 1; i <= n; i++) {
-      k = order[i]
-      printf "| %s | %s | %s |\n", k, (k in prod ? prod[k] : "—"), (k in preprod ? preprod[k] : "—")
-    }
-  }
-' "$TMP_PROD" "$TMP_PREPROD"
+echo "| Service | Version |"
+echo "|---------|---------|"
+awk -F'\t' '{ printf "| %s | %s |\n", $1, $2 }' "$TMP_PROD"
 echo
 if [ -n "$PREV_TAG" ]; then
   echo "### Changes since ${PREV_TAG}"
