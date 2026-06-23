@@ -40,4 +40,8 @@ See [Monitoring and Logs](Monitoring.md) for detailed configuration and usage.
 
 ## Architecture overview
 
-![Architecture](https://www.hin.ch/files/png1/blog-full/graph3-v5.png)
+![Architecture](assets/arch-gateway.png)
+
+## VM Architecture overview
+
+![VM Overview](assets/vm-arch-gateway.png)

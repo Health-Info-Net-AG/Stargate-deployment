@@ -1,8 +1,7 @@
-# HIN Gateway - Technical Installation Process
+# HIN Mail Gateway - Technical Installation Process
 
-*Technical Installation Process for Single-Domain Mail Architecture with Microsoft 365*
-
-!!! info "Rollout HIN Gateway 2026 - Version 1.1"
+!!! tip
+    Technical Installation Process for Single-Domain Mail Architecture with Microsoft 365
 
 ## Introduction
 
@@ -133,10 +132,15 @@ Create a backup of the existing MGW appliance and ensure that the VM is retained
 
 ### Step 1.3 - Export private key(s)
 
-![Responsibility Customer / HIN](https://img.shields.io/badge/Responsibility-Customer%20%2F%20HIN-blueviolet)
+![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+:heavy_plus_sign:
+![Responsibility HIN](https://img.shields.io/badge/Responsibility-HIN-orange)
 
 !!! warning "HIN assistance required"
     This step requires an unlock code that is provided by a HIN support engineer during the planned call. Contact HIN Support or join the planned migration call before starting.
+
+<!-- !!! info
+    Please download tool `HIN_Migration-Tool_v*.exe` under the Link: [link](https://link) -->
 
 1. Log into the existing MGW webGUI.
 2. Open **"Mail System"**.
@@ -234,7 +238,7 @@ Ensure that the VM has a network connection with a static IP address.
 
 Open a browser and enter the IP address configured for the VM. You should see the initial setup screen.
 
-```
+```plain
 https://<VM IP address>
 ```
 
