@@ -1,4 +1,4 @@
-site_name: Stargate Deployment
+site_name: HIN Mail "Stargate" deployment
 site_url: https://Health-Info-Net-AG.github.io/stargate-deployment/
 site_author: HIN AG
 site_description: >-
@@ -64,6 +64,12 @@ plugins:
       enable_creation_date: true
   - glightbox
   - print-site
+  - redirects:
+      redirect_maps:
+        'vm/VM-images-list.md': 'vm/VM-Catalog.md'
+        'Testing.md': 'index.md'
+#        'old/file.md': 'new/file.md'
+#        'some_file.md': 'http://external.url.com/foobar'
 
 # Additional configuration
 extra:
@@ -136,23 +142,25 @@ not_in_nav: |
 # Page tree
 nav:
   - Home: index.md
-  - Installation Guide: Installation-guide.md
-  - Test Phase: Testing.md
-  - Getting started with Stargate:
+  - Installation Guides:
+      - Single domain, M365: Installation-guide.md
+#      - New Customers: New-customers.md
+  - Technical configuration and Integration:
       - Applications overview: Applications.md
       - Monitoring and Logs: Monitoring.md
       - Exchange Integration: Exchange-integration.md
       - Mail relay setup: Mail-relay-setup.md
       - DNS Setup: DNS-setup.md
-  - Container deployment:
-      - Install with Docker: Docker-deploy.md
-      - Docker Advanced configuration: Docker-advanced.md
-      - Helm deployment: helm-deploy.md
-  - VM Images deployment:
-      - Azure: vm/Azure-image-install.md
-      - VMware: vm/VMware-image-install.md
-      - Proxmox: vm/Proxmox-image-install.md
-      - Windows 11 pro: vm/Windows11pro-image-install.md
-      - Cloudscale: vm/Cloudscale-image-install.md
-  - VM Images list: vm/VM-images-list.md
+  - Server install:
+      - Container:
+          - Install with Docker: Docker-deploy.md
+          - Docker Advanced configuration: Docker-advanced.md
+          - Helm deployment: helm-deploy.md
+      - VM deployment:
+          - Azure: vm/Azure-image-install.md
+          - VMware: vm/VMware-image-install.md
+          - Proxmox: vm/Proxmox-image-install.md
+          - Windows 11 pro: vm/Windows11pro-image-install.md
+          - Cloudscale: vm/Cloudscale-image-install.md
+  - VM Images catalog: vm/VM-images-list.md
   - Support / Contact us: Support.md

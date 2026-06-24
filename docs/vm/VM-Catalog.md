@@ -1,4 +1,4 @@
-# VM Images list
+# VM Images Catalog
 
 Here you can find a current VM images list for different platforms. Please do not forget to check the SHA-256 hash of downloaded images. You can use the https://images.hin.ch/vm-images/SHA256SUMS file to compare it.
 

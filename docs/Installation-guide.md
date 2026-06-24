@@ -1,12 +1,11 @@
-# HIN Gateway - Technical Installation Process
+# HIN Mail Gateway - Technical Installation Process
 
-*Technical Installation Process for Single-Domain Mail Architecture with Microsoft 365*
-
-!!! info "Rollout HIN Gateway 2026 - Version 1.1"
+!!! tip
+    Technical Installation Process for Single-Domain Mail Architecture with Microsoft 365
 
 ## Introduction
 
-This document provides a comprehensive guide to the technical installation and migration process to the new HIN Gateway ("Stargate Appliance"). It applies to Microsoft 365 mail architectures that use a **single trusted domain**.
+This document provides a comprehensive guide to the technical installation and migration process to the new [HIN Gateway](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm) ("Stargate Appliance"). It applies to Microsoft 365 mail architectures that use a **single trusted domain**.
 
 The guide is intended for HIN customers, IT administrators and system engineers who are responsible for deploying and configuring the new HIN Gateway, and for migrating from the existing Mail Gateway (MGW) to the new solution.
 
@@ -89,13 +88,16 @@ Please review the "Stargate Deployment Instructions" and ensure that all necessa
 
 The following items must be available or confirmed before the migration:
 
-- **Credentials delivered to you by HIN:**
+- **Credentials will be delivered to you by HIN**
     - VM credential
     - Keycloak credential
     - Activation code
-    - Export of private key
-- **Download** the latest version of the VM image.
-- **Firewall requirements for WireGuard** - configure the WireGuard port `19818` (TCP/UDP) in your firewall:
+- **Export of private key**
+    - If you are working on a Windows machine that has access to the Mail Gateway VM via port 22, we can support you during the call in enabling the private key export from the MGW.
+    - If you do not have access to such a machine, please contact HIN Support by email or phone (support@hin.ch / 0848 830 740) to help you establish a support connection via System Administration → Support Connection → Connect.
+- **Download latest** version of [VM image](vm/VM-Catalog.md)
+- **Firewall** requirements for WireGuard.
+  Configure the WireGuard port 19818 (TCP/UDP) in your firewall:
     - Incoming and outgoing traffic
     - Allow traffic: any-to-HIN Gateway and HIN Gateway-to-any
 - **DHCP access** should be available for "Step 5 - Network connection to the VM" (recommended).
@@ -133,10 +135,15 @@ Create a backup of the existing MGW appliance and ensure that the VM is retained
 
 ### Step 1.3 - Export private key(s)
 
-![Responsibility Customer / HIN](https://img.shields.io/badge/Responsibility-Customer%20%2F%20HIN-blueviolet)
+![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+:heavy_plus_sign:
+![Responsibility HIN](https://img.shields.io/badge/Responsibility-HIN-orange)
 
 !!! warning "HIN assistance required"
     This step requires an unlock code that is provided by a HIN support engineer during the planned call. Contact HIN Support or join the planned migration call before starting.
+
+<!-- !!! info
+    Please download tool `HIN_Migration-Tool_v*.exe` under the Link: [link](https://link) -->
 
 1. Log into the existing MGW webGUI.
 
@@ -217,33 +224,52 @@ Select one of the available virtual images and provision it as described in the 
 !!! note
     For security and supportability reasons, ensure that your hypervisor is not running an end-of-life version. The HIN Gateway appliance is supported on the latest hypervisor release and the immediately preceding major version.
 
+!!! info
+    For security and supportability reasons, ensure that your hypervisor is not running an end-of-life version. The HIN Gateway appliance is supported on the latest hypervisor release and the immediately preceding major version.
+
 - VM Image Installation:
     - [Azure VM Image](vm/Azure-image-install.md)
     - [Windows 11 Pro (Hyper-V) Image](vm/Windows11pro-image-install.md)
     - [VMware image](vm/VMware-image-install.md)
     - [Proxmox image](vm/Proxmox-image-install.md)
+    - [Cloudscale](vm/Cloudscale-image-install.md)
 - [Configuration of Microsoft Exchange](Exchange-integration.md)
 
 ### Step 4 - Load VM image
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Upload the selected VM to your hypervisor.
+Upload the selected VM image to your hypervisor.
 
 ### Step 5 - Network connection to the VM
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Ensure that the VM has a network connection and that a **static IP address** has been assigned to it.
+Ensure that the VM has a network connection and that a static IP address has been assigned to it. 
 
-- **Option A:** Configure the IP address of the virtual machine directly in the hypervisor you are using.
+**Option A:** Configure the IP address of the virtual machine directly in the hypervisor you are using.
 
-- **Option B:** Configure your router's DHCP server to always assign the same IP address based on the VM's MAC address.
+**Option B:** You can configure your router's DHCP server to always assign the same IP address based on the VM's MAC address.
 
-- **Option C:** Log in locally via the VM console and manually configure a static IP address.
+**Option C:** Log in locally via the VM console and manually configure a static IP address.
+NOTE: The VM image runs an automatic installation during the first boot. If the network is not configured at this stage, the installation will fail because the server’s IP address cannot be determined.
 
-!!! warning "Network must be configured before first boot"
-    The VM image runs an automatic installation on first boot. If the network is not yet configured (no IP address assigned), the installation will fail because the server IP cannot be detected.
+Add an IP address on Linux:
+
+1. Run the «nmtui» command in the console
+    ```bash
+    nmtui
+    ```
+2. Use the arrow keys to navigate, then press «Enter» to select the «Ethernet connection» for which you want to change the IP address. <br> ![Add IP Addr](assets/ip_addr_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+3. Navigate to «IPv4 Configuration» and change the setting from «Automatic» to «Manual». <br> ![Add IP Addr](assets/ip_addr_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+4. Use the arrow keys to navigate to the fields where you can enter the IP address, gateway, and DNS server. Then select «OK». <br> ![Add IP Addr](assets/ip_addr_3.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+5. After saving the IP address configuration, run the following command in the console:
+    ```bash
+    sudo systemctl restart NetworkManager
+    ```
+
+??? warning "Network must be configured before first boot"
+    The VM image runs an automatic installation on first boot. If the network is not yet configured (no IP address assigned via DHCP or static config), the installation will fail because the server IP cannot be detected.
 
     If you used **Option C** and configured the network manually, you must run the following commands:
 
@@ -255,9 +281,21 @@ Ensure that the VM has a network connection and that a **static IP address** has
 
     The installation script will automatically detect the server's IP address from the default route. Any reachable IP address, whether public or private, is sufficient. The actual public endpoint is configured later through the dashboard.
 
-    After the scripts have completed successfully, proceed to "Step 6 - Access via the browser".
+!!! tip
+    If you used Option C and configured the network manually, you must run the following commands:
+    
+    ```bash
+    cd /root/stargate-deployment/docker-compose
+    ./scripts/purge.sh
+    ./scripts/install.sh
+    ```
 
-**Add an IP address on Linux**
+    The installation script will automatically detect the server’s IP address from the default route. Any reachable IP address, whether public or private, is sufficient. The actual public endpoint is configured later through the dashboard.
+    
+    After the scripts have completed successfully, proceed to «Step 6 – Access via the browser»
+    
+    !!! question
+        If you do not have the HIN admin credentials, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**). Please refer to [Support Section](./Support.md).
 
 1. Run the `nmtui` command in the console.
 
@@ -285,7 +323,7 @@ Ensure that the VM has a network connection and that a **static IP address** has
 
 Open a browser and enter the IP address configured for the VM. You should see the initial setup screen.
 
-```
+```plain
 https://<VM IP address>
 ```
 
@@ -298,7 +336,7 @@ Select your preferred language and enter the activation code that you received v
 ![Activation code entry screen](assets/installation-guide/step7-activation-code.png)
 
 !!! question
-    If you do not have the activation code, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**).
+    If you do not have the activation code, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**). Please refer to [Support Section](./Support.md).
 
     [Click here to send an Email](mailto:support@hin.ch?subject=Activation%20code%20required.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20activation%20code%20for%20my%20HIN%20Gateway%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
@@ -342,7 +380,7 @@ Once the mesh network is established, you will be redirected to the Keycloak log
 ![Keycloak login page](assets/installation-guide/step10-keycloak-login.png)
 
 !!! question
-    If you do not have these login details, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**).
+    If you do not have these login details, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**). Please refer to [Support Section](./Support.md).
 
     [Click here to send an Email](mailto:support@hin.ch?subject=Keycloak%20login%20required.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20Keycloak%20login%20details%20for%20my%20HIN%20Gateway.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
@@ -368,9 +406,16 @@ Complete your account profile by entering your first name and last name. The ema
 
 On this screen, configure your initial settings:
 
-1. Verify that all your current trusted domain(s) within the HIN Community are displayed correctly.
-2. Select which trusted domain(s) should be **"Enabled"** to obtain peer certificates from the HIN Certification Authority (HIN CA).
-3. Indicate for which domain(s) the `sec.<domain>` prefix is already configured (**"Use sec-prefix"**).
+- Verify that all your current trusted domain(s) within the HIN Community are displayed correctly.
+- Select which trusted domain(s) should be **Enabled** to obtain peer certificates from the HIN Certification Authority (HIN CA).
+- Indicate for which domain(s) the `sec.<domain>` prefix is already configured ("Use sec-prefix").
+- Verify that the organization name and domain owners are correct. <br> ![Screenshot](assets/step_13_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" } <br> ![Screenshot](assets/step_13_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+- Import the existing S/MIME certificate file (`.p12`/`.pfx`) from the existing MGW:
+    1. Expand the domain and select the **P12/PFX File** option.
+    2. If no password has been set for the certificate file, leave the password field empty.
+    3. Click **"Import Certificate"**.
+    4. After the certificate has been imported, the message *Certificate imported successfully* is displayed.
+- Click **"Save Configuration"** at the end of the page to save the changes.
 
 ![Initial setup screen - domains](assets/installation-guide/step13-initial-setup.png)
 
@@ -436,7 +481,7 @@ Click **"Domains"**, then select **"Whitelist headers"**.
 
 Enter the key exactly as configured in the mail server.
 
-![Whitelist headers screen](assets/installation-guide/step15-whitelist-headers.png)
+![Screenshot](assets/step_15_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ### Step 16 - Peer certificates
 
@@ -454,7 +499,7 @@ Once the onboarding is complete, navigate to the **Peer certificates** section i
 
 Ensure that your domain has received its policy-based peer certificate under **"Domains"**. The status of each domain must be **"Good"**.
 
-![Validate peer certificates screen](assets/installation-guide/step17-validate-certificates.png)
+![Screenshot](assets/step_17_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 !!! question
     Contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**) if you encounter any issues.
@@ -537,7 +582,7 @@ Please make sure that the VM credentials which were provided to you initially ar
 
 To back up or restore the settings of your HIN appliance, click the **"Administration"** menu in the web administration portal.
 
-![Administration menu](assets/installation-guide/annex1-admin-menu.png)
+![Screenshot](assets/annex_1_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ### Backing up settings
 
