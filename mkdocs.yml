@@ -144,7 +144,7 @@ nav:
   - Home: index.md
   - Installation Guides:
       - Single domain, M365: Installation-guide.md
-      - New Customers: New-customers.md
+#      - New Customers: New-customers.md
   - Technical configuration and Integration:
       - Applications overview: Applications.md
       - Monitoring and Logs: Monitoring.md
