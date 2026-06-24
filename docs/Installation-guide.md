@@ -12,11 +12,11 @@ The guide is intended for HIN customers, IT administrators and system engineers 
 
 The HIN Gateway is a secure email gateway solution that enables trusted, encrypted and policy-driven communication within the HIN Trust Circle. It acts as a central intermediary between internal email infrastructures and external communication partners, ensuring that all email traffic is transmitted securely, complies with the organisation's policies and meets HIN's security standards.
 
-## Overview of the mail flow
+## Overview of the mail flow with HIN Gateway
 
 - **Incoming emails** are routed via the HIN Gateway, where they are validated, decrypted (if necessary) and checked against trust and security policies before being forwarded to the internal mail server.
 - **Outgoing emails** are sent from internal systems to the HIN Gateway, where encryption, routing and policy enforcement are applied before they are transmitted to external recipients.
-- **Communication between HIN gateways** is secured by peer certificates and WireGuard tunnels, ensuring trusted communication between domains.
+- **Communication between HIN Gateways** is secured by peer certificates and WireGuard tunnels, ensuring trusted communication between domains.
 
 ## Installation and migration process
 
@@ -139,16 +139,46 @@ Create a backup of the existing MGW appliance and ensure that the VM is retained
     This step requires an unlock code that is provided by a HIN support engineer during the planned call. Contact HIN Support or join the planned migration call before starting.
 
 1. Log into the existing MGW webGUI.
+
 2. Open **"Mail System"**.
+
+   ![MGW Mail System](assets/installation-guide/step1.3-1-mail-system.png)
+
 3. Run the **`HIN_Migration-Tool_v*.exe`** application provided by the support engineer during the call.
+
+   ![HIN Migration Tool](assets/installation-guide/step1.3-2-migration-tool.png)
+
 4. Enter the unlock code that the support engineer provides to you.
+
+   ![Unlock code dialog](assets/installation-guide/step1.3-3-unlock-code.png)
+
 5. Select **"Enable export"**.
+
+   ![Enable export](assets/installation-guide/step1.3-4-enable-export.png)
+
 6. Enter the MGW IP address.
+
+   ![MGW IP address](assets/installation-guide/step1.3-5-mgw-ip.png)
+
 7. Wait for confirmation.
+
+   ![Confirmation](assets/installation-guide/step1.3-6-confirmation.png)
+
 8. Select the trusted domain in the MGW webGUI.
+
+   ![Select trusted domain](assets/installation-guide/step1.3-7-trusted-domain.png)
+
 9. Scroll down and select the managed fingerprint.
+
+   ![Managed fingerprint](assets/installation-guide/step1.3-8-managed-fingerprint.png)
+
 10. Scroll down to the **"PKCS12 download"** category (you may optionally enter a password to encrypt the key). Press **"Download PKCS12"** and save the `*.p12` file on the computer.
+
+    ![PKCS12 download](assets/installation-guide/step1.3-9-pkcs12-download.png)
+
 11. Return to the `HIN_Migration-Tool_v*.exe` application and disable the **Export** button.
+
+    ![Disable export](assets/installation-guide/step1.3-10-disable-export.png)
 
 ### Step 1.4 - Contingency plan / fallback scenario
 
@@ -182,7 +212,10 @@ Ensure you have configured the WireGuard port `19818` (TCP/UDP) in your firewall
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Select one of the available virtual images and provision it as described in the installation guide on the HIN Gateway service page:
+Select one of the available virtual images and provision it as described in the installation guide on the HIN Gateway service page.
+
+!!! note
+    For security and supportability reasons, ensure that your hypervisor is not running an end-of-life version. The HIN Gateway appliance is supported on the latest hypervisor release and the immediately preceding major version.
 
 - VM Image Installation:
     - [Azure VM Image](vm/Azure-image-install.md)
@@ -201,16 +234,18 @@ Upload the selected VM to your hypervisor.
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Ensure that the VM has a network connection with a static IP address.
+Ensure that the VM has a network connection and that a **static IP address** has been assigned to it.
 
-**Option A:** You can configure your router's DHCP server to always assign the same IP address based on the VM's MAC address.
+- **Option A:** Configure the IP address of the virtual machine directly in the hypervisor you are using.
 
-**Option B:** Log in locally via the VM console and manually configure a static IP address.
+- **Option B:** Configure your router's DHCP server to always assign the same IP address based on the VM's MAC address.
+
+- **Option C:** Log in locally via the VM console and manually configure a static IP address.
 
 !!! warning "Network must be configured before first boot"
-    The VM image runs an automatic installation on first boot. If the network is not yet configured (no IP address assigned via DHCP or static config), the installation will fail because the server IP cannot be detected.
+    The VM image runs an automatic installation on first boot. If the network is not yet configured (no IP address assigned), the installation will fail because the server IP cannot be detected.
 
-    If this happens, configure the network manually, then run:
+    If you used **Option C** and configured the network manually, you must run the following commands:
 
     ```bash
     cd /root/stargate-deployment/docker-compose
@@ -218,15 +253,31 @@ Ensure that the VM has a network connection with a static IP address.
     ./scripts/install.sh
     ```
 
-    The install script will auto-detect the server's IP from the default route. Any reachable IP (public or private) is sufficient - the actual public endpoint is configured later through the dashboard.
+    The installation script will automatically detect the server's IP address from the default route. Any reachable IP address, whether public or private, is sufficient. The actual public endpoint is configured later through the dashboard.
 
-!!! tip
-    If you choose Option B, use the HIN Admin Credentials provided to you by your HIN contact via email. You will be prompted to change the password when you log in for the first time.
+    After the scripts have completed successfully, proceed to "Step 6 - Access via the browser".
 
-    !!! question
-        If you do not have the HIN admin credentials, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**).
+**Add an IP address on Linux**
 
-        [Click here to send an Email](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
+1. Run the `nmtui` command in the console.
+
+   ![nmtui command](assets/installation-guide/step5-1-nmtui.png)
+
+2. Use the arrow keys to navigate, then press **"Enter"** to select the **"Ethernet connection"** for which you want to change the IP address.
+
+   ![Select Ethernet connection](assets/installation-guide/step5-2-ethernet.png)
+
+3. Navigate to **"IPv4 Configuration"** and change the setting from **"Automatic"** to **"Manual"**.
+
+   ![IPv4 configuration](assets/installation-guide/step5-3-ipv4.png)
+
+4. Use the arrow keys to navigate to the fields where you can enter the IP address, gateway, and DNS server. Then select **"OK"**.
+
+   ![IP address entry](assets/installation-guide/step5-4-ip-address.png)
+
+5. After saving the IP address configuration, run the following command in the console: `sudo systemctl restart NetworkManager`
+
+   ![Restart NetworkManager](assets/installation-guide/step5-5-restart-network.png)
 
 ### Step 6 - Access via the browser
 
@@ -317,21 +368,26 @@ Complete your account profile by entering your first name and last name. The ema
 
 On this screen, configure your initial settings:
 
-- Verify that all your current trusted domain(s) within the HIN Community are displayed correctly.
-- Select which trusted domain(s) should be **Enabled** to obtain peer certificates from the HIN Certification Authority (HIN CA).
-- Indicate for which domain(s) the `sec.<domain>` prefix is already configured ("Use sec-prefix").
-- Verify that the organisation name and domain owners are correct.
-- Import the existing S/MIME certificate file (`.p12`/`.pfx`) from the existing MGW:
-    1. Expand the domain and select the **P12/PFX File** option.
-    2. If no password has been set for the certificate file, leave the password field empty.
-    3. Click **"Import Certificate"**.
-    4. After the certificate has been imported, the message *Certificate imported successfully* is displayed.
-- Click **"Save Configuration"** at the end of the page to save the changes.
+1. Verify that all your current trusted domain(s) within the HIN Community are displayed correctly.
+2. Select which trusted domain(s) should be **"Enabled"** to obtain peer certificates from the HIN Certification Authority (HIN CA).
+3. Indicate for which domain(s) the `sec.<domain>` prefix is already configured (**"Use sec-prefix"**).
 
-![Initial setup screen](assets/installation-guide/step13-initial-setup.png)
+![Initial setup screen - domains](assets/installation-guide/step13-initial-setup.png)
+
+![Initial setup screen - domain details](assets/installation-guide/step13-initial-setup-2.png)
+
+4. Verify that the organisation name and domain owners are correct.
+5. Import the existing S/MIME certificate file (`.p12`/`.pfx`) from the existing MGW:
+    - Expand the domain and select the **P12/PFX File** option.
+    - If no password has been set for the certificate file, leave the password field empty.
+6. Click **"Import Certificate"**.
+    - After the certificate has been imported, the message *Certificate imported successfully* is displayed.
+7. Click **"Save Configuration"** at the end of the page to save the changes.
+
+![Initial setup screen - import certificate](assets/installation-guide/step13-import-certificate.png)
 
 !!! warning
-    - At least one domain must be **Enabled** to continue with the onboarding process. The "Save configuration" button will only become active once this requirement is met.
+    - At least one domain must be **"Enabled"** to continue with the onboarding process. The "Save configuration" button will only become active once this requirement is met.
     - If you notice that not all trusted domains are displayed or that the organisational information is incorrect, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**).
 
 !!! danger "Import your existing private key"
@@ -380,6 +436,8 @@ Click **"Domains"**, then select **"Whitelist headers"**.
 
 Enter the key exactly as configured in the mail server.
 
+![Whitelist headers screen](assets/installation-guide/step15-whitelist-headers.png)
+
 ### Step 16 - Peer certificates
 
 ![Responsibility HIN](https://img.shields.io/badge/Responsibility-HIN-orange)
@@ -388,13 +446,15 @@ Peer certificates are issued by the HIN Certification Authority (HIN CA) for ena
 
 Once the onboarding is complete, navigate to the **Peer certificates** section in the dashboard and click the **"Sync certificates"** button to synchronise your peer certificates from the HIN CA.
 
-![Peer certificates screen](assets/installation-guide/step15-peer-certificates.png)
+![Peer certificates screen](assets/installation-guide/step16-peer-certificates.png)
 
 ### Step 17 - Validate peer certificates
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
 Ensure that your domain has received its policy-based peer certificate under **"Domains"**. The status of each domain must be **"Good"**.
+
+![Validate peer certificates screen](assets/installation-guide/step17-validate-certificates.png)
 
 !!! question
     Contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**) if you encounter any issues.
@@ -477,6 +537,8 @@ Please make sure that the VM credentials which were provided to you initially ar
 
 To back up or restore the settings of your HIN appliance, click the **"Administration"** menu in the web administration portal.
 
+![Administration menu](assets/installation-guide/annex1-admin-menu.png)
+
 ### Backing up settings
 
 Before you create a backup of the current HIN appliance settings, you must set a backup password. This password is required if you need to restore the backup later.
@@ -496,6 +558,8 @@ To change the password for future backups, click **"Change Password"**.
 To restore appliance settings from a backup file, click **"Import Backup File..."**.
 
 In the dialog window, select the required backup file and enter the password associated with that backup. The appliance settings will then be restored from the selected backup file.
+
+![Restore backup dialog](assets/installation-guide/annex1-restore-backup.png)
 
 ### Backup using SCP
 
