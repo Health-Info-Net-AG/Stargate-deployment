@@ -4,10 +4,13 @@ site_author: HIN AG
 site_description: >-
   Stargate deployment User documentation. Docker, Helmcharts, Virtual Machine, Azure, etc.
 
+docs_dir: "../../docs/en"
+site_dir: "../../site/en"
+
 # Repository
 repo_name: Health-Info-Net-AG/Stargate-deployment
 repo_url: https://github.com/Health-Info-Net-AG/Stargate-deployment
-edit_uri: edit/main/docs/
+edit_uri: edit/main/docs/en/
 
 # Copyright
 copyright: Copyright HIN AG 2026
@@ -45,6 +48,7 @@ theme:
   palette:
     primary: orange
   logo: assets/hin_logo_full.png
+  language: en
 
   font:
     text: Roboto
@@ -66,8 +70,8 @@ plugins:
   - print-site
   - redirects:
       redirect_maps:
-        'vm/VM-images-list.md': 'vm/VM-Catalog.md'
-        'Testing.md': 'index.md'
+        "vm/VM-images-list.md": "vm/VM-Catalog.md"
+        "Testing.md": "index.md"
 #        'old/file.md': 'new/file.md'
 #        'some_file.md': 'http://external.url.com/foobar'
 
@@ -81,6 +85,19 @@ extra:
       link: https://github.com/Health-Info-Net-AG/
     - icon: fontawesome/brands/docker
       link: https://hub.docker.com/r/healthinfonetag/
+  alternate:
+    - name: English
+      link: /Stargate-deployment/en/
+      lang: en
+    - name: Deutsch
+      link: /Stargate-deployment/de/
+      lang: de
+    - name: French
+      link: /Stargate-deployment/fr/
+      lang: fr
+    - name: Italian
+      link: /Stargate-deployment/it/
+      lang: it
 
 extra_javascript:
   - javascripts/tablesort.min.js
@@ -144,7 +161,7 @@ nav:
   - Home: index.md
   - Installation Guides:
       - Single domain, M365: Installation-guide.md
-#      - New Customers: New-customers.md
+  #      - New Customers: New-customers.md
   - Technical configuration and Integration:
       - Applications overview: Applications.md
       - Monitoring and Logs: Monitoring.md

@@ -16,3 +16,5 @@ docker-compose/customer-config-alpha-new
 
 .DS_Store
 manifest.json
+
+site/

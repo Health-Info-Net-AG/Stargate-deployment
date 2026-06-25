@@ -4,7 +4,7 @@
 
 **Server Requirements:**
 
-Please refer to [Recommended Requirements](./index.md#recommended)
+Please refer to [Recommended Requirements](./index.md#server-requirements)
 
 * Docker will be installed automatically if missing
 * Ensure there is an internet connection on the machine where you are installing Stargate services
@@ -192,6 +192,7 @@ Restart just irisagent
 ```bash
 docker compose restart irisagent
 ```
+
 Check for successful WireGuard handshake
 
 ```bash

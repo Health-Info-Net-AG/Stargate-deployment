@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'docs/**'
-      - 'mkdocs.yml'
+      - 'config_docs/**'
 
 permissions:
   contents: write
@@ -53,20 +53,45 @@ jobs:
         run: sed -i "s/SHA/${{ steps.sha.outputs.sha }}/" docs/badges/build.json
         # Then badge can be used in text as ![commit](https://img.shields.io/endpoint?url=https://health-info-net-ag.github.io/Stargate-deployment/badges/build.json)
 
-      - name: Build documentation
+      - name: Build documentation - de
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/docs \
             --entrypoint sh \
             squidfunk/mkdocs-material \
-            -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build --clean"
+            -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build --clean -f config_docs/de/mkdocs.yml"
 
-
-      - name: Adjust permissions
+      - name: Build documentation - fr
         run: |
-          chmod -c -R +rX site/ | while read line; do
-            echo "::warning title=Invalid file permissions automatically fixed::$line"
-          done
+          docker run --rm \
+            -v ${{ github.workspace }}:/docs \
+            --entrypoint sh \
+            squidfunk/mkdocs-material \
+            -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build --clean -f config_docs/fr/mkdocs.yml"
+
+      - name: Build documentation - it
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/docs \
+            --entrypoint sh \
+            squidfunk/mkdocs-material \
+            -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build --clean -f config_docs/it/mkdocs.yml"
+
+      - name: Build documentation - en
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/docs \
+            --entrypoint sh \
+            squidfunk/mkdocs-material \
+            -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build --clean -f config_docs/en/mkdocs.yml"
+
+      - name: Fix ownership
+        run: sudo chown -R runner:docker site
+
+      # We will make EN default language and copy its content to the root folder too to keep old links working
+      - name: Create default documentation in the root
+        run: |
+          cp -r site/en/* site/
 
       - name: Upload to GitHub Pages
         # https://github.com/actions/upload-pages-artifact/releases/tag/v5.0.0
