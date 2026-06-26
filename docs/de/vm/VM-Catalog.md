@@ -34,4 +34,4 @@ Here you can find a current VM Catalog for different platforms. Please do not fo
 
 | Image Name | Image Type | Image Größe | Link | SHA256 Checksum |
 | :--------- | :--------: | :--------- | :--: | :-------------- |
---8<-- "docs/de/assets/VM-Catalog-with-links.md"
+--8<-- "docs/assets/VM-Catalog-with-links.md"
