@@ -50,7 +50,7 @@ From the HIN Gateway dashboard, navigate to the **Settings** page. Under the **G
 
 The URL should follow the standard Loki push API format:
 
-```
+```plain
 https://logs.example.com/loki/api/v1/push
 ```
 

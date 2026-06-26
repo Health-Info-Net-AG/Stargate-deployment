@@ -1,20 +1,20 @@
-# VM Images Catalog
+# VM-Images Katalog
 
-Here you can find a current VM Catalog for different platforms. Please do not forget to check the SHA-256 hash of downloaded images. You can use the <https://images.hin.ch/vm-images/SHA256SUMS> file to compare it.
+Hier finden Sie einen aktuellen VM-Katalog für verschiedene Plattformen. Vergessen Sie bitte nicht, den SHA-256-Hash der heruntergeladenen Images zu überprüfen. Sie können die Datei <https://images.hin.ch/vm-images/SHA256SUMS> verwenden, um ihn zu vergleichen.
 
-??? info "How to perform SHA256 hash check locally"
+??? info "So führen Sie die SHA256-Hash-Prüfung lokal durch"
 
-    You can calculate the SHA256 hash of downloaded files with the following command and then compare it with the values in the table below.
+    Sie können den SHA256-Hash heruntergeladener Dateien mit dem folgenden Befehl berechnen und ihn dann mit den Werten in der Tabelle unten vergleichen.
 
-    === "Linux and macOS"
+    === "Linux und macOS"
 
-        Open Terminal and execute:
+        Öffnen Sie das Terminal und führen Sie aus:
 
         ```bash
-        sha256sum <File Name>
+        sha256sum <Dateiname>
         ```
 
-        As a more advanced variant, you can execute the following command and paste the predefined checksum as `SHA256_VALUE` and the file name as `IMAGE_NAME`:
+        Als erweiterte Variante können Sie den folgenden Befehl ausführen und die vordefinierte Prüfsumme als `SHA256_VALUE` und den Dateinamen als `IMAGE_NAME` einfügen:
 
         ```bash
         SHA256_VALUE="" \
@@ -24,14 +24,14 @@ Here you can find a current VM Catalog for different platforms. Please do not fo
 
     === "Windows"
 
-        Open PowerShell and execute:
+        Öffnen Sie PowerShell und führen Sie aus:
 
         ```powershell
-        Get-FileHash "<File Name>"
+        Get-FileHash "<Dateiname>"
         ```
 
-        You can add the `-Algorithm SHA256` argument to force SHA256 use.
+        Sie können das Argument `-Algorithm SHA256` hinzufügen, um die Verwendung von SHA256 zu erzwingen.
 
-| Image Name | Image Type | Image Größe | Link | SHA256 Checksum |
+| Image Name | Image Typ | Image Größe | Link | SHA256 Prüfsumme |
 | :--------- | :--------: | :--------- | :--: | :-------------- |
 --8<-- "docs/assets/VM-Catalog-with-links.md"

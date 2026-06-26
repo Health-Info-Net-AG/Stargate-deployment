@@ -1,19 +1,19 @@
-# Exchange Integration with Stargate
+# Exchange-Integration mit Stargate
 
-This guide explains how to configure Microsoft Exchange (Online and On-Premises) to route mail through the Stargate gateway for S/MIME signing and encryption.
+Dieser Leitfaden erklärt, wie Sie Microsoft Exchange (Online und On-Premises) konfigurieren, um E-Mails über das Stargate-Gateway für S/MIME-Signatur und -Verschlüsselung zu leiten.
 
-<!-- Internal reference
-     This guide is based on the [Stargate mail relay setup](https://plan.vereign.com/projects/mail-gateway/wiki/stargate-mail-relay-setup) wiki page (by Zdravko Komitov). -->
+<!-- Interner Verweis
+     Dieser Leitfaden basiert auf der Wiki-Seite [Stargate mail relay setup](https://plan.vereign.com/projects/mail-gateway/wiki/stargate-mail-relay-setup) (von Zdravko Komitov). -->
 
-![Mesh node](assets/hin-mesh-node-orange-rgb-1.jpg){ width=32%; }
-![O365 as MX Server](assets/hin-mesh-node-orange-rgb-2.png){ width=32%; }
-![Different MX Server](assets/hin-mesh-node-orange-rgb-3.png){ width=32%; }
+![Mesh-Node](assets/hin-mesh-node-orange-rgb-1.jpg){ width=32%; }
+![O365 als MX-Server](assets/hin-mesh-node-orange-rgb-2.png){ width=32%; }
+![Anderer MX-Server](assets/hin-mesh-node-orange-rgb-3.png){ width=32%; }
 
-## Overview
+## Übersicht
 
-Stargate acts as a mail relay between external mail servers and your Exchange environment. Two integration patterns are supported:
+Stargate fungiert als Mail-Relay zwischen externen Mailservern und Ihrer Exchange-Umgebung. Es werden zwei Integrationsmuster unterstützt:
 
-**Pattern A - Stargate as primary MX (recommended for inbound S/MIME processing):**
+**Muster A – Stargate als primärer MX (empfohlen für eingehende S/MIME-Verarbeitung):**
 
 ```mermaid
 flowchart LR
@@ -21,15 +21,15 @@ flowchart LR
     EO --> TR --> OC --> Stargate --> I2
     I1["Internet"]
     I2["Internet"]
-    mx15["Stargate (MX priority 15)"]
-    mx20["Exchange Online (MX priority 20)"]
+    mx15["Stargate (MX-Priorität 15)"]
+    mx20["Exchange Online (MX-Priorität 20)"]
     EO["Exchange Online"]
-    TR["Transport Rule"]
-    OC["Outbound Connector"]
+    TR["Transportregel"]
+    OC["Ausgehender Connector"]
     Stargate
 ```
 
-**Pattern B - Exchange Online as primary MX with transport rules:**
+**Muster B – Exchange Online als primärer MX mit Transportregeln:**
 
 ```mermaid
 flowchart LR
@@ -39,189 +39,189 @@ flowchart LR
     I2["Internet"]
     EO["Exchange Online"]
     E2["Exchange Online"]
-    TR["Transport Rule"]
-    TR2["Transport Rule"]
-    OC["Outbound Connector"]
+    TR["Transportregel"]
+    TR2["Transportregel"]
+    OC["Ausgehender Connector"]
     C["Connector"]
     S1["Stargate"]
     S2["Stargate"]
 ```
 
-In both patterns, you need:
+In beiden Mustern benötigen Sie:
 
-1. **DNS records** pointing to the Stargate server
-2. **Outbound connector** - routes mail from Exchange to Stargate
-3. **Inbound connector** - accepts mail from Stargate into Exchange
-4. **Transport rule** - triggers the outbound connector for external recipients
+1. **DNS-Einträge**, die auf den Stargate-Server verweisen
+2. **Ausgehenden Connector** – leitet E-Mails von Exchange an Stargate weiter
+3. **Eingehenden Connector** – akzeptiert E-Mails von Stargate in Exchange
+4. **Transportregel** – löst den ausgehenden Connector für externe Empfänger aus
 
-## Prerequisites
+## Voraussetzungen
 
-Before configuring Exchange, ensure:
+Stellen Sie vor der Konfiguration von Exchange Folgendes sicher:
 
-- [X] Stargate is installed and running ([deployment instructions](Docker-deploy.md))
-- [X] You have the **Stargate server's public IP address** (referred to as `<STARGATE_IP>` below)
-- [X] You have the **mail hostname** of the Stargate server (referred to as `<MAIL_HOSTNAME>`, e.g. `mail.example.com`)
-- [X] You know your **mail domain** (referred to as `<YOUR_DOMAIN>`, e.g. `example.com`)
-- [X] You have **Exchange admin** access (Exchange Admin Center or on-premises Exchange Management Shell)
-- [X] DNS records are configured per the [DNS Setup Guide](DNS-setup.md) (A, MX, SPF at minimum)
-
----
-
-## Part 1: DNS Setup
-
-See the [DNS Setup Guide](DNS-setup.md) for complete instructions on configuring A, MX, SPF, PTR, DMARC, and DKIM records.
-
-At minimum, before proceeding with the Exchange configuration below, you need:
-
-- **A record**: `<MAIL_HOSTNAME>` pointing to `<STARGATE_IP>`
-- **MX record**: `<YOUR_DOMAIN>` with Stargate at higher priority (lower number) than Exchange
-- **SPF record**: `ip4:<STARGATE_IP>` and `ip4:<HIN_SEALER_IP>` added to your domain's TXT record (see [DNS Setup Guide - SPF](DNS-setup.md#spf-record) for sealer IPs)
+- [X] Stargate ist installiert und läuft ([Bereitstellungsanleitung](Docker-deploy.md))
+- [X] Sie haben die **öffentliche IP-Adresse des Stargate-Servers** (im Folgenden als `<STARGATE_IP>` bezeichnet)
+- [X] Sie haben den **Mail-Hostnamen** des Stargate-Servers (im Folgenden als `<MAIL_HOSTNAME>` bezeichnet, z.B. `mail.example.com`)
+- [X] Sie kennen Ihre **Mail-Domain** (im Folgenden als `<YOUR_DOMAIN>` bezeichnet, z.B. `example.com`)
+- [X] Sie haben **Exchange-Admin**-Zugriff (Exchange Admin Center oder On-Premises Exchange Management Shell)
+- [X] DNS-Einträge sind gemäß dem [DNS-Einrichtungsleitfaden](DNS-setup.md) konfiguriert (A, MX, SPF mindestens)
 
 ---
 
-## Part 2: Exchange Online Configuration
+## Teil 1: DNS-Einrichtung
 
-### Step A: Create the Outbound Connector (Office 365 → Stargate)
+Siehe den [DNS-Einrichtungsleitfaden](DNS-setup.md) für vollständige Anweisungen zur Konfiguration von A-, MX-, SPF-, PTR-, DMARC- und DKIM-Einträgen.
 
-This connector routes outbound mail from Exchange Online to the Stargate relay server.
+Vor der Fortsetzung mit der untenstehenden Exchange-Konfiguration benötigen Sie mindestens:
 
-1. Navigate to the [Exchange Admin Center - Connectors](https://admin.exchange.microsoft.com/#/connectors)
+- **A-Eintrag**: `<MAIL_HOSTNAME>` verweist auf `<STARGATE_IP>`
+- **MX-Eintrag**: `<YOUR_DOMAIN>` mit Stargate bei höherer Priorität (niedrigere Zahl) als Exchange
+- **SPF-Eintrag**: `ip4:<STARGATE_IP>` und `ip4:<HIN_SEALER_IP>` wurden zum TXT-Eintrag Ihrer Domain hinzugefügt (siehe [DNS-Einrichtungsleitfaden - SPF](DNS-setup.md#spf-eintrag) für Sealer-IPs)
 
-2. Click **"+ Add a connector"**
+---
 
-3. **Connection from**: Select **"Office 365"**
-   - **Connection to**: Select **"Your organization's email server"**
-   - Click **"Next"**
+## Teil 2: Exchange Online-Konfiguration
 
-4. **Connector name**: Enter a descriptive name, e.g.:
+### Schritt A: Den ausgehenden Connector erstellen (Office 365 → Stargate)
 
-   ```plain
-   From Office 365 to Stargate relay server
-   ```
+Dieser Connector leitet ausgehende E-Mails von Exchange Online an den Stargate-Relay-Server weiter.
 
-   - Check **"Retain internal Exchange email headers"**
-   - Click **"Next"**
+1. Navigieren Sie zum [Exchange Admin Center - Connectors](https://admin.exchange.microsoft.com/#/connectors)
 
-5. **Use of connector**: Select **"Only when I have a transport rule set up that redirects messages to this connector"**
-   - Click **"Next"**
+2. Klicken Sie auf **"+ Connector hinzufügen"**
 
-!!! tip
-    This is important - the connector won't route any mail by itself. It will only be used when triggered by the transport rule created in Step C.
+3. **Verbindung von**: Wählen Sie **"Office 365"**
+   - **Verbindung zu**: Wählen Sie **"E-Mail-Server Ihrer Organisation"**
+   - Klicken Sie auf **"Weiter"**
 
-6. **Routing**: Select **"Route email through these smart hosts"**
-   - Enter the Stargate server IP address: `<STARGATE_IP>`
-   - Click **"+"** to add it, then click **"Next"**
-
-7. **Security restrictions**: Select **"Any digital certificate, including self-signed certificates"**
-   - Click **"Next"**
-
-!!! note
-    Stargate's MTA (Stalwart) accepts opportunistic TLS on inbound connections. Selecting "any digital certificate" ensures connectivity even with self-signed certificates.
-
-8. **Validation email**: Enter a valid email address for your domain (e.g. `user@<YOUR_DOMAIN>`)
-   - Click **"+"**, then click **"Validate"**
-   - Wait for validation to complete, then click **"Next"**
-
-!!! tip
-    For validation to succeed, the Stargate server must be running and accepting mail on port 25.
-
-9. Review the settings and click **"Create connector"**
-
-10. On the confirmation screen, click **"Done"**
-
-### Step B: Create the Inbound Connector (Stargate → Office 365)
-
-This connector accepts mail from the Stargate relay server into Exchange Online.
-
-1. From the [Connectors page](https://admin.exchange.microsoft.com/#/connectors), click **"+ Add a connector"**
-
-2. **Connection from**: Select **"Your organization's email server"**
-   - **Connection to**: Shows **"Office 365"** (automatic)
-   - Click **"Next"**
-
-3. **Connector name**: Enter a descriptive name, e.g.:
+4. **Connectorname**: Geben Sie einen beschreibenden Namen ein, z.B.:
 
    ```plain
-   Receive mail from Stargate relay server
+   Von Office 365 zum Stargate-Relay-Server
    ```
 
-   - Check **"Retain internal Exchange email headers"**
-   - Click **"Next"**
+   - Aktivieren Sie **"Interne Exchange-E-Mail-Header beibehalten"**
+   - Klicken Sie auf **"Weiter"**
 
-4. **Authenticating sent email**: Select **"By verifying that the IP address of the sending server matches one of the following IP addresses that belong exclusively to your organization"**
-   - Enter the Stargate server IP address: `<STARGATE_IP>`
-   - Click **"+"** to add it, then click **"Next"**
+5. **Verwendung des Connectors**: Wählen Sie **"Nur wenn ich eine Transportregel eingerichtet habe, die Nachrichten an diesen Connector weiterleitet"**
+   - Klicken Sie auf **"Weiter"**
+
+!!! tip
+    Dies ist wichtig – der Connector leitet keine E-Mails von selbst weiter. Er wird nur verwendet, wenn er durch die in Schritt C erstellte Transportregel ausgelöst wird.
+
+6. **Routing**: Wählen Sie **"E-Mails über diese Smart Hosts leiten"**
+   - Geben Sie die Stargate-Server-IP-Adresse ein: `<STARGATE_IP>`
+   - Klicken Sie auf **"+"** zum Hinzufügen und dann auf **"Weiter"**
+
+7. **Sicherheitseinschränkungen**: Wählen Sie **"Beliebiges digitales Zertifikat, einschließlich selbstsignierter Zertifikate"**
+   - Klicken Sie auf **"Weiter"**
 
 !!! note
-    This tells Exchange Online to trust mail from this specific IP address, bypassing additional spam/authentication checks for mail that has already been processed by Stargate.
+    Der MTA von Stargate (Stalwart) akzeptiert opportunistisches TLS bei eingehenden Verbindungen. Die Auswahl von "beliebigem digitalen Zertifikat" stellt die Konnektivität auch mit selbstsignierten Zertifikaten sicher.
 
-5. Review the settings and click **"Create connector"**
+8. **Überprüfungs-E-Mail**: Geben Sie eine gültige E-Mail-Adresse für Ihre Domain ein (z.B. `user@<YOUR_DOMAIN>`)
+   - Klicken Sie auf **"+"** und dann auf **"Überprüfen"**
+   - Warten Sie, bis die Überprüfung abgeschlossen ist, und klicken Sie dann auf **"Weiter"**
 
-6. Click **"Done"**
+!!! tip
+    Damit die Überprüfung erfolgreich ist, muss der Stargate-Server laufen und E-Mails auf Port 25 annehmen.
 
-### Verify Connectors
+9. Überprüfen Sie die Einstellungen und klicken Sie auf **"Connector erstellen"**
 
-After creating both connectors, the Connectors page should show:
+10. Klicken Sie auf dem Bestätigungsbildschirm auf **"Fertig"**
 
-| Status | Name | From | To |
+### Schritt B: Den eingehenden Connector erstellen (Stargate → Office 365)
+
+Dieser Connector akzeptiert E-Mails vom Stargate-Relay-Server in Exchange Online.
+
+1. Klicken Sie auf der [Connectors-Seite](https://admin.exchange.microsoft.com/#/connectors) auf **"+ Connector hinzufügen"**
+
+2. **Verbindung von**: Wählen Sie **"E-Mail-Server Ihrer Organisation"**
+   - **Verbindung zu**: Zeigt **"Office 365"** an (automatisch)
+   - Klicken Sie auf **"Weiter"**
+
+3. **Connectorname**: Geben Sie einen beschreibenden Namen ein, z.B.:
+
+   ```plain
+   E-Mails vom Stargate-Relay-Server empfangen
+   ```
+
+   - Aktivieren Sie **"Interne Exchange-E-Mail-Header beibehalten"**
+   - Klicken Sie auf **"Weiter"**
+
+4. **Authentifizierung gesendeter E-Mails**: Wählen Sie **"Durch Überprüfen, ob die IP-Adresse des sendenden Servers mit einer der folgenden IP-Adressen übereinstimmt, die ausschließlich Ihrer Organisation gehören"**
+   - Geben Sie die Stargate-Server-IP-Adresse ein: `<STARGATE_IP>`
+   - Klicken Sie auf **"+"** zum Hinzufügen und dann auf **"Weiter"**
+
+!!! note
+    Dies teilt Exchange Online mit, dass E-Mails von dieser spezifischen IP-Adresse vertrauenswürdig sind, und umgeht zusätzliche Spam-/Authentifizierungsprüfungen für E-Mails, die bereits von Stargate verarbeitet wurden.
+
+5. Überprüfen Sie die Einstellungen und klicken Sie auf **"Connector erstellen"**
+
+6. Klicken Sie auf **"Fertig"**
+
+### Connectors überprüfen
+
+Nach der Erstellung beider Connectors sollte die Connectors-Seite Folgendes anzeigen:
+
+| Status | Name | Von | An |
 |--------|------|------|-----|
-| On | Receive mail from Stargate relay server | Your org | O365 |
-| On | From Office 365 to Stargate relay server | O365 | Your org |
+| Ein | E-Mails vom Stargate-Relay-Server empfangen | Ihre Org | O365 |
+| Ein | Von Office 365 zum Stargate-Relay-Server | O365 | Ihre Org |
 
-### Step C: Create the Transport Rule
+### Schritt C: Die Transportregel erstellen
 
-The transport rule redirects all outbound mail through the Stargate outbound connector, except mail originating from Stargate itself (to prevent mail loops).
+Die Transportregel leitet alle ausgehenden E-Mails über den Stargate-Ausgangs-Connector weiter, mit Ausnahme von E-Mails, die von Stargate selbst stammen (um E-Mail-Schleifen zu vermeiden).
 
-1. Navigate to [Exchange Admin Center - Rules](https://admin.exchange.microsoft.com/#/transportrules)
+1. Navigieren Sie zum [Exchange Admin Center - Regeln](https://admin.exchange.microsoft.com/#/transportrules)
 
-2. Click **"+ Add a rule"** → **"Create a new rule"**
+2. Klicken Sie auf **"+ Regel hinzufügen"** → **"Neue Regel erstellen"**
 
-3. **Rule name**: Enter a descriptive name, e.g.:
+3. **Regelname**: Geben Sie einen beschreibenden Namen ein, z.B.:
 
    ```plain
-   Relay all mail to Stargate except mail coming from it
+   Alle E-Mails an Stargate weiterleiten, außer E-Mails von diesem
    ```
 
-4. **Apply this rule if**: Select **"The recipient..."** → **"is external/internal"** → **"Outside the organization"**
-   - Click **"Save"**
+4. **Diese Regel anwenden, wenn**: Wählen Sie **"Der Empfänger..."** → **"ist extern/intern"** → **"Außerhalb der Organisation"**
+   - Klicken Sie auf **"Speichern"**
 
 !!! note
-    This condition ensures only outbound mail (to external recipients) is redirected through Stargate.
+    Diese Bedingung stellt sicher, dass nur ausgehende E-Mails (an externe Empfänger) über Stargate weitergeleitet werden.
 
-5. **Do the following**: Select **"Redirect the message to..."** → **"the following connector"** → select the outbound connector created in Step A (e.g. "From Office 365 to Stargate relay server")
-   - Click **"Save"**
+5. **Folgendes tun**: Wählen Sie **"Die Nachricht umleiten an..."** → **"den folgenden Connector"** → wählen Sie den in Schritt A erstellten ausgehenden Connector (z.B. "Von Office 365 zum Stargate-Relay-Server")
+   - Klicken Sie auf **"Speichern"**
 
-6. **Except if**: Click **"+"** to add an exception
-   - Select **"The sender..."** → **"IP address is in any of these ranges"**
-   - Enter the Stargate server IP address: `<STARGATE_IP>`
-   - Click **"Add"**, verify the IP is listed, then click **"Save"**
+6. **Außer wenn**: Klicken Sie auf **"+"**, um eine Ausnahme hinzuzufügen
+   - Wählen Sie **"Der Absender..."** → **"IP-Adresse in einem dieser Bereiche"**
+   - Geben Sie die Stargate-Server-IP-Adresse ein: `<STARGATE_IP>`
+   - Klicken Sie auf **"Hinzufügen"**, überprüfen Sie, ob die IP aufgeführt ist, und klicken Sie dann auf **"Speichern"**
 
 !!! warning
-    **This exception is critical** - it prevents mail loops. Without it, mail from Stargate arriving at Exchange Online would be redirected back to Stargate in an infinite loop.
+    **Diese Ausnahme ist kritisch** – sie verhindert E-Mail-Schleifen. Ohne sie würden E-Mails von Stargate, die bei Exchange Online ankommen, in einer Endlosschleife zurück an Stargate weitergeleitet.
 
-7. Review the rule summary. It should show:
-   - **Apply this rule if**: The recipient is located Outside the organization
-   - **Do the following**: Redirect the message to the connector "From Office 365 to Stargate relay server"
-   - **Except if**: The sender IP address is in one of these ranges: `<STARGATE_IP>`
+7. Überprüfen Sie die Regelzusammenfassung. Sie sollte Folgendes anzeigen:
+   - **Diese Regel anwenden, wenn**: Der Empfänger befindet sich Außerhalb der Organisation
+   - **Folgendes tun**: Die Nachricht an den Connector "Von Office 365 zum Stargate-Relay-Server" umleiten
+   - **Außer wenn**: Die Absender-IP-Adresse in einem dieser Bereiche liegt: `<STARGATE_IP>`
 
-8. Click **"Next"**, then **"Next"** again, then **"Finish"**, then **"Done"**
+8. Klicken Sie auf **"Weiter"**, dann erneut auf **"Weiter"**, dann auf **"Fertig"** und dann auf **"Fertig"**
 
-9. **Enable the rule**: The rule is created in a disabled state. Click on the rule in the list and toggle **"Enable or disable rule"** to **"Enabled"**
+9. **Regel aktivieren**: Die Regel wird im deaktivierten Zustand erstellt. Klicken Sie auf die Regel in der Liste und schalten Sie **"Regel aktivieren oder deaktivieren"** auf **"Aktiviert"** um.
 
 !!! tip
-    Do not forget to enable the rule - it will not work until enabled.
+    Vergessen Sie nicht, die Regel zu aktivieren – sie funktioniert nicht, bis sie aktiviert ist.
 
 ---
 
-## Part 3: On-Premises Exchange Server Configuration
+## Teil 3: Konfiguration des On-Premises Exchange-Servers
 
-For on-premises Exchange Server (2016, 2019), the setup is similar but configured through the Exchange Management Console (EAC) or Exchange Management Shell (PowerShell).
+Für On-Premises Exchange Server (2016, 2019) ist die Einrichtung ähnlich, wird jedoch über die Exchange-Verwaltungskonsole (EAC) oder die Exchange-Verwaltungsshell (PowerShell) konfiguriert.
 
 ### Send Connector (On-Premises → Stargate)
 
-Create a Send connector to route outbound mail through Stargate:
+Erstellen Sie einen Send-Connector, um ausgehende E-Mails über Stargate zu leiten:
 
-**Exchange Management Shell (PowerShell):**
+**Exchange-Verwaltungsshell (PowerShell):**
 
 ```powershell
 New-SendConnector -Name "To Stargate Relay" `
@@ -234,20 +234,20 @@ New-SendConnector -Name "To Stargate Relay" `
 
 **Exchange Admin Center (GUI):**
 
-1. Navigate to **Mail flow** → **Send connectors**
-2. Click **+** to create a new connector
+1. Navigieren Sie zu **Mailfluss** → **Send-Connectors**
+2. Klicken Sie auf **+**, um einen neuen Connector zu erstellen
 3. **Name**: "To Stargate Relay"
-4. **Type**: Select **"Internet"**
-5. **Network settings**: Select **"Route mail through smart hosts"**, add `<STARGATE_IP>`
-6. **Smart host authentication**: Select **"None"**
-7. **Address space**: Add `*` (all domains) or specific external domains
-8. **Source server**: Select your Exchange transport server(s)
+4. **Typ**: Wählen Sie **"Internet"**
+5. **Netzwerkeinstellungen**: Wählen Sie **"E-Mails über Smart Hosts leiten"**, fügen Sie `<STARGATE_IP>` hinzu
+6. **Smart Host-Authentifizierung**: Wählen Sie **"Keine"**
+7. **Adressraum**: Fügen Sie `*` (alle Domains) oder bestimmte externe Domains hinzu
+8. **Quellserver**: Wählen Sie Ihre Exchange-Transportserver
 
 ### Receive Connector (Stargate → On-Premises)
 
-Create or modify a Receive connector to accept mail from Stargate:
+Erstellen oder ändern Sie einen Receive-Connector, um E-Mails von Stargate zu akzeptieren:
 
-**Exchange Management Shell (PowerShell):**
+**Exchange-Verwaltungsshell (PowerShell):**
 
 ```powershell
 New-ReceiveConnector -Name "From Stargate Relay" `
@@ -261,20 +261,20 @@ New-ReceiveConnector -Name "From Stargate Relay" `
 
 **Exchange Admin Center (GUI):**
 
-1. Navigate to **Mail flow** → **Receive connectors**
-2. Click **+** to create a new connector
+1. Navigieren Sie zu **Mailfluss** → **Receive-Connectors**
+2. Klicken Sie auf **+**, um einen neuen Connector zu erstellen
 3. **Name**: "From Stargate Relay"
-4. **Type**: Select **"Frontend Transport"**
-5. **Network adapter bindings**: Leave default or bind to specific IP
-6. **Remote network settings**: Remove the default `0.0.0.0-255.255.255.255` and add only `<STARGATE_IP>`
-7. **Authentication**: Check **"Externally Secured"**
-8. **Permission groups**: Check **"Exchange servers"**
+4. **Typ**: Wählen Sie **"Frontend Transport"**
+5. **Netzwerkadapterbindungen**: Standard belassen oder an bestimmte IP binden
+6. **Remote-Netzwerkeinstellungen**: Entfernen Sie den Standardbereich `0.0.0.0-255.255.255.255` und fügen Sie nur `<STARGATE_IP>` hinzu
+7. **Authentifizierung**: Aktivieren Sie **"Extern gesichert"**
+8. **Berechtigungsgruppen**: Aktivieren Sie **"Exchange-Server"**
 
-### Transport Rule (On-Premises)
+### Transportregel (On-Premises)
 
-Create a transport rule to redirect outbound mail through the Send connector:
+Erstellen Sie eine Transportregel, um ausgehende E-Mails über den Send-Connector weiterzuleiten:
 
-**Exchange Management Shell (PowerShell):**
+**Exchange-Verwaltungsshell (PowerShell):**
 
 ```powershell
 New-TransportRule -Name "Relay outbound via Stargate" `
@@ -285,36 +285,36 @@ New-TransportRule -Name "Relay outbound via Stargate" `
 
 **Exchange Admin Center (GUI):**
 
-1. Navigate to **Mail flow** → **Rules**
-2. Click **+** → **"Create a new rule"**
+1. Navigieren Sie zu **Mailfluss** → **Regeln**
+2. Klicken Sie auf **+** → **"Neue Regel erstellen"**
 3. **Name**: "Relay outbound via Stargate"
-4. **Apply this rule if**: "The recipient is located..." → "Outside the organization"
-5. **Do the following**: "Redirect the message to..." → "the following connector" → "To Stargate Relay"
-6. **Except if**: "The sender IP address is in..." → add `<STARGATE_IP>`
+4. **Diese Regel anwenden, wenn**: "Der Empfänger befindet sich..." → "Außerhalb der Organisation"
+5. **Folgendes tun**: "Die Nachricht umleiten an..." → "den folgenden Connector" → "To Stargate Relay"
+6. **Außer wenn**: "Die Absender-IP-Adresse in..." → fügen Sie `<STARGATE_IP>` hinzu
 
 ---
 
-## Part 4: Stargate-Side Configuration
+## Teil 4: Stargate-seitige Konfiguration
 
-### Automatic Configuration (Default)
+### Automatische Konfiguration (Standard)
 
-By default, Stalwart automatically discovers where to deliver processed mail by looking up MX records for each domain configured via the dashboard's `/mail` page. It filters out its own hostname and uses the remaining MX entries as delivery targets.
+Standardmäßig ermittelt Stalwart automatisch, wohin verarbeitete E-Mails zugestellt werden sollen, indem es die MX-Einträge für jede über die `/mail`-Seite des Dashboards konfigurierte Domain nachschlägt. Es filtert seinen eigenen Hostnamen heraus und verwendet die verbleibenden MX-Einträge als Zustellziele.
 
-This works when:
+Dies funktioniert, wenn:
 
-- Your domain has MX records pointing to both Stargate and Exchange
-- Stargate has a higher-priority (lower number) MX record than Exchange
+- Ihre Domain MX-Einträge hat, die sowohl auf Stargate als auch auf Exchange verweisen
+- Stargate einen MX-Eintrag mit höherer Priorität (niedrigere Zahl) als Exchange hat
 
-### Manual Override via the dashboard
+### Manuelle Überschreibung über das Dashboard
 
-If you want all outbound mail from Stargate to go to a single Exchange endpoint (e.g. Exchange Online Protection), set the relay host through the dashboard's `/mail` page (e.g. `[smtp.office365.com]`). The dashboard sends the value to mtaconf's REST API and the daemon applies it to Stalwart.
+Wenn Sie alle ausgehenden E-Mails von Stargate an einen einzigen Exchange-Endpunkt senden möchten (z.B. Exchange Online Protection), setzen Sie den Relay-Host über die `/mail`-Seite des Dashboards (z.B. `[smtp.office365.com]`). Das Dashboard sendet den Wert an die REST-API von mtaconf und der Daemon wendet ihn auf Stalwart an.
 
 !!! note
-    A single relay host sends all mail through one server and does not support per-domain routing. For multiple domains routing through different Exchange servers, use the per-domain relay map on the same dashboard page (configures `sender_dependent_relayhost_maps` under the hood) - see [Multi-Domain Setup](#multi-domain-setup) below.
+    Ein einzelner Relay-Host sendet alle E-Mails über einen Server und unterstützt kein pro-Domain-Routing. Für mehrere Domains, die über verschiedene Exchange-Server geroutet werden, verwenden Sie die pro-Domain-Relay-Map auf derselben Dashboard-Seite (konfiguriert intern `sender_dependent_relayhost_maps`) – siehe [Multi-Domain-Setup](#multi-domain-setup) unten.
 
-### Multi-Domain Setup
+### Multi-Domain-Setup
 
-For setups with multiple domains and different Exchange servers (e.g. BALZ Informatik AG with 26 domains), use MX records for per-domain routing:
+Für Setups mit mehreren Domains und verschiedenen Exchange-Servern (z.B. BALZ Informatik AG mit 26 Domains) verwenden Sie MX-Einträge für das pro-Domain-Routing:
 
 ```plain
 domain1.com    MX 10  exchange1.domain1.com
@@ -324,86 +324,86 @@ domain2.com    MX 10  exchange2.domain2.com
 domain2.com    MX 20  stargate.domain2.com
 ```
 
-Each domain's MX records tell Stargate where to deliver processed mail for that specific domain.
+Die MX-Einträge jeder Domain sagen Stargate, wohin verarbeitete E-Mails für diese spezifische Domain zugestellt werden sollen.
 
-### Verify Stargate Configuration
+### Stargate-Konfiguration überprüfen
 
-After setup, verify the Stalwart configuration:
+Überprüfen Sie nach der Einrichtung die Stalwart-Konfiguration:
 
-#### Check relay configuration
+#### Relay-Konfiguration prüfen
 
 ```bash
 docker logs stargate-stalwart --tail 50 | grep -i relay
 ```
 
-#### Check mail queue (should be empty when everything is working)
+#### Mail-Warteschlange prüfen (sollte leer sein, wenn alles funktioniert)
 
 ```bash
 docker exec stargate-stalwart stalwart-cli -u http://localhost:8080 queue list
 ```
 
-#### Send a test email and check logs
+#### Test-E-Mail senden und Logs prüfen
 
 ```bash
 docker logs stargate-stalwart --tail 50
 ```
 
-## Troubleshooting
+## Fehlerbehebung
 
-### Mail not leaving Exchange Online
+### E-Mails verlassen Exchange Online nicht
 
-- Verify the transport rule is **enabled** (it is created in a disabled state)
-- Check the rule conditions - it should apply to recipients "Outside the organization"
-- Verify the outbound connector validation passed
-- Check Exchange message trace in the Admin Center for delivery status
+- Überprüfen Sie, ob die Transportregel **aktiviert** ist (sie wird im deaktivierten Zustand erstellt)
+- Überprüfen Sie die Regelbedingungen – sie sollte für Empfänger "Außerhalb der Organisation" gelten
+- Überprüfen Sie, ob die Validierung des ausgehenden Connectors bestanden wurde
+- Überprüfen Sie die Exchange-Nachrichtenverfolgung im Admin Center auf den Zustellungsstatus
 
-### Mail loops (duplicate messages)
+### E-Mail-Schleifen (doppelte Nachrichten)
 
-- Ensure the transport rule has the **exception** for the Stargate IP address
-- Without this exception, mail from Stargate arriving at Exchange gets redirected back to Stargate
+- Stellen Sie sicher, dass die Transportregel die **Ausnahme** für die Stargate-IP-Adresse hat
+- Ohne diese Ausnahme werden E-Mails von Stargate, die bei Exchange ankommen, zurück an Stargate weitergeleitet
 
-### Stargate not accepting mail from Exchange
+### Stargate akzeptiert keine E-Mails von Exchange
 
-- Check port 25 is open on the Stargate server's firewall
-- Verify SPF record includes the Stargate IP
-- Check Stalwart logs: `docker logs stargate-stalwart`
+- Überprüfen Sie, ob Port 25 in der Firewall des Stargate-Servers geöffnet ist
+- Überprüfen Sie, ob der SPF-Eintrag die Stargate-IP enthält
+- Überprüfen Sie die Stalwart-Logs: `docker logs stargate-stalwart`
 
-### Exchange Online rejecting mail from Stargate
+### Exchange Online lehnt E-Mails von Stargate ab
 
-- Verify the inbound connector is configured with the correct Stargate IP
-- Check that the Stargate IP hasn't changed
-- Verify the connector is enabled (Status: On)
+- Überprüfen Sie, ob der eingehende Connector mit der richtigen Stargate-IP konfiguriert ist
+- Überprüfen Sie, ob sich die Stargate-IP nicht geändert hat
+- Überprüfen Sie, ob der Connector aktiviert ist (Status: Ein)
 
-### TLS Certificate Errors
+### TLS-Zertifikatsfehler
 
-Stargate uses opportunistic TLS with a self-signed certificate. The outbound connector in Exchange should be configured to accept "Any digital certificate, including self-signed certificates". If you see TLS-related errors:
+Stargate verwendet opportunistisches TLS mit einem selbstsignierten Zertifikat. Der ausgehende Connector in Exchange sollte so konfiguriert sein, dass er "Beliebige digitale Zertifikate, einschließlich selbstsignierter Zertifikate" akzeptiert. Wenn Sie TLS-bezogene Fehler sehen:
 
-- Verify the outbound connector security setting allows self-signed certificates
-- For on-premises Exchange, ensure the Send connector does not require TLS (`-RequireTLS $false`)
+- Überprüfen Sie, ob die Sicherheitseinstellung des ausgehenden Connectors selbstsignierte Zertifikate erlaubt
+- Stellen Sie für On-Premises Exchange sicher, dass der Send-Connector kein TLS erfordert (`-RequireTLS $false`)
 
-### Validation fails during connector creation
+### Validierung schlägt bei der Connector-Erstellung fehl
 
-The outbound connector validation requires:
+Die Validierung des ausgehenden Connectors erfordert:
 
-- Stargate server is running and accepting connections on port 25
-- The validation email address is valid for your domain
-- Network path between Exchange Online and Stargate is open (no firewall blocking)
+- Stargate-Server läuft und akzeptiert Verbindungen auf Port 25
+- Die Validierungs-E-Mail-Adresse ist für Ihre Domain gültig
+- Der Netzwerkpfad zwischen Exchange Online und Stargate ist offen (keine Firewall-Blockierung)
 
 ---
 
-## Quick Reference
+## Kurzreferenz
 
-| Component | Exchange Online Location | Purpose |
+| Komponente | Exchange Online-Ort | Zweck |
 |-----------|--------------------------|---------|
-| Outbound Connector | Admin Center → Mail flow → Connectors | Route outbound mail to Stargate |
-| Inbound Connector | Admin Center → Mail flow → Connectors | Accept mail from Stargate |
-| Transport Rule | Admin Center → Mail flow → Rules | Trigger outbound connector for external recipients |
+| Ausgehender Connector | Admin Center → Mailfluss → Connectors | Ausgehende E-Mails an Stargate leiten |
+| Eingehender Connector | Admin Center → Mailfluss → Connectors | E-Mails von Stargate akzeptieren |
+| Transportregel | Admin Center → Mailfluss → Regeln | Ausgehenden Connector für externe Empfänger auslösen |
 
-| DNS Record | Example | Purpose |
+| DNS-Eintrag | Beispiel | Zweck |
 |------------|---------|---------|
-| A | `mail IN A <STARGATE_IP>` | Point hostname to Stargate |
-| MX (Stargate) | `@ IN MX 15 mail.<YOUR_DOMAIN>.` | Inbound mail hits Stargate first |
-| MX (Exchange) | `@ IN MX 20 <DOMAIN>.mail.protection.outlook.com.` | Fallback / delivery target |
-| SPF | `ip4:<STARGATE_IP>` and `ip4:<HIN_SEALER_IP>` added to existing TXT record | Authorize Stargate and HIN sealer to send mail |
+| A | `mail IN A <STARGATE_IP>` | Hostnamen auf Stargate verweisen |
+| MX (Stargate) | `@ IN MX 15 mail.<YOUR_DOMAIN>.` | Eingehende E-Mails treffen zuerst auf Stargate |
+| MX (Exchange) | `@ IN MX 20 <DOMAIN>.mail.protection.outlook.com.` | Fallback / Zustellziel |
+| SPF | `ip4:<STARGATE_IP>` und `ip4:<HIN_SEALER_IP>` zum vorhandenen TXT-Eintrag hinzugefügt | Stargate und HIN-Sealer autorisieren, E-Mails zu senden |
 
-For the full DNS setup (including PTR, DMARC, DKIM, and multi-domain), see the [DNS Setup Guide](DNS-setup.md).
+Die vollständige DNS-Einrichtung (einschließlich PTR, DMARC, DKIM und Multi-Domain) finden Sie im [DNS-Einrichtungsleitfaden](DNS-setup.md).

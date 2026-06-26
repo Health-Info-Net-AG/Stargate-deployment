@@ -1,43 +1,42 @@
-# Proxmox deployment using an image
+# Proxmox-Bereitstellung mittels eines Images
 
-Deploy Stargate on Proxmox
+Stargate auf Proxmox bereitstellen
 
-## Get the image file URL
+## URL der Image-Datei abrufen
 
-- Please refer to [VM Catalog](VM-Catalog.md?h=qcow2) for a list of images with URLs.
-- Copy URL to clipboard, for example `https://images.hin.ch/vm-images/Verimesh-HINGateway.v0.5.1.x86_64.qcow2`
+- Bitte beachten Sie [VM Catalog](VM-Catalog.md?h=qcow2) für eine Liste der Images mit URLs.
+- Kopieren Sie die URL in die Zwischenablage, z. B. `https://images.hin.ch/vm-images/Verimesh-HINGateway.v0.5.1.x86_64.qcow2`
 
-## Import the image file in Proxmox
+## Image-Datei in Proxmox importieren
 
-- In Proxmox WebUI, navigate to the Storage menu and click Import
-- Click **Download from URL**, paste the copied URL and click "Query URL".
-- Click Download and wait for "TASK OK" to appear at the end of the output log.
-- Close the Task Viewer Download window.
+- Navigieren Sie im Proxmox-WebUI zum Menü **Storage** und klicken Sie auf **Import**
+- Klicken Sie auf **Download from URL**, fügen Sie die kopierte URL ein und klicken Sie auf **"Query URL"**.
+- Klicken Sie auf **Download** und warten Sie, bis **"TASK OK"** am Ende des Ausgabelogs erscheint.
+- Schliessen Sie das **Task Viewer Download**-Fenster.
 
-## Create a VM
+## VM erstellen
 
-- Click "Create VM"
-- Type a name for the VM
-- Click "Next"
-- Choose "Do not use any media"
-- Click "Next"
-- Click "Next"
-- Click the "Trash icon" next to "scsi0" to remove it.
-- Click "Import" and under "Select Image", choose the newly imported image file.
-- Click "Next"
-- Select 4 CPU cores and choose your CPU Type (or use "host"). Please refer to [Server Requirements](../index.md#server-requirements).
-- Click "Next"
-- Select 8192 MiB Memory. Please refer to [Server Requirements](../index.md#server-requirements).
-- Click "Next"
-- Click "Next"
-- Wait until the VM creation process finishes and then click on the new VM, click "Console", click "Start Now"
+- Klicken Sie auf **"Create VM"**
+- Geben Sie einen Namen für die VM ein.
+- Klicken Sie auf **"Next"**
+- Wählen Sie **"Do not use any media"**
+- Klicken Sie auf **"Next"**
+- Klicken Sie auf **"Next"**
+- Klicken Sie auf das **"Trash icon"** neben **"scsi0"**, um es zu entfernen.
+- Klicken Sie auf **"Import"** und wählen Sie unter **"Select Image"** die neu importierte Image-Datei aus.
+- Klicken Sie auf **"Next"**
+- Wählen Sie **4 CPU-Kerne** und den **CPU-Typ** (oder verwenden Sie **"host"**). Bitte beachten Sie [Server Requirements](../index.md#server-anforderungen).
+- Klicken Sie auf **"Next"**
+- Wählen Sie **8192 MiB Memory**. Bitte beachten Sie [Server Requirements](../index.md#server-anforderungen).
+- Klicken Sie auf **"Next"**
+- Klicken Sie auf **"Next"**
+- Warten Sie, bis der VM-Erstellungsprozess abgeschlossen ist, klicken Sie dann auf die neue VM, klicken Sie auf **"Console"**, dann auf **"Start Now"**
 
-## Install HIN Gateway
+## HIN Gateway installieren
 
-After the VM has been successfully created, proceed with the installation and onboarding steps as described in the provided [instructions](https://health-info-net-ag.github.io/Stargate-deployment/Installation-guide/)
+Nach erfolgreicher Erstellung der VM fahren Sie mit den Installations- und Onboarding-Schritten fort, wie in den bereitgestellten [Anweisungen](https://health-info-net-ag.github.io/Stargate-deployment/Installation-guide/) beschrieben.
 
 !!! tip "Support"
+    Für Fragen oder Probleme im Zusammenhang mit der Bereitstellung und dem Betrieb der Stargate-Appliance wenden Sie sich bitte an den HIN-Support.
 
-    For any questions or issues related to the deployment and operation of the Stargate appliance, please contact HIN support.
-
-    Please include relevant information such as the customer name, appliance version, and screenshots/[logs](../Docker-advanced.md#provide-logs-to-support) where applicable, to help us process your request efficiently.
+    Bitte fügen Sie relevante Informationen wie den Kundennamen, die Appliance-Version und Screenshots/[Logs](../Docker-advanced.md#logs-an-den-support-senden) bei, um uns bei der effizienten Bearbeitung Ihrer Anfrage zu unterstützen.

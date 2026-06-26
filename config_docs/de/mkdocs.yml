@@ -1,8 +1,8 @@
-site_name: HIN Mail "Stargate" deployment
+site_name: HIN Mail "Stargate" Einrichtung
 site_url: https://Health-Info-Net-AG.github.io/stargate-deployment/
 site_author: HIN AG
 site_description: >-
-  Stargate deployment User Dokumentation. Docker, Helmcharts, Virtual Machine, Azure, usw.
+  Stargate Einrichtung Nutzer Dokumentation. Docker, Helmcharts, Virtual Machine, Azure, usw.
 
 docs_dir: "../../docs/de"
 site_dir: "../../site/de"
@@ -137,6 +137,8 @@ markdown_extensions:
   - pymdownx.smartsymbols
   - pymdownx.snippets:
       check_paths: true
+      auto_append:
+        - docs/includes/mkdocs.md
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -153,30 +155,32 @@ markdown_extensions:
   - pymdownx.tilde
 
 not_in_nav: |
-  /docker-compose/*.md
+  docker-compose/*.md
+  includes/*.md
+  assets/*.md
 
 # Page tree
 nav:
-  - Home: index.md
-  - Installation Guides:
-      - Single domain, M365: Installation-guide.md
-  #      - New Customers: New-customers.md
-  - Technical configuration and Integration:
-      - Applications overview: Applications.md
-      - Monitoring and Logs: Monitoring.md
-      - Exchange Integration: Exchange-integration.md
-      - Mail relay setup: Mail-relay-setup.md
-      - DNS Setup: DNS-setup.md
-  - Server install:
+  - Startseite: index.md
+  - Installationsanleitungen:
+      - Einzelne Domain, M365: Installation-guide.md
+  #      - Neukunden: New-customers.md
+  - Technische Konfiguration und Integration:
+      - Anwendungsübersicht: Applications.md
+      - Überwachung und Logs: Monitoring.md
+      - Exchange-Integration: Exchange-integration.md
+      - Mail-Relay-Einrichtung: Mail-relay-setup.md
+      - DNS-Einrichtung: DNS-setup.md
+  - Server-Installation:
       - Container:
-          - Install with Docker: Docker-deploy.md
-          - Docker Advanced configuration: Docker-advanced.md
-          - Helm deployment: helm-deploy.md
-      - VM deployment:
+          - Installation mit Docker: Docker-deploy.md
+          - Docker erweiterte Konfiguration: Docker-advanced.md
+          - Helm-Bereitstellung: helm-deploy.md
+      - VM-Bereitstellung:
           - Azure: vm/Azure-image-install.md
           - VMware: vm/VMware-image-install.md
           - Proxmox: vm/Proxmox-image-install.md
-          - Windows 11 pro: vm/Windows11pro-image-install.md
+          - Windows 11 Pro: vm/Windows11pro-image-install.md
           - Cloudscale: vm/Cloudscale-image-install.md
-  - VM Images catalog: vm/VM-Catalog.md
-  - Support / Contact us: Support.md
+  - VM-Images Katalog: vm/VM-Catalog.md
+  - Support / Kontaktieren Sie uns: Support.md

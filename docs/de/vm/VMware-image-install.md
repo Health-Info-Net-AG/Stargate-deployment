@@ -1,49 +1,48 @@
-# Stargate VMware ESXi deployment using an image
+# Stargate VMware ESXi-Bereitstellung mittels eines Images
 
-Deploy Stargate on VMware
+Stargate auf VMware bereitstellen
 
-## Get the image file
+## Image-Datei herunterladen
 
-- Download the latest OVA (or OVF and VMDK if you prefer) image file. Please refer to [VM Catalog](VM-Catalog.md?h=ova)
+- Laden Sie die neueste OVA-(oder OVF- und VMDK-Datei, falls bevorzugt) Image-Datei herunter. Bitte beachten Sie [VM Catalog](VM-Catalog.md?h=ova)
 
-## Navigate to the ESXi web UI
+## Navigieren Sie zur ESXi-Web-Benutzeroberfläche
 
-- Click **Virtual Machines**
-- Click **Create/Register VM**
-- Choose "Deploy a virtual machine from an OVF or OVA file"
-- Click **Next**
-- Type a name for the VM
-- Click **Next**
-- Click to select files and choose the OVA image file (or OVF and VMDK if you prefer)
-- Click **Next**
-- Choose a storage to use
-- Click **Next**
-- Choose Network and Disk for provisioning
-- Click **Next**
-- Click **Finish**
+- Klicken Sie auf **Virtual Machines**
+- Klicken Sie auf **Create/Register VM**
+- Wählen Sie **"Deploy a virtual machine from an OVF or OVA file"**
+- Klicken Sie auf **Next**
+- Geben Sie einen Namen für die VM ein.
+- Klicken Sie auf **Next**
+- Klicken Sie auf **Select files** und wählen Sie die OVA-Image-Datei (oder OVF und VMDK, falls bevorzugt)
+- Klicken Sie auf **Next**
+- Wählen Sie den zu verwendenden Speicher aus.
+- Klicken Sie auf **Next**
+- Wählen Sie Netzwerk und Disk für die Bereitstellung.
+- Klicken Sie auf **Next**
+- Klicken Sie auf **Finish**
 
-## Log in and initialize the Stargate instance
+## Anmelden und die Stargate-Instanz initialisieren
 
-- Log in to the VM console with the `hinadmin` user in order to configure and install the Stargate components.
-- To obtain the `hinadmin` password, send an email to <support@hin.ch> with the subject: **"Password required for VM installation."**
+- Melden Sie sich an der VM-Konsole mit dem `hinadmin`-Benutzer an, um die Stargate-Komponenten zu konfigurieren und zu installieren.
+- Um das `hinadmin`-Passwort zu erhalten, senden Sie eine E-Mail an <support@hin.ch> mit dem Betreff: **"Password required for VM installation."**
 
-[Click here to send an Email](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
+[Hier klicken, um eine E-Mail zu senden](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE) { .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ```shell
 sudo su -
 cd ~/stargate-deployment/docker-compose/
 ```
 
-- Use vi/nano to edit `customer-config.sh`
-- Configuration details can be found in the [README - Step 1: Configure Customer Settings](../Docker-deploy.md#step-1-configure-customer-settings)
-- Run the install script:
+- Bearbeiten Sie `customer-config.sh` mit vi/nano.
+- Konfigurationsdetails finden Sie in der [README - Schritt 1: Kunden-Einstellungen konfigurieren](../Docker-deploy.md#schritt-1-kundeneinstellungen-konfigurieren)
+- Führen Sie das Installationsskript aus:
 
 ```shell
 ./scripts/install.sh
 ```
 
 !!! tip "Support"
+    Für Fragen oder Probleme im Zusammenhang mit der Bereitstellung und dem Betrieb der Stargate-Appliance wenden Sie sich bitte an den HIN-Support.
 
-    For any questions or issues related to the deployment and operation of the Stargate appliance, please contact HIN support.
-
-    Please include relevant information such as the customer name, appliance version, and screenshots/[logs](../Docker-advanced.md#provide-logs-to-support) where applicable, to help us process your request efficiently.
+    Bitte fügen Sie relevante Informationen wie den Kundennamen, die Appliance-Version und Screenshots/[Logs](../Docker-advanced.md#logs-an-den-support-senden) bei, um uns bei der effizienten Bearbeitung Ihrer Anfrage zu unterstützen.

@@ -1,168 +1,168 @@
-# Stargate mail relay setup
+# Stargate-Mail-Relay-Einrichtung
 
-## Create a Stargate relay for a mail domain hosted in Microsoft Office 365
+## Erstellen Sie ein Stargate-Relay für eine in Microsoft Office 365 gehostete Mail-Domain
 
-For the relay, we need a VM or a server with a real static IP address.
+Für das Relay benötigen wir eine VM oder einen Server mit einer echten statischen IP-Adresse.
 
-In this example we will use a VM with IP address `128.140.117.200` and hostname `mail.vrgnservices.eu` to relay mail for domain `vrgnservices.eu`.
+In diesem Beispiel verwenden wir eine VM mit der IP-Adresse `128.140.117.200` und dem Hostnamen `mail.vrgnservices.eu`, um E-Mails für die Domain `vrgnservices.eu` weiterzuleiten.
 
-## Set up DNS records
+## DNS-Einträge einrichten
 
-See the [DNS Setup Guide](./DNS-setup.md) for complete instructions on all required records (A, MX, SPF, PTR, DMARC, DKIM).
+Siehe den [DNS-Einrichtungsleitfaden](./DNS-setup.md) für vollständige Anweisungen zu allen erforderlichen Einträgen (A, MX, SPF, PTR, DMARC, DKIM).
 
-Quick example for domain `vrgnservices.eu` with Stargate IP `128.140.117.200`:
+Schnellbeispiel für die Domain `vrgnservices.eu` mit Stargate-IP `128.140.117.200`:
 
-* **A record**: `mail.vrgnservices.eu` → `128.140.117.200`
-* **MX record**: `MX @ 15 mail.vrgnservices.eu.` (higher priority than the existing Exchange MX at 20)
-* **SPF record**: `v=spf1 ip4:128.140.117.200 include:spf.protection.outlook.com -all`
+* **A-Eintrag**: `mail.vrgnservices.eu` → `128.140.117.200`
+* **MX-Eintrag**: `MX @ 15 mail.vrgnservices.eu.` (höhere Priorität als der vorhandene Exchange-MX mit 20)
+* **SPF-Eintrag**: `v=spf1 ip4:128.140.117.200 include:spf.protection.outlook.com -all`
 
-Verify:
+Überprüfen:
 
 ```shell
 # host mail.vrgnservices.eu
-mail.vrgnservices.eu has address 128.140.117.200
+mail.vrgnservices.eu hat die Adresse 128.140.117.200
 ```
 
 ```shell
 # host -t mx vrgnservices.eu
-vrgnservices.eu mail is handled by 20 vrgnservices-eu.mail.protection.outlook.com.
-vrgnservices.eu mail is handled by 15 mail.vrgnservices.eu.
+vrgnservices.eu Mail wird bearbeitet von 20 vrgnservices-eu.mail.protection.outlook.com.
+vrgnservices.eu Mail wird bearbeitet von 15 mail.vrgnservices.eu.
 ```
 
 ```shell
 # host -t txt vrgnservices.eu|grep v=spf1
-vrgnservices.eu descriptive text "v=spf1 ip4:128.140.117.200 include:spf.protection.outlook.com -all"
+vrgnservices.eu beschreibender Text "v=spf1 ip4:128.140.117.200 include:spf.protection.outlook.com -all"
 ```
 
-## Install the Stargate docker compose containers
+## Die Stargate-Docker-Compose-Container installieren
 
-[Stargate Deployment](./Docker-deploy.md)
+[Stargate-Bereitstellung](./Docker-deploy.md)
 
-### Requirements
+### Anforderungen
 
-* **2 CPU cores** (minimum)
-* **4 GB RAM** (minimum)
-* **20 GB storage** (minimum)
-* **Root access**: Must be run as root or with `sudo`
-* **Supported distributions**:
-    * RHEL 8, 9 and 10 compatible distributions such as Alma Linux, Rocky Linux, CentOS Stream
-    * Ubuntu 22 and 24
-    * Debian 11, 12 and 13
-* **Real IPv4 address**
-* **Valid DNS records**: Your domain must have:
-    * MX records pointing to your mail servers
-    * SPF record defining allowed sending networks
+* **2 CPU-Kerne** (Minimum)
+* **4 GB RAM** (Minimum)
+* **20 GB Speicher** (Minimum)
+* **Root-Zugriff**: Muss als Root oder mit `sudo` ausgeführt werden
+* **Unterstützte Distributionen**:
+    * RHEL 8, 9 und 10 kompatible Distributionen wie Alma Linux, Rocky Linux, CentOS Stream
+    * Ubuntu 22 und 24
+    * Debian 11, 12 und 13
+* **Reale IPv4-Adresse**
+* **Gültige DNS-Einträge**: Ihre Domain muss Folgendes haben:
+    * MX-Einträge, die auf Ihre Mailserver verweisen
+    * SPF-Eintrag, der die erlaubten sendenden Netzwerke definiert
 
-The script installs all components and starts them. Mail domains and the Stalwart hostname are then configured at runtime via the dashboard's `/mail` page (the mtaconf daemon extracts the necessary mail relay settings from DNS based on those domains).
+Das Skript installiert alle Komponenten und startet sie. Mail-Domains und der Stalwart-Hostname werden dann zur Laufzeit über die `/mail`-Seite des Dashboards konfiguriert (der mtaconf-Daemon extrahiert die erforderlichen Mail-Relay-Einstellungen basierend auf diesen Domains aus DNS).
 
-## Set up Exchange
+## Exchange einrichten
 
-We need to configure connectors and a transport rule in Exchange to relay all outgoing mail to the Stargate relay and allow incoming mail from it.
+Wir müssen Connectors und eine Transportregel in Exchange konfigurieren, um alle ausgehenden E-Mails an das Stargate-Relay weiterzuleiten und eingehende E-Mails von diesem zu erlauben.
 
-Navigate to [https://admin.exchange.microsoft.com/#/connectors](https://admin.exchange.microsoft.com/#/connectors)
+Navigieren Sie zu [https://admin.exchange.microsoft.com/#/connectors](https://admin.exchange.microsoft.com/#/connectors)
 
-### Outgoing connector
+### Ausgehender Connector
 
-Create an outgoing mail connector, click "Add":
+Erstellen Sie einen ausgehenden Mail-Connector, klicken Sie auf "Hinzufügen":
 
-Select "Connection from": "Office 365" "Connection to": "your organization's email server", click "Next".
+Wählen Sie "Verbindung von": "Office 365" "Verbindung zu": "E-Mail-Server Ihrer Organisation", klicken Sie auf "Weiter".
 
-![screenshot](./assets/new_connector_outgoing1.png)
+![Screenshot](./assets/new_connector_outgoing1.png)
 
-Name it something like "From Office 365 to Stargate relay server" and check "Retain Internal Exchange email headers", click "Next".
+Benennen Sie ihn z.B. "Von Office 365 zum Stargate-Relay-Server" und aktivieren Sie "Interne Exchange-E-Mail-Header beibehalten", klicken Sie auf "Weiter".
 
-![screenshot](./assets/new_connector_outgoing2.png)
+![Screenshot](./assets/new_connector_outgoing2.png)
 
-Select "Only when I have a transport rule set up that redirects messages to this connector", click "Next".
+Wählen Sie "Nur wenn ich eine Transportregel eingerichtet habe, die Nachrichten an diesen Connector weiterleitet", klicken Sie auf "Weiter".
 
-![screenshot](./assets/new_connector_outgoing3.png)
+![Screenshot](./assets/new_connector_outgoing3.png)
 
-Enter the IP address of the Stargate relay server, click "+", click "Next".
+Geben Sie die IP-Adresse des Stargate-Relay-Servers ein, klicken Sie auf "+", klicken Sie auf "Weiter".
 
-![screenshot](./assets/new_connector_outgoing4.png)
+![Screenshot](./assets/new_connector_outgoing4.png)
 
-Select "Any digital certificate, including self-signed certificates", click "Next".
+Wählen Sie "Beliebiges digitales Zertifikat, einschließlich selbstsignierter Zertifikate", klicken Sie auf "Weiter".
 
-![screenshot](./assets/new_connector_outgoing5.png)
+![Screenshot](./assets/new_connector_outgoing5.png)
 
-Enter a valid email address for your domain, click "+", click "Validate", click "Next".
+Geben Sie eine gültige E-Mail-Adresse für Ihre Domain ein, klicken Sie auf "+", klicken Sie auf "Validieren", klicken Sie auf "Weiter".
 
-![screenshot](./assets/new_connector_outgoing6.png)
+![Screenshot](./assets/new_connector_outgoing6.png)
 
-Click "Create connector".
+Klicken Sie auf "Connector erstellen".
 
-![screenshot](./assets/new_connector_outgoing7.png)
+![Screenshot](./assets/new_connector_outgoing7.png)
 
-Click "Add another connector".
+Klicken Sie auf "Einen weiteren Connector hinzufügen".
 
-![screenshot](./assets/new_connector_outgoing8.png)
+![Screenshot](./assets/new_connector_outgoing8.png)
 
-### Incoming connector
+### Eingehender Connector
 
-Create an incoming mail connector, choose "Connection from": "Your organization's email server", click "Next".
+Erstellen Sie einen eingehenden Mail-Connector, wählen Sie "Verbindung von": "E-Mail-Server Ihrer Organisation", klicken Sie auf "Weiter".
 
-![screenshot](./assets/new_connector_incoming1.png)
+![Screenshot](./assets/new_connector_incoming1.png)
 
-Name it something like "Receive mail from Stargate relay server" and check "Retain internal Exchange email headers", click "Next.
+Benennen Sie ihn z.B. "E-Mails vom Stargate-Relay-Server empfangen" und aktivieren Sie "Interne Exchange-E-Mail-Header beibehalten", klicken Sie auf "Weiter".
 
-![screenshot](./assets/new_connector_incoming2.png)
+![Screenshot](./assets/new_connector_incoming2.png)
 
-Select "By verifying that the IP address of the sending server matches one of the following IP addresses, type the IP address of the Stargate server, click "+", click "Next".
+Wählen Sie "Durch Überprüfen, ob die IP-Adresse des sendenden Servers mit einer der folgenden IP-Adressen übereinstimmt", geben Sie die IP-Adresse des Stargate-Servers ein, klicken Sie auf "+", klicken Sie auf "Weiter".
 
-![screenshot](./assets/new_connector_incoming3.png)
+![Screenshot](./assets/new_connector_incoming3.png)
 
-Click "Create connector".
+Klicken Sie auf "Connector erstellen".
 
-![screenshot](./assets/new_connector_incoming4.png)
+![Screenshot](./assets/new_connector_incoming4.png)
 
-Click "Done".
+Klicken Sie auf "Fertig".
 
-![screenshot](./assets/new_connector_incoming5.png)
+![Screenshot](./assets/new_connector_incoming5.png)
 
-This is how it looks when done:
+So sieht es aus, wenn es fertig ist:
 
-![screenshot](./assets/new_connector_incoming6.png)
+![Screenshot](./assets/new_connector_incoming6.png)
 
-### Transport Rule
+### Transportregel
 
-Create the transport rule. Navigate to [https://admin.exchange.microsoft.com/#/transportrules](https://admin.exchange.microsoft.com/#/transportrules)
+Erstellen Sie die Transportregel. Navigieren Sie zu [https://admin.exchange.microsoft.com/#/transportrules](https://admin.exchange.microsoft.com/#/transportrules)
 
-Click "+Add a rule" --> "Create a new rule".
+Klicken Sie auf "+Regel hinzufügen" --> "Neue Regel erstellen".
 
-![screenshot](./assets/new_transport_rule1.png)
+![Screenshot](./assets/new_transport_rule1.png)
 
-Name it something like "Relay all mail to Stargate except mail coming from it", choose "Apply rule if" "The recipient:" "is external/internal" "Outside the organization", click "Save".  
+Benennen Sie sie z.B. "Alle E-Mails an Stargate weiterleiten, außer E-Mails von diesem", wählen Sie "Regel anwenden, wenn" "Der Empfänger:" "ist extern/intern" "Außerhalb der Organisation", klicken Sie auf "Speichern".
 
-![screenshot](./assets/new_transport_rule2.png)
+![Screenshot](./assets/new_transport_rule2.png)
 
-Choose "Do the following" "Redirect message to the following connector" "From Office 365 to Stargate relay server", click "Save".
+Wählen Sie "Folgendes tun" "Nachricht an folgenden Connector umleiten" "Von Office 365 zum Stargate-Relay-Server", klicken Sie auf "Speichern".
 
-![screenshot](./assets/new_transport_rule3.png)
+![Screenshot](./assets/new_transport_rule3.png)
 
-Choose "Except if The sender IP address is in any of these ranges" enter the IP address of the Stargate server, click "Add", check the IP address and click "Save".
+Wählen Sie "Außer wenn Die Absender-IP-Adresse in einem dieser Bereiche liegt" geben Sie die IP-Adresse des Stargate-Servers ein, klicken Sie auf "Hinzufügen", überprüfen Sie die IP-Adresse und klicken Sie auf "Speichern".
 
-This is needed to prevent mail loops, as this rule also applies to other domains hosted in Office 365.  
+Dies ist notwendig, um E-Mail-Schleifen zu vermeiden, da diese Regel auch für andere in Office 365 gehostete Domains gilt.
 
-![screenshot](./assets/new_transport_rule4.png)
+![Screenshot](./assets/new_transport_rule4.png)
 
-Now it should look like this, click "Next":
+Jetzt sollte es so aussehen, klicken Sie auf "Weiter":
 
-![screenshot](./assets/new_transport_rule5.png)
+![Screenshot](./assets/new_transport_rule5.png)
 
-Click "Next".
+Klicken Sie auf "Weiter".
 
-![screenshot](./assets/new_transport_rule6.png)
+![Screenshot](./assets/new_transport_rule6.png)
 
-Click "Finish".
+Klicken Sie auf "Fertig".
 
-![screenshot](./assets/new_transport_rule7.png)
+![Screenshot](./assets/new_transport_rule7.png)
 
-Click "Done".
+Klicken Sie auf "Fertig".
 
-![screenshot](./assets/new_transport_rule8.png)
+![Screenshot](./assets/new_transport_rule8.png)
 
-![screenshot](./assets/new_transport_rule9.png)
+![Screenshot](./assets/new_transport_rule9.png)
 
-Click on the rule and set the "Enable or disable rule" to "Enabled"  
+Klicken Sie auf die Regel und setzen Sie die Option "Regel aktivieren oder deaktivieren" auf "Aktiviert"
 
-![screenshot](./assets/new_transport_rule10.png)
+![Screenshot](./assets/new_transport_rule10.png)
