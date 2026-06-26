@@ -25,9 +25,9 @@ Stargate auf Proxmox bereitstellen
 - Klicken Sie auf das **"Trash icon"** neben **"scsi0"**, um es zu entfernen.
 - Klicken Sie auf **"Import"** und wählen Sie unter **"Select Image"** die neu importierte Image-Datei aus.
 - Klicken Sie auf **"Next"**
-- Wählen Sie **4 CPU-Kerne** und den **CPU-Typ** (oder verwenden Sie **"host"**). Bitte beachten Sie [Server Requirements](../index.md#server-requirements).
+- Wählen Sie **4 CPU-Kerne** und den **CPU-Typ** (oder verwenden Sie **"host"**). Bitte beachten Sie [Server Requirements](../index.md#server-anforderungen).
 - Klicken Sie auf **"Next"**
-- Wählen Sie **8192 MiB Memory**. Bitte beachten Sie [Server Requirements](../index.md#server-requirements).
+- Wählen Sie **8192 MiB Memory**. Bitte beachten Sie [Server Requirements](../index.md#server-anforderungen).
 - Klicken Sie auf **"Next"**
 - Klicken Sie auf **"Next"**
 - Warten Sie, bis der VM-Erstellungsprozess abgeschlossen ist, klicken Sie dann auf die neue VM, klicken Sie auf **"Console"**, dann auf **"Start Now"**
@@ -39,4 +39,4 @@ Nach erfolgreicher Erstellung der VM fahren Sie mit den Installations- und Onboa
 !!! tip "Support"
     Für Fragen oder Probleme im Zusammenhang mit der Bereitstellung und dem Betrieb der Stargate-Appliance wenden Sie sich bitte an den HIN-Support.
 
-    Bitte fügen Sie relevante Informationen wie den Kundennamen, die Appliance-Version und Screenshots/[Logs](../Docker-advanced.md#provide-logs-to-support) bei, um uns bei der effizienten Bearbeitung Ihrer Anfrage zu unterstützen.
+    Bitte fügen Sie relevante Informationen wie den Kundennamen, die Appliance-Version und Screenshots/[Logs](../Docker-advanced.md#logs-an-den-support-senden) bei, um uns bei der effizienten Bearbeitung Ihrer Anfrage zu unterstützen.

@@ -21,7 +21,7 @@ Referenz: [Troubleshoot outbound SMTP connectivity in Azure](https://learn.micro
 
 ## Azure VHD-Image-Datei hochladen
 
-- Navigieren Sie zu https://portal.azure.com/#home
+- Navigieren Sie zu <https://portal.azure.com/#home>
 - Klicken Sie auf **Storage accounts**
 - Wählen Sie das zu verwendende Speicherkonto aus oder erstellen Sie ein neues.
 - Klicken Sie auf **Block service** und dann auf **Containers**
@@ -31,7 +31,7 @@ Referenz: [Troubleshoot outbound SMTP connectivity in Azure](https://learn.micro
 
 ## Image erstellen
 
-- Navigieren Sie zu https://portal.azure.com/#home
+- Navigieren Sie zu <https://portal.azure.com/#home>
 - Klicken Sie auf **Images**
 - Klicken Sie auf **Create**
 - Wählen Sie die zu verwendende Ressourcengruppe oder erstellen Sie eine neue.
@@ -43,7 +43,7 @@ Referenz: [Troubleshoot outbound SMTP connectivity in Azure](https://learn.micro
 
 ## VM erstellen
 
-- Navigieren Sie zu https://portal.azure.com/#home
+- Navigieren Sie zu <https://portal.azure.com/#home>
 - Klicken Sie auf **Virtual Machines**
 - Klicken Sie auf **Create** und wählen Sie **Virtual Machine** aus dem Dropdown-Menü.
 - Wählen Sie die **Ressourcengruppe**
@@ -52,13 +52,13 @@ Referenz: [Troubleshoot outbound SMTP connectivity in Azure](https://learn.micro
 - Wählen Sie die VM-Grösse.
 - Wählen Sie den Authentifizierungstyp.
 - Klicken Sie auf **Next: Disks**
-- Wählen Sie eine OS-Disk-Grösse von mindestens 20 GiB. Bitte beachten Sie [Server Requirements](../index.md#server-requirements)
+- Wählen Sie eine OS-Disk-Grösse von mindestens 20 GiB. Bitte beachten Sie [Server Requirements](../index.md#server-anforderungen)
 - Klicken Sie auf **Review + create**
 - Klicken Sie auf **Create**
 
 ## Öffentliche IP-Adresse der neuen VM finden und eingehende Firewall-Regeln hinzufügen
 
-- Navigieren Sie zu https://portal.azure.com/#home
+- Navigieren Sie zu <https://portal.azure.com/#home>
 - Klicken Sie auf **Virtual Machines**
 - Klicken Sie auf die neue VM.
 - Sie können die öffentliche IP-Adresse unter **"Primary NIC public IP"** sehen.
@@ -68,7 +68,7 @@ Referenz: [Troubleshoot outbound SMTP connectivity in Azure](https://learn.micro
 ## Anmelden und die Stargate-Instanz initialisieren
 
 - Melden Sie sich bei der VM mit dem Benutzer an, den Sie während der VM-Erstellung gewählt haben, und der öffentlichen IP-Adresse der neuen VM:
-- Um das `hinadmin`-Passwort zu erhalten, senden Sie eine E-Mail an support@hin.ch mit dem Betreff: **"Password required for VM installation."**
+- Um das `hinadmin`-Passwort zu erhalten, senden Sie eine E-Mail an <support@hin.ch> mit dem Betreff: **"Password required for VM installation."**
 
 [Hier klicken, um eine E-Mail zu senden](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE) { .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
@@ -84,7 +84,7 @@ cd ~/stargate-deployment/docker-compose/
 ```
 
 - Bearbeiten Sie `customer-config.sh` mit vi/nano.
-- Konfigurationsdetails finden Sie in der [README - Schritt 1: Kunden-Einstellungen konfigurieren](../Docker-deploy.md#step-1-configure-customer-settings)
+- Konfigurationsdetails finden Sie in der [README - Schritt 1: Kunden-Einstellungen konfigurieren](../Docker-deploy.md#schritt-1-kundeneinstellungen-konfigurieren)
 - Führen Sie das Installationsskript aus:
 
 ```shell
@@ -94,4 +94,4 @@ cd ~/stargate-deployment/docker-compose/
 !!! tip "Support"
     Für Fragen oder Probleme im Zusammenhang mit der Bereitstellung und dem Betrieb der Stargate-Appliance wenden Sie sich bitte an den HIN-Support.
 
-    Bitte fügen Sie relevante Informationen wie den Kundennamen, die Appliance-Version und Screenshots/[Logs](../Docker-advanced.md#provide-logs-to-support) bei, um uns bei der effizienten Bearbeitung Ihrer Anfrage zu unterstützen.
+    Bitte fügen Sie relevante Informationen wie den Kundennamen, die Appliance-Version und Screenshots/[Logs](../Docker-advanced.md#logs-an-den-support-senden) bei, um uns bei der effizienten Bearbeitung Ihrer Anfrage zu unterstützen.

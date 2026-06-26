@@ -4,7 +4,7 @@
 
 **Server-Anforderungen:**
 
-Bitte beachten Sie die [Empfohlenen Anforderungen](./index.md#server-requirements)
+Bitte beachten Sie die [Empfohlenen Anforderungen](./index.md#server-anforderungen)
 
 * Docker wird bei Bedarf automatisch installiert
 * Stellen Sie sicher, dass auf dem System, auf dem Sie Stargate-Dienste installieren, eine Internetverbindung besteht
@@ -19,7 +19,9 @@ Bitte beachten Sie die [Empfohlenen Anforderungen](./index.md#server-requirement
     git clone https://github.com/Health-Info-Net-AG/Stargate-deployment.git
     ```
 
-    Wenn Sie `git` nicht installiert haben, können Sie jederzeit ein Archiv mit allen Dateien herunterladen. Laden Sie es über den folgenden Link herunter. [Als ZIP herunterladen](https://github.com/Health-Info-Net-AG/Stargate-deployment/archive/refs/heads/main.zip){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
+    Wenn Sie `git` nicht installiert haben, können Sie jederzeit ein Archiv mit allen Dateien herunterladen. Laden Sie es über den folgenden Link herunter.
+    
+    [Als ZIP herunterladen](https://github.com/Health-Info-Net-AG/Stargate-deployment/archive/refs/heads/main.zip){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 Erstellen Sie vor der Installation die Kundenkonfigurationsdatei und füllen Sie sie aus:
 
@@ -116,7 +118,7 @@ ssh your-server
 cd /path/to/stargate
 ```
 
-Erstellen Sie die Kundenkonfiguration aus der Vorlage und füllen Sie die erforderlichen Einstellungen aus ([siehe Schritt 1](#step-1-configure-customer-settings))
+Erstellen Sie die Kundenkonfiguration aus der Vorlage und füllen Sie die erforderlichen Einstellungen aus ([siehe Schritt 1](#schritt-1-kundeneinstellungen-konfigurieren))
 
 ```bash
 cp customer-config-prod.example.sh customer-config.sh
@@ -144,7 +146,7 @@ Das Installationsskript (`install.sh`) führt die folgenden Schritte durch:
 8. **WireGuard-Private-Key in `customer-config.sh` speichern** — wird nach der Generierung durch IRISAgent aus Vault extrahiert.
 9. **Täglichen Backup-Cron-Job einrichten** (wird um 2:00 Uhr ausgeführt).
 
-Nach Abschluss der Installation läuft der Stack, aber es sind noch keine Mail-Domains, S/MIME-Zertifikate oder WireGuard-Peers eingerichtet. Fahren Sie mit [Schritt 4: Onboarding über das Dashboard](#step-4-onboard-via-the-dashboard) fort.
+Nach Abschluss der Installation läuft der Stack, aber es sind noch keine Mail-Domains, S/MIME-Zertifikate oder WireGuard-Peers eingerichtet. Fahren Sie mit [Schritt 4: Onboarding über das Dashboard](#schritt-4-onboarding-uber-das-dashboard) fort.
 
 ## Schritt 4: Onboarding über das Dashboard
 
@@ -209,7 +211,7 @@ Sobald das Zertifikat ausgestellt ist und E-Mails fließen, werden zwei Konfigur
 
 Stargate sendet E-Mails von seiner eigenen öffentlichen IP im Namen Ihrer Benutzer. Ohne korrekte DNS-Authentifizierungsdatensätze sehen Empfänger Warnungen wie "wir können diesen Absender nicht überprüfen" und können die E-Mail ablehnen.
 
-Vollständige Anweisungen zur Konfiguration von SPF, DKIM, DMARC und PTR-Einträgen finden Sie im [DNS-Einrichtungsleitfaden](DNS-setup.md#recommended-records).
+Vollständige Anweisungen zur Konfiguration von SPF, DKIM, DMARC und PTR-Einträgen finden Sie im [DNS-Einrichtungsleitfaden](DNS-setup.md#empfohlene-eintrage).
 
 Mindestens für jede Domain, die Sie über Stargate routen:
 
@@ -313,7 +315,7 @@ Das `start.sh`-Skript (und der Systemd-Dienst) entsiegeln Vault automatisch mit 
 !!! warning
     Diese Befehle **LÖSCHEN ALLE DATEN** – mit Vorsicht verwenden!
 
-    Sie können Daten nur wiederherstellen, wenn Sie vorher [Backup-Operationen](./Docker-advanced.md#manual-backup) durchführen und das Backup an einem sicheren Ort aufbewahren.
+    Sie können Daten nur wiederherstellen, wenn Sie vorher [Backup-Operationen](./Docker-advanced.md#manuelles-backup) durchführen und das Backup an einem sicheren Ort aufbewahren.
 
 !!! danger
     Alles löschen (Volumes, Secrets, Konfiguration)
@@ -360,4 +362,4 @@ Das `start.sh`-Skript (und der Systemd-Dienst) entsiegeln Vault automatisch mit 
 
     Bei Fragen oder Problemen im Zusammenhang mit der Bereitstellung und dem Betrieb der Stargate-Appliance wenden Sie sich bitte an den HIN-Support.
 
-    Bitte fügen Sie relevante Informationen wie den Kundennamen, die Appliance-Version und Screenshots/[Logs](./Docker-advanced.md#provide-logs-to-support) hinzu, um die Bearbeitung Ihres Anliegens zu beschleunigen.
+    Bitte fügen Sie relevante Informationen wie den Kundennamen, die Appliance-Version und Screenshots/[Logs](./Docker-advanced.md#logs-an-den-support-senden) hinzu, um die Bearbeitung Ihres Anliegens zu beschleunigen.

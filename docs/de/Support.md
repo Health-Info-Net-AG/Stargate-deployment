@@ -12,4 +12,4 @@
 
     Weitere Informationen finden Sie auf unserer Kontaktseite: https://support.hin.ch/de/kontakt.cfm
 
-    Bitte fügen Sie relevante Informationen wie den Kundennamen, die Appliance-Version und Screenshots/[Logs](./Docker-advanced.md#provide-logs-to-support) hinzu, um die Bearbeitung Ihres Anliegens zu beschleunigen.
+    Bitte fügen Sie relevante Informationen wie den Kundennamen, die Appliance-Version und Screenshots/[Logs](./Docker-advanced.md#logs-an-den-support-senden) hinzu, um die Bearbeitung Ihres Anliegens zu beschleunigen.

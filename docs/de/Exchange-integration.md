@@ -75,7 +75,7 @@ Vor der Fortsetzung mit der untenstehenden Exchange-Konfiguration benötigen Sie
 
 - **A-Eintrag**: `<MAIL_HOSTNAME>` verweist auf `<STARGATE_IP>`
 - **MX-Eintrag**: `<YOUR_DOMAIN>` mit Stargate bei höherer Priorität (niedrigere Zahl) als Exchange
-- **SPF-Eintrag**: `ip4:<STARGATE_IP>` und `ip4:<HIN_SEALER_IP>` wurden zum TXT-Eintrag Ihrer Domain hinzugefügt (siehe [DNS-Einrichtungsleitfaden - SPF](DNS-setup.md#spf-record) für Sealer-IPs)
+- **SPF-Eintrag**: `ip4:<STARGATE_IP>` und `ip4:<HIN_SEALER_IP>` wurden zum TXT-Eintrag Ihrer Domain hinzugefügt (siehe [DNS-Einrichtungsleitfaden - SPF](DNS-setup.md#spf-eintrag) für Sealer-IPs)
 
 ---
 
