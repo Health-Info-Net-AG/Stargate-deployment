@@ -1,57 +1,57 @@
-# Windows 11 Pro deployment using an image
 
-Deploy Stargate on Windows Pro (non-Pro versions do not support Hyper-V)
+# Windows 11 Pro-Bereitstellung mittels eines Images
 
-## Install Hyper-V
+Stargate auf Windows Pro bereitstellen (Nicht-Pro-Versionen unterstützen Hyper-V nicht)
 
-- Click the Start button, then type "Turn Windows features on or off"
-- Click on that button
-- Check Hyper-V and click "OK"
-- After the installation completes, click "Restart now" and wait for Windows to boot again
+## Hyper-V installieren
 
-**Note:** We recommend deploying the VM using Hyper-V Generation 2
+- Klicken Sie auf den **Start**-Button und geben Sie **"Windows-Features aktivieren oder deaktivieren"** ein.
+- Klicken Sie auf diesen Button.
+- Aktivieren Sie **Hyper-V** und klicken Sie auf **"OK"**.
+- Nach Abschluss der Installation klicken Sie auf **"Jetzt neu starten"** und warten Sie, bis Windows neu startet.
 
-## Get the image
+**Hinweis:** Wir empfehlen, die VM mit Hyper-V Generation 2 bereitzustellen.
 
-- Download the .vhdx image file. Please refer to [VM Catalog](VM-Catalog.md?h=vhdx)
+## Image abrufen
 
-## Import the image file and create a VM with it
+- Laden Sie die .vhdx-Image-Datei herunter. Bitte beachten Sie [VM Catalog](VM-Catalog.md?h=vhdx)
 
-- Click the "Start" button and type "Hyper-V Quick Create"
-- Click on that icon
-- Choose "Local installation source"
-- Uncheck "This machine will run Windows"
-- Click "Change installation source", navigate to the downloaded .VHDX image and click on it
-- Click "Create virtual machine"
-- Click "Edit settings"
-- Under "Memory", choose "RAM" 8192 MB. Please refer to [Server Requirements](../index.md#server-requirements).
-- Under "Processor", choose "Number of virtual processors" 4. Please refer to [Server Requirements](../index.md#server-requirements).
-- Click "OK"
-- Click "Connect"
-- Click "Start"
+## Image-Datei importieren und VM damit erstellen
 
-## Log in and initialize the Stargate instance
+- Klicken Sie auf den **Start**-Button und geben Sie **"Hyper-V Quick Create"** ein.
+- Klicken Sie auf dieses Symbol.
+- Wählen Sie **"Lokale Installationsquelle"**.
+- Deaktivieren Sie **"Dieser Computer wird Windows ausführen"**.
+- Klicken Sie auf **"Installationsquelle ändern"**, navigieren Sie zur heruntergeladenen .VHDX-Image-Datei und klicken Sie darauf.
+- Klicken Sie auf **"Virtuellen Computer erstellen"**.
+- Klicken Sie auf **"Einstellungen bearbeiten"**.
+- Unter **"Speicher"** wählen Sie **"RAM"** 8192 MB. Bitte beachten Sie [Server Requirements](../index.md#server-requirements).
+- Unter **"Prozessor"** wählen Sie **"Anzahl der virtuellen Prozessoren"** 4. Bitte beachten Sie [Server Requirements](../index.md#server-requirements).
+- Klicken Sie auf **"OK"**.
+- Klicken Sie auf **"Verbinden"**.
+- Klicken Sie auf **"Starten"**.
 
-- Log in to the VM console with the `hinadmin` user in order to configure and install the Stargate components.
-- To obtain the `hinadmin` password, send an email to <support@hin.ch> with the subject: **"Password required for VM installation."**
+## Anmelden und die Stargate-Instanz initialisieren
 
-[Click here to send an Email](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
+- Melden Sie sich an der VM-Konsole mit dem `hinadmin`-Benutzer an, um die Stargate-Komponenten zu konfigurieren und zu installieren.
+- Um das `hinadmin`-Passwort zu erhalten, senden Sie eine E-Mail an support@hin.ch mit dem Betreff: **"Password required for VM installation."**
+
+[Hier klicken, um eine E-Mail zu senden](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE) { .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ```shell
 sudo su -
 cd ~/stargate-deployment/docker-compose/
 ```
 
-- Use vi/nano to edit `customer-config.sh`
-- Configuration details can be found in the [README - Step 1: Configure Customer Settings](../Docker-deploy.md#step-1-configure-customer-settings)
-- Run the install script:
+- Bearbeiten Sie `customer-config.sh` mit vi/nano.
+- Konfigurationsdetails finden Sie in der [README - Schritt 1: Kunden-Einstellungen konfigurieren](../Docker-deploy.md#step-1-configure-customer-settings)
+- Führen Sie das Installationsskript aus:
 
 ```shell
 ./scripts/install.sh
 ```
 
 !!! tip "Support"
+    Für Fragen oder Probleme im Zusammenhang mit der Bereitstellung und dem Betrieb der Stargate-Appliance wenden Sie sich bitte an den HIN-Support.
 
-    For any questions or issues related to the deployment and operation of the Stargate appliance, please contact HIN support.
-
-    Please include relevant information such as the customer name, appliance version, and screenshots/[logs](../Docker-advanced.md#provide-logs-to-support) where applicable, to help us process your request efficiently.
+    Bitte fügen Sie relevante Informationen wie den Kundennamen, die Appliance-Version und Screenshots/[Logs](../Docker-advanced.md#provide-logs-to-support) bei, um uns bei der effizienten Bearbeitung Ihrer Anfrage zu unterstützen.
