@@ -486,7 +486,7 @@ Confirm:
 - No delays or bounces
 - Logging successful
 
-Complete the (**"Acceptance Report"**)[https://www.hin.ch/files/pdf1/gateway-acceptance-en.pdf] and return it to your HIN representative.
+Complete the [Acceptance Report](https://www.hin.ch/files/pdf1/gateway-acceptance-en.pdf) and return it to your HIN representative.
 
 ### Step 21 - Take existing MGW out of service
 
