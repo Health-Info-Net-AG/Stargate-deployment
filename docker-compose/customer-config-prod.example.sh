@@ -110,7 +110,7 @@ APISIX_VERSION="3.17.0-debian"
 # renovate: datasource=docker depName=nats
 NATS_VERSION="2.14-alpine"
 # renovate: datasource=docker depName=chrislusf/seaweedfs
-SEAWEEDFS_VERSION="4.35"
+SEAWEEDFS_VERSION="4.37"
 # renovate: datasource=docker depName=caddy
 CADDY_VERSION="2-alpine"
 # renovate: datasource=docker depName=grafana/loki
