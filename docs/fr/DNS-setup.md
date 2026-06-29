@@ -1,69 +1,69 @@
-# DNS Setup for Stargate
+# Configuration DNS pour Stargate
 
-This guide covers all DNS records required for a working Stargate deployment. Configure these records **before** installing Stargate or immediately after, depending on the record type.
+Ce guide couvre tous les enregistrements DNS requis pour un déploiement fonctionnel de Stargate. Configurez ces enregistrements **avant** d'installer Stargate ou immédiatement après, selon le type d'enregistrement.
 
-Throughout this guide:
+Tout au long de ce guide:
 
-- `<STARGATE_IP>` - your Stargate server's public static IP address (`SERVER_STATIC_IP` in `customer-config.sh`)
-- `<MAIL_HOSTNAME>` - the FQDN of the Stargate relay (e.g. `mail.example.ch`; configured via the dashboard's `/mail` page)
-- `<YOUR_DOMAIN>` - your mail domain (e.g. `example.ch`; configured via the dashboard's `/mail` page)
+- `<STARGATE_IP>` - l'adresse IP publique statique de votre serveur Stargate (`SERVER_STATIC_IP` dans `customer-config.sh`)
+- `<MAIL_HOSTNAME>` - le FQDN du relais Stargate (ex. `mail.example.ch` ; configuré via la page `/mail` du tableau de bord)
+- `<YOUR_DOMAIN>` - votre domaine de courrier (ex. `example.ch` ; configuré via la page `/mail` du tableau de bord)
 
 ---
 
-## Record Summary
+## Résumé des enregistrements
 
-| Record | Name | Value | Required | When |
+| Enregistrement | Nom | Valeur | Requis | Quand |
 |--------|------|-------|----------|------|
-| [A](#a-record) | `<MAIL_HOSTNAME>` | `<STARGATE_IP>` | Yes | Before install |
-| [MX](#mx-records) | `<YOUR_DOMAIN>` | `<MAIL_HOSTNAME>` (priority 15) | Yes | Before install |
-| [SPF](#spf-record) | `<YOUR_DOMAIN>` | `ip4:<STARGATE_IP>` added to TXT | Yes | Before install |
-| [PTR](#ptr-reverse-dns) | `<STARGATE_IP>` | `<MAIL_HOSTNAME>` | Recommended | Before install |
-| [DMARC](#dmarc-record) | `_dmarc.<YOUR_DOMAIN>` | `v=DMARC1; p=none; ...` | Recommended | After install |
-| [DKIM](#dkim-records) | `selector._domainkey.<YOUR_DOMAIN>` | From M365/provider | Recommended | After install |
+| [A](#enregistrement-a) | `<MAIL_HOSTNAME>` | `<STARGATE_IP>` | Oui | Avant l'installation |
+| [MX](#enregistrements-mx) | `<YOUR_DOMAIN>` | `<MAIL_HOSTNAME>` (priorité 15) | Oui | Avant l'installation |
+| [SPF](#enregistrement-spf) | `<YOUR_DOMAIN>` | `ip4:<STARGATE_IP>` ajouté au TXT | Oui | Avant l'installation |
+| [PTR](#ptr-dns-inverse) | `<STARGATE_IP>` | `<MAIL_HOSTNAME>` | Recommandé | Avant l'installation |
+| [DMARC](#enregistrement-dmarc) | `_dmarc.<YOUR_DOMAIN>` | `v=DMARC1; p=none; ...` | Recommandé | Après l'installation |
+| [DKIM](#enregistrements-dkim) | `selector._domainkey.<YOUR_DOMAIN>` | Depuis M365/fournisseur | Recommandé | Après l'installation |
 
-For multi-domain deployments, repeat the MX, SPF, DMARC, and DKIM records for each domain listed in `MAIL_DOMAINS`.
+Pour les déploiements multi-domaines, répétez les enregistrements MX, SPF, DMARC et DKIM pour chaque domaine répertorié dans `MAIL_DOMAINS`.
 
 ---
 
-## Required Records
+## Enregistrements requis
 
-### A Record
+### Enregistrement A
 
-Create an A record pointing the Stargate mail hostname to the server's public IP:
+Créez un enregistrement A pointant le nom d'hôte du courrier Stargate vers l'IP publique du serveur:
 
 ```plain
 <MAIL_HOSTNAME>.    A    <STARGATE_IP>
 ```
 
-Example:
+Exemple:
 
 ```plain
 mail.example.ch.    A    128.140.117.200
 ```
 
-If the Stargate has an IPv6 address, add an AAAA record as well:
+Si Stargate dispose d'une adresse IPv6, ajoutez également un enregistrement AAAA:
 
 ```plain
 mail.example.ch.    AAAA    2a01:4f8:c012:1234::1
 ```
 
-**Why**: External mail servers connect to this hostname to deliver mail. Without the A record, the MX record below is unresolvable.
+**Pourquoi**: Les serveurs de courrier externes se connectent à ce nom d'hôte pour livrer les courriels. Sans l'enregistrement A, l'enregistrement MX ci-dessous n'est pas résolvable.
 
-### MX Records
+### Enregistrements MX
 
-Add an MX record for the Stargate with a **higher priority** (lower number) than the existing mail server. This ensures inbound mail reaches the Stargate first for S/MIME processing before being forwarded to Exchange or your mail platform.
+Ajoutez un enregistrement MX pour Stargate avec une **priorité plus élevée** (nombre inférieur) que le serveur de courrier existant. Cela garantit que les courriels entrants atteignent d'abord Stargate pour le traitement S/MIME avant d'être transférés vers Exchange ou votre plateforme de courrier.
 
 ```plain
 <YOUR_DOMAIN>.    MX    15    <MAIL_HOSTNAME>.
 ```
 
-Keep the existing Exchange / mail server MX record at a lower priority (higher number):
+Conservez l'enregistrement MX existant d'Exchange / serveur de courrier avec une priorité inférieure (nombre supérieur):
 
 ```plain
 <YOUR_DOMAIN>.    MX    20    <YOUR_DOMAIN>.mail.protection.outlook.com.
 ```
 
-Example (complete MX set):
+Exemple (ensemble MX complet):
 
 ```plain
 example.ch.    MX    15    mail.example.ch.
@@ -71,96 +71,96 @@ example.ch.    MX    20    example-ch.mail.protection.outlook.com.
 ```
 
 !!! info
-    The lower MX number means higher priority. Stargate at priority 15 receives mail before Exchange Online at priority 20.
+    Un numéro MX inférieur signifie une priorité plus élevée. Stargate avec la priorité 15 reçoit les courriels avant Exchange Online avec la priorité 20.
 
-**Why**: The Stargate intercepts inbound mail, processes S/MIME, then forwards to the next MX (Exchange). The second MX record is also used by Stalwart to know where to relay processed mail.
+**Pourquoi**: Stargate intercepte les courriels entrants, traite S/MIME, puis les transfère au prochain MX (Exchange). Le deuxième enregistrement MX est également utilisé par Stalwart pour savoir où relayer les courriels traités.
 
-**Important**: If the Stargate is the **only** MX record for a domain, Stalwart will filter out its own hostname and have no delivery target. Always keep a second MX pointing to your actual mail server.
+**Important**: Si Stargate est le **seul** enregistrement MX pour un domaine, Stalwart filtrera son propre nom d'hôte et n'aura pas de cible de livraison. Conservez toujours un deuxième MX pointant vers votre serveur de courrier réel.
 
-### SPF Record
+### Enregistrement SPF
 
-Add the Stargate server IP **and the HIN sealer IP** to your domain's SPF record so outbound mail relayed through it passes SPF checks at the recipient's end.
+Ajoutez l'IP du serveur Stargate **et l'IP du scelleur HIN** à l'enregistrement SPF de votre domaine afin que les courriels sortants relayés via celui-ci réussissent les vérifications SPF chez le destinataire.
 
-**If you use M365 / Exchange Online:**
+**Si vous utilisez M365 / Exchange Online:**
 
 ```plain
 <YOUR_DOMAIN>.    TXT    "v=spf1 ip4:<STARGATE_IP> ip4:<HIN_SEALER_IP> include:spf.protection.outlook.com -all"
 ```
 
-**If you do not use M365 / Google Workspace:**
+**Si vous n'utilisez pas M365 / Google Workspace:**
 
 ```plain
 <YOUR_DOMAIN>.    TXT    "v=spf1 ip4:<STARGATE_IP> ip4:<HIN_SEALER_IP> -all"
 ```
 
-Example:
+Exemple:
 
 ```plain
 example.ch.    TXT    "v=spf1 ip4:128.140.117.200 ip4:193.247.208.66 include:spf.protection.outlook.com -all"
 ```
 
-!!! question "Why the HIN sealer IP is required"
-    When the Stargate produces a SEAL'd (encrypted) message for a non-HIN recipient, the final outbound hop to the recipient is the **HIN sealer**, not your Stargate or M365. Without the sealer IP in your SPF record, every SEAL'd outbound message will fail SPF at the recipient and - because there is no DKIM signature on the SEAL'd payload - DMARC will fail too. Strict-DMARC recipients (Gmail, Outlook with `p=reject` enforcement, Proofpoint) will reject or junk the message.
+!!! question "Pourquoi l'IP du scelleur HIN est requise"
+    Lorsque Stargate produit un message SCELLÉ (chiffré) pour un destinataire non-HIN, le dernier saut sortant vers le destinataire est le **scelleur HIN**, pas votre Stargate ou M365. Sans l'IP du scelleur dans votre enregistrement SPF, chaque message sortant SCELLÉ échouera au SPF chez le destinataire et - car il n'y a pas de signature DKIM sur la charge utile SCELLÉE - DMARC échouera également. Les destinataires avec DMARC strict (Gmail, Outlook avec application `p=reject`, Proofpoint) rejetteront ou classeront le message comme indésirable.
 
-    Sealer IPs to add in SPF:
+    IPs du scelleur à ajouter dans SPF:
 
-    | Environment | Sealer host | IP to add to SPF |
+    | Environnement | Hôte du scelleur | IP à ajouter à SPF |
     |-------------|-------------|------------------|
-    | HIN Test (alpha/beta) | `mx3.hintest.ch` | `193.247.208.66` |
-    | HIN Production | TBD - request canonical list from HIN before go-live | TBD |
+    | HIN Test (alpha/bêta) | `mx3.hintest.ch` | `193.247.208.66` |
+    | HIN Production | À déterminer - demandez la liste canonique à HIN avant la mise en production | À déterminer |
 
-    If HIN publishes more than one sealer host (e.g. `mx1`, `mx2`, `mx3`), include **all** their IPs. Resolve them with `dig +short mx hintest.ch` followed by `dig +short A <each-mx>`. Until you have the full list, leave the SPF policy at `~all` (softfail) instead of `-all` (hardfail) so that legitimate SEAL mail through any unlisted sealer IP is not outright rejected.
+    Si HIN publie plus d'un hôte de scellement (ex. `mx1`, `mx2`, `mx3`), incluez **toutes** leurs IPs. Résolvez-les avec `dig +short mx hintest.ch` suivi de `dig +short A <chaque-mx>`. Jusqu'à ce que vous ayez la liste complète, laissez la politique SPF à `~all` (échec doux) au lieu de `-all` (échec dur) afin que les courriels SCELLÉS légitimes via une IP de scelleur non répertoriée ne soient pas catégoriquement rejetés.
 
-!!! warning "SPF lookup limit"
-    The total `include:` chain in an SPF record must stay under **10 DNS lookups**. Adding `ip4:` entries does not count toward this limit. Check your count with [MXToolbox SPF lookup](https://mxtoolbox.com/spf.aspx).
+!!! warning "Limite de recherche SPF"
+    La chaîne `include:` totale dans un enregistrement SPF doit rester en dessous de **10 recherches DNS**. L'ajout d'entrées `ip4:` ne compte pas dans cette limite. Vérifiez votre nombre avec [MXToolbox SPF lookup](https://mxtoolbox.com/spf.aspx).
 
-**How the Stargate uses SPF**: The mtaconf daemon resolves each domain's SPF record to auto-populate the list of IPs allowed to relay through the Stargate without authentication. This is how Microsoft 365 outbound IPs get whitelisted automatically - they appear in the `include:spf.protection.outlook.com` chain.
+**Comment Stargate utilise SPF**: Le démon mtaconf résout l'enregistrement SPF de chaque domaine pour remplir automatiquement la liste des IP autorisées à relayer via Stargate sans authentification. C'est ainsi que les IP sortantes de Microsoft 365 sont automatiquement mises sur liste blanche - elles apparaissent dans la chaîne `include:spf.protection.outlook.com`.
 
 ---
 
-## Recommended Records
+## Enregistrements recommandés
 
-### PTR (Reverse DNS)
+### PTR (DNS inversé)
 
-Configure the reverse DNS (PTR) record for the Stargate IP to match `<MAIL_HOSTNAME>`:
+Configurez l'enregistrement DNS inversé (PTR) pour l'IP Stargate afin qu'il corresponde à `<MAIL_HOSTNAME>`:
 
 ```plain
 200.117.140.128.in-addr.arpa.    PTR    mail.example.ch.
 ```
 
-This is configured at your **hosting provider** (Hetzner, Azure, AWS, etc.), not in your domain registrar's DNS panel. Most providers have a "Reverse DNS" or "rDNS" setting in the server/IP management page.
+Ceci est configuré chez votre **fournisseur d'hébergement** (Hetzner, Azure, AWS, etc.), pas dans le panneau DNS de votre bureau d'enregistrement de domaine. La plupart des fournisseurs ont un paramètre "DNS inversé" ou "rDNS" dans la page de gestion du serveur/IP.
 
-**Why**: Many receiving mail servers (including Gmail and Outlook) check that the connecting IP's PTR record resolves to a hostname, and that hostname resolves back to the same IP (forward-confirmed reverse DNS / FCrDNS). A missing or mismatched PTR is a strong spam signal and can cause delivery failures.
+**Pourquoi**: De nombreux serveurs de courrier récepteurs (y compris Gmail et Outlook) vérifient que l'enregistrement PTR de l'IP de connexion résout un nom d'hôte, et que ce nom d'hôte résout la même IP (DNS inversé à confirmation directe / FCrDNS). Un PTR manquant ou non correspondant est un fort signal de spam et peut entraîner des échecs de livraison.
 
-### DMARC Record
+### Enregistrement DMARC
 
-Publish a DMARC policy for each sending domain. Start with `p=none` (monitoring only), then tighten after confirming alignment:
+Publiez une politique DMARC pour chaque domaine d'envoi. Commencez par `p=none` (surveillance uniquement), puis renforcez après avoir confirmé l'alignement:
 
 ```plain
 _dmarc.<YOUR_DOMAIN>.    TXT    "v=DMARC1; p=none; rua=mailto:postmaster@<YOUR_DOMAIN>"
 ```
 
-Example:
+Exemple:
 
 ```plain
 _dmarc.example.ch.    TXT    "v=DMARC1; p=none; rua=mailto:postmaster@example.ch"
 ```
 
-Once DMARC aggregate reports confirm that SPF and/or DKIM pass consistently, tighten the policy:
+Une fois que les rapports agrégés DMARC confirment que SPF et/ou DKIM réussissent constamment, renforcez la politique:
 
-1. `p=none` - monitoring only (start here)
-2. `p=quarantine` - suspicious mail goes to spam
-3. `p=reject` - unauthorized mail is rejected
+1. `p=none` - surveillance uniquement (commencez ici)
+2. `p=quarantine` - les courriels suspects vont dans les spams
+3. `p=reject` - les courriels non autorisés sont rejetés
 
-**Why**: DMARC ties SPF and DKIM together and tells recipients what to do with mail that fails both. Even `p=none` is enough to clear Outlook's "we can't verify this sender" banner, as long as SPF passes.
+**Pourquoi**: DMARC lie SPF et DKIM ensemble et indique aux destinataires quoi faire avec les courriels qui échouent aux deux. Même `p=none` suffit pour effacer la bannière "nous ne pouvons pas vérifier cet expéditeur" d'Outlook, tant que SPF réussit.
 
-Check your DMARC record: [MXToolbox DMARC lookup](https://mxtoolbox.com/dmarc.aspx)
+Vérifiez votre enregistrement DMARC: [MXToolbox DMARC lookup](https://mxtoolbox.com/dmarc.aspx)
 
-### DKIM Records
+### Enregistrements DKIM
 
-If your domain is an accepted domain in M365 or Google Workspace, enable DKIM signing in the admin centre and publish the CNAME records as instructed:
+Si votre domaine est un domaine accepté dans M365 ou Google Workspace, activez la signature DKIM dans le centre d'administration et publiez les enregistrements CNAME comme indiqué:
 
-**M365 example:**
+**Exemple M365:**
 
 ```plain
 selector1._domainkey.<YOUR_DOMAIN>.    CNAME    selector1-<YOUR_DOMAIN_DASHED>._domainkey.<TENANT>.onmicrosoft.com.
@@ -168,32 +168,32 @@ selector2._domainkey.<YOUR_DOMAIN>.    CNAME    selector2-<YOUR_DOMAIN_DASHED>._
 ```
 
 !!! note
-    Publishing the CNAME records alone is not enough - DKIM signing must also be **enabled** in the M365 admin centre (Defender portal > Email authentication > DKIM).
+    La publication des enregistrements CNAME seuls ne suffit pas - la signature DKIM doit également être **activée** dans le centre d'administration M365 (portail Defender > Authentification des courriels > DKIM).
 
-**Why**: DKIM proves the message body was not tampered with in transit. When combined with SPF and DMARC, it provides the strongest sender authentication.
+**Pourquoi**: DKIM prouve que le corps du message n'a pas été altéré pendant le transit. Combiné avec SPF et DMARC, il fournit la plus forte authentification de l'expéditeur.
 
 ---
 
-## Multi-Domain Setup
+## Configuration multi-domaines
 
-For deployments handling multiple mail domains (configured via the dashboard's `/mail` page), each domain needs its own set of DNS records.
+Pour les déploiements gérant plusieurs domaines de courrier (configurés via la page `/mail` du tableau de bord), chaque domaine a besoin de son propre ensemble d'enregistrements DNS.
 
-### Per-Domain Records
+### Enregistrements par domaine
 
-For each configured domain:
+Pour chaque domaine configuré:
 
-| Record | Required |
+| Enregistrement | Requis |
 |--------|----------|
-| MX pointing to `<MAIL_HOSTNAME>` | Yes |
-| SPF including `ip4:<STARGATE_IP>` | Yes |
-| DMARC (`_dmarc.<domain>`) | Recommended |
-| DKIM (from your mail provider) | Recommended |
+| MX pointant vers `<MAIL_HOSTNAME>` | Oui |
+| SPF incluant `ip4:<STARGATE_IP>` | Oui |
+| DMARC (`_dmarc.<domain>`) | Recommandé |
+| DKIM (de votre fournisseur de courrier) | Recommandé |
 
-The A record and PTR record are shared (they point to the Stargate server, not to individual domains).
+L'enregistrement A et l'enregistrement PTR sont partagés (ils pointent vers le serveur Stargate, pas vers des domaines individuels).
 
-### Per-Domain Mail Routing
+### Routage de courrier par domaine
 
-Each domain's MX records tell the Stargate where to deliver processed mail. If different domains use different Exchange servers:
+Les enregistrements MX de chaque domaine indiquent à Stargate où livrer les courriels traités. Si différents domaines utilisent différents serveurs Exchange:
 
 ```plain
 domain1.ch    MX    15    mail.domain1.ch.
@@ -203,108 +203,108 @@ domain2.ch    MX    15    mail.domain2.ch.
 domain2.ch    MX    20    exchange2.domain2.ch.
 ```
 
-Alternatively, configure explicit per-domain relay targets via the dashboard's `/mail` page (relay host field per domain) to override MX-based routing.
+Alternativement, configurez des cibles de relais explicites par domaine via la page `/mail` du tableau de bord (champ hôte de relais par domaine) pour remplacer le routage basé sur MX.
 
 ---
 
-## Verification
+## Vérification
 
-After configuring all records, verify them:
+Après avoir configuré tous les enregistrements, vérifiez-les:
 
 ```bash
-# A record
+# Enregistrement A
 host <MAIL_HOSTNAME>
-# Expected: <MAIL_HOSTNAME> has address <STARGATE_IP>
+# Attendu: <MAIL_HOSTNAME> a l'adresse <STARGATE_IP>
 
-# MX records
+# Enregistrements MX
 host -t mx <YOUR_DOMAIN>
-# Expected: Both Stargate and Exchange MX records listed
+# Attendu: Les enregistrements MX de Stargate et d'Exchange sont répertoriés
 
-# SPF record
+# Enregistrement SPF
 host -t txt <YOUR_DOMAIN> | grep v=spf1
-# Expected: SPF record includes ip4:<STARGATE_IP>
+# Attendu: L'enregistrement SPF inclut ip4:<STARGATE_IP>
 
-# PTR (reverse DNS)
+# PTR (DNS inversé)
 host <STARGATE_IP>
-# Expected: <STARGATE_IP> → <MAIL_HOSTNAME>
+# Attendu: <STARGATE_IP> → <MAIL_HOSTNAME>
 
-# Forward-confirmed reverse DNS (FCrDNS)
+# DNS inversé à confirmation directe (FCrDNS)
 host $(host <STARGATE_IP> | awk '{print $NF}' | sed 's/\.$//')
-# Expected: resolves back to <STARGATE_IP>
+# Attendu: résout en <STARGATE_IP>
 
 # DMARC
 host -t txt _dmarc.<YOUR_DOMAIN>
-# Expected: v=DMARC1; p=...
+# Attendu: v=DMARC1; p=...
 
 # DKIM (M365)
 host -t cname selector1._domainkey.<YOUR_DOMAIN>
-# Expected: CNAME to your tenant's onmicrosoft.com
+# Attendu: CNAME vers le onmicrosoft.com de votre locataire
 ```
 
-Example output:
+Exemple de sortie:
 
 ```shell
 $ host mail.example.ch
-mail.example.ch has address 128.140.117.200
+mail.example.ch a l'adresse 128.140.117.200
 
 $ host -t mx example.ch
-example.ch mail is handled by 15 mail.example.ch.
-example.ch mail is handled by 20 example-ch.mail.protection.outlook.com.
+example.ch le courrier est géré par 15 mail.example.ch.
+example.ch le courrier est géré par 20 example-ch.mail.protection.outlook.com.
 
 $ host -t txt example.ch | grep v=spf1
-example.ch descriptive text "v=spf1 ip4:128.140.117.200 include:spf.protection.outlook.com -all"
+example.ch texte descriptif "v=spf1 ip4:128.140.117.200 include:spf.protection.outlook.com -all"
 
 $ host 128.140.117.200
-200.117.140.128.in-addr.arpa domain name pointer mail.example.ch.
+200.117.140.128.in-addr.arpa pointeur de nom de domaine mail.example.ch.
 
 $ host -t txt _dmarc.example.ch
-_dmarc.example.ch descriptive text "v=DMARC1; p=none; rua=mailto:postmaster@example.ch"
+_dmarc.example.ch texte descriptif "v=DMARC1; p=none; rua=mailto:postmaster@example.ch"
 ```
 
-Online tools:
+Outils en ligne:
 
 - [MXToolbox MX Lookup](https://mxtoolbox.com/MXLookup.aspx)
-- [MXToolbox SPF Check](https://mxtoolbox.com/spf.aspx) (includes lookup count)
+- [MXToolbox SPF Check](https://mxtoolbox.com/spf.aspx) (inclut le nombre de recherches)
 - [MXToolbox DMARC Check](https://mxtoolbox.com/dmarc.aspx)
-- [Mail-Tester](https://www.mail-tester.com/) (send a test mail to get a deliverability score)
+- [Mail-Tester](https://www.mail-tester.com/) (envoyez un courriel de test pour obtenir un score de délivrabilité)
 
 ---
 
-## Troubleshooting
+## Dépannage
 
 ### "Client host rejected: Access denied" (554 5.7.1)
 
-Stalwart is rejecting the sending server because its IP is not in the allowed relay list. This usually means:
+Stalwart rejette le serveur expéditeur car son IP n'est pas dans la liste de relais autorisée. Cela signifie généralement:
 
-- The SPF record for your domain does not include the sending server's IP range
-- The mail configuration has not been reloaded since the SPF record was updated
+- L'enregistrement SPF de votre domaine n'inclut pas la plage IP du serveur expéditeur
+- La configuration du courrier n'a pas été rechargée depuis la mise à jour de l'enregistrement SPF
 
-Reload the mail configuration via the dashboard's `/mail` page (submit the config again), or restart the container: `docker compose restart stalwart`
+Rechargez la configuration du courrier via la page `/mail` du tableau de bord (soumettez à nouveau la configuration) ou redémarrez le conteneur: `docker compose restart stalwart`
 
-### Mail flagged as spam / "can't verify sender"
+### Courrier marqué comme spam / "ne peut pas vérifier l'expéditeur"
 
-- SPF is missing or does not include the Stargate IP - add `ip4:<STARGATE_IP>` to your SPF record
-- DMARC is not published - add at least `v=DMARC1; p=none`
-- PTR record is missing or mismatched - configure reverse DNS at your hosting provider
-- DKIM is not enabled in your M365/provider tenant
+- SPF est manquant ou n'inclut pas l'IP Stargate - ajoutez `ip4:<STARGATE_IP>` à votre enregistrement SPF
+- DMARC n'est pas publié - ajoutez au moins `v=DMARC1; p=none`
+- L'enregistrement PTR est manquant ou ne correspond pas - configurez le DNS inversé chez votre fournisseur d'hébergement
+- DKIM n'est pas activé dans votre locataire M365/fournisseur
 
-### MX lookup returns only the Stargate
+### La recherche MX ne renvoie que Stargate
 
-If the Stargate is the only MX for a domain, Stalwart filters out its own hostname and has no relay target. Add a second MX record pointing to your mail server:
+Si Stargate est le seul MX pour un domaine, Stalwart filtre son propre nom d'hôte et n'a pas de cible de relais. Ajoutez un deuxième enregistrement MX pointant vers votre serveur de courrier:
 
 ```plain
-example.ch.    MX    15    mail.example.ch.          ← Stargate (inbound)
-example.ch.    MX    20    example-ch.mail.protection.outlook.com.  ← Exchange (relay target)
+example.ch.    MX    15    mail.example.ch.          ← Stargate (entrant)
+example.ch.    MX    20    example-ch.mail.protection.outlook.com.  ← Exchange (cible de relais)
 ```
 
-### SPF lookup count exceeded (> 10)
+### Nombre de recherches SPF dépassé (> 10)
 
-Each `include:` in the SPF record triggers additional DNS lookups. The total chain must stay under 10. Solutions:
+Chaque `include:` dans l'enregistrement SPF déclenche des recherches DNS supplémentaires. La chaîne totale doit rester en dessous de 10. Solutions:
 
-- Use `ip4:` / `ip6:` entries instead of `include:` where possible (they do not count)
-- Flatten nested includes using a tool like [SPF Flattener](https://dmarcly.com/tools/spf-record-flattener)
-- Remove unused `include:` entries from old providers
+- Utilisez des entrées `ip4:` / `ip6:` au lieu de `include:` lorsque c'est possible (elles ne comptent pas)
+- Aplatissez les inclusions imbriquées à l'aide d'un outil comme [SPF Flattener](https://dmarcly.com/tools/spf-record-flattener)
+- Supprimez les entrées `include:` inutilisées d'anciens fournisseurs
 
-### Port 25 blocked by hosting provider
+### Port 25 bloqué par le fournisseur d'hébergement
 
-Some cloud providers (Azure, certain Hetzner plans) block outbound port 25 by default. Check with your provider and request an exception. This affects both inbound delivery (external servers connecting to your Stargate) and outbound relay (Stargate delivering to MX targets).
+Certains fournisseurs de cloud (Azure, certains plans Hetzner) bloquent le port 25 sortant par défaut. Vérifiez auprès de votre fournisseur et demandez une exception. Cela affecte à la fois la livraison entrante (serveurs externes se connectant à votre Stargate) et le relais sortant (Stargate livrant aux cibles MX).

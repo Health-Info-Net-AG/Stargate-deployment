@@ -1,5 +1,4 @@
-# Stargate Deployment Instruction DE
-
+# Stargate Deployment Instruction
 
 ![Logo](assets/stargate_visual.png)
 

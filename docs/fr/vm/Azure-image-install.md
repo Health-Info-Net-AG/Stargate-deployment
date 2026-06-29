@@ -1,91 +1,91 @@
-# Stargate Azure deployment using an image
+# Déploiement Stargate sur Azure à l'aide d'une image
 
-Deploy Stargate on Azure
+Déployez Stargate sur Azure
 
-## Azure Port 25 (SMTP) Requirements
+## Exigences du port 25 (SMTP) d'Azure
 
 !!! warning
-    Before beginning installation on Microsoft Azure, review the following requirements related to outbound SMTP connectivity on port 25. Skipping this step may result in email delivery failures after installation.
+    Avant de commencer l'installation sur Microsoft Azure, examinez les exigences suivantes relatives à la connectivité SMTP sortante sur le port 25. Ignorer cette étape peut entraîner des échecs de livraison des courriels après l'installation.
 
-Whether port 25 is available depends on your Azure subscription type:
+La disponibilité du port 25 dépend de votre type d'abonnement Azure :
 
-- :white_check_mark: **Enterprise Agreement (EA) or MCA-E** - Outbound SMTP on port 25 is not blocked. Note that external domains may still reject emails - this is outside Azure's control.
-- :white_check_mark: **Enterprise Dev/Test** - Blocked by default, but can be removed. To request removal, go to *Diagnose and Solve* > *Cannot send email (SMTP-Port 25)* in the Azure Virtual Network resource in the Azure portal.
-- :x: **All other subscription types** - Blocked and **cannot be unblocked**.
+- :white_check_mark: **Contrat Entreprise (EA) ou MCA-E** - Le SMTP sortant sur le port 25 n'est pas bloqué. Notez que les domaines externes peuvent toujours rejeter les courriels - cela échappe au contrôle d'Azure.
+- :white_check_mark: **Enterprise Dev/Test** - Bloqué par défaut, mais peut être débloqué. Pour demander le déblocage, allez dans *Diagnostiquer et résoudre* > *Impossible d'envoyer un courriel (SMTP-Port 25)* dans la ressource Réseau virtuel Azure du portail Azure.
+- :x: **Tous les autres types d'abonnement** - Bloqué et **ne peut pas être débloqué**.
 
-Reference: [Troubleshoot outbound SMTP connectivity in Azure](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity)
+Référence : [Résoudre les problèmes de connectivité SMTP sortant dans Azure](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity)
 
-## Get the image file
+## Obtenir le fichier image
 
-- Download the latest VHD image file. Please refer to [VM Catalog](VM-Catalog.md?h=vhd)
+- Téléchargez le dernier fichier image VHD. Veuillez vous référer au [Catalogue des VM](VM-Catalog.md?h=vhd)
 
-## Upload the Azure VHD image file
+## Télécharger le fichier image VHD Azure
 
-- Navigate to <https://portal.azure.com/#home>
-- Click **Storage accounts**.
-- Select the storage account to use or create a new one.
-- Click **Block service** and then **Containers**.
-- Select the Container to upload the file to or create a new one if you do not have a Container.
-- Click **Upload** and choose the VHD image file.
-- Make sure that the Blob type is Page Blob.
+- Accédez à <https://portal.azure.com/#home>
+- Cliquez sur **Comptes de stockage**.
+- Sélectionnez le compte de stockage à utiliser ou créez-en un nouveau.
+- Cliquez sur **Service Bloc** puis **Conteneurs**.
+- Sélectionnez le conteneur dans lequel télécharger le fichier ou créez-en un nouveau si vous n'avez pas de conteneur.
+- Cliquez sur **Télécharger** et choisissez le fichier image VHD.
+- Assurez-vous que le type de blob est Page Blob.
 
-## Create the image
+## Créer l'image
 
-- Navigate to <https://portal.azure.com/#home>
-- Click **Images**.
-- Click **Create**.
-- Choose the Resource group to be used or create a new one.
-- Type a Name for the image.
-- Choose OS type **Linux** and **VM generation Gen 2**
-- At Storage blob, click browse and select the newly uploaded VHD image.
-- Click **Review and create**.
-- Click **Create**.
+- Accédez à <https://portal.azure.com/#home>
+- Cliquez sur **Images**.
+- Cliquez sur **Créer**.
+- Choisissez le groupe de ressources à utiliser ou créez-en un nouveau.
+- Saisissez un nom pour l'image.
+- Choisissez le type de système d'exploitation **Linux** et **Génération de VM Gen 2**
+- Dans Stockage blob, cliquez sur parcourir et sélectionnez le fichier image VHD nouvellement téléchargé.
+- Cliquez sur **Vérifier + créer**.
+- Cliquez sur **Créer**.
 
-## Create a VM
+## Créer une VM
 
-- Navigate to <https://portal.azure.com/#home>
-- Click **Virtual Machines**.
-- Click **Create**, and choose Virtual Machine from the drop-down menu.
-- Choose the Resource group.
-- Type a Name for the VM.
-- At Image, click "**See all images**", click "**My Images**" and choose the new image that was created.
-- Choose the VM size.
-- Choose authentication type.
-- Click **Next: Disks**
-- Select OS disk size at least 20 GiB. Please refer to [Server Requirements](../index.md#server-requirements).
-- Click **Review + create**
-- Click **Create**
+- Accédez à <https://portal.azure.com/#home>
+- Cliquez sur **Machines virtuelles**.
+- Cliquez sur **Créer**, et choisissez Machine virtuelle dans le menu déroulant.
+- Choisissez le groupe de ressources.
+- Saisissez un nom pour la VM.
+- Dans Image, cliquez sur "**Voir toutes les images**", cliquez sur "**Mes images**" et choisissez la nouvelle image qui a été créée.
+- Choisissez la taille de la VM.
+- Choisissez le type d'authentification.
+- Cliquez sur **Suivant : Disques**
+- Sélectionnez une taille de disque OS d'au moins 20 GiB. Veuillez vous référer aux [Exigences du serveur](../index.md#exigences-du-serveur).
+- Cliquez sur **Vérifier + créer**
+- Cliquez sur **Créer**
 
-## Find the public IP address of the new VM and add inbound firewall rules
+## Trouver l'adresse IP publique de la nouvelle VM et ajouter des règles de pare-feu entrantes
 
-- Navigate to <https://portal.azure.com/#home>
-- Click **Virtual Machines**.
-- Click on the new VM.
-- You can see the public IP address under "Primary NIC public IP"
-- Scroll down to Networking and click on it
-- Click **+ Create port rule**, Inbound port rule, Destination port ranges 25, Protocol TCP, name it SMTP, repeat the same step with Destination port range 1587 and name it mxengine
+- Accédez à <https://portal.azure.com/#home>
+- Cliquez sur **Machines virtuelles**.
+- Cliquez sur la nouvelle VM.
+- Vous pouvez voir l'adresse IP publique sous "Adresse IP publique de la NIC principale"
+- Faites défiler vers le bas jusqu'à Mise en réseau et cliquez dessus
+- Cliquez sur **+ Créer une règle de port**, Règle de port entrant, Plages de ports de destination 25, Protocole TCP, nommez-la SMTP, répétez la même étape avec la plage de ports de destination 1587 et nommez-la mxengine
 
-## Log in and initialize the Stargate instance
+## Se connecter et initialiser l'instance Stargate
 
-- Log in to the VM with the user that you chose during VM creation and the public IP address of the new VM:
-- To obtain the `hinadmin` password, send an email to <support@hin.ch> with the subject: **"Password required for VM installation."**
+- Connectez-vous à la VM avec l'utilisateur que vous avez choisi lors de la création de la VM et l'adresse IP publique de la nouvelle VM :
+- Pour obtenir le mot de passe `hinadmin`, envoyez un courriel à <support@hin.ch> avec l'objet : **"Password required for VM installation."**
 
-[Click here to send an Email](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
+[Cliquez ici pour envoyer un courriel](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ```shell
 ssh hinadmin@11.22.33.44 
 ```
 
-- When logged into the VM:
+- Une fois connecté à la VM :
 
 ```shell
 sudo su -
 cd ~/stargate-deployment/docker-compose/
 ```
 
-- Use vi/nano to edit `customer-config.sh`
-- Configuration details can be found in the [README - Step 1: Configure Customer Settings](../Docker-deploy.md#step-1-configure-customer-settings)
-- Run the install script:
+- Utilisez vi/nano pour modifier `customer-config.sh`
+- Les détails de configuration se trouvent dans le [README - Étape 1 : Configurer les paramètres client](../Docker-deploy.md#etape-1-configurer-les-parametres-client)
+- Exécutez le script d'installation :
 
 ```shell
 ./scripts/install.sh
@@ -93,6 +93,6 @@ cd ~/stargate-deployment/docker-compose/
 
 !!! tip "Support"
 
-    For any questions or issues related to the deployment and operation of the Stargate appliance, please contact HIN support.
+    Pour toute question ou problème lié au déploiement et au fonctionnement de l'appliance Stargate, veuillez contacter le support HIN.
 
-    Please include relevant information such as the customer name, appliance version, and screenshots/[logs](../Docker-advanced.md#provide-logs-to-support) where applicable, to help us process your request efficiently.
+    Veuillez inclure des informations pertinentes telles que le nom du client, la version de l'appliance, et des captures d'écran/[logs](../Docker-advanced.md#fournir-les-logs-au-support) le cas échéant, pour nous aider à traiter votre demande efficacement.
