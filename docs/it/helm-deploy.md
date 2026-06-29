@@ -1,6 +1,6 @@
-# Helm Deploy
+# Deployment Helm
 
 !!! info
-    Coming soon
+    Presto disponibile
 
-This file contains instructions for Helm deploy of the HIN MGW instance.
+Questo file contiene le istruzioni per il deployment Helm dell'istanza HIN MGW.

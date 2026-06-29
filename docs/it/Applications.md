@@ -1,47 +1,47 @@
-# Applications overview
+# Panoramica delle applicazioni
 
-## Applications
+## Applicazioni
 
-* **smimekeys-client** - S/MIME keys client service (port `8081`)
-* **policy** - Policy service (port `8082`)
-* **irisagent** - IRIS Agent service (port `8083`, WireGuard: `19818/udp`, `19818/tcp`)
-* **mxengine** - MX Engine service (port `8084`, SMTP: `1587`)
-* **stalwart** - Stalwart MTA mail server (port `25`, `10026`)
-* **clamav** - ClamAV antivirus; scans mail at Stalwart's SMTP DATA stage via the milter protocol (port `7357`)
-* **mtaconf** - MTA configuration daemon (API: `8080`)
-* **dashboard** - Web-based admin UI for onboarding, domain management, and monitoring (port `443`)
-* **policy-sync** - Syncs OPA/Rego policies from Git repository to database (runs continuously)
+* **smimekeys-client** - Servizio client chiavi S/MIME (porta `8081`)
+* **policy** - Servizio policy (porta `8082`)
+* **irisagent** - Servizio IRIS Agent (porta `8083`, WireGuard: `19818/udp`, `19818/tcp`)
+* **mxengine** - Servizio MX Engine (porta `8084`, SMTP: `1587`)
+* **stalwart** - Server di posta Stalwart MTA (porta `25`, `10026`)
+* **clamav** - Antivirus ClamAV; scansiona le email nella fase SMTP DATA di Stalwart tramite il protocollo milter (porta `7357`)
+* **mtaconf** - Demone di configurazione MTA (API: `8080`)
+* **dashboard** - Interfaccia di amministrazione web per onboarding, gestione dei domini e monitoraggio (porta `443`)
+* **policy-sync** - Sincronizza le policy OPA/Rego dal repository Git al database (viene eseguito in continuazione)
 
-## Infrastructure
+## Infrastruttura
 
-* **PostgreSQL** - Database (port `5432`)
-* **Vault** - Secrets management (internal port `8200`, not published to the host)
-* **MinIO** - S3-compatible storage (API on host port `9000`; console not published to the host)
-* **Keycloak** - Identity provider and OIDC authentication (port `8180`)
-* **APISIX** - API gateway with OIDC bearer auth (port `9080`)
-* **NATS** - Inter-service messaging (triggers Stalwart reloads from dashboard)
+* **PostgreSQL** - Database (porta `5432`)
+* **Vault** - Gestione dei segreti (porta interna `8200`, non pubblicata sull'host)
+* **MinIO** - Storage compatibile S3 (API sulla porta host `9000`; console non pubblicata sull'host)
+* **Keycloak** - Provider di identità e autenticazione OIDC (porta `8180`)
+* **APISIX** - Gateway API con autenticazione OIDC bearer (porta `9080`)
+* **NATS** - Messaggistica inter-servizi (attiva i ricaricamenti di Stalwart dal dashboard)
 
-## Init Containers
+## Container di inizializzazione
 
-* **vault-init** - Initializes and unseals Vault on first run
-* **seaweedfs-init** - Creates the S3 bucket
-* **apisix-init** - Generates APISIX config from template
-* **keycloak-init** - Sets initial admin password
+* **vault-init** - Inizializza e scongela Vault al primo avvio
+* **seaweedfs-init** - Crea il bucket S3
+* **apisix-init** - Genera la configurazione APISIX dal modello
+* **keycloak-init** - Imposta la password amministratore iniziale
 
-## Monitoring
+## Monitoraggio
 
-* **node-exporter** - Host metrics for Prometheus (port `9100`)
-* **version-collector** - Collects app versions from `/liveness` endpoints for node-exporter
-* **Alloy** - Log collector for Loki (ships app logs)
-* **Dozzle** - Real-time container log viewer (port `8190`, HTTPS, behind Keycloak SSO via oauth2-proxy; optional, enabled with `DOZZLE_ENABLED`)
-* **oauth2-proxy** - OIDC relying party that authenticates Dozzle access against Keycloak (starts together with Dozzle)
+* **node-exporter** - Metriche dell'host per Prometheus (porta `9100`)
+* **version-collector** - Raccoglie le versioni delle app dagli endpoint `/liveness` per node-exporter
+* **Alloy** - Collettore di log per Loki (invia i log delle app)
+* **Dozzle** - Visualizzatore di log dei container in tempo reale (porta `8190`, HTTPS, dietro SSO Keycloak tramite oauth2-proxy; opzionale, abilitato con `DOZZLE_ENABLED`)
+* **oauth2-proxy** - Parte affidabile OIDC che autentica l'accesso Dozzle contro Keycloak (si avvia insieme a Dozzle)
 
-See [Monitoring and Logs](Monitoring.md) for detailed configuration and usage.
+Vedere [Monitoraggio e Log](Monitoring.md) per configurazione dettagliata e utilizzo.
 
-## Architecture overview
+## Panoramica dell'architettura
 
-![Architecture](assets/arch-gateway.png)
+![Architettura](assets/arch-gateway.png)
 
-## VM Architecture overview
+## Panoramica dell'architettura VM
 
-![VM Overview](assets/vm-arch-gateway.png)
+![Panoramica VM](assets/vm-arch-gateway.png)
