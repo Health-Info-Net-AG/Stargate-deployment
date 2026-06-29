@@ -161,25 +161,25 @@ not_in_nav: |
 # Page tree
 nav:
   - Home: index.md
-  - Installation Guides:
-      - Single domain, M365: Installation-guide.md
-  #      - New Customers: New-customers.md
-  - Technical configuration and Integration:
-      - Applications overview: Applications.md
-      - Monitoring and Logs: Monitoring.md
-      - Exchange Integration: Exchange-integration.md
-      - Mail relay setup: Mail-relay-setup.md
-      - DNS Setup: DNS-setup.md
-  - Server install:
-      - Container:
-          - Install with Docker: Docker-deploy.md
-          - Docker Advanced configuration: Docker-advanced.md
-          - Helm deployment: helm-deploy.md
-      - VM deployment:
+  - Guides d'installation:
+      - Domaine unique, M365: Installation-guide.md
+  #      - Nouveaux clients: New-customers.md
+  - Configuration technique et Intégration:
+      - Aperçu des applications: Applications.md
+      - Surveillance et Logs: Monitoring.md
+      - Intégration Exchange: Exchange-integration.md
+      - Configuration du relais de courrier: Mail-relay-setup.md
+      - Configuration DNS: DNS-setup.md
+  - Installation serveur:
+      - Conteneur:
+          - Installation avec Docker: Docker-deploy.md
+          - Configuration avancée Docker: Docker-advanced.md
+          - Déploiement Helm: helm-deploy.md
+      - Déploiement VM:
           - Azure: vm/Azure-image-install.md
           - VMware: vm/VMware-image-install.md
           - Proxmox: vm/Proxmox-image-install.md
-          - Windows 11 pro: vm/Windows11pro-image-install.md
+          - Windows 11 Pro: vm/Windows11pro-image-install.md
           - Cloudscale: vm/Cloudscale-image-install.md
-  - VM Images catalog: vm/VM-Catalog.md
-  - Support / Contact us: Support.md
+  - Catalogue d'images VM: vm/VM-Catalog.md
+  - Support / Contactez-nous: Support.md
