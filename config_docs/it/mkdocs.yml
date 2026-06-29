@@ -137,6 +137,8 @@ markdown_extensions:
   - pymdownx.smartsymbols
   - pymdownx.snippets:
       check_paths: true
+      auto_append:
+        - docs/it/includes/mkdocs.md
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -155,29 +157,31 @@ markdown_extensions:
 not_in_nav: |
   /docker-compose/*.md
   /docs/include/*.md
+  /docs/it/include/*.md
+  /docs/assets/*.md
 
 # Page tree
 nav:
   - Home: index.md
-  - Installation Guides:
-      - Single domain, M365: Installation-guide.md
-  #      - New Customers: New-customers.md
-  - Technical configuration and Integration:
-      - Applications overview: Applications.md
-      - Monitoring and Logs: Monitoring.md
-      - Exchange Integration: Exchange-integration.md
-      - Mail relay setup: Mail-relay-setup.md
-      - DNS Setup: DNS-setup.md
-  - Server install:
+  - Guide di installazione:
+      - Singolo dominio, M365: Installation-guide.md
+  #      - Nuovi clienti: New-customers.md
+  - Configurazione tecnica e Integrazione:
+      - Panoramica delle applicazioni: Applications.md
+      - Monitoraggio e Log: Monitoring.md
+      - Integrazione Exchange: Exchange-integration.md
+      - Configurazione relais di posta: Mail-relay-setup.md
+      - Configurazione DNS: DNS-setup.md
+  - Installazione server:
       - Container:
-          - Install with Docker: Docker-deploy.md
-          - Docker Advanced configuration: Docker-advanced.md
-          - Helm deployment: helm-deploy.md
-      - VM deployment:
+          - Installazione con Docker: Docker-deploy.md
+          - Configurazione avanzata Docker: Docker-advanced.md
+          - Deployment Helm: helm-deploy.md
+      - Deployment VM:
           - Azure: vm/Azure-image-install.md
           - VMware: vm/VMware-image-install.md
           - Proxmox: vm/Proxmox-image-install.md
-          - Windows 11 pro: vm/Windows11pro-image-install.md
+          - Windows 11 Pro: vm/Windows11pro-image-install.md
           - Cloudscale: vm/Cloudscale-image-install.md
-  - VM Images catalog: vm/VM-Catalog.md
-  - Support / Contact us: Support.md
+  - Catalogo immagini VM: vm/VM-Catalog.md
+  - Supporto / Contattaci: Support.md

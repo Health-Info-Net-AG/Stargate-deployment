@@ -1,20 +1,20 @@
-# VM Images Catalog
+# Catalogo immagini VM
 
-Here you can find a current VM Catalog for different platforms. Please do not forget to check the SHA-256 hash of downloaded images. You can use the <https://images.hin.ch/vm-images/SHA256SUMS> file to compare it.
+Qui puoi trovare un catalogo VM attuale per diverse piattaforme. Non dimenticare di verificare l'hash SHA-256 delle immagini scaricate. Puoi utilizzare il file <https://images.hin.ch/vm-images/SHA256SUMS> per confrontarlo.
 
-??? info "How to perform SHA256 hash check locally"
+??? info "Come eseguire il controllo dell'hash SHA256 localmente"
 
-    You can calculate the SHA256 hash of downloaded files with the following command and then compare it with the values in the table below.
+    Puoi calcolare l'hash SHA256 dei file scaricati con il seguente comando e poi confrontarlo con i valori nella tabella sottostante.
 
-    === "Linux and macOS"
+    === "Linux e macOS"
 
-        Open Terminal and execute:
+        Apri il Terminale ed esegui:
 
         ```bash
-        sha256sum <File Name>
+        sha256sum <Nome del file>
         ```
 
-        As a more advanced variant, you can execute the following command and paste the predefined checksum as `SHA256_VALUE` and the file name as `IMAGE_NAME`:
+        Come variante più avanzata, puoi eseguire il seguente comando e incollare la somma di controllo predefinita come `SHA256_VALUE` e il nome del file come `IMAGE_NAME`:
 
         ```bash
         SHA256_VALUE="" \
@@ -24,14 +24,14 @@ Here you can find a current VM Catalog for different platforms. Please do not fo
 
     === "Windows"
 
-        Open PowerShell and execute:
+        Apri PowerShell ed esegui:
 
         ```powershell
-        Get-FileHash "<File Name>"
+        Get-FileHash "<Nome del file>"
         ```
 
-        You can add the `-Algorithm SHA256` argument to force SHA256 use.
+        Puoi aggiungere l'argomento `-Algorithm SHA256` per forzare l'uso di SHA256.
 
-| Image Name | Image Type | Image Größe | Link | SHA256 Checksum |
+| Nome immagine | Tipo immagine | Dimensione immagine | Link | Somma di controllo SHA256 |
 | :--------- | :--------: | :--------- | :--: | :-------------- |
 --8<-- "docs/assets/VM-Catalog-with-links.md"

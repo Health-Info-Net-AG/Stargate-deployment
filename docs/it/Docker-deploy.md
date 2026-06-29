@@ -1,100 +1,100 @@
-# Stargate Docker deployment
+# Deployment Docker di Stargate
 
-## Prerequisites
+## Prerequisiti
 
-**Server Requirements:**
+**Requisiti del server:**
 
-Please refer to [Recommended Requirements](./index.md#server-requirements)
+Fare riferimento a [Requisiti raccomandati](./index.md#requisiti-del-server)
 
-* Docker will be installed automatically if missing
-* Ensure there is an internet connection on the machine where you are installing Stargate services
-* Ensure traffic is properly configured to reach the Stargate instance
+* Docker verrà installato automaticamente se mancante
+* Assicurarsi che ci sia una connessione Internet sulla macchina dove si stanno installando i servizi Stargate
+* Assicurarsi che il traffico sia configurato correttamente per raggiungere l'istanza Stargate
 
-## Step 1: Configure Customer Settings
+## Passo 1: Configurare le impostazioni cliente
 
 !!! tip
-    You can clone our repository with all data and sample configs inside with a command:
+    È possibile clonare il nostro repository con tutti i dati e le configurazioni di esempio all'interno con il comando:
 
     ```bash
     git clone https://github.com/Health-Info-Net-AG/Stargate-deployment.git
     ```
 
-    If you do not have `git` installed, you can always get an archive with all files inside. Download it via the following link. [Download as ZIP](https://github.com/Health-Info-Net-AG/Stargate-deployment/archive/refs/heads/main.zip){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
+    Se non si ha `git` installato, è sempre possibile ottenere un archivio con tutti i file all'interno. Scaricarlo tramite il seguente link. [Scarica come ZIP](https://github.com/Health-Info-Net-AG/Stargate-deployment/archive/refs/heads/main.zip){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-Before installation, create and fill in the customer configuration file:
+Prima dell'installazione, creare e compilare il file di configurazione cliente:
 
-Copy the template:
+Copiare il modello:
 
 ```bash
 cp customer-config-prod.example.sh customer-config.sh
 ```
 
-Edit the config file:
+Modificare il file di configurazione:
 
 ```bash
 nano customer-config.sh
 ```
 
-**Required settings — you must fill these in:**
+**Impostazioni richieste — è necessario compilarle:**
 
-| Setting | Description | Example |
+| Impostazione | Descrizione | Esempio |
 |---------|-------------|---------|
-| `SERVER_STATIC_IP` | This server's real static public IP. Used to derive WireGuard tunnel address and MXEngine callback URL. | `203.0.113.10` |
-| `CUSTOMER_NAME` | Customer/organization name (used for identification and logging). | `Acme Corp` |
-| `DEPLOYMENT_NAME` | Unique deployment identifier (used in log labels and Alloy hostname). | `stargate-acme` |
+| `SERVER_STATIC_IP` | L'IP pubblico statico reale di questo server. Utilizzato per derivare l'indirizzo del tunnel WireGuard e l'URL di callback di MXEngine. | `203.0.113.10` |
+| `CUSTOMER_NAME` | Nome del cliente/organizzazione (utilizzato per identificazione e logging). | `Acme Corp` |
+| `DEPLOYMENT_NAME` | Identificatore univoco del deployment (utilizzato nelle etichette dei log e nel nome host di Alloy). | `stargate-acme` |
 
-Mail domains and the Stalwart hostname are configured at runtime via the dashboard's `/mail` page; they are not part of `customer-config.sh`.
+I domini di posta e il nome host di Stalwart sono configurati in fase di esecuzione tramite la pagina `/mail` del dashboard; non fanno parte di `customer-config.sh`.
 
-**Auto-derived settings — leave empty unless you need to override:**
+**Impostazioni auto-derivate — lasciare vuote a meno che non sia necessario sovrascriverle:**
 
-| Setting | Derived from | Default |
+| Impostazione | Derivata da | Predefinito |
 |---------|-------------|---------|
 | `MXENGINE_PUBLIC_ADDRESS` | `SERVER_STATIC_IP` | `http://<SERVER_STATIC_IP>:8084` |
 
-**S/MIME certificate settings:**
+**Impostazioni del certificato S/MIME:**
 
-| Setting | Description | Default |
+| Impostazione | Descrizione | Predefinito |
 |---------|-------------|---------|
-| `CERT_CA_IRISAGENT_DOMAIN` | CA domain for certificate issuance via WireGuard tunnel | `hintest.ch` |
+| `CERT_CA_IRISAGENT_DOMAIN` | Dominio CA per l'emissione del certificato tramite tunnel WireGuard | `hintest.ch` |
 
 !!! note
-    **WireGuard peer setup** is performed at runtime via the dashboard (`/installation` page). Peer details are configured per deployment after the stack is up - they are not part of `customer-config.sh`.
+    **La configurazione del peer WireGuard** viene eseguita in fase di esecuzione tramite il dashboard (pagina `/installation`). I dettagli del peer sono configurati per deployment dopo che lo stack è attivo - non fanno parte di `customer-config.sh`.
 
-**WireGuard local settings (typically left at defaults):**
+**Impostazioni locali WireGuard (in genere lasciate ai valori predefiniti):**
 
-| Setting | Default | Description |
+| Impostazione | Predefinito | Descrizione |
 |---------|---------|-------------|
-| `WG_PRIVATE_KEY` | *(auto-generated)* | Generated by IRISAgent on first run, then saved to `customer-config.sh` |
-| `WG_LOCAL_IP` | `SERVER_STATIC_IP` | Auto-derived. Only override if you need a different tunnel address. |
-| `WG_INTERFACE_PORT` | `19818` | WireGuard tunnel port (both TCP and UDP are exposed) |
-| `WG_TRANSPORT_MODE` | `tcp` | Transport protocol: `tcp` (default, works through most firewalls) or `udp` |
+| `WG_PRIVATE_KEY` | *(auto-generato)* | Generato da IRISAgent al primo avvio, poi salvato in `customer-config.sh` |
+| `WG_LOCAL_IP` | `SERVER_STATIC_IP` | Auto-derivato. Sovrascrivere solo se è necessario un indirizzo di tunnel diverso. |
+| `WG_INTERFACE_PORT` | `19818` | Porta del tunnel WireGuard (sia TCP che UDP sono esposti) |
+| `WG_TRANSPORT_MODE` | `tcp` | Protocollo di trasporto: `tcp` (predefinito, funziona attraverso la maggior parte dei firewall) o `udp` |
 
-**Optional settings (have sensible defaults):**
+**Impostazioni opzionali (hanno valori predefiniti ragionevoli):**
 
-| Setting | Default | Description |
+| Impostazione | Predefinito | Descrizione |
 |---------|-------------|---------|
-| `POSTGRES_PASSWORD` | *(auto-generated)* | Auto-generated 24-character random password if empty |
-| `S3_SECRET_KEY` | *(auto-generated)* | S3 secret key for object storage |
-| `OUTBOUND_SEALER_MX_DOMAIN` | `hintest.ch` | Sealer MX domain for outbound seal delivery |
-| `POLICY_SYNC_REPO_URL` | GitHub HIN Stargate policies | Git repo URL for OPA/Rego policy sync |
-| `LOKI_URL` | *(unset)* | Loki endpoint for centralized log shipping (e.g. `https://loki.example.com`) |
+| `POSTGRES_PASSWORD` | *(auto-generato)* | Password casuale di 24 caratteri auto-generata se vuota |
+| `S3_SECRET_KEY` | *(auto-generato)* | Chiave segreta S3 per lo storage di oggetti |
+| `OUTBOUND_SEALER_MX_DOMAIN` | `hintest.ch` | Dominio MX del sigillatore per la consegna dei sigilli in uscita |
+| `POLICY_SYNC_REPO_URL` | GitHub HIN Stargate policies | URL del repository Git per la sincronizzazione delle policy OPA/Rego |
+| `LOKI_URL` | *(non impostato)* | Endpoint Loki per l'invio centralizzato dei log (es. `https://loki.example.com`) |
 
-**Auto-generated (do not set manually):**
+**Auto-generati (non impostare manualmente):**
 
-* `VAULT_TOKEN` — Generated by Vault during first initialization, saved to `customer-config.sh`
-* `WG_PRIVATE_KEY` — Generated by IRISAgent on first run, saved to `customer-config.sh`
+* `VAULT_TOKEN` — Generato da Vault durante la prima inizializzazione, salvato in `customer-config.sh`
+* `WG_PRIVATE_KEY` — Generato da IRISAgent al primo avvio, salvato in `customer-config.sh`
 
-## Step 2: Deploy to a Server
+## Passo 2: Deploy su un server
 
 !!! tip
-    You can clone our repository with all data and sample configs inside with a command:
+    È possibile clonare il nostro repository con tutti i dati e le configurazioni di esempio all'interno con il comando:
 
     ```bash
     git clone https://github.com/Health-Info-Net-AG/Stargate-deployment.git && \
       cd Stargate-deployment-main
     ```
 
-    If you do not have `git` installed, you can always get an archive with all files inside and extract it:
+    Se non si ha `git` installato, è sempre possibile ottenere un archivio con tutti i file all'interno ed estrarlo:
 
     ```bash 
     wget https://github.com/Health-Info-Net-AG/Stargate-deployment/archive/refs/heads/main.zip && \
@@ -103,263 +103,262 @@ Mail domains and the Stalwart hostname are configured at runtime via the dashboa
       cd Stargate-deployment-main
     ```
 
-Manually copy files to the server
+Copiare manualmente i file sul server
 
 ```bash
-scp -r docker-compose/* your-server:/path/to/stargate/
+scp -r docker-compose/* tuo-server:/percorso/verso/stargate/
 ```
 
-SSH to server
+SSH al server
 
 ```bash
-ssh your-server
-cd /path/to/stargate
+ssh tuo-server
+cd /percorso/verso/stargate
 ```
 
-Create customer config from template and fill in required settings ([see Step 1](#step-1-configure-customer-settings))
+Creare la configurazione cliente dal modello e compilare le impostazioni richieste ([vedere Passo 1](#passo-1-configurare-le-impostazioni-cliente))
 
 ```bash
 cp customer-config-prod.example.sh customer-config.sh
-nano customer-config.sh   # Fill in required settings (see Step 1)
+nano customer-config.sh   # Compilare le impostazioni richieste (vedere Passo 1)
 ```
 
-Run installation
+Eseguire l'installazione
 
 ```bash
 chmod +x scripts/*.sh
 ./scripts/install.sh
 ```
 
-## Step 3: What Install Does
+## Passo 3: Cosa fa l'installazione
 
-The install script (`install.sh`) performs the following steps:
+Lo script di installazione (`install.sh`) esegue i seguenti passi:
 
-1. **Check dependencies** — Detects Docker, Docker Compose, and `jq`. If missing, installs them automatically (supports Ubuntu/Debian, RHEL/AlmaLinux/Rocky).
-2. **Load and validate** `customer-config.sh` — Checks required fields (`SERVER_STATIC_IP`, `CUSTOMER_NAME`, `DEPLOYMENT_NAME`). Auto-derives optional fields (MXEngine URL, etc.).
-3. **Generate `.env`** from customer config — Auto-generates passwords if not set.
-4. **Start all services** via Docker Compose (infrastructure + applications).
-5. **Initialize Vault** — The `vault-init` container initializes, unseals, and creates KV-v2 secret mounts. Optionally writes the WireGuard private key to Vault.
-6. **Save Vault keys** to `secrets/vault-keys.json` and update `.env` with the root token. The token is also saved to `customer-config.sh` for persistence across VM recreations.
-7. **Restart application services** to pick up the Vault token.
-8. **Save WireGuard private key** to `customer-config.sh` — extracted from Vault after IRISAgent generates it.
-9. **Set up daily backup** cron job (runs at 2:00 AM).
+1. **Controllare le dipendenze** — Rileva Docker, Docker Compose e `jq`. Se mancano, li installa automaticamente (supporta Ubuntu/Debian, RHEL/AlmaLinux/Rocky).
+2. **Caricare e validare** `customer-config.sh` — Controlla i campi richiesti (`SERVER_STATIC_IP`, `CUSTOMER_NAME`, `DEPLOYMENT_NAME`). Deriva automaticamente i campi opzionali (URL MXEngine, ecc.).
+3. **Generare `.env`** dalla configurazione cliente — Genera automaticamente le password se non impostate.
+4. **Avviare tutti i servizi** tramite Docker Compose (infrastruttura + applicazioni).
+5. **Inizializzare Vault** — Il container `vault-init` inizializza, scongela e crea i mount dei segreti KV-v2. Scrive opzionalmente la chiave privata WireGuard in Vault.
+6. **Salvare le chiavi Vault** in `secrets/vault-keys.json` e aggiornare `.env` con il token root. Il token viene anche salvato in `customer-config.sh` per la persistenza attraverso le ricreazioni della VM.
+7. **Riavviare i servizi applicativi** per applicare il token Vault.
+8. **Salvare la chiave privata WireGuard** in `customer-config.sh` — estratta da Vault dopo che IRISAgent l'ha generata.
+9. **Impostare il cron job di backup giornaliero** (viene eseguito alle 2:00 AM).
 
-After install completes, the stack is running but no mail domains, S/MIME certificate, or WireGuard peer are set up yet. Continue with [Step 4: Onboard via the dashboard](#step-4-onboard-via-the-dashboard).
+Una volta completata l'installazione, lo stack è in esecuzione ma non sono ancora configurati domini di posta, certificato S/MIME o peer WireGuard. Continuare con [Passo 4: Onboarding tramite il dashboard](#passo-4-onboarding-tramite-il-dashboard).
 
-## Step 4: Onboard via the dashboard
+## Passo 4: Onboarding tramite il dashboard
 
-After installation, complete onboarding through the dashboard at `https://<SERVER_STATIC_IP>`. The dashboard walks you through three pages in order:
+Dopo l'installazione, completare l'onboarding tramite il dashboard all'indirizzo `https://<SERVER_STATIC_IP>`. Il dashboard guida attraverso tre pagine in ordine:
 
-### `/installation` — WireGuard peer setup
+### `/installation` — Configurazione del peer WireGuard
 
-Performs the nonce/HIN handshake to establish a WireGuard peer connection, and saves the resulting WireGuard configuration to the IRISAgent service.
+Esegue l'handshake nonce/HIN per stabilire una connessione peer WireGuard e salva la configurazione WireGuard risultante nel servizio IRISAgent.
 
-### `/onboarding` — S/MIME certificate
+### `/onboarding` — Certificato S/MIME
 
-Generates the S/MIME signing key and CSR via the smimekeys service and submits the CSR to the CA over the now-established WireGuard tunnel. (This replaces the previous script-based certificate flow.)
+Genera la chiave di firma S/MIME e il CSR tramite il servizio smimekeys e invia il CSR alla CA attraverso il tunnel WireGuard ora stabilito. (Questo sostituisce il precedente flusso di certificati basato su script.)
 
-### `/mail` — Mail domains and relay configuration
+### `/mail` — Domini di posta e configurazione del relay
 
-Submits hostname and the list of relay domains to the `mtaconf` service over its REST API. The daemon applies the configuration to Stalwart without restarting the container.
+Invia il nome host e l'elenco dei domini di relay al servizio `mtaconf` tramite la sua API REST. Il demone applica la configurazione a Stalwart senza riavviare il container.
 
-!!! tip "Adding or changing domains later"
-    Re-open the `/mail` page in the dashboard, edit the domain list, and submit. The daemon applies the change at runtime - no script invocation, no `.env` edit, no service restart needed.
+!!! tip "Aggiungere o modificare domini in seguito"
+    Riaprire la pagina `/mail` nel dashboard, modificare l'elenco dei domini e inviare. Il demone applica la modifica in fase di esecuzione - nessuna invocazione di script, nessuna modifica di `.env`, nessun riavvio del servizio necessario.
 
-## Step 5: WireGuard Peer Registration
+## Passo 5: Registrazione del peer WireGuard
 
-The S/MIME CSR submission on `/onboarding` will fail if your Stargate instance is not yet registered as a WireGuard peer on the HIN CA side. This is the most common issue during initial setup.
+L'invio del CSR S/MIME su `/onboarding` fallirà se l'istanza Stargate non è ancora registrata come peer WireGuard sul lato CA HIN. Questo è il problema più comune durante la configurazione iniziale.
 
-The dashboard's `/installation` page handles the WireGuard peer registration automatically via the nonce/HIN handshake. If the automatic registration fails, manual registration can be done by providing the following values to HIN:
+La pagina `/installation` del dashboard gestisce automaticamente la registrazione del peer WireGuard tramite l'handshake nonce/HIN. Se la registrazione automatica fallisce, è possibile effettuare la registrazione manuale fornendo i seguenti valori a HIN:
 
-1. **WireGuard public key** — extract from irisagent logs:
+1. **Chiave pubblica WireGuard** — estrarre dai log irisagent:
 
    ```bash
    docker compose logs irisagent | grep "public key"
    ```
 
-2. **`DEPLOYMENT_NAME`** — from your `customer-config.sh`
-3. **`SERVER_STATIC_IP`** — the public IP of your Stargate server
-4. **`WG_INTERFACE_PORT`** — only if you changed it from the default `19818`
+2. **`DEPLOYMENT_NAME`** — dal proprio `customer-config.sh`
+3. **`SERVER_STATIC_IP`** — l'IP pubblico del server Stargate
+4. **`WG_INTERFACE_PORT`** — solo se modificato rispetto al valore predefinito `19818`
 
-**After peer registration is confirmed:**
+**Dopo la conferma della registrazione del peer:**
 
-Re-run the `/onboarding` page in the dashboard to regenerate the CSR and submit it through the now-up tunnel.
+Rieseguire la pagina `/onboarding` nel dashboard per rigenerare il CSR e inviarlo attraverso il tunnel ora attivo.
 
-**To verify the tunnel before requesting the certificate:**
+**Per verificare il tunnel prima di richiedere il certificato:**
 
-Restart just irisagent
+Riavviare solo irisagent
 
 ```bash
 docker compose restart irisagent
 ```
 
-Check for successful WireGuard handshake
+Verificare l'handshake WireGuard riuscito
 
 ```bash
 docker compose logs irisagent 2>&1 | grep -i "handshake\|peer"
 ```
 
 !!! tip
-    Check your firewall: Port `19818/TCP` must be open **both directions inbound and outbound** on the Stargate server.
+    Controllare il firewall: La porta `19818/TCP` deve essere aperta **in entrambe le direzioni, in entrata e in uscita** sul server Stargate.
 
-## Step 6: Post-Onboarding Recommendations
+## Passo 6: Raccomandazioni post-onboarding
 
-Once the certificate is issued and mail is flowing, two configuration items are strongly recommended for any production deployment. Skipping them does not break encryption, but it will degrade your sender reputation, cause "we can't verify the sender" warnings in Outlook/Gmail, and can eventually lead to outbound mail being blocklisted.
+Una volta emesso il certificato e la posta in circolazione, due elementi di configurazione sono fortemente raccomandati per qualsiasi deployment in produzione. Saltarli non rompe la crittografia, ma degrada la reputazione del mittente, causa avvisi "non possiamo verificare il mittente" in Outlook/Gmail e può portare a un blocco della posta in uscita.
 
-### Step 6.1 SPF / DKIM / DMARC for sender domains
+### Passo 6.1 SPF / DKIM / DMARC per i domini mittente
 
-The Stargate sends mail from its own public IP on behalf of your users. Without proper DNS authentication records, recipients will see "we can't verify this sender" warnings and may reject the mail.
+Stargate invia la posta dal proprio IP pubblico per conto degli utenti. Senza record di autenticazione DNS corretti, i destinatari vedranno avvisi "non possiamo verificare questo mittente" e potrebbero rifiutare la posta.
 
-For complete instructions on configuring SPF, DKIM, DMARC, and PTR records, see the [DNS Setup Guide](DNS-setup.md#recommended-records).
+Per istruzioni complete sulla configurazione dei record SPF, DKIM, DMARC e PTR, vedere la [Guida alla configurazione DNS](DNS-setup.md#record-raccomandati).
 
-At minimum, for each domain you route through the Stargate:
+Come minimo, per ogni dominio instradato attraverso Stargate:
 
-* **SPF**: add `ip4:<STARGATE_IP>` to the domain's TXT record
-* **DMARC**: publish `v=DMARC1; p=none` at `_dmarc.<YOUR_DOMAIN>`
-* **PTR**: set reverse DNS for the Stargate IP to match `MAIL_HOSTNAME`
+* **SPF**: aggiungere `ip4:<STARGATE_IP>` al record TXT del dominio
+* **DMARC**: pubblicare `v=DMARC1; p=none` su `_dmarc.<YOUR_DOMAIN>`
+* **PTR**: impostare il DNS inverso per l'IP Stargate in modo che corrisponda a `MAIL_HOSTNAME`
 
-### Step 6.2 Relay outbound mail back through your mail platform (recommended for M365 / Exchange Online)
+### Passo 6.2 Relay della posta in uscita attraverso la piattaforma di posta (raccomandato per M365 / Exchange Online)
 
-By default, after the Stargate signs/encrypts an outbound mail it delivers directly to the recipient's MX. This works, but the connecting IP is your Stargate's IP - and unless that IP has years of warm reputation, it can end up on third-party blocklists (e.g. Barracuda, Abusix), causing intermittent delivery failures.
+Per impostazione predefinita, dopo che Stargate firma/crittografa una posta in uscita, la consegna direttamente al MX del destinatario. Questo funziona, ma l'IP di connessione è l'IP di Stargate - e a meno che quell'IP non abbia anni di reputazione positiva, può finire su liste nere di terze parti (es. Barracuda, Abusix), causando fallimenti di consegna intermittenti.
 
-The recommended pattern is to **send the signed mail back through your M365 / Exchange tenant** so that the final hop to the internet is Microsoft's well-reputed infrastructure. The Stargate still signs and policy-checks every message; only the last hop changes. This mirrors the original HIN MGW "Send to MX" connector pattern.
+Il modello raccomandato è **inviare la posta firmata attraverso il tenant M365 / Exchange** in modo che l'ultimo salto verso Internet sia l'infrastruttura ben reputata di Microsoft. Stargate firma e verifica ancora ogni messaggio secondo le policy; solo l'ultimo salto cambia. Questo rispecchia il modello di connettore "Invia a MX" del vecchio HIN MGW.
 
-#### Stargate side — per-domain relay
+#### Lato Stargate — relay per dominio
 
-Configure per-domain relay through the dashboard's `/mail` page. Each domain can be mapped to its own M365 / Exchange inbound endpoint; the dashboard sends the mapping to mtaconf's REST API and Stalwart is reconfigured at runtime.
+Configurare il relay per dominio tramite la pagina `/mail` del dashboard. Ogni dominio può essere mappato al proprio endpoint in entrata M365 / Exchange; il dashboard invia il mapping all'API REST di mtaconf e Stalwart viene riconfigurato in fase di esecuzione.
 
-After mxengine signs the mail, Stalwart will hand it back to your tenant on port 25 with TLS instead of delivering directly to the recipient's MX. See `Exchange-integration.md` for the full per-domain syntax.
+Dopo che mxengine firma la posta, Stalwart la restituirà al tenant sulla porta 25 con TLS invece di consegnarla direttamente al MX del destinatario. Vedere `Exchange-integration.md` per la sintassi completa per dominio.
 
-#### M365 / Exchange Online side
+#### Lato M365 / Exchange Online
 
-You essentially recreate the same connector + transport rule set as the old HIN MGW (the original HIN MGW O365 manual is the reference - the same five rules apply). The minimum is:
+Si ricrea essenzialmente lo stesso insieme di connettori + regole di trasporto del vecchio HIN MGW (il manuale O365 originale di HIN MGW è il riferimento - si applicano le stesse cinque regole). Il minimo è:
 
-1. **Inbound connector** - accept mail from the Stargate, identified by TLS certificate (the cert subject must match a domain accepted in your tenant). A self-signed cert on the Stargate will be rejected by this connector - use a valid CA-issued cert (Let's Encrypt is fine).
-2. **Outbound connector "Send to MX"** - delivers to the recipient's MX, activated only by transport rule.
-3. **Transport rule `set_header`** - tags outbound mail with a header like `outgoing: outgoing_<domain>` before it leaves O365 the first time, so the return trip can recognize it.
-4. **Transport rule `outgoing_to_mx`** - matches the `outgoing_<domain>` header on mail coming back from the Stargate and routes it via the "Send to MX" connector.
-5. **Transport rule `mgw_bypass_antispam`** - bypasses spam filtering on mail coming back from the Stargate.
+1. **Connettore in entrata** - accetta la posta da Stargate, identificato dal certificato TLS (il soggetto del certificato deve corrispondere a un dominio accettato nel tenant). Un certificato auto-firmato su Stargate sarà respinto da questo connettore - utilizzare un certificato valido emesso da CA (Let's Encrypt va bene).
+2. **Connettore in uscita "Invia a MX"** - consegna al MX del destinatario, attivato solo dalla regola di trasporto.
+3. **Regola di trasporto `set_header`** - etichetta la posta in uscita con un header come `outgoing: outgoing_<dominio>` prima che lasci O365 la prima volta, in modo che il viaggio di ritorno possa riconoscerlo.
+4. **Regola di trasporto `outgoing_to_mx`** - corrisponde all'header `outgoing_<dominio>` sulla posta che torna da Stargate e la instrada tramite il connettore "Invia a MX".
+5. **Regola di trasporto `mgw_bypass_antispam`** - bypassa il filtraggio antispam sulla posta che torna da Stargate.
 
-mxengine does not strip arbitrary headers, so the `outgoing_<domain>` tag set by `set_header` survives the round-trip and triggers `outgoing_to_mx` correctly.
+mxengine non rimuove header arbitrari, quindi il tag `outgoing_<dominio>` impostato da `set_header` sopravvive al viaggio di andata e ritorno e attiva correttamente `outgoing_to_mx`.
 
-!!! info "Why this pattern matters"
-    With the relay-back configuration, the public sender to the internet is Microsoft. Combined with correct SPF/DKIM/DMARC (section 6.1), recipients see a Microsoft IP with `spf=pass` and `dkim=pass` aligned to your domain - which is the cleanest reputation profile you can give them.
+!!! info "Perché questo modello è importante"
+    Con la configurazione di relay di ritorno, il mittente pubblico verso Internet è Microsoft. Combinato con SPF/DKIM/DMARC corretti (sezione 6.1), i destinatari vedono un IP Microsoft con `spf=pass` e `dkim=pass` allineati al dominio - che è il profilo di reputazione più pulito che si possa dare loro.
 
-See `Exchange-integration.md` for full step-by-step instructions including screenshots.
+Vedere `Exchange-integration.md` per istruzioni dettagliate passo-passo incluse schermate.
 
-## Subsequent Starts (after reboot)
+## Avvii successivi (dopo il riavvio)
 
-The installer enables a `stargate` systemd unit, so the stack starts
-automatically on boot. To start it manually:
+L'installatore abilita un'unità systemd `stargate`, quindi lo stack si avvia automaticamente all'avvio. Per avviarlo manualmente:
 
 ```bash
 sudo systemctl start stargate
 ```
 
-This runs `start.sh`, which:
+Questo esegue `start.sh`, che:
 
-1. Starts infrastructure services
-2. Unseals Vault using stored keys
-3. Starts application services
+1. Avvia i servizi di infrastruttura
+2. Scongela Vault utilizzando le chiavi memorizzate
+3. Avvia i servizi applicativi
 
-(`./scripts/start.sh` still works directly if you prefer.)
+(`./scripts/start.sh` funziona ancora direttamente se si preferisce.)
 
-## Stop Services
+## Arrestare i servizi
 
 ```bash
 sudo systemctl stop stargate
 ```
 
-(or `./scripts/stop.sh` directly)
+(o direttamente `./scripts/stop.sh`)
 
-This stops containers but preserves all data.
+Questo arresta i container ma preserva tutti i dati.
 
-## Data Persistence
+## Persistenza dei dati
 
-All data is stored in Docker volumes and **persists across restarts**.
+Tutti i dati sono memorizzati in volumi Docker e **persistono attraverso i riavvii**.
 
-| Service | Volume | Data |
+| Servizio | Volume | Dati |
 |---------|--------|------|
-| PostgreSQL | `postgres_data` | All databases (smimekeys, policy, irisagent, mxengine) |
-| Vault | `vault_data` | Encryption keys, secrets, S/MIME keys |
-| SeaweedFS | `seaweedfs_data` | Object storage (messages, attachments) |
-| Stalwart | `stalwart_data` | Mail server state |
+| PostgreSQL | `postgres_data` | Tutti i database (smimekeys, policy, irisagent, mxengine) |
+| Vault | `vault_data` | Chiavi di crittografia, segreti, chiavi S/MIME |
+| SeaweedFS | `seaweedfs_data` | Storage di oggetti (messaggi, allegati) |
+| Stalwart | `stalwart_data` | Stato del server di posta |
 
-### Safe Operations (data preserved)
+### Operazioni sicure (dati preservati)
 
-Stop and start:
+Arrestare e avviare:
 
 ```bash
 sudo systemctl stop stargate
 sudo systemctl start stargate
 ```
 
-Or using the scripts directly:
+O utilizzando direttamente gli script:
 
 ```bash
 ./scripts/stop.sh
 ./scripts/start.sh
 ```
 
-!!! warning "Do not use `docker compose` commands directly"
-    Always use `systemctl` or the provided scripts (`start.sh` / `stop.sh`) to manage the deployment. Running `docker compose up`, `docker compose down`, or `docker compose restart` directly **will not unseal Vault**, leaving dependent services unable to start. The `start.sh` script handles the Vault unseal procedure automatically.
+!!! warning "Non utilizzare i comandi `docker compose` direttamente"
+    Utilizzare sempre `systemctl` o gli script forniti (`start.sh` / `stop.sh`) per gestire il deployment. L'esecuzione diretta di `docker compose up`, `docker compose down` o `docker compose restart` **non scongelerà Vault**, lasciando i servizi dipendenti impossibilitati ad avviarsi. Lo script `start.sh` gestisce automaticamente la procedura di scongelamento di Vault.
 
-### Vault Sealing Behavior
+### Comportamento di scongelamento di Vault
 
-**Vault becomes sealed** when its container restarts. This is a security feature.
+**Vault si congela** quando il suo container viene riavviato. Questa è una funzionalità di sicurezza.
 
-The `start.sh` script (and the systemd service) automatically unseal Vault using the keys stored in `secrets/vault-keys.json`. This is why you must always use the provided scripts or systemd service to manage the stack.
+Lo script `start.sh` (e il servizio systemd) scongelano automaticamente Vault utilizzando le chiavi memorizzate in `secrets/vault-keys.json`. Questo è il motivo per cui è necessario utilizzare sempre gli script forniti o il servizio systemd per gestire lo stack.
 
-## :warning: Destructive Operations (data deleted)
+## :warning: Operazioni distruttive (dati cancellati)
 
 !!! warning
-    These commands **DELETE ALL DATA** - use with caution!
+    Questi comandi **CANCELLANO TUTTI I DATI** - usare con cautela!
 
-    You can only restore data if you perform [backup operations](./Docker-advanced.md#manual-backup) before and save the backup in a safe place.
+    È possibile ripristinare i dati solo se si eseguono [operazioni di backup](./Docker-advanced.md#backup-manuale) prima e si salva il backup in un luogo sicuro.
 
 !!! danger
-    Delete everything (volumes, secrets, config)
+    Eliminare tutto (volumi, segreti, config)
 
     ```bash
     ./scripts/purge.sh
     ```
 
-    Or manually remove volumes. The -v flag removes volumes
+    O rimuovere manualmente i volumi. Il flag -v rimuove i volumi
 
     ```bash
     docker compose down -v
     ```
 
-## Scripts Reference
+## Riferimento script
 
-| Script | Purpose |
+| Script | Scopo |
 |--------|--------|
-| `install.sh` | First-time installation (Docker, Vault). Domain/cert/peer setup happens in the dashboard afterwards. |
-| `update.sh` | Update service images (preserves Vault token, recreates containers) |
-| `start.sh` | Start services and unseal Vault |
-| `stop.sh` | Stop containers (data preserved) |
-| `backup.sh` | Full backup (database, Vault keys, config, certificates) |
-| `restore.sh` | Restore from backup archive (works on fresh machine) |
-| `purge.sh` | :warning: Delete ALL data (requires confirmation) |
-| `health-check.sh` | Comprehensive health check of all services (exit 0 = healthy, 1 = failures) |
-| `init-vault.sh` | Vault initialization (used by `vault-init` container, not called directly) |
-| `init-keycloak.sh` | Keycloak admin password setup (used by `keycloak-init` container, not called directly) |
-| `gather-app-versions.sh` | Collects app versions from `/liveness` endpoints for node-exporter (runs in `version-collector` container) |
+| `install.sh` | Prima installazione (Docker, Vault). La configurazione di dominio/certificato/peer avviene successivamente nel dashboard. |
+| `update.sh` | Aggiornare le immagini dei servizi (preserva il token Vault, ricrea i container) |
+| `start.sh` | Avviare i servizi e scongelare Vault |
+| `stop.sh` | Arrestare i container (dati preservati) |
+| `backup.sh` | Backup completo (database, chiavi Vault, configurazione, certificati) |
+| `restore.sh` | Ripristinare da archivio di backup (funziona su macchina nuova) |
+| `purge.sh` | :warning: Eliminare TUTTI i dati (richiede conferma) |
+| `health-check.sh` | Health check completo di tutti i servizi (exit 0 = healthy, 1 = fallimenti) |
+| `init-vault.sh` | Inizializzazione Vault (utilizzato dal container `vault-init`, non chiamato direttamente) |
+| `init-keycloak.sh` | Impostazione password amministratore Keycloak (utilizzato dal container `keycloak-init`, non chiamato direttamente) |
+| `gather-app-versions.sh` | Raccoglie le versioni delle app dagli endpoint `/liveness` per node-exporter (viene eseguito nel container `version-collector`) |
 
-## Configuration Files
+## File di configurazione
 
-| File | Purpose |
+| File | Scopo |
 |------|---------|
-| `customer-config-prod.example.sh` | Template for customer settings (copy to `customer-config.sh`) |
-| `customer-config.sh` | Customer-specific settings (created from template, fill in before install) |
-| `.env` | Generated environment file (created by `install.sh`) |
-| `secrets/vault-keys.json` | Vault unseal keys and root token (back up securely!) |
-| `secrets/signing-key.csr` | Generated CSR for S/MIME certificate |
+| `customer-config-prod.example.sh` | Modello per le impostazioni cliente (copiare in `customer-config.sh`) |
+| `customer-config.sh` | Impostazioni specifiche del cliente (create dal modello, compilare prima dell'installazione) |
+| `.env` | File di ambiente generato (creato da `install.sh`) |
+| `secrets/vault-keys.json` | Chiavi di scongelamento Vault e token root (effettuare backup sicuro!) |
+| `secrets/signing-key.csr` | CSR generato per il certificato S/MIME |
 
-## Support
+## Supporto
 
-!!! tip "Support"
+!!! tip "Supporto"
 
-    For any questions or issues related to the deployment and operation of the Stargate appliance, please contact HIN support.
+    Per qualsiasi domanda o problema relativo al deployment e al funzionamento dell'appliance Stargate, contattare il supporto HIN.
 
-    Please include relevant information such as the customer name, appliance version, and screenshots/[logs](./Docker-advanced.md#provide-logs-to-support) where applicable, to help us process your request efficiently.
+    Includere informazioni rilevanti come il nome del cliente, la versione dell'appliance e schermate/[log](./Docker-advanced.md#fornire-log-al-supporto) dove applicabile, per aiutarci a elaborare la richiesta in modo efficiente.

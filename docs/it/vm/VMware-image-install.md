@@ -1,49 +1,49 @@
-# Stargate VMware ESXi deployment using an image
+# Deployment Stargate su VMware ESXi tramite immagine
 
-Deploy Stargate on VMware
+Distribuisci Stargate su VMware
 
-## Get the image file
+## Ottenere il file immagine
 
-- Download the latest OVA (or OVF and VMDK if you prefer) image file. Please refer to [VM Catalog](VM-Catalog.md?h=ova)
+- Scarica l'ultimo file immagine OVA (o OVF e VMDK se preferisci). Fare riferimento al [Catalogo VM](VM-Catalog.md?h=ova)
 
-## Navigate to the ESXi web UI
+## Navigare all'interfaccia web di ESXi
 
-- Click **Virtual Machines**
-- Click **Create/Register VM**
-- Choose "Deploy a virtual machine from an OVF or OVA file"
-- Click **Next**
-- Type a name for the VM
-- Click **Next**
-- Click to select files and choose the OVA image file (or OVF and VMDK if you prefer)
-- Click **Next**
-- Choose a storage to use
-- Click **Next**
-- Choose Network and Disk for provisioning
-- Click **Next**
-- Click **Finish**
+- Fai clic su **Macchine virtuali**
+- Fai clic su **Crea/Registra VM**
+- Scegli "Distribuisci una macchina virtuale da un file OVF o OVA"
+- Fai clic su **Avanti**
+- Digita un nome per la VM
+- Fai clic su **Avanti**
+- Fai clic per selezionare i file e scegli il file immagine OVA (o OVF e VMDK se preferisci)
+- Fai clic su **Avanti**
+- Scegli uno storage da utilizzare
+- Fai clic su **Avanti**
+- Scegli Rete e Disco per il provisioning
+- Fai clic su **Avanti**
+- Fai clic su **Fine**
 
-## Log in and initialize the Stargate instance
+## Accedi e inizializza l'istanza Stargate
 
-- Log in to the VM console with the `hinadmin` user in order to configure and install the Stargate components.
-- To obtain the `hinadmin` password, send an email to <support@hin.ch> with the subject: **"Password required for VM installation."**
+- Accedi alla console VM con l'utente `hinadmin` per configurare e installare i componenti Stargate.
+- Per ottenere la password `hinadmin`, invia un'email a <support@hin.ch> con oggetto: **"Password required for VM installation."**
 
-[Click here to send an Email](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
+[Clicca qui per inviare un'email](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ```shell
 sudo su -
 cd ~/stargate-deployment/docker-compose/
 ```
 
-- Use vi/nano to edit `customer-config.sh`
-- Configuration details can be found in the [README - Step 1: Configure Customer Settings](../Docker-deploy.md#step-1-configure-customer-settings)
-- Run the install script:
+- Utilizza vi/nano per modificare `customer-config.sh`
+- I dettagli di configurazione si trovano nel [README - Passo 1: Configurare le impostazioni cliente](../Docker-deploy.md#passo-1-configurare-le-impostazioni-cliente)
+- Esegui lo script di installazione:
 
 ```shell
 ./scripts/install.sh
 ```
 
-!!! tip "Support"
+!!! tip "Supporto"
 
-    For any questions or issues related to the deployment and operation of the Stargate appliance, please contact HIN support.
+    Per qualsiasi domanda o problema relativo al deployment e al funzionamento dell'appliance Stargate, contatta il supporto HIN.
 
-    Please include relevant information such as the customer name, appliance version, and screenshots/[logs](../Docker-advanced.md#provide-logs-to-support) where applicable, to help us process your request efficiently.
+    Includi informazioni rilevanti come il nome del cliente, la versione dell'appliance e screenshot/[log](../Docker-advanced.md#fornire-log-al-supporto) dove applicabile, per aiutarci a elaborare la tua richiesta in modo efficiente.

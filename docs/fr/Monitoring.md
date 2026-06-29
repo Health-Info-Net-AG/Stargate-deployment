@@ -1,77 +1,77 @@
-# Monitoring and Logs
+# Surveillance et Logs
 
-Stargate includes built-in monitoring and log collection services that run alongside the application containers.
+Stargate inclut des services intégrés de surveillance et de collecte de logs qui fonctionnent aux côtés des conteneurs d'application.
 
-## Components
+## Composants
 
-| Service | Port | Purpose |
+| Service | Port | Objectif |
 |---------|------|---------|
-| node-exporter | `9100` | Host-level metrics (CPU, memory, disk, network) for Prometheus |
-| version-collector | - | Collects app versions from `/liveness` endpoints |
-| Alloy | `12345` | Docker log collector - ships container logs to Loki |
-| Loki | `3100` (internal) | Local log aggregation backend |
-| Dozzle | `8190` | Web-based container log viewer (HTTPS, Keycloak SSO; optional) |
-| oauth2-proxy | `8190` | OIDC relying party that authenticates Dozzle access (with Dozzle) |
+| node-exporter | `9100` | Métriques au niveau de l'hôte (CPU, mémoire, disque, réseau) pour Prometheus |
+| version-collector | - | Collecte les versions des applications depuis les points de terminaison `/liveness` |
+| Alloy | `12345` | Collecteur de logs Docker - envoie les logs des conteneurs à Loki |
+| Loki | `3100` (interne) | Backend d'agrégation de logs local |
+| Dozzle | `8190` | Visualisateur de logs de conteneurs basé sur le web (HTTPS, SSO Keycloak ; optionnel) |
+| oauth2-proxy | `8190` | Partie fiable OIDC qui authentifie l'accès Dozzle (avec Dozzle) |
 
 ---
 
-## Dozzle - Local Log Viewer
+## Dozzle - Visualisateur de logs local
 
-Dozzle provides a web-based UI to view real-time logs from all Stargate containers. It is optional and enabled by setting `DOZZLE_ENABLED="true"` in `customer-config.sh`.
+Dozzle fournit une interface web pour visualiser les logs en temps réel de tous les conteneurs Stargate. Il est optionnel et activé en définissant `DOZZLE_ENABLED="true"` dans `customer-config.sh`.
 
-Access is protected by **Keycloak**: an `oauth2-proxy` sits in front of Dozzle and requires the same login as the dashboard (the `stargate` realm). Dozzle itself is not exposed directly.
+L'accès est protégé par **Keycloak**: un `oauth2-proxy` se place devant Dozzle et nécessite la même connexion que le tableau de bord (le domaine `stargate`). Dozzle lui-même n'est pas exposé directement.
 
-**Access:** open `https://<SERVER_IP>:8190` in a browser and sign in with your HIN Gateway (Keycloak) credentials.
+**Accès :** ouvrez `https://<IP_SERVEUR>:8190` dans un navigateur et connectez-vous avec vos identifiants HIN Gateway (Keycloak).
 
 !!! note
-    Port `8190` (HTTPS) must be reachable from your network. If you restrict access by IP or firewall, allow `8190/tcp` as you do for the dashboard and Keycloak.
+    Le port `8190` (HTTPS) doit être accessible depuis votre réseau. Si vous restreignez l'accès par IP ou pare-feu, autorisez `8190/tcp` comme vous le faites pour le tableau de bord et Keycloak.
 
-Logs are organized by service. By selecting a specific service, you can view its corresponding log entries and details.
+Les logs sont organisés par service. En sélectionnant un service spécifique, vous pouvez visualiser ses entrées de logs et détails correspondants.
 
-![Dozzle overview](./assets/dozzle-overview.png)
+![Aperçu Dozzle](./assets/dozzle-overview.png)
 
 ---
 
-## Grafana Alloy - Log Forwarding
+## Grafana Alloy - Transfert de logs
 
-Grafana Alloy collects logs from all Stargate application containers and writes them to the local Loki instance. Optionally, logs can also be forwarded to a remote Loki-compatible endpoint for centralized monitoring.
+Grafana Alloy collecte les logs de tous les conteneurs d'application Stargate et les écrit dans l'instance Loki locale. Optionnellement, les logs peuvent également être transférés vers un point de terminaison distant compatible Loki pour une surveillance centralisée.
 
-### How it works
+### Comment cela fonctionne
 
-1. Alloy discovers Stargate containers via the Docker socket
-2. Logs are always written to the **local Loki** instance (used by the dashboard for log export)
-3. If a remote Loki URL is configured, logs are **additionally forwarded** to that endpoint
+1. Alloy découvre les conteneurs Stargate via le socket Docker
+2. Les logs sont toujours écrits dans l'instance **Loki locale** (utilisée par le tableau de bord pour l'exportation des logs)
+3. Si une URL Loki distante est configurée, les logs sont **également transférés** vers ce point de terminaison
 
-### Configuring remote log forwarding
+### Configurer le transfert de logs à distance
 
-From the HIN Gateway dashboard, navigate to the **Settings** page. Under the **Grafana Alloy** section, enter the Loki push URL of your remote log collection server:
+Depuis le tableau de bord HIN Gateway, accédez à la page **Paramètres**. Dans la section **Grafana Alloy**, entrez l'URL de poussée Loki de votre serveur de collecte de logs distant:
 
-![Alloy settings](./assets/alloy-settings.png)
+![Paramètres Alloy](./assets/alloy-settings.png)
 
-The URL should follow the standard Loki push API format:
+L'URL doit suivre le format standard de l'API de poussée Loki:
 
 ```plain
 https://logs.example.com/loki/api/v1/push
 ```
 
-Leave the field blank to disable remote log forwarding.
+Laissez le champ vide pour désactiver le transfert de logs à distance.
 
 !!! note
-    Changes take effect within 1 minute (Alloy polls the dashboard configuration on that interval). No container restart is required.
+    Les modifications prennent effet dans un délai d'1 minute (Alloy interroge la configuration du tableau de bord à cet intervalle). Aucun redémarrage de conteneur n'est nécessaire.
 
-### Requirements on the remote side
+### Exigences du côté distant
 
-Your remote Loki endpoint must be reachable from the Stargate server over HTTPS (port 443). If you use IP-based allowlisting on your ingress, add the Stargate server's public IP.
+Votre point de terminaison Loki distant doit être accessible depuis le serveur Stargate via HTTPS (port 443). Si vous utilisez une liste d'autorisation basée sur IP sur votre entrée, ajoutez l'IP publique du serveur Stargate.
 
 ---
 
-## Prometheus Metrics
+## Métriques Prometheus
 
-Stargate exposes Prometheus-compatible metrics endpoints from its application containers. These can be scraped by any Prometheus-compatible server for centralized metrics collection.
+Stargate expose des points de terminaison de métriques compatibles Prometheus depuis ses conteneurs d'application. Ceux-ci peuvent être récupérés par tout serveur compatible Prometheus pour une collecte centralisée des métriques.
 
-### Available endpoints
+### Points de terminaison disponibles
 
-| Service | Port | Path |
+| Service | Port | Chemin |
 |---------|------|------|
 | smimekeys-client | `2113` | `/metrics` |
 | irisagent | `2114` | `/metrics` |
@@ -80,9 +80,9 @@ Stargate exposes Prometheus-compatible metrics endpoints from its application co
 | node-exporter | `9100` | `/metrics` |
 | APISIX | `9091` | `/apisix/prometheus/metrics` |
 
-### Scrape configuration
+### Configuration de récupération
 
-Add the Stargate server as a target in your Prometheus configuration. Example for a single instance:
+Ajoutez le serveur Stargate comme cible dans votre configuration Prometheus. Exemple pour une instance unique:
 
 ```yaml
 scrape_configs:
@@ -127,31 +127,31 @@ scrape_configs:
     metrics_path: /metrics
 ```
 
-Replace `<STARGATE_IP>` with the server's public or private IP and `<name>` with a deployment identifier (e.g., `prod`, `customer-name`).
+Remplacez `<IP_STARGATE>` par l'IP publique ou privée du serveur et `<nom>` par un identifiant de déploiement (ex. `prod`, `nom-client`).
 
 !!! tip
-    The `environment` and `service` labels enable filtering in Grafana dashboards across multiple Stargate instances.
+    Les étiquettes `environment` et `service` permettent le filtrage dans les tableaux de bord Grafana sur plusieurs instances Stargate.
 
-### Firewall requirements
+### Exigences de pare-feu
 
-The metrics ports (2113-2116, 9100) must be reachable from your Prometheus server. If you restrict access by IP, add your monitoring server's IP to the firewall rules.
+Les ports de métriques (2113-2116, 9100) doivent être accessibles depuis votre serveur Prometheus. Si vous restreignez l'accès par IP, ajoutez l'IP de votre serveur de surveillance aux règles de pare-feu.
 
 ---
 
 ## Node Exporter
 
-The node-exporter service exposes standard host-level metrics (CPU, memory, disk I/O, network) on port **9100**. It also includes a textfile collector that exposes custom metrics from the version-collector sidecar (application version information).
+Le service node-exporter expose des métriques standard au niveau de l'hôte (CPU, mémoire, E/S disque, réseau) sur le port **9100**. Il inclut également un collecteur de fichiers texte qui expose des métriques personnalisées du sidecar version-collector (informations de version des applications).
 
 ---
 
-## Summary of exposed ports
+## Résumé des ports exposés
 
-| Port | Service | Protocol | Purpose |
+| Port | Service | Protocole | Objectif |
 |------|---------|----------|---------|
-| `8190` | Dozzle (via oauth2-proxy) | HTTPS | Authenticated log viewer UI (Keycloak SSO) |
-| `9100` | node-exporter | HTTP | Host metrics (Prometheus) |
-| `2113` | smimekeys-client | HTTP | App metrics (Prometheus) |
-| `2114` | irisagent | HTTP | App metrics (Prometheus) |
-| `2115` | policy | HTTP | App metrics (Prometheus) |
-| `2116` | mxengine | HTTP | App metrics (Prometheus) |
-| `9091` | APISIX | HTTP | Gateway metrics (Prometheus) |
+| `8190` | Dozzle (via oauth2-proxy) | HTTPS | Interface de visualisation des logs authentifiée (SSO Keycloak) |
+| `9100` | node-exporter | HTTP | Métriques de l'hôte (Prometheus) |
+| `2113` | smimekeys-client | HTTP | Métriques de l'application (Prometheus) |
+| `2114` | irisagent | HTTP | Métriques de l'application (Prometheus) |
+| `2115` | policy | HTTP | Métriques de l'application (Prometheus) |
+| `2116` | mxengine | HTTP | Métriques de l'application (Prometheus) |
+| `9091` | APISIX | HTTP | Métriques de la passerelle (Prometheus) |

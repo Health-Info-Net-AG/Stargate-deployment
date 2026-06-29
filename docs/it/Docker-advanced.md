@@ -1,84 +1,84 @@
-# Stargate Docker advanced configuration
+# Configurazione avanzata di Stargate Docker
 
-## Backups
+## Backup
 
-### Automatic Backups
+### Backup automatici
 
-* Daily backups run at 2:00 AM via cron (set up during install)
-* Backups stored in `./backups/` as timestamped `.tar.gz` files
-* Old backups (>7 days) are automatically cleaned up
+* I backup giornalieri vengono eseguiti alle 2:00 AM tramite cron (impostati durante l'installazione)
+* I backup vengono archiviati in `./backups/` come file `.tar.gz` con timestamp
+* I vecchi backup (>7 giorni) vengono automaticamente eliminati
 
-### What's Included in Backups
+### Cosa è incluso nei backup
 
-* **Full PostgreSQL dump** (all databases with users and permissions)
-* **Individual database dumps** (for partial restore if needed)
-* **Vault keys** (`vault-keys.json` for unsealing)
-* **Customer configuration** (`customer-config.sh` with WireGuard key)
-* **S/MIME CSR and certificates** (any `.crt`, `.pem`, `.cer` files)
-* **Backup manifest** (`manifest.json` with metadata)
+* **Dump PostgreSQL completo** (tutti i database con utenti e permessi)
+* **Dump di database individuali** (per ripristino parziale se necessario)
+* **Chiavi Vault** (`vault-keys.json` per lo scongelamento)
+* **Configurazione cliente** (`customer-config.sh` con chiave WireGuard)
+* **CSR e certificati S/MIME** (tutti i file `.crt`, `.pem`, `.cer`)
+* **Manifesto del backup** (`manifest.json` con metadati)
 
-### Manual Backup
+### Backup manuale
 
 ```bash
 ./scripts/backup.sh
 ```
 
-Creates a compressed archive in `./backups/YYYYMMDD_HHMMSS.tar.gz`.
+Crea un archivio compresso in `./backups/YYYYMMDD_HHMMSS.tar.gz`.
 
-### Restore from Backup
+### Ripristino dal backup
 
-To restore on a **new machine** or after a **purge**. Copy the backup archive to the new machine and execute:
+Per ripristinare su una **nuova macchina** o dopo una **pulizia**. Copiare l'archivio di backup sulla nuova macchina ed eseguire:
 
 ```bash
 ./scripts/restore.sh backups/20260130_143022.tar.gz
 ```
 
-The restore script will:
+Lo script di ripristino:
 
-1. Stop any running services
-2. Extract and validate the backup
-3. Install Docker if needed
-4. Restore customer configuration
-5. Start infrastructure services (PostgreSQL, Vault, MinIO)
-6. Restore the database
-7. Unseal Vault with backed-up keys
-8. Start application services
+1. Arresta tutti i servizi in esecuzione
+2. Estrae e valida il backup
+3. Installa Docker se necessario
+4. Ripristina la configurazione cliente
+5. Avvia i servizi di infrastruttura (PostgreSQL, Vault, MinIO)
+6. Ripristina il database
+7. Scongela Vault con le chiavi di backup
+8. Avvia i servizi applicativi
 
-### Partial Restore (single database)
+### Ripristino parziale (database singolo)
 
-If you only need to restore one database:
+Se è necessario ripristinare solo un database:
 
-#### Extract backup
+#### Estrarre il backup
 
 ```bash
 tar -xzf backups/20260130_143022.tar.gz -C /tmp/
 ```
 
-#### Restore a specific database
+#### Ripristinare un database specifico
 
 ```bash
 cat /tmp/20260130_143022/database/mxengine.sql | docker exec -i stargate-postgres psql -U postgres -d mxengine
 ```
 
-## Updating Stargate
+## Aggiornamento di Stargate
 
-### Update Deployment Scripts and Configuration
+### Aggiornare script di deployment e configurazione
 
-The Stargate deployment repository receives updates to scripts (`install.sh`, `start.sh`, `health-check.sh`, `restore.sh`, etc.), configuration templates, and documentation. To apply these updates:
+Il repository di deployment di Stargate riceve aggiornamenti per script (`install.sh`, `start.sh`, `health-check.sh`, `restore.sh`, ecc.), modelli di configurazione e documentazione. Per applicare questi aggiornamenti:
 
-#### 1. Create a backup before updating
+#### 1. Creare un backup prima dell'aggiornamento
 
 ```bash
 ./scripts/backup.sh
 ```
 
-#### 2. Pull the latest changes from the repository
+#### 2. Eseguire il pull delle ultime modifiche dal repository
 
 ```bash
 git pull
 ```
 
-#### 3. Restart services to pick up any script or config changes
+#### 3. Riavviare i servizi per applicare eventuali modifiche a script o configurazione
 
 ```bash
 ./scripts/stop.sh
@@ -86,65 +86,65 @@ git pull
 ```
 
 !!! note
-    `git pull` will not overwrite your `customer-config.sh`, `.env`, or `secrets/` directory - these are in `.gitignore`. If you have local changes to tracked files (e.g. `docker-compose.yml`), git will warn you. In that case, stash your changes first with `git stash`, pull, then re-apply with `git stash pop`.
+    `git pull` non sovrascriverà `customer-config.sh`, `.env` o la directory `secrets/` - questi sono in `.gitignore`. Se si hanno modifiche locali a file tracciati (es. `docker-compose.yml`), git avviserà. In tal caso, mettere da parte le modifiche prima con `git stash`, fare pull, quindi riapplicare con `git stash pop`.
 
-If the update includes changes to the config template, compare it with your existing config to see if new variables were added:
+Se l'aggiornamento include modifiche al modello di configurazione, confrontarlo con la configurazione esistente per vedere se sono state aggiunte nuove variabili:
 
 ```bash
 diff customer-config.sh customer-config-prod.example.sh
 ```
 
-### Update Service Images
+### Aggiornare le immagini dei servizi
 
-#### Update a Single Service
+#### Aggiornare un singolo servizio
 
-Edit the version in `.env`:
+Modificare la versione in `.env`:
 
 ```bash
 sed -i 's/MXENGINE_VERSION=.*/MXENGINE_VERSION=v0.0.31/' .env
 ```
 
-Then pull the container and recreate:
+Quindi eseguire il pull del container e ricrearlo:
 
 ```bash
 docker compose pull mxengine
 docker compose up -d --force-recreate mxengine
 ```
 
-#### Quick Test (without editing .env)
+#### Test rapido (senza modificare .env)
 
-Override the version directly:
+Sovrascrivere la versione direttamente:
 
 ```bash
 MXENGINE_VERSION=v0.0.31 docker compose up -d --force-recreate mxengine
 ```
 
-#### Update Multiple Services
+#### Aggiornare più servizi
 
-Edit versions in `.env`, then pull containers and recreate:
+Modificare le versioni in `.env`, quindi eseguire il pull dei container e ricrearli:
 
 ```bash
 docker compose pull smimekeys-client policy irisagent mxengine
 docker compose up -d --force-recreate smimekeys-client policy irisagent mxengine
 ```
 
-#### Update All Services
+#### Aggiornare tutti i servizi
 
-Pull all latest images
+Eseguire il pull di tutte le ultime immagini
 
 ```bash
 docker compose pull
 ```
 
-Recreate all services
+Ricreare tutti i servizi
 
 ```bash
 docker compose up -d --force-recreate
 ```
 
-#### Cleanup Old Images
+#### Pulire le vecchie immagini
 
-After updates, remove unused images to free disk space:
+Dopo gli aggiornamenti, rimuovere le immagini inutilizzate per liberare spazio su disco:
 
 ```bash
 docker image prune -f
@@ -152,39 +152,39 @@ docker image prune -f
 
 #### Rollback
 
-To roll back, edit `.env` to the previous version and recreate:
+Per eseguire un rollback, modificare `.env` alla versione precedente e ricreare:
 
 ```bash
 sed -i 's/MXENGINE_VERSION=.*/MXENGINE_VERSION=v0.0.30/' .env
 docker compose up -d --force-recreate mxengine
 ```
 
-## Configuration
+## Configurazione
 
-The `.env` file is generated by `install.sh` from `customer-config.sh`. Domain, certificate, and WireGuard settings are managed at runtime by the dashboard (`/installation`, `/onboarding`, `/mail`) — they are not held in `.env`. To customize the install-time settings, edit `customer-config.sh` and re-run `install.sh`.
+Il file `.env` viene generato da `install.sh` da `customer-config.sh`. Le impostazioni di dominio, certificato e WireGuard sono gestite in fase di esecuzione dal dashboard (`/installation`, `/onboarding`, `/mail`) — non sono conservate in `.env`. Per personalizzare le impostazioni di installazione, modificare `customer-config.sh` e rieseguire `install.sh`.
 
-Key sections in the generated `.env`:
+Sezioni chiave nel `.env` generato:
 
 ```bash
-## PostgreSQL (auto-generated if empty in customer-config.sh)
+## PostgreSQL (auto-generato se vuoto in customer-config.sh)
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=<auto-generated>
+POSTGRES_PASSWORD=<auto-generato>
 
-## Vault (auto-populated after initialization)
-VAULT_TOKEN=<auto-generated>
+## Vault (auto-populato dopo l'inizializzazione)
+VAULT_TOKEN=<auto-generato>
 
-## S3 Object Storage (SeaweedFS)
+## Storage di oggetti S3 (SeaweedFS)
 S3_ACCESS_KEY=minioadmin
-S3_SECRET_KEY=<auto-generated>
+S3_SECRET_KEY=<auto-generato>
 
-## Application Versions
+## Versioni delle applicazioni
 SMIMEKEYS_VERSION=v0.0.5
 POLICY_VERSION=v0.0.5
 IRISAGENT_VERSION=v0.0.6-branch
 MXENGINE_VERSION=v0.0.35
 MTACONF_VERSION=dev
 
-## Mail Outbound Path
+## Percorso posta in uscita
 MXENGINE_PUBLIC_ADDRESS=http://203.0.113.50:8084
 OUTBOUND_SEALER_MX_DOMAIN=hintest.ch
 
@@ -195,11 +195,11 @@ WG_TRANSPORT_MODE=tcp
 ```
 
 !!! warning
-    **Do not edit `.env` directly.** Changes will be overwritten on re-run of `install.sh`. For runtime configuration (domains, hostname, peers, S/MIME), use the dashboard.
+    **Non modificare `.env` direttamente.** Le modifiche verranno sovrascritte alla successiva esecuzione di `install.sh`. Per la configurazione in fase di esecuzione (domini, nome host, peer, S/MIME), utilizzare il dashboard.
 
-## Service URLs
+## URL dei servizi
 
-| Service | URL/Port |
+| Servizio | URL/Porta |
 |---------|----------|
 | Dashboard | <https://localhost> |
 | smimekeys-client | <http://localhost:8081> |
@@ -207,13 +207,13 @@ WG_TRANSPORT_MODE=tcp
 | irisagent | <http://localhost:8083> |
 | mxengine HTTP | <http://localhost:8084> |
 | Stalwart SMTP | localhost:25 |
-| APISIX Gateway | <http://localhost:9080> |
+| Gateway APISIX | <http://localhost:9080> |
 | Keycloak | <https://localhost:8180> |
 | PostgreSQL | localhost:5432 |
 
-## Health Checks
+## Health Check
 
-All services expose a `/liveness` endpoint:
+Tutti i servizi espongono un endpoint `/liveness`:
 
 ```bash
 curl http://localhost:8081/liveness  # smimekeys-client
@@ -222,13 +222,13 @@ curl http://localhost:8083/liveness  # irisagent
 curl http://localhost:8084/liveness  # mxengine
 ```
 
-## Monitoring
+## Monitoraggio
 
-### Prometheus Metrics
+### Metriche Prometheus
 
-All application services expose Prometheus metrics on port 2112 (internally), mapped to different host ports:
+Tutti i servizi applicativi espongono metriche Prometheus sulla porta 2112 (internamente), mappate a diverse porte host:
 
-| Service | Metrics Port | Metrics URL |
+| Servizio | Porta metriche | URL metriche |
 |---------|--------------|-------------|
 | smimekeys-client | `2113` | <http://localhost:2113/metrics> |
 | irisagent | `2114` | <http://localhost:2114/metrics> |
@@ -236,7 +236,7 @@ All application services expose Prometheus metrics on port 2112 (internally), ma
 | mxengine | `2116` | <http://localhost:2116/metrics> |
 | node-exporter | `9100` | <http://localhost:9100/metrics> |
 
-### Prometheus Scrape Config Example
+### Esempio di configurazione scrape Prometheus
 
 ```yaml
 scrape_configs:
@@ -257,10 +257,10 @@ scrape_configs:
       - targets: ['<host>:9100']
 ```
 
-### Quick Metrics Check
+### Controllo rapido delle metriche
 
 ```bash
-## Check all metrics endpoints
+## Controllare tutti gli endpoint delle metriche
 curl -s http://localhost:2113/metrics | head -20  # smimekeys-client
 curl -s http://localhost:2114/metrics | head -20  # irisagent
 curl -s http://localhost:2115/metrics | head -20  # policy
@@ -268,11 +268,11 @@ curl -s http://localhost:2116/metrics | head -20  # mxengine
 curl -s http://localhost:9100/metrics | head -20  # node-exporter
 ```
 
-### Log Collection (Alloy → Loki)
+### Raccolta log (Alloy → Loki)
 
-Alloy collects logs from application containers and ships them to Loki.
+Alloy raccoglie i log dai container delle applicazioni e li invia a Loki.
 
-**Containers monitored:**
+**Container monitorati:**
 
 * stargate-apisix
 * stargate-keycloak
@@ -283,25 +283,25 @@ Alloy collects logs from application containers and ships them to Loki.
 * stargate-irisagent
 * stargate-mxengine
 
-**Configuration** in `.env`:
+**Configurazione** in `.env`:
 
 ```env
-## Loki push URL
+## URL di push Loki
 LOKI_URL=https://loki.example.com
 
-## Hostname label for logs (auto-set to DEPLOYMENT_NAME)
+## Etichetta nome host per i log (auto-impostata su DEPLOYMENT_NAME)
 ALLOY_HOSTNAME=stargate-acme
 ```
 
-**Labels added to logs:**
+**Etichette aggiunte ai log:**
 
-* `environment=<DEPLOYMENT_NAME>` - Identifies the deployment
-* `host=<ALLOY_HOSTNAME>` - Identifies the host (same as deployment name)
-* `container=<container-name>` - Container name
-* `service=<service-name>` - Service name (e.g., smimekeys-client, policy)
-* `level=<log-level>` - Extracted from JSON logs if available
+* `environment=<DEPLOYMENT_NAME>` - Identifica il deployment
+* `host=<ALLOY_HOSTNAME>` - Identifica l'host (come il nome del deployment)
+* `container=<nome-container>` - Nome del container
+* `service=<nome-servizio>` - Nome del servizio (es., smimekeys-client, policy)
+* `level=<livello-log>` - Estratto dai log JSON se disponibile
 
-**Query logs in Grafana:**
+**Interrogare i log in Grafana:**
 
 ```logql
 {environment="stargate-acme"} |= "error"
@@ -309,89 +309,89 @@ ALLOY_HOSTNAME=stargate-acme
 {environment="stargate-acme", level="error"}
 ```
 
-**Verify Alloy is working:**
+**Verificare che Alloy funzioni:**
 
-=== "Check Alloy status and recent activity"
+=== "Controllare lo stato di Alloy e l'attività recente"
 
     ```bash
     docker logs stargate-alloy
     ```
 
-=== "Health probe (from within the Docker network)"
+=== "Sonda di salute (dall'interno del network Docker)"
 
     ```bash
     docker exec stargate-alloy wget -qO- http://localhost:12345/-/ready
     ```
 
-**Note:** The VM's public IP must be whitelisted in Loki's ingress configuration.
+**Nota:** L'IP pubblico della VM deve essere nella whitelist della configurazione di ingress di Loki.
 
 ## Stalwart MTA + mtaconf
 
-Stargate uses **Stalwart** as the mail transfer agent and **mtaconf** as the configuration daemon. The dashboard sends domain and relay configuration to mtaconf's REST API, which pushes it to Stalwart via the management CLI.
+Stargate utilizza **Stalwart** come mail transfer agent e **mtaconf** come demone di configurazione. Il dashboard invia la configurazione di domini e relay all'API REST di mtaconf, che la invia a Stalwart tramite la CLI di gestione.
 
-### Mail Flow Architecture
+### Architettura del flusso di posta
 
 ```plain
-External Mail Server
+Server di posta esterno
          │
-         ▼ (port 25)
+         ▼ (porta 25)
 ┌─────────────────────────────────────────────────────┐
 │ stalwart (stargate-stalwart)                        │
 │                                                     │
-│  Port 25 (smtp listener)                            │
+│  Porta 25 (listener smtp)                           │
 │    │                                                │
 │    ▼                                                │
 │  content_filter → smtp:[mxengine]:1587              │
 │    │                                                │
 └────┼────────────────────────────────────────────────┘
      │
-     ▼ (port 1587)
+     ▼ (porta 1587)
 ┌─────────────────────────────────────────────────────┐
 │ MXEngine (stargate-mxengine)                        │
 │                                                     │
-│  Port 1587 (SMTP input)                             │
+│  Porta 1587 (ingresso SMTP)                         │
 │    │                                                │
 │    ▼                                                │
-│  Sign/encrypt/process mail                          │
+│  Firmare/crittografare/elaborare la posta           │
 │    │                                                │
 │    ▼                                                │
-│  Deliver back to stalwart for relay                 │
+│  Consegnare a stalwart per il relay                 │
 │    │                                                │
 └────┼────────────────────────────────────────────────┘
      │
-     ▼ (port 10026)
+     ▼ (porta 10026)
 ┌─────────────────────────────────────────────────────┐
 │ stalwart (stargate-stalwart)                        │
 │                                                     │
-│  Port 10026 (reinject listener)                     │
+│  Porta 10026 (listener di reiniezione)              │
 │    │                                                │
 │    ▼                                                │
-│  transport → relay to destination MX                │
+│  transport → relay al MX di destinazione            │
 │    │                                                │
 └────┼────────────────────────────────────────────────┘
      │
-     ▼ (port 25)
-Destination Mail Server (via MX lookup)
+     ▼ (porta 25)
+Server di posta di destinazione (tramite ricerca MX)
 ```
 
-**Antivirus scanning:** Inbound mail is scanned by **ClamAV** (`stargate-clamav`), wired into Stalwart as a milter at the SMTP DATA stage on both the public (`:25`) and reinject (`:10026`) listeners. Infected mail is rejected at the SMTP level; if ClamAV is unreachable the message is deferred rather than delivered unscanned (fail-closed). ClamAV's signature database lives in the `clamav_data` volume and is kept current by freshclam in the background.
+**Scansione antivirus:** La posta in entrata viene scansionata da **ClamAV** (`stargate-clamav`), collegato a Stalwart come milter nella fase SMTP DATA sia sul listener pubblico (`:25`) che su quello di reiniezione (`:10026`). La posta infetta viene respinta a livello SMTP; se ClamAV non è raggiungibile, il messaggio viene rinviato piuttosto che consegnato non scansionato (fail-closed). Il database delle firme di ClamAV risiede nel volume `clamav_data` e viene mantenuto aggiornato da freshclam in background.
 
-**Seal callback flow (inbound):** When a remote sealer needs to deliver a sealed message, it calls `MXENGINE_PUBLIC_ADDRESS` (default: `http://<SERVER_STATIC_IP>:8084`). This is why port 8084 must be open for inbound traffic. The `http://` protocol is correct - TLS is not required because the seal payload is already encrypted.
+**Flusso di callback di sigillatura (in entrata):** Quando un sigillatore remoto deve consegnare un messaggio sigillato, chiama `MXENGINE_PUBLIC_ADDRESS` (predefinito: `http://<SERVER_STATIC_IP>:8084`). Questo è il motivo per cui la porta 8084 deve essere aperta per il traffico in entrata. Il protocollo `http://` è corretto - TLS non è richiesto perché il payload del sigillo è già crittografato.
 
-### Mail Relay Configuration
+### Configurazione del relay di posta
 
-All mail configuration that varies per deployment (mail domains, hostname, relay host, per-domain relay maps, allowed networks) is set through the **dashboard's `/mail` page** at runtime. The dashboard POSTs the configuration to mtaconf's REST API, which applies it to Stalwart without restarting the container.
+Tutta la configurazione di posta che varia per deployment (domini di posta, nome host, host di relay, mappe di relay per dominio, reti consentite) viene impostata tramite la **pagina `/mail` del dashboard** in fase di esecuzione. Il dashboard invia la configurazione tramite POST all'API REST di mtaconf, che la applica a Stalwart senza riavviare il container.
 
-There is no per-domain config in `customer-config.sh` or `.env` - operators add or change domains through the UI.
+Non c'è configurazione per dominio in `customer-config.sh` o `.env` - gli operatori aggiungono o modificano i domini tramite l'interfaccia utente.
 
-### Mail Routing (Migrating from Old MGW)
+### Routing della posta (Migrazione dal vecchio MGW)
 
-!!! tip "Key difference from the old HIN-MGW"
-    In the old MGW, you had to manually configure a target server per domain. In Stargate, mail routing is decided by **DNS MX records by default** - Stalwart resolves each domain's MX at delivery time. The dashboard's `/mail` page lets you override this per-domain (e.g. to relay back through your M365 / Exchange tenant) without touching DNS.
+!!! tip "Differenza chiave rispetto al vecchio HIN-MGW"
+    Nel vecchio MGW, era necessario configurare manualmente un server di destinazione per dominio. In Stargate, il routing della posta è deciso da **record MX DNS per impostazione predefinita** - Stalwart risolve il MX di ogni dominio al momento della consegna. La pagina `/mail` del dashboard consente di sovrascrivere questo comportamento per dominio (es. per relayare attraverso il tenant M365 / Exchange) senza toccare il DNS.
 
-**Default - automatic via DNS MX:**
+**Predefinito - automatico tramite DNS MX:**
 
-For each of your domains, make sure there is an MX record in DNS pointing to the corresponding Exchange (or other mail) server:
+Per ciascuno dei propri domini, assicurarsi che ci sia un record MX nel DNS che punti al corrispondente server Exchange (o altro server di posta):
 
 ```plain
 domain1.com    MX 10  exchange1.domain1.com
@@ -399,118 +399,118 @@ domain2.com    MX 10  exchange2.domain2.com
 domain3.com    MX 10  exchange3.domain3.com
 ```
 
-This works for any number of domains - each domain can point to a different mail server, and Stalwart will route accordingly.
+Funziona per qualsiasi numero di domini - ogni dominio può puntare a un server di posta diverso e Stalwart instraderà di conseguenza.
 
-**If Stargate is the only MX record** for a domain, Stalwart will filter it out and have no delivery target. Add a second MX record pointing to your mail server with a higher priority (= lower number) so Stalwart uses it as the delivery target:
+**Se Stargate è l'unico record MX** per un dominio, Stalwart lo filtrerà e non avrà alcuna destinazione di consegna. Aggiungere un secondo record MX che punti al server di posta con una priorità più alta (= numero inferiore) in modo che Stalwart lo utilizzi come destinazione di consegna:
 
 ```plain
-example.com    MX 10  exchange.example.com      ← delivery target (mail server)
-example.com    MX 20  stargate.example.com      ← inbound gateway (Stargate)
+example.com    MX 10  exchange.example.com      ← destinazione di consegna (server di posta)
+example.com    MX 20  stargate.example.com      ← gateway in entrata (Stargate)
 ```
 
-**Alternative - explicit per-domain relay (sender-based):**
+**Alternativa - relay esplicito per dominio (basato sul mittente):**
 
-For relay-back through M365 / Exchange Online, configure per-domain relay targets through the dashboard's `/mail` page. Mail from senders not in the map falls back to MX lookup.
+Per il relay di ritorno attraverso M365 / Exchange Online, configurare le destinazioni di relay per dominio tramite la pagina `/mail` del dashboard. La posta dai mittenti non nella mappa ricade sulla ricerca MX.
 
-### Ports
+### Porte
 
-| Port | Purpose |
+| Porta | Scopo |
 |------|---------|
-| `25` | Main SMTP listener (external connections) |
-| `10026` | Reinjection port (mxengine → stalwart, internal only) |
-| `1587` | MXEngine SMTP input (stalwart → mxengine, internal only) |
-| `8080` | Stalwart management API + mtaconf REST API (internal only) |
+| `25` | Listener SMTP principale (connessioni esterne) |
+| `10026` | Porta di reiniezione (mxengine → stalwart, solo interno) |
+| `1587` | Ingresso SMTP MXEngine (stalwart → mxengine, solo interno) |
+| `8080` | API di gestione Stalwart + API REST mtaconf (solo interno) |
 
-!!! question "Using Exchange?"
-    See [Exchange-integration](Exchange-integration.md) for the full Exchange Online / On-Premises connector and transport rule setup.
+!!! question "Si utilizza Exchange?"
+    Vedere [Exchange-integration](Exchange-integration.md) per la configurazione completa dei connettori e delle regole di trasporto Exchange Online / On-Premises.
 
-### Verification
+### Verifica
 
-Check Stalwart status
+Controllare lo stato di Stalwart
 ```bash
 docker exec stargate-stalwart stalwart-cli -u http://localhost:8080 server list-listeners
 ```
 
-Check logs
+Controllare i log
 ```bash
 docker logs stargate-stalwart
 ```
 
-Test connection to port 25
+Testare la connessione alla porta 25
 ```bash
 telnet localhost 25
 ```
 
-Test internal port 10026 (from mxengine container)
+Testare la porta interna 10026 (dal container mxengine)
 ```bash
 docker exec stargate-mxengine nc -zv stalwart 10026
 ```
 
-### Updating the mtaconf image
+### Aggiornamento dell'immagine mtaconf
 
-The mtaconf container is pulled from the registry. To update to a new tag:
+Il container mtaconf viene scaricato dal registry. Per aggiornare a un nuovo tag:
 
 ```bash
-sed -i 's/MTACONF_VERSION=.*/MTACONF_VERSION=<new-tag>/' .env
+sed -i 's/MTACONF_VERSION=.*/MTACONF_VERSION=<nuovo-tag>/' .env
 docker compose pull mtaconf
 docker compose up -d mtaconf
 ```
 
-### Stargate Troubleshooting
+### Risoluzione dei problemi di Stargate
 
-**Mail not being processed by mxengine**:
+**Posta non elaborata da mxengine**:
 
-* Check content_filter is configured: verify mtaconf logs show successful push
-* Verify mxengine is reachable: `docker exec stargate-stalwart nc -zv mxengine 1587`
+* Verificare che content_filter sia configurato: controllare che i log mtaconf mostrino il push riuscito
+* Verificare che mxengine sia raggiungibile: `docker exec stargate-stalwart nc -zv mxengine 1587`
 
-**Mail stuck after mxengine processing**:
+**Posta bloccata dopo l'elaborazione di mxengine**:
 
-* Check mxengine outbound config: OUTBOUND_SMTP_HOST=stalwart, OUTBOUND_SMTP_PORT=10026
-* Verify port 10026 listener is active in Stalwart
-* Check allowed relay networks include Docker network (172.x.x.x/16)
+* Verificare la configurazione in uscita di mxengine: OUTBOUND_SMTP_HOST=stalwart, OUTBOUND_SMTP_PORT=10026
+* Verificare che il listener sulla porta 10026 sia attivo in Stalwart
+* Verificare che le reti di relay consentite includano la rete Docker (172.x.x.x/16)
 
-**Greylisting errors (450 4.7.1)**:
+**Errori di greylisting (450 4.7.1)**:
 
-* This is normal! The destination server is temporarily rejecting mail
-* Stalwart automatically retries after a configurable delay
-* Check queue via management API
+* È normale! Il server di destinazione sta rifiutando temporaneamente la posta
+* Stalwart riprova automaticamente dopo un ritardo configurabile
+* Controllare la coda tramite l'API di gestione
 
-**Microsoft blocking IP (S3140)**:
+**Microsoft blocca l'IP (S3140)**:
 
-* Your server's IP has poor reputation with Microsoft
-* Request delisting at: <https://sender.office.com>
-* May take 24-48 hours to take effect
+* L'IP del server ha una cattiva reputazione presso Microsoft
+* Richiedere la rimozione dalla lista su: <https://sender.office.com>
+* Potrebbero essere necessarie 24-48 ore per avere effetto
 
-**DNS Lookup Failures**:
+**Fallimenti di ricerca DNS**:
 
-* Use the dashboard's `/mail` page to set an explicit relay host or per-domain relay map (skips MX-based discovery)
+* Utilizzare la pagina `/mail` del dashboard per impostare un host di relay esplicito o una mappa di relay per dominio (salta la scoperta basata su MX)
 
-**Connection Refused on port 25**:
+**Connessione rifiutata sulla porta 25**:
 
-* Ensure port 25 is not blocked by the firewall
-* Check if another service is using port 25: `ss -tlnp | grep :25`
+* Assicurarsi che la porta 25 non sia bloccata dal firewall
+* Verificare se un altro servizio sta utilizzando la porta 25: `ss -tlnp | grep :25`
 
-## WireGuard (Agent-to-Agent Communication)
+## WireGuard (Comunicazione Agente-Agente)
 
-IRISAgent uses WireGuard to establish secure encrypted tunnels between Stargate instances for delivering sealed messages.
+IRISAgent utilizza WireGuard per stabilire tunnel crittografati sicuri tra istanze Stargate per la consegna di messaggi sigillati.
 
-### How It Works
+### Come funziona
 
-Each Stargate instance uses its server's real static public IP as the WireGuard tunnel address. This guarantees uniqueness across all deployments without manual coordination.
+Ogni istanza Stargate utilizza l'IP pubblico statico reale del proprio server come indirizzo del tunnel WireGuard. Questo garantisce l'unicità tra tutti i deployment senza coordinazione manuale.
 
 ```mermaid
 block
 columns 5
-  block:Stargate["Your Stargate (203.0.113.50)"]:2
+  block:Stargate["Il tuo Stargate (203.0.113.50)"]:2
     columns 1
     A
     space
     A --> B
     A["IRISAgent (203.0.113.50:19818)"]
-    B["Sealed message delivery via WG tunnel"]
+    B["Consegna messaggio sigillato tramite tunnel WG"]
   end
 
-  blockArrowId1<["WG Tunnel (TCP)"]>(x):1
+  blockArrowId1<["Tunnel WG (TCP)"]>(x):1
 
   block:mxengine["HIN Test (5.102.144.182)"]:2
     columns 1
@@ -518,130 +518,130 @@ columns 5
     space
     C --> D
     C["IRISAgent (5.102.144.182:19818)"]
-    D["Receive sealed message"]
+    D["Ricevi messaggio sigillato"]
   end
 ```
 
-### WireGuard Configuration
+### Configurazione WireGuard
 
-WireGuard settings in `customer-config.sh`:
+Impostazioni WireGuard in `customer-config.sh`:
 
 ```bash
 ## ==============================================================================
-## Server IP — used as WireGuard tunnel address and MXEngine callback URL
+## IP del server — utilizzato come indirizzo del tunnel WireGuard e URL di callback MXEngine
 ## ==============================================================================
-SERVER_STATIC_IP="203.0.113.50"       # Your server's real static public IP
+SERVER_STATIC_IP="203.0.113.50"       # L'IP pubblico statico reale del server
 
 ## ==============================================================================
-## WireGuard local settings (typically left at defaults)
+## Impostazioni locali WireGuard (in genere lasciate ai valori predefiniti)
 ## ==============================================================================
-WG_PRIVATE_KEY=""                     # Auto-generated by IRISAgent, then saved back to config
-WG_INTERFACE_PORT="19818"             # Default WireGuard port
-WG_TRANSPORT_MODE="tcp"               # "tcp" (default) or "udp"
+WG_PRIVATE_KEY=""                     # Auto-generato da IRISAgent, poi salvato nella configurazione
+WG_INTERFACE_PORT="19818"             # Porta WireGuard predefinita
+WG_TRANSPORT_MODE="tcp"               # "tcp" (predefinito) o "udp"
 
 ```
 
 !!! info
-    **`WG_LOCAL_IP`** is auto-derived from `SERVER_STATIC_IP`. You do not need to set it separately.
+    **`WG_LOCAL_IP`** è auto-derivato da `SERVER_STATIC_IP`. Non è necessario impostarlo separatamente.
 
-### Peer Connection Setup
+### Configurazione della connessione peer
 
-WireGuard peer details (public key, endpoint, allowed IPs, etc.) are configured at runtime through the dashboard's `/installation` page. There is no `WG_PEER_*` block in `customer-config.sh` anymore — the peer is set up after the stack is up.
+I dettagli del peer WireGuard (chiave pubblica, endpoint, IP consentiti, ecc.) sono configurati in fase di esecuzione tramite la pagina `/installation` del dashboard. Non c'è più un blocco `WG_PEER_*` in `customer-config.sh` — il peer viene configurato dopo che lo stack è attivo.
 
-For first-time setup with the HIN Test environment:
+Per la configurazione iniziale con l'ambiente HIN Test:
 
-1. Bring up the stack with `./scripts/install.sh`.
-2. Open the dashboard, follow `/installation` to start the nonce / HIN handshake.
-3. Open the IRISAgent logs (`docker compose logs irisagent`) and copy the `wireguard public key:` line. Send it together with `DEPLOYMENT_NAME` and `SERVER_STATIC_IP` to Vereign (<kalin.canov@vereign.com>) so they can register your peer on the CA side.
-4. After Vereign confirms registration, complete `/onboarding` in the dashboard to issue the S/MIME certificate.
+1. Avviare lo stack con `./scripts/install.sh`.
+2. Aprire il dashboard, seguire `/installation` per avviare l'handshake nonce / HIN.
+3. Aprire i log IRISAgent (`docker compose logs irisagent`) e copiare la riga `wireguard public key:`. Inviarla insieme a `DEPLOYMENT_NAME` e `SERVER_STATIC_IP` a Vereign (<kalin.canov@vereign.com>) in modo che possano registrare il peer sul lato CA.
+4. Dopo la conferma della registrazione da parte di Vereign, completare `/onboarding` nel dashboard per emettere il certificato S/MIME.
 
-For any **additional** peer (peer-to-peer between two Stargates), exchange public keys + endpoints with the other party and add the connection through the IRISAgent API:
+Per qualsiasi **peer aggiuntivo** (peer-to-peer tra due Stargate), scambiare chiavi pubbliche + endpoint con l'altra parte e aggiungere la connessione tramite l'API IRISAgent:
 
 ```bash
 curl --location 'localhost:8083/v1/connections' \
 --header 'Content-Type: application/json' \
 --header 'Accept: application/json' \
 --data '{
-  "allowedIps": "<IP of new peer>/32",
-  "description": "<short description>",
-  "endpoint": "<IP of new peer>:19818",
+  "allowedIps": "<IP del nuovo peer>/32",
+  "description": "<breve descrizione>",
+  "endpoint": "<IP del nuovo peer>:19818",
   "externalId": [
-    "<domain of new peer>"
+    "<dominio del nuovo peer>"
   ],
-  "name": "<Name of new peer>",
+  "name": "<Nome del nuovo peer>",
   "presharedKey": "",
-  "publicKey": "<public key of new peer>",
+  "publicKey": "<chiave pubblica del nuovo peer>",
   "status": "completed",
   "transport": "tcp",
-  "wireguardIp": "<IP of new peer>",
+  "wireguardIp": "<IP del nuovo peer>",
   "wireguardPort": 10080
 }'
 ```
 
-### WireGuard Verification
+### Verifica WireGuard
 
-Check IRISAgent WireGuard interface
+Controllare l'interfaccia WireGuard di IRISAgent
 
 ```bash
 docker exec stargate-irisagent wg show
 ```
 
-Check connection in database
+Controllare la connessione nel database
 
 ```bash
 docker exec stargate-postgres psql -U postgres -d irisagent \
   -c "SELECT connection_id, name, endpoint, wireguard_ip, transport, status FROM connections;"
 ```
 
-Check connection external IDs (used for routing)
+Controllare gli ID esterni della connessione (utilizzati per il routing)
 
 ```bash
 docker exec stargate-postgres psql -U postgres -d irisagent \
   -c "SELECT connection_id, external_id FROM connection_external_ids;"
 ```
 
-Test WireGuard connectivity (check tunnel status from host)
+Testare la connettività WireGuard (controllare lo stato del tunnel dall'host)
 
 ```bash
 docker logs stargate-irisagent 2>&1 | grep -i "handshake\|peer.*added\|started listening"
 ```
 
-Check IRISAgent logs for tunnel activity
+Controllare i log IRISAgent per l'attività del tunnel
 
 ```bash
 docker logs stargate-irisagent | grep -i wireguard
 ```
 
-### WireGuard Troubleshooting
+### Risoluzione dei problemi WireGuard
 
-**No WireGuard interface:**
+**Nessuna interfaccia WireGuard:**
 
-* Check IRISAgent logs: `docker logs stargate-irisagent`
-* Verify `WG_LOCAL_IP` is set in `.env` (auto-derived from `SERVER_STATIC_IP` — should be this server's static public IP)
+* Controllare i log IRISAgent: `docker logs stargate-irisagent`
+* Verificare che `WG_LOCAL_IP` sia impostato in `.env` (auto-derivato da `SERVER_STATIC_IP` — dovrebbe essere l'IP pubblico statico di questo server)
 
-**Peer not reachable:**
+**Peer non raggiungibile:**
 
-* Verify remote endpoint is accessible: `nc -zv <endpoint_host> <endpoint_port>`
-* Check firewall allows TCP+UDP port 19818
-* Verify public keys match on both ends
-* If TCP has issues, try setting `WG_TRANSPORT_MODE="udp"` in customer-config.sh
+* Verificare che l'endpoint remoto sia accessibile: `nc -zv <host_endpoint> <porta_endpoint>`
+* Controllare che il firewall consenta la porta TCP+UDP 19818
+* Verificare che le chiavi pubbliche corrispondano su entrambe le estremità
+* Se TCP ha problemi, provare a impostare `WG_TRANSPORT_MODE="udp"` in customer-config.sh
 
-**Connection not in database:**
+**Connessione non presente nel database:**
 
-* Re-run the dashboard's `/installation` page to re-establish the peer connection
-* Check irisagent logs: `docker logs stargate-irisagent`
+* Rieseguire la pagina `/installation` del dashboard per ristabilire la connessione peer
+* Controllare i log irisagent: `docker logs stargate-irisagent`
 
-## Policy Sync
+## Sincronizzazione delle policy
 
-The `policy-sync` service automatically syncs OPA/Rego policies from a Git repository to the PostgreSQL database.
+Il servizio `policy-sync` sincronizza automaticamente le policy OPA/Rego da un repository Git al database PostgreSQL.
 
-### How Policy Sync Works
+### Come funziona Policy Sync
 
 ```mermaid
 block
 columns 8
   A:2 space B:2 space C:2
-  A["Git Repository
+  A["Repository Git
 
       policies/
         alpha/
@@ -661,53 +661,53 @@ columns 8
       - policies table"]
 ```
 
-### Policy Sync Configuration
+### Configurazione di Policy Sync
 
-Settings in `customer-config.sh`:
+Impostazioni in `customer-config.sh`:
 
 ```bash
-## Git repository containing policies (pre-configured with HIN Stargate policies)
+## Repository Git contenente le policy (preconfigurato con le policy HIN Stargate)
 POLICY_SYNC_REPO_URL="https://github.com/Health-Info-Net-AG/Stargate-policies.git"
 
-## Optional: Authentication for private repos
+## Opzionale: Autenticazione per repo privati
 POLICY_SYNC_REPO_USER=""
 POLICY_SYNC_REPO_PASS=""
 
-## Optional: Specific branch (default: main)
+## Opzionale: Branch specifico (predefinito: main)
 POLICY_SYNC_REPO_BRANCH=""
 
-## Optional: Subfolder within repo containing policies
+## Opzionale: Sottocartella nel repo contenente le policy
 POLICY_SYNC_REPO_FOLDER=""
 
-## Sync interval (default: 1h)
+## Intervallo di sincronizzazione (predefinito: 1h)
 POLICY_SYNC_INTERVAL="1h"
 ```
 
-### Policy Sync Verification
+### Verifica di Policy Sync
 
-=== "Check policy-sync status"
+=== "Controllare lo stato di policy-sync"
 
     ```bash
     docker logs stargate-policy-sync
     ```
 
-=== "View synced policies"
+=== "Visualizzare le policy sincronizzate"
 
     ```bash
     docker exec stargate-postgres psql -U postgres -d policy \
       -c "SELECT name, policy_group, filename, to_timestamp(updated_at) as updated FROM policies ORDER BY name;"
     ```
 
-=== "View specific policy content"
+=== "Visualizzare il contenuto di una policy specifica"
 
     ```bash
     docker exec stargate-postgres psql -U postgres -d policy \
       -c "SELECT rego FROM policies WHERE name='deliveryStrategy' AND policy_group='alpha';"
     ```
 
-### Manual Trigger
+### Attivazione manuale
 
-To force an immediate sync:
+Per forzare una sincronizzazione immediata:
 
 ```bash
 docker restart stargate-policy-sync
@@ -715,12 +715,11 @@ docker restart stargate-policy-sync
 
 ## Vault
 
-### Vault Mounts
+### Montaggi Vault
 
-Vault's API/UI port (8200) is not published to the host; access Vault via the
-CLI inside the container (see Manual Vault Operations below).
+La porta API/UI di Vault (8200) non è pubblicata sull'host; accedere a Vault tramite la CLI all'interno del container (vedere Operazioni manuali Vault di seguito).
 
-The following KV-v2 secret engines are created:
+I seguenti motori di segreti KV-v2 vengono creati:
 
 * `secret-smimekeys-client`
 * `secret-policy`
@@ -728,168 +727,168 @@ The following KV-v2 secret engines are created:
 * `secret-mxengine`
 * `secret-mtaconf`
 
-### Manual Vault Operations
+### Operazioni manuali Vault
 
-=== "Check status"
+=== "Controllare lo stato"
 
     ```bash
     docker exec stargate-vault vault status
     ```
 
-=== "List mounts"
+=== "Elencare i montaggi"
 
     ```bash
     docker exec -e VAULT_TOKEN=<token> stargate-vault vault secrets list
     ```
 
-=== "Write a secret"
+=== "Scrivere un segreto"
 
     ```bash
-    docker exec -e VAULT_TOKEN=<token> stargate-vault vault kv put secret-smimekeys-client/test key=value
+    docker exec -e VAULT_TOKEN=<token> stargate-vault vault kv put secret-smimekeys-client/test key=valore
     ```
 
-## Databases
+## Database
 
-PostgreSQL databases created:
+Database PostgreSQL creati:
 
 * `smimekeys_client`
 * `policy`
 * `irisagent`
 * `mxengine`
 
-### Connect to PostgreSQL
+### Connettersi a PostgreSQL
 
 ```bash
 docker exec -it stargate-postgres psql -U postgres
 ```
 
-Or connect externally
+O connettersi esternamente
 
 ```bash
 psql -h localhost -U postgres -d smimekeys_client
 ```
 
-## Policies (Rego)
+## Policy (Rego)
 
-MXEngine uses OPA/Rego policies stored in PostgreSQL to determine mail delivery strategy.
+MXEngine utilizza policy OPA/Rego memorizzate in PostgreSQL per determinare la strategia di consegna della posta.
 
-**Recommended:** Use `policy-sync` to automatically sync policies from a Git repository. See [Policy Sync](#policy-sync) section.
+**Raccomandato:** Utilizzare `policy-sync` per sincronizzare automaticamente le policy da un repository Git. Vedere la sezione [Policy Sync](#policy-rego).
 
-### View Current Policy
+### Visualizzare la policy corrente
 
-=== "List all policies"
+=== "Elencare tutte le policy"
     ```bash
     docker exec stargate-postgres psql -U postgres -d policy \
       -c "SELECT id, name, policy_group, filename, to_timestamp(updated_at) as updated FROM policies;"
     ```
 
-=== "View policy content"
+=== "Visualizzare il contenuto della policy"
 
     ```bash
     docker exec stargate-postgres psql -U postgres -d policy \
       -c "SELECT rego FROM policies WHERE name='deliveryStrategy';"
     ```
 
-### Policy Location
+### Posizione delle policy
 
-* **MXEngine config:** `POLICY_OUTBOUND: "outbound/delivery"`
-* **Database:** `policy` database, `policies` table
-* **Managed by:** `policy-sync` service (syncs from Git repository)
+* **Configurazione MXEngine:** `POLICY_OUTBOUND: "outbound/delivery"`
+* **Database:** database `policy`, tabella `policies`
+* **Gestito da:** servizio `policy-sync` (sincronizza dal repository Git)
 
-## Logs
+## Log
 
-=== "All Services"
+=== "Tutti i servizi"
 
     ```bash
     docker compose logs -f
     ```
 
-=== "Specific service"
+=== "Servizio specifico"
 
     ```bash
-    docker compose logs -f <service>
+    docker compose logs -f <servizio>
     ```
 
-    E.g.:
+    Es.:
 
     ```bash
     docker compose logs -f smimekeys-client
     docker compose logs -f vault
     ```
 
-## Troubleshooting
+## Risoluzione dei problemi
 
-### Certificate issuance failed / WireGuard tunnel not established
+### Emissione certificato fallita / Tunnel WireGuard non stabilito
 
-This is the most common issue after initial installation. The S/MIME certificate cannot be issued because the WireGuard tunnel to the HIN CA is not established.
+Questo è il problema più comune dopo l'installazione iniziale. Il certificato S/MIME non può essere emesso perché il tunnel WireGuard verso la CA HIN non è stabilito.
 
-**Symptoms:**
+**Sintomi:**
 
-* The dashboard's `/onboarding` page reports CSR submission failure
-* smimekeys-client logs show: `issue certificate error: certcatunnel: error sending request: irisagent: ... context deadline exceeded`
+* La pagina `/onboarding` del dashboard segnala un fallimento di invio del CSR
+* I log smimekeys-client mostrano: `issue certificate error: certcatunnel: error sending request: irisagent: ... context deadline exceeded`
 
-**Root causes (check in order):**
+**Cause profonde (controllare in ordine):**
 
-1. **Peer not registered on HIN CA** - Your WireGuard public key must be registered on the HIN side. Provide HIN with:
+1. **Peer non registrato sulla CA HIN** - La chiave pubblica WireGuard deve essere registrata sul lato HIN. Fornire a HIN:
 
    ```bash
-   # Get your WireGuard public key
+   # Ottenere la chiave pubblica WireGuard
    docker compose logs irisagent | grep "public key"
    ```
 
-   Along with your `DEPLOYMENT_NAME`, `SERVER_STATIC_IP`, and `WG_INTERFACE_PORT` (if changed from 19818).
+   Insieme a `DEPLOYMENT_NAME`, `SERVER_STATIC_IP` e `WG_INTERFACE_PORT` (se modificato da 19818).
 
-2. **Firewall blocking port 19818** - Ensure `19818/TCP` is open both inbound and outbound on the Stargate server.
+2. **Firewall che blocca la porta 19818** - Assicurarsi che `19818/TCP` sia aperto sia in entrata che in uscita sul server Stargate.
 
-3. **Wrong hostname** - If the Stalwart hostname is still set to the template default (`mail.example.com`), update it via the dashboard's `/mail` page.
+3. **Nome host errato** - Se il nome host di Stalwart è ancora impostato sul valore predefinito del modello (`mail.example.com`), aggiornarlo tramite la pagina `/mail` del dashboard.
 
-**After the issue is resolved:**
+**Dopo la risoluzione del problema:**
 
-Re-open the dashboard's `/onboarding` page to regenerate the CSR and resubmit it through the now-up tunnel.
+Riaprire la pagina `/onboarding` del dashboard per rigenerare il CSR e inviarlo nuovamente attraverso il tunnel ora attivo.
 
-See [Step 5: WireGuard Peer Registration](Docker-deploy.md#step-5-wireguard-peer-registration) for the full process.
+Vedere [Passo 5: Registrazione del peer WireGuard](Docker-deploy.md#passo-5-registrazione-del-peer-wireguard) per il processo completo.
 
-### Vault is sealed after restart
+### Vault è congelato dopo il riavvio
 
-Run the start script which handles unsealing:
+Eseguire lo script di avvio che gestisce lo scongelamento:
 
 ```bash
 ./scripts/start.sh
 ```
 
-### Cannot pull images
+### Impossibile scaricare le immagini
 
-Login to the registry:
+Accedere al registry:
 
 ```bash
 docker login hub.docker.com
 ```
 
-### Service won't start
+### Il servizio non si avvia
 
-Check logs:
+Controllare i log:
 
 ```bash
-docker compose logs <service-name>
+docker compose logs <nome-servizio>
 ```
 
-### Reset everything
+### Reimpostare tutto
 
 !!! warning
-    These commands **DELETE ALL DATA** - use with caution!
+    Questi comandi **CANCELLANO TUTTI I DATI** - usare con cautela!
 
-    You can only restore data if you perform [backup operations](./Docker-advanced.md#manual-backup) before and save the backup in a safe place.
+    È possibile ripristinare i dati solo se si eseguono [operazioni di backup](./Docker-advanced.md#backup-manuale) prima e si salva il backup in un luogo sicuro.
 
 ```bash
 ./scripts/purge.sh
 ./scripts/install.sh
 ```
 
-## Files Structure
+## Struttura dei file
 
 ```plain
 stargate/
-├── backups/                      # Full backups (gitignored)
+├── backups/                      # Backup completi (gitignorato)
 │   └── *.tar.gz
 ├── config
 │   ├── apisix
@@ -906,67 +905,67 @@ stargate/
 │   │   ├── dashboard.conf
 │   │   └── keycloak.conf
 │   ├── alloy
-│   │   └── config.alloy          # Alloy log shipping config
+│   │   └── config.alloy          # Configurazione invio log Alloy
 │   └── vault
-│       └── vault.hcl             # Vault configuration
-├── customer-config-prod.example.sh     # Config template (copy to customer-config.sh)
-├── customer-config.sh            # Customer-specific settings (copied from the template)
-├── docker-compose.yml            # Main compose file
-├── .env                          # Environment variables (generated by install.sh)
+│       └── vault.hcl             # Configurazione Vault
+├── customer-config-prod.example.sh     # Modello di configurazione (copiare in customer-config.sh)
+├── customer-config.sh            # Impostazioni specifiche del cliente (copiate dal modello)
+├── docker-compose.yml            # File compose principale
+├── .env                          # Variabili d'ambiente (generate da install.sh)
 ├── init
 │   └── postgres
 │       └── 01-create-databases.sql
 ├── scripts
-│   ├── backup.sh                 # Full backup (DB, Vault, config, certs)
-│   ├── gather-app-versions.sh    # Collects app versions for node-exporter metrics
-│   ├── health-check.sh           # Comprehensive health check of all services
+│   ├── backup.sh                 # Backup completo (DB, Vault, config, certificati)
+│   ├── gather-app-versions.sh    # Raccoglie le versioni delle app per le metriche node-exporter
+│   ├── health-check.sh           # Health check completo di tutti i servizi
 │   ├── init-keycloak.sh
-│   ├── init-vault.sh             # Vault initialization (used by vault-init container)
-│   ├── install.sh                # First-time installation (Docker, Vault). Domain/cert/peer setup happens in the dashboard afterwards.
-│   ├── purge.sh                  # Delete all data (destructive!)
-│   ├── restore.sh                # Restore from backup archive
-│   ├── send-logs-to-support.sh   # Paste logs online and get a link that you will provide to support
-│   ├── start.sh                  # Start services + unseal Vault
-│   ├── stop.sh                   # Stop containers (preserves data)
+│   ├── init-vault.sh             # Inizializzazione Vault (utilizzato dal container vault-init)
+│   ├── install.sh                # Prima installazione (Docker, Vault). La configurazione di dominio/certificato/peer avviene successivamente nel dashboard.
+│   ├── purge.sh                  # Elimina tutti i dati (distruttivo!)
+│   ├── restore.sh                # Ripristina da archivio di backup
+│   ├── send-logs-to-support.sh   # Incolla i log online e ottieni un link da fornire al supporto
+│   ├── start.sh                  # Avvia i servizi + scongela Vault
+│   ├── stop.sh                   # Arresta i container (preserva i dati)
 │   └── update.sh
-└── secrets/                      # Created on first run (gitignored)
-    ├── vault-keys.json           # Vault unseal keys (BACK THIS UP!)
-    └── signing-key.csr           # S/MIME certificate signing request
+└── secrets/                      # Creato al primo avvio (gitignorato)
+    ├── vault-keys.json           # Chiavi di scongelamento Vault (FARE BACKUP!)
+    └── signing-key.csr           # Richiesta di firma certificato S/MIME
 ```
 
-## Quick Health & Log Checks
+## Controlli rapidi di salute e log
 
-!!! example "Run the comprehensive health check"
+!!! example "Eseguire il health check completo"
 
-    === "Quick Health check"
+    === "Health check rapido"
 
         ```bash
         ./scripts/health-check.sh
         ```
 
-    === "Verbose Output"
+    === "Output dettagliato"
 
         ```bash
         ./scripts/health-check.sh -v
         ```
 
-        With verbose output (shows WireGuard details, liveness responses).
+        Con output dettagliato (mostra dettagli WireGuard, risposte liveness).
 
-This checks:
+Questo controlla:
 
-* All container statuses (running, healthy)
-* Liveness endpoints (smimekeys-client, policy, irisagent, mxengine)
-* Vault seal status
-* PostgreSQL connectivity and all 4 databases
-* MinIO health
-* WireGuard tunnel status and peer handshakes
-* Stalwart MTA (running, port 25, port 10026)
-* Prometheus metrics endpoints
-* Disk and memory usage
+* Tutti gli stati dei container (in esecuzione, healthy)
+* Endpoint Liveness (smimekeys-client, policy, irisagent, mxengine)
+* Stato di scongelamento di Vault
+* Connettività PostgreSQL e tutti i 4 database
+* Salute di MinIO
+* Stato del tunnel WireGuard e handshake dei peer
+* Stalwart MTA (in esecuzione, porta 25, porta 10026)
+* Endpoint delle metriche Prometheus
+* Utilizzo del disco e della memoria
 
-For manual log inspection:
+Per l'ispezione manuale dei log:
 
-Check logs (last 10 lines)
+Controllare i log (ultime 10 righe)
 
 ```bash
 docker logs stargate-smimekeys-client --tail 10
@@ -975,102 +974,102 @@ docker logs stargate-irisagent --tail 10
 docker logs stargate-mxengine --tail 10
 ```
 
-Follow logs in real-time
+Seguire i log in tempo reale
 
 ```bash
 docker logs -f stargate-mxengine
 ```
 
-Check all container statuses
+Controllare tutti gli stati dei container
 
 ```bash
 docker ps -a --format 'table {{.Names}}\t{{.Status}}'
 ```
 
-Follow all containers logs in real-time
+Seguire tutti i log dei container in tempo reale
 
 ```bash
 docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs --timestamps -f {} 2>&1 | sed "s/^/[{}] /"'
 ```
 
-### Provide logs to support
+### Fornire log al supporto
 
-You can provide logs to our support via [pastebin.hin-infra.ch](https://pastebin.hin-infra.ch), and CLI command:
+È possibile fornire log al nostro supporto tramite [pastebin.hin-infra.ch](https://pastebin.hin-infra.ch) e il comando CLI:
 
-Upload all containers logs:
+Caricare i log di tutti i container:
 
-=== "All"
+=== "Tutti"
 
-    Use our script:
+    Utilizzare il nostro script:
 
     ```shell
     ./scripts/send-logs-to-support.sh --all
     ```
 
-    Or execute manually:
+    O eseguire manualmente:
 
     ```shell
     docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs --timestamps {} 2>&1 | sed "s/^/[{}] /"' | curl https://pastebin.hin-infra.ch/ --data-binary @-
     ```
     !!! tip
-        This operation can hit our upload limits - 20 Mb.
+        Questa operazione può raggiungere i nostri limiti di upload - 20 Mb.
 
-=== "For the last hour (`1h`)"
+=== "Per l'ultima ora (`1h`)"
 
-    Use our script:
+    Utilizzare il nostro script:
 
     ```shell
     ./scripts/send-logs-to-support.sh --since 1h
     ```
 
-    Or execute manually:
+    O eseguire manualmente:
 
     ```shell
     docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs --since 1h --timestamps {} 2>&1 | sed "s/^/[{}] /"' | curl https://pastebin.hin-infra.ch/ --data-binary @-
     ```
 
-=== "Last 500 lines of logs"
+=== "Ultime 500 righe di log"
 
-    !!! success "This is default"
-        `--tail 500` is the default value for our script, but you can still provide it.
+    !!! success "Questo è il valore predefinito"
+        `--tail 500` è il valore predefinito del nostro script, ma è comunque possibile fornirlo.
 
-    Use our script:
+    Utilizzare il nostro script:
 
     ```shell
     ./scripts/send-logs-to-support.sh --tail 500
     ```
 
-    Or execute manually:
+    O eseguire manualmente:
 
     ```shell
     docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs --tail 500 --timestamps {} 2>&1 | sed "s/^/[{}] /"' | curl https://pastebin.hin-infra.ch/ --data-binary @-
     ```
 
-Upload specific container logs:
+Caricare i log di container specifici:
 
-=== "All"
+=== "Tutti"
 
     ```shell
-    docker logs <CONTAINER_NAME> 2>&1 | curl https://pastebin.hin-infra.ch/ --data-binary @-
+    docker logs <NOME_CONTAINER> 2>&1 | curl https://pastebin.hin-infra.ch/ --data-binary @-
     ```
 
     !!! tip
-        This operation can hit our upload limits - 20 Mb. If it happens, try to reduce the log amount by setting a time limit or number of lines.
+        Questa operazione può raggiungere i nostri limiti di upload - 20 Mb. Se ciò accade, provare a ridurre la quantità di log impostando un limite di tempo o un numero di righe.
 
-=== "For the last hour (`1h`)"
-
-    ```shell
-    docker logs --since 1h <CONTAINER_NAME> 2>&1 | curl https://pastebin.hin-infra.ch/ --data-binary @-
-    ```
-
-=== "Last 500 lines of logs"
+=== "Per l'ultima ora (`1h`)"
 
     ```shell
-    docker logs --tail 500 <CONTAINER_NAME> 2>&1 | curl https://pastebin.hin-infra.ch/ --data-binary @-
+    docker logs --since 1h <NOME_CONTAINER> 2>&1 | curl https://pastebin.hin-infra.ch/ --data-binary @-
     ```
 
-After that, you will receive a unique link in the format `https://pastebin.hin-infra.ch/<20 symbols>` that you can provide to support / ticket.
+=== "Ultime 500 righe di log"
+
+    ```shell
+    docker logs --tail 500 <NOME_CONTAINER> 2>&1 | curl https://pastebin.hin-infra.ch/ --data-binary @-
+    ```
+
+Dopo di che, si riceverà un link unico nel formato `https://pastebin.hin-infra.ch/<20 simboli>` da fornire al supporto / ticket.
 
 !!! warning
 
-    The expiration time is set to 30 days. If some parts of the logs or the logs themselves need to be saved for a longer period, please make sure you keep a copy of them.
+    La scadenza è impostata a 30 giorni. Se alcune parti dei log o i log stessi devono essere conservati per un periodo più lungo, assicurarsi di conservarne una copia.

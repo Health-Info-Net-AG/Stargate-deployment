@@ -1,75 +1,74 @@
-# Stargate Deployment Instruction DE
-
+# Instruction de déploiement Stargate
 
 ![Logo](assets/stargate_visual.png)
 
-[What is Stargate?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
+[Qu'est-ce que Stargate ?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-## Quick Start
+## Démarrage rapide
 
-### Installation options
+### Options d'installation
 
-* VM image installation:
-    * [Azure VM image installation](vm/Azure-image-install.md)
-    * [Windows 11 Pro (Hyper-V) image installation](vm/Windows11pro-image-install.md)
-    * [VMware image installation](vm/VMware-image-install.md)
-    * [Proxmox image installation](vm/Proxmox-image-install.md)
+* Installation par image VM:
+    * [Installation par image VM Azure](vm/Azure-image-install.md)
+    * [Installation par image VM Windows 11 Pro (Hyper-V)](vm/Windows11pro-image-install.md)
+    * [Installation par image VM VMware](vm/VMware-image-install.md)
+    * [Installation par image VM Proxmox](vm/Proxmox-image-install.md)
     * [Cloudscale.ch](vm/Cloudscale-image-install.md)
 
 !!! tip "🖨️"
-    You can get this documentation printed or saved as PDF, please visit our [Print page view](print_page).
+    Vous pouvez obtenir cette documentation imprimée ou sauvegardée en PDF, veuillez visiter notre [Page d'impression](print_page).
 
-### Exchange Integration
+### Intégration Exchange
 
-* [Exchange integration](Exchange-integration.md) - Configure Microsoft Exchange (Online and On-Premises) connectors and transport rules to route mail through Stargate
+* [Intégration Exchange](Exchange-integration.md) - Configurez les connecteurs Microsoft Exchange (Online et On-Premises) et les règles de transport pour acheminer les courriels via Stargate
 
-### Server Requirements
+### Exigences du serveur
 
-|      | Minimum | Recommended |
+|      | Minimum | Recommandé |
 | :--- | :-----: | :---------: |
-| CPU, Cores| 4 | 6 |
+| CPU, Cœurs| 4 | 6 |
 | RAM, GB | 8 | 12 |
 | SSD, GB | 60 | 60 |
 
-#### Common Requirements
+#### Exigences communes
 
-* **Root access**: Must be run as root or with `sudo`
-* Supported distributions:
-    * RHEL 8, 9 and 10 compatible distributions such as Alma Linux, Rocky Linux, CentOS Stream
-    * Ubuntu 22 and 24
-    * Debian 11, 12 and 13
-* **Real IPv4 address**
-* **Valid DNS records**. Your domain must have:
-    * MX records pointing to your mail servers
-    * SPF record defining allowed sending networks
-    * Server must be able to resolve DNS (MX, SPF, A records)
-    * Used for mail routing and SPF-based network allowlisting
+* **Accès root**: Doit être exécuté en tant que root ou avec `sudo`
+* Distributions prises en charge:
+    * Distributions compatibles RHEL 8, 9 et 10 telles que Alma Linux, Rocky Linux, CentOS Stream
+    * Ubuntu 22 et 24
+    * Debian 11, 12 et 13
+* **Adresse IPv4 réelle**
+* **Enregistrements DNS valides**. Votre domaine doit avoir:
+    * Des enregistrements MX pointant vers vos serveurs de courrier
+    * Un enregistrement SPF définissant les réseaux d'envoi autorisés
+    * Le serveur doit être capable de résoudre le DNS (enregistrements MX, SPF, A)
+    * Utilisé pour le routage du courrier et la liste d'autorisation réseau basée sur SPF
 
-#### Inbound Network Access (firewall must allow)
+#### Accès réseau entrant (le pare-feu doit autoriser)
 
-| Port | Protocol | Purpose |
+| Port | Protocole | Objectif |
 |------|----------|---------|
-| `25` | TCP | SMTP - receiving mail from external servers |
-| `8084` | TCP | HTTP - seal callback from remote sealer service |
-| `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication. Read our [Security Assessment WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
+| `25` | TCP | SMTP - réception des courriels des serveurs externes |
+| `8084` | TCP | HTTP - rappel de scellement du service de scellement distant |
+| `19818` | UDP+TCP | WireGuard - tunnel crypté pour la communication agent-à-agent. Lisez notre [Évaluation de sécurité WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
 
-#### Outbound Network Access (server must reach)
+#### Accès réseau sortant (le serveur doit atteindre)
 
-| Destination | Port | Purpose |
+| Destination | Port | Objectif |
 |-------------|------|---------|
-| hub.docker.com | `443`| Docker image registry |
-| mxengine-dev.k8s.vereign-cdn.com | `443`| Remote sealer service |
-| smimekeys-ca-dev.k8s.vereign-cdn.com | `443`| S/MIME CA service |
-| loki.example.com | `443`| Log shipping (Alloy → Loki, optional) |
-| Destination mail servers | `25` | Outbound mail delivery (via MX lookup) |
+| hub.docker.com | `443`| Registre d'images Docker |
+| mxengine-dev.k8s.vereign-cdn.com | `443`| Service de scellement distant |
+| smimekeys-ca-dev.k8s.vereign-cdn.com | `443`| Service CA S/MIME |
+| loki.example.com | `443`| Envoi de logs (Alloy → Loki, optionnel) |
+| Serveurs de courrier de destination | `25` | Livraison des courriels sortants (via recherche MX) |
 
-## Contact us
+## Contactez-nous
 
 !!! tip "Support"
 
-    For any questions or issues related to the deployment and operation of the HIN Mail (Stargate) appliance, please contact HIN support.
+    Pour toute question ou problème lié au déploiement et au fonctionnement de l'appliance HIN Mail (Stargate), veuillez contacter le support HIN.
 
-    Please include relevant information such as the customer name, appliance version, and screenshots/[logs](./Docker-advanced.md#provide-logs-to-support) where applicable, to help us process your request efficiently.
+    Veuillez inclure des informations pertinentes telles que le nom du client, la version de l'appliance, et des captures d'écran/[logs](./Docker-advanced.md#fournir-les-logs-au-support) le cas échéant, pour nous aider à traiter votre demande efficacement.
 
 ---
 

@@ -138,7 +138,7 @@ markdown_extensions:
   - pymdownx.snippets:
       check_paths: true
       auto_append:
-        - docs/includes/mkdocs.md
+        - docs/de/includes/mkdocs.md
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -155,9 +155,10 @@ markdown_extensions:
   - pymdownx.tilde
 
 not_in_nav: |
-  docker-compose/*.md
-  includes/*.md
-  assets/*.md
+  /docker-compose/*.md
+  /docs/include/*.md
+  /docs/de/include/*.md
+  /docs/assets/*.md
 
 # Page tree
 nav:
