@@ -1,0 +1,28 @@
+{
+  "version": "v0.5.2-rc668",
+  "deployment_tag": "v0.5.2-rc668",
+  "images": {
+    "SMIMEKEYS_VERSION": "v0.0.23",
+    "POLICY_VERSION": "v0.0.8",
+    "IRISAGENT_VERSION": "v0.0.7",
+    "MXENGINE_VERSION": "v0.0.48",
+    "POLICY_SYNC_VERSION": "dev",
+    "DASHBOARD_VERSION": "v0.0.24",
+    "MTACONF_VERSION": "v0.0.5",
+    "OPS_AGENT_VERSION": "v0.0.3",
+    "DOZZLE_VERSION": "v10.5.0",
+    "CLAMAV_VERSION": "1.5.2-35",
+    "POSTGRES_VERSION": "18-alpine",
+    "KEYCLOAK_VERSION": "26.6.4",
+    "VAULT_VERSION": "1.21.4",
+    "APISIX_VERSION": "3.17.0-debian",
+    "NATS_VERSION": "2.14-alpine",
+    "SEAWEEDFS_VERSION": "4.37",
+    "CADDY_VERSION": "2-alpine",
+    "LOKI_VERSION": "3.7.3",
+    "ALLOY_VERSION": "v1.17.0",
+    "NODE_EXPORTER_VERSION": "v1.11.1",
+    "STALWART_VERSION": "v0.16",
+    "OAUTH2_PROXY_VERSION": "v7.15.3"
+  }
+}
