@@ -983,7 +983,7 @@ services:
       - autoheal=true
 
   loki:
-    image: grafana/loki:${LOKI_VERSION:-3.4.3}
+    image: grafana/loki:${LOKI_VERSION:-3.7.3}
     container_name: stargate-loki
     restart: unless-stopped
     logging:
@@ -1000,16 +1000,13 @@ services:
         limits:
           memory: 512M
           cpus: "0.50"
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3100/ready || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+    # NOTE: No healthcheck. The grafana/loki image is distroless as of v3.5.8
+    # (no /bin/sh, wget or curl), so a CMD-SHELL/wget healthcheck cannot run
+    # inside the container and would always report unhealthy. Consumers depend
+    # on this service with `condition: service_started` instead of
+    # service_healthy. Do not re-add a shell-based healthcheck here.
     networks:
       - stargate-network
-    labels:
-      - autoheal=true
 
   alloy:
     image: grafana/alloy:${ALLOY_VERSION:-v1.16.1}
@@ -1022,7 +1019,7 @@ services:
         max-file: "5"
     depends_on:
       loki:
-        condition: service_healthy
+        condition: service_started
     command:
       - run
       - /etc/alloy/config.alloy
