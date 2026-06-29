@@ -104,7 +104,7 @@ POSTGRES_VERSION="18-alpine"
 # renovate: datasource=docker depName=quay.io/keycloak/keycloak
 KEYCLOAK_VERSION="26.6.3"
 # renovate: datasource=docker depName=hashicorp/vault
-VAULT_VERSION="1.19.0"
+VAULT_VERSION="1.21.4"
 # renovate: datasource=docker depName=apache/apisix
 APISIX_VERSION="3.17.0-debian"
 # renovate: datasource=docker depName=nats
