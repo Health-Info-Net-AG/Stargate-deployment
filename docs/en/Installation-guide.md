@@ -84,7 +84,7 @@ HIN's objective in this process is to ensure a secure, smooth and fully validate
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Please review the "Stargate Deployment Instructions" and ensure that all necessary preparatory steps have been completed before the HIN Gateway migration activities begin.
+Please review the "Stargate Pre-Requisites & Deployment Information" and ensure that all necessary preparatory steps have been completed before the HIN Gateway migration activities begin.
 
 The following items must be available or confirmed before the migration:
 
