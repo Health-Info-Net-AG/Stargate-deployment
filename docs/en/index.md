@@ -1,10 +1,10 @@
-# Stargate Deployment Instruction
+# Stargate Pre-Requisites & Deployment Information
 
 ![Logo](assets/stargate_visual.png)
 
 [What is Stargate?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-## Quick Start
+## Prerequisites
 
 ### Installation options
 
