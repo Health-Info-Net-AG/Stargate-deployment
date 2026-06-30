@@ -153,10 +153,8 @@ markdown_extensions:
   - pymdownx.tilde
 
 not_in_nav: |
-  /docker-compose/*.md
-  /docs/include/*.md
-  /docs/en/include/*.md
-  /docs/assets/*.md
+  assets/*.md
+  includes/*.md
 
 # Page tree
 nav:
