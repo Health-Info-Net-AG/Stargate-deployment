@@ -1,244 +1,245 @@
-# HIN Mail Gateway - Technical Installation Process
+# HIN Mail Gateway - Processo di installazione tecnica
 
 !!! tip
-    Technical Installation Process for Single-Domain Mail Architecture with Microsoft 365
+    Processo di installazione tecnica per architettura di posta a dominio singolo con Microsoft 365
 
-## Introduction
+## Introduzione
 
-This document provides a comprehensive guide to the technical installation and migration process to the new [HIN Gateway](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm) ("Stargate Appliance"). It applies to Microsoft 365 mail architectures that use a **single trusted domain**.
+Questo documento fornisce una guida completa al processo di installazione tecnica e migrazione verso il nuovo [HIN Gateway](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm) ("Stargate Appliance"). Si applica alle architetture di posta Microsoft 365 che utilizzano un **singolo dominio fidato**.
 
-The guide is intended for HIN customers, IT administrators and system engineers who are responsible for deploying and configuring the new HIN Gateway, and for migrating from the existing Mail Gateway (MGW) to the new solution.
+La guida è destinata ai clienti HIN, amministratori IT e ingegneri di sistema responsabili del deployment e della configurazione del nuovo HIN Gateway, e della migrazione dal Mail Gateway (MGW) esistente alla nuova soluzione.
 
-The HIN Gateway is a secure email gateway solution that enables trusted, encrypted and policy-driven communication within the HIN Trust Circle. It acts as a central intermediary between internal email infrastructures and external communication partners, ensuring that all email traffic is transmitted securely, complies with the organisation's policies and meets HIN's security standards.
+L'HIN Gateway è una soluzione di gateway email sicuro che consente una comunicazione affidabile, crittografata e basata su policy all'interno del HIN Trust Circle. Agisce come intermediario centrale tra le infrastrutture email interne e i partner di comunicazione esterni, garantendo che tutto il traffico email venga trasmesso in modo sicuro, sia conforme alle policy dell'organizzazione e soddisfi gli standard di sicurezza HIN.
 
-## Overview of the mail flow
+## Panoramica del flusso di posta
 
-- **Incoming emails** are routed via the HIN Gateway, where they are validated, decrypted (if necessary) and checked against trust and security policies before being forwarded to the internal mail server.
-- **Outgoing emails** are sent from internal systems to the HIN Gateway, where encryption, routing and policy enforcement are applied before they are transmitted to external recipients.
-- **Communication between HIN gateways** is secured by peer certificates and WireGuard tunnels, ensuring trusted communication between domains.
+- **Le email in entrata** vengono instradate tramite l'HIN Gateway, dove vengono validate, decriptate (se necessario) e verificate rispetto alle policy di fiducia e sicurezza prima di essere inoltrate al server di posta interno.
+- **Le email in uscita** vengono inviate dai sistemi interni all'HIN Gateway, dove vengono applicate crittografia, routing e applicazione delle policy prima di essere trasmesse ai destinatari esterni.
+- **La comunicazione tra gateway HIN** è protetta da certificati peer e tunnel WireGuard, garantendo una comunicazione affidabile tra domini.
 
-## Installation and migration process
+## Processo di installazione e migrazione
 
-The structured, step-by-step procedure described in this document covers the following points:
+La procedura strutturata passo-passo descritta in questo documento copre i seguenti punti:
 
-1. Preparation and fallback planning
-2. Installation and configuration of the HIN Gateway
-3. Domain activation and certificate validation
-4. Mail server integration and routing configuration
-5. Testing, transition to production and post-migration validation
-6. Decommissioning of the existing MGW
+1. Preparazione e pianificazione del fallback
+2. Installazione e configurazione dell'HIN Gateway
+3. Attivazione del dominio e validazione del certificato
+4. Integrazione del server di posta e configurazione del routing
+5. Test, transizione alla produzione e validazione post-migrazione
+6. Disattivazione del MGW esistente
 
-HIN's objective in this process is to ensure a secure, smooth and fully validated migration that causes minimal disruption to operations and guarantees the uninterrupted continuity of email services.
+L'obiettivo di HIN in questo processo è garantire una migrazione sicura, fluida e completamente validata che causi il minimo disturbo alle operazioni e garantisca la continuità ininterrotta dei servizi email.
 
-## Frequently asked questions
+## Domande frequenti
 
-!!! question "Can I perform the installation and migration on my own?"
-    Yes, the installation and migration can be completed entirely by the customer, **except for "Step 1.3 - Export private key(s)"**.
+!!! question "Posso eseguire l'installazione e la migrazione autonomamente?"
+    Sì, l'installazione e la migrazione possono essere completate interamente dal cliente, **ad eccezione del "Passo 1.3 - Esportazione delle chiavi private"**.
 
-    For security reasons and to keep your private key safe, you must contact HIN Support or join the planned migration call to receive the code required to export the private key from the currently operating Mail Gateway.
+    Per motivi di sicurezza e per mantenere al sicuro la tua chiave privata, devi contattare il Supporto HIN o partecipare alla chiamata di migrazione pianificata per ricevere il codice necessario per esportare la chiave privata dal Mail Gateway attualmente in funzione.
 
-    If the installation and migration cannot be completed successfully, please join the planned support call with our engineers.
+    Se l'installazione e la migrazione non possono essere completate con successo, partecipa alla chiamata di supporto pianificata con i nostri ingegneri.
 
-!!! question "Will there be any outage in email delivery during the migration?"
-    Between **"Step 1.5 - Shutdown existing MGW VM"** and **"Step 18 - Configure mail server"**, all emails will be queued on the mail server. Once "Step 18 - Configure mail server" has been completed, the queued emails will be sent out or delivered to the mailbox.
+!!! question "Ci saranno interruzioni nella consegna delle email durante la migrazione?"
+    Tra **"Passo 1.5 - Spegnimento del MGW VM esistente"** e **"Passo 18 - Configurazione del server di posta"**, tutte le email saranno in coda sul server di posta. Una volta completato il "Passo 18 - Configurazione del server di posta", le email in coda verranno inviate o consegnate alla cassetta postale.
 
-!!! question "Will any emails be lost during the installation and migration?"
-    No, no emails will be lost during the installation and migration.
+!!! question "Verranno perse email durante l'installazione e la migrazione?"
+    No, nessuna email andrà persa durante l'installazione e la migrazione.
 
-## Overview of the installation steps
+## Panoramica dei passaggi di installazione
 
-| Step | Topic | Responsibility |
+| Passo | Argomento | Responsabilità |
 | :--: | :---- | :------------: |
-| 0 | Check prerequisites | Customer |
-| 1.1 | Smoke test | Customer |
-| 1.2 | Backing up the existing MGW | Customer |
-| 1.3 | Export private key(s) | Customer / HIN |
-| 1.4 | Contingency plan / fallback scenario | Customer |
-| 1.5 | Shutdown existing MGW VM | Customer |
-| 2 | WireGuard | Customer |
-| 3 | Select target VM | Customer |
-| 4 | Load VM image | Customer |
-| 5 | Network connection to the VM | Customer |
-| 6 | Access via the browser | Customer |
-| 7 | Enter activation code | Customer |
-| 8 | Mesh network setup | Customer |
-| 9 | Establishing secure mesh network | Customer |
-| 10 | Login to Keycloak | Customer |
-| 11 | Update password | Customer |
-| 12 | Update account information | Customer |
-| 13 | Initial configuration and domain setup | Customer |
-| 14 | Configure mail transport | Customer |
-| 15 | Configure whitelist headers | Customer |
-| 16 | Peer certificates | HIN |
-| 17 | Validate peer certificates | Customer |
-| 18 | Configure mail server | Customer |
-| 19 | Test prior to switchover | Customer |
-| 20 | Validation after switchover | Customer |
-| 21 | Take existing MGW out of service | Customer |
-| 22 | Change the password of the VM | Customer |
-| Annex 1 | Backing up and restoring the appliance settings | Customer |
+| 0 | Verifica prerequisiti | Cliente |
+| 1.1 | Smoke test | Cliente |
+| 1.2 | Backup del MGW esistente | Cliente |
+| 1.3 | Esportazione delle chiavi private | Cliente / HIN |
+| 1.4 | Piano di contingenza / scenario di fallback | Cliente |
+| 1.5 | Spegnimento del MGW VM esistente | Cliente |
+| 2 | WireGuard | Cliente |
+| 3 | Selezione VM di destinazione | Cliente |
+| 4 | Caricamento dell'immagine VM | Cliente |
+| 5 | Connessione di rete alla VM | Cliente |
+| 6 | Accesso tramite browser | Cliente |
+| 7 | Inserimento codice di attivazione | Cliente |
+| 8 | Configurazione rete mesh | Cliente |
+| 9 | Creazione rete mesh sicura | Cliente |
+| 10 | Accesso a Keycloak | Cliente |
+| 11 | Aggiornamento password | Cliente |
+| 12 | Aggiornamento informazioni account | Cliente |
+| 13 | Configurazione iniziale e setup domini | Cliente |
+| 14 | Configurazione trasporto posta | Cliente |
+| 15 | Configurazione intestazioni whitelist | Cliente |
+| 16 | Certificati peer | HIN |
+| 17 | Validazione certificati peer | Cliente |
+| 18 | Configurazione server di posta | Cliente |
+| 19 | Test prima del passaggio | Cliente |
+| 20 | Validazione dopo il passaggio | Cliente |
+| 21 | Disattivazione del MGW esistente | Cliente |
+| 22 | Modifica della password della VM | Cliente |
+| Allegato 1 | Backup e ripristino delle impostazioni dell'appliance | Cliente |
 
-## Detailed steps
+## Passaggi dettagliati
 
-### Step 0 - Check prerequisites
+### Passo 0 - Verifica prerequisiti
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Please review the "Stargate Deployment Instructions" and ensure that all necessary preparatory steps have been completed before the HIN Gateway migration activities begin.
+Si prega di rivedere le "Istruzioni di deployment Stargate" e assicurarsi che tutti i passaggi preparatori necessari siano stati completati prima dell'inizio delle attività di migrazione dell'HIN Gateway.
 
-The following items must be available or confirmed before the migration:
+I seguenti elementi devono essere disponibili o confermati prima della migrazione:
 
-- **Credentials will be delivered to you by HIN**
-    - VM credential
-    - Keycloak credential
-    - Activation code
-- **Export of private key**
-    - If you are working on a Windows machine that has access to the Mail Gateway VM via port 22, we can support you during the call in enabling the private key export from the MGW.
-    - If you do not have access to such a machine, please contact HIN Support by email or phone (support@hin.ch / 0848 830 740) to help you establish a support connection via System Administration → Support Connection → Connect.
-- **Download latest** version of [VM image](vm/VM-Catalog.md)
-- **Firewall** requirements for WireGuard.
-  Configure the WireGuard port 19818 (TCP/UDP) in your firewall:
-    - Incoming and outgoing traffic
-    - Allow traffic: any-to-HIN Gateway and HIN Gateway-to-any
-- **DHCP access** should be available for "Step 5 - Network connection to the VM" (recommended).
-- **Backup requirements** - see "Annex 1 - Backing up and restoring the appliance settings".
-- Confirmation that the existing MGW will **not** be deleted until acceptance has been completed.
-- Access to DNS, mail server connectors, transport rules, and relay settings.
+- **Le credenziali ti saranno fornite da HIN**
+    - Credenziale VM
+    - Credenziale Keycloak
+    - Codice di attivazione
+- **Esportazione della chiave privata**
+    - Se stai lavorando su una macchina Windows che ha accesso alla VM del Mail Gateway tramite la porta 22, possiamo supportarti durante la chiamata nell'abilitare l'esportazione della chiave privata dal MGW.
+    - Se non hai accesso a tale macchina, contatta il Supporto HIN via email o telefono (<support@hin.ch> / 0848 830 740) per aiutarti a stabilire una connessione di supporto tramite Amministrazione sistema → Connessione di supporto → Connetti.
+- **Scarica l'ultima** versione dell'[immagine VM](vm/VM-Catalog.md)
+- **Requisiti firewall** per WireGuard.
+  Configura la porta WireGuard 19818 (TCP/UDP) nel tuo firewall:
+    - Traffico in entrata e in uscita
+    - Consenti traffico: any-to-HIN Gateway e HIN Gateway-to-any
+- **L'accesso DHCP** dovrebbe essere disponibile per il "Passo 5 - Connessione di rete alla VM" (raccomandato).
+- **Requisiti di backup** - vedere "Allegato 1 - Backup e ripristino delle impostazioni dell'appliance".
+- Conferma che il MGW esistente **non** verrà eliminato fino al completamento dell'accettazione.
+- Accesso a DNS, connettori del server di posta, regole di trasporto e impostazioni di relay.
 
-!!! info "Why WireGuard?"
-    The WireGuard port fulfils two important functions:
+!!! info "Perché WireGuard?"
+    La porta WireGuard assolve due importanti funzioni:
 
-    1. The HIN Gateway uses this port to obtain peer certificates from the HIN CA.
-    2. It uses this port to establish a secure tunnel to other HIN Gateways, through which secure data exchange (e.g. email traffic) takes place.
+    1. L'HIN Gateway utilizza questa porta per ottenere certificati peer dalla CA HIN.
+    2. Utilizza questa porta per stabilire un tunnel sicuro verso altri HIN Gateway, attraverso il quale avviene lo scambio sicuro di dati (es. traffico email).
 
-!!! tip "Private key export"
-    If you are working on a Windows machine that has access to the Mail Gateway VM via port 22, we can support you during the call in enabling the private key export from the MGW.
+!!! tip "Esportazione della chiave privata"
+    Se stai lavorando su una macchina Windows che ha accesso alla VM del Mail Gateway tramite la porta 22, possiamo supportarti durante la chiamata nell'abilitare l'esportazione della chiave privata dal MGW.
 
-    If you do not have access to such a machine, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**) to help you establish a support connection via **System Administration → Support Connection → Connect**.
+    Se non hai accesso a tale macchina, contatta il Supporto HIN via email o telefono (**support@hin.ch** / **0848 830 740**) per aiutarti a stabilire una connessione di supporto tramite **Amministrazione sistema → Connessione di supporto → Connetti**.
 
-### Step 1.1 - Smoke test
+### Passo 1.1 - Smoke test
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Send a test email to the following recipients, where you have access to the mailbox to check correct receipt:
+Invia una email di test ai seguenti destinatari, dove hai accesso alla cassetta postale per verificare la corretta ricezione:
 
-- An HIN email address or HIN community domain of yours, for example: `user@hin.ch`
-- An email address outside of the HIN community, for example: `user@bluewin.ch`
+- Un indirizzo email HIN o un dominio della comunità HIN di tua proprietà, ad esempio: `user@hin.ch`
+- Un indirizzo email al di fuori della comunità HIN, ad esempio: `user@bluewin.ch`
 
-Verify that both emails are delivered successfully, including subject, content and attachment (if sent).
+Verifica che entrambe le email vengano consegnate con successo, inclusi oggetto, contenuto e allegato (se inviato).
 
-### Step 1.2 - Backing up the existing MGW
+### Passo 1.2 - Backup del MGW esistente
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Create a backup of the existing MGW appliance and ensure that the VM is retained until the migration has been successfully completed and formally accepted. For more information, see "Annex 1 - Backing up and restoring the appliance settings".
+Crea un backup dell'appliance MGW esistente e assicurati che la VM venga conservata fino al completamento e all'accettazione formale della migrazione. Per maggiori informazioni, vedere "Allegato 1 - Backup e ripristino delle impostazioni dell'appliance".
 
-### Step 1.3 - Export private key(s)
+### Passo 1.3 - Esportazione delle chiavi private
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 :heavy_plus_sign:
-![Responsibility HIN](https://img.shields.io/badge/Responsibility-HIN-orange)
+![Responsabilità HIN](https://img.shields.io/badge/Responsabilita-HIN-orange)
 
-!!! warning "HIN assistance required"
-    This step requires an unlock code that is provided by a HIN support engineer during the planned call. Contact HIN Support or join the planned migration call before starting.
+!!! warning "Assistenza HIN richiesta"
+    Questo passaggio richiede un codice di sblocco fornito da un ingegnere del supporto HIN durante la chiamata pianificata. Contatta il Supporto HIN o partecipa alla chiamata di migrazione pianificata prima di iniziare.
 
 <!-- !!! info
-    Please download tool `HIN_Migration-Tool_v*.exe` under the Link: [link](https://link) -->
+    Scarica lo strumento `HIN_Migration-Tool_v*.exe` al link: [link](https://link) -->
 
-1. Log into the existing MGW webGUI.
-2. Open **"Mail System"**.
-3. Run the **`HIN_Migration-Tool_v*.exe`** application provided by the support engineer during the call.
-4. Enter the unlock code that the support engineer provides to you.
-5. Select **"Enable export"**.
-6. Enter the MGW IP address.
-7. Wait for confirmation.
-8. Select the trusted domain in the MGW webGUI.
-9. Scroll down and select the managed fingerprint.
-10. Scroll down to the **"PKCS12 download"** category (you may optionally enter a password to encrypt the key). Press **"Download PKCS12"** and save the `*.p12` file on the computer.
-11. Return to the `HIN_Migration-Tool_v*.exe` application and disable the **Export** button.
+1. Accedi alla webGUI del MGW esistente.
+2. Apri **"Mail System"**.
+3. Esegui l'applicazione **`HIN_Migration-Tool_v*.exe`** fornita dall'ingegnere del supporto durante la chiamata.
+4. Inserisci il codice di sblocco che l'ingegnere del supporto ti fornisce.
+5. Seleziona **"Enable export"**.
+6. Inserisci l'indirizzo IP del MGW.
+7. Attendi la conferma.
+8. Seleziona il dominio fidato nella webGUI del MGW.
+9. Scorri verso il basso e seleziona l'impronta gestita.
+10. Scorri verso il basso fino alla categoria **"PKCS12 download"** (puoi facoltativamente inserire una password per crittografare la chiave). Premi **"Download PKCS12"** e salva il file `*.p12` sul computer.
+11. Torna all'applicazione `HIN_Migration-Tool_v*.exe` e disabilita il pulsante **Export**.
 
-### Step 1.4 - Contingency plan / fallback scenario
+### Passo 1.4 - Piano di contingenza / scenario di fallback
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-**Rollback scenario** - if a rollback is required:
+**Scenario di rollback** - se è richiesto un rollback:
 
-1. Stop the new HIN Gateway.
-2. Power on the existing MGW.
-3. Verify that inbound and outbound email traffic is functioning correctly via the existing MGW.
+1. Arresta il nuovo HIN Gateway.
+2. Accendi il MGW esistente.
+3. Verifica che il traffico email in entrata e in uscita funzioni correttamente tramite il MGW esistente.
 
-### Step 1.5 - Shutdown existing MGW VM
+### Passo 1.5 - Spegnimento del MGW VM esistente
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Shut down the existing MGW VM.
+Spegni il MGW VM esistente.
 
 !!! warning
-    This step will interrupt the mail flow. During the interruption, emails will be queued on the mail server and delivered after the installation has been completed (see "Step 18 - Configure mail server").
+    Questo passaggio interromperà il flusso di posta. Durante l'interruzione, le email verranno messe in coda sul server di posta e consegnate dopo il completamento dell'installazione (vedere "Passo 18 - Configurazione del server di posta").
 
-### Step 2 - WireGuard
+### Passo 2 - WireGuard
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Ensure you have configured the WireGuard port `19818` (TCP/UDP) in your firewall:
+Assicurati di aver configurato la porta WireGuard `19818` (TCP/UDP) nel tuo firewall:
 
-- Incoming and outgoing traffic
-- Allow traffic: any-to-HIN Gateway and HIN Gateway-to-any
+- Traffico in entrata e in uscita
+- Consenti traffico: any-to-HIN Gateway e HIN Gateway-to-any
 
-### Step 3 - Select target VM
+### Passo 3 - Selezione VM di destinazione
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Select one of the available virtual images and provision it as described in the installation guide on the HIN Gateway service page:
+Seleziona una delle immagini virtuali disponibili e forniscila come descritto nella guida all'installazione nella pagina del servizio HIN Gateway:
 
 !!! info
-    For security and supportability reasons, ensure that your hypervisor is not running an end-of-life version. The HIN Gateway appliance is supported on the latest hypervisor release and the immediately preceding major version.
+    Per motivi di sicurezza e supportabilità, assicurati che il tuo hypervisor non stia eseguendo una versione end-of-life. L'appliance HIN Gateway è supportata sull'ultima versione dell'hypervisor e sulla versione maggiore immediatamente precedente.
 
-- VM Image Installation:
-    - [Azure VM Image](vm/Azure-image-install.md)
-    - [Windows 11 Pro (Hyper-V) Image](vm/Windows11pro-image-install.md)
-    - [VMware image](vm/VMware-image-install.md)
-    - [Proxmox image](vm/Proxmox-image-install.md)
+- Installazione immagine VM:
+    - [Immagine VM Azure](vm/Azure-image-install.md)
+    - [Immagine Windows 11 Pro (Hyper-V)](vm/Windows11pro-image-install.md)
+    - [Immagine VMware](vm/VMware-image-install.md)
+    - [Immagine Proxmox](vm/Proxmox-image-install.md)
     - [Cloudscale](vm/Cloudscale-image-install.md)
-- [Configuration of Microsoft Exchange](Exchange-integration.md)
+- [Configurazione di Microsoft Exchange](Exchange-integration.md)
 
-### Step 4 - Load VM image
+### Passo 4 - Caricamento dell'immagine VM
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Upload the selected VM image to your hypervisor.
+Carica l'immagine VM selezionata sul tuo hypervisor.
 
-### Step 5 - Network connection to the VM
+### Passo 5 - Connessione di rete alla VM
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Ensure that the VM has a network connection and that a static IP address has been assigned to it. 
+Assicurati che la VM abbia una connessione di rete e che le sia stato assegnato un indirizzo IP statico.
 
-**Option A:** Configure the IP address of the virtual machine directly in the hypervisor you are using.
+**Opzione A:** Configura l'indirizzo IP della macchina virtuale direttamente nell'hypervisor che stai utilizzando.
 
-**Option B:** You can configure your router's DHCP server to always assign the same IP address based on the VM's MAC address.
+**Opzione B:** Puoi configurare il server DHCP del tuo router per assegnare sempre lo stesso indirizzo IP in base all'indirizzo MAC della VM.
 
-**Option C:** Log in locally via the VM console and manually configure a static IP address.
-NOTE: The VM image runs an automatic installation during the first boot. If the network is not configured at this stage, the installation will fail because the server’s IP address cannot be determined.
+**Opzione C:** Accedi localmente tramite la console VM e configura manualmente un indirizzo IP statico.
+NOTA: L'immagine VM esegue un'installazione automatica durante il primo avvio. Se la rete non è configurata in questa fase, l'installazione fallirà perché l'indirizzo IP del server non può essere determinato.
 
-Add an IP address on Linux:
+Aggiungere un indirizzo IP su Linux:
 
-1. Run the «nmtui» command in the console
+1. Esegui il comando "nmtui" nella console
     ```bash
     nmtui
     ```
-2. Use the arrow keys to navigate, then press «Enter» to select the «Ethernet connection» for which you want to change the IP address. <br> ![Add IP Addr](assets/ip_addr_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-3. Navigate to «IPv4 Configuration» and change the setting from «Automatic» to «Manual». <br> ![Add IP Addr](assets/ip_addr_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-4. Use the arrow keys to navigate to the fields where you can enter the IP address, gateway, and DNS server. Then select «OK». <br> ![Add IP Addr](assets/ip_addr_3.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-5. After saving the IP address configuration, run the following command in the console:
+2. Usa i tasti freccia per navigare, quindi premi "Invio" per selezionare la "Connessione Ethernet" per la quale desideri modificare l'indirizzo IP. <br> ![Aggiungi IP Addr](assets/ip_addr_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+3. Naviga a "Configurazione IPv4" e modifica l'impostazione da "Automatico" a "Manuale". <br> ![Aggiungi IP Addr](assets/ip_addr_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+4. Usa i tasti freccia per navigare ai campi dove puoi inserire l'indirizzo IP, il gateway e il server DNS. Quindi seleziona "OK". <br> ![Aggiungi IP Addr](assets/ip_addr_3.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+5. Dopo aver salvato la configurazione dell'indirizzo IP, esegui il seguente comando nella console:
+
     ```bash
     sudo systemctl restart NetworkManager
     ```
 
-??? warning "Network must be configured before first boot"
-    The VM image runs an automatic installation on first boot. If the network is not yet configured (no IP address assigned via DHCP or static config), the installation will fail because the server IP cannot be detected.
+??? warning "La rete deve essere configurata prima del primo avvio"
+    L'immagine VM esegue un'installazione automatica al primo avvio. Se la rete non è ancora configurata (nessun indirizzo IP assegnato tramite DHCP o config statico), l'installazione fallirà perché l'IP del server non può essere rilevato.
 
-    If this happens, configure the network manually, then run:
+    Se ciò accade, configura la rete manualmente, quindi esegui:
 
     ```bash
     cd /root/stargate-deployment/docker-compose
@@ -246,314 +247,318 @@ Add an IP address on Linux:
     ./scripts/install.sh
     ```
 
-    The install script will auto-detect the server's IP from the default route. Any reachable IP (public or private) is sufficient - the actual public endpoint is configured later through the dashboard.
+    Lo script di installazione rileverà automaticamente l'IP del server dalla route predefinita. Qualsiasi IP raggiungibile (pubblico o privato) è sufficiente - l'endpoint pubblico effettivo viene configurato successivamente tramite il dashboard.
 
 !!! tip
-    If you used Option C and configured the network manually, you must run the following commands:
-    
+    Se hai utilizzato l'Opzione C e configurato la rete manualmente, devi eseguire i seguenti comandi:
+
     ```bash
     cd /root/stargate-deployment/docker-compose
     ./scripts/purge.sh
     ./scripts/install.sh
     ```
 
-    The installation script will automatically detect the server’s IP address from the default route. Any reachable IP address, whether public or private, is sufficient. The actual public endpoint is configured later through the dashboard.
+    Lo script di installazione rileverà automaticamente l'indirizzo IP del server dalla route predefinita. Qualsiasi indirizzo IP raggiungibile, pubblico o privato, è sufficiente. L'endpoint pubblico effettivo viene configurato successivamente tramite il dashboard.
     
-    After the scripts have completed successfully, proceed to «Step 6 – Access via the browser»
+    Dopo il completamento con successo degli script, procedi al "Passo 6 – Accesso tramite browser"
     
     !!! question
-        If you do not have the HIN admin credentials, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**). Please refer to [Support Section](./Support.md).
+        Se non disponi delle credenziali di amministratore HIN, contatta il Supporto HIN via email o telefono (**support@hin.ch** / **0848 830 740**). Fare riferimento alla [Sezione Supporto](./Support.md).
 
-        [Click here to send an Email](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
+        [Clicca qui per inviare un'email](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-### Step 6 - Access via the browser
+### Passo 6 - Accesso tramite browser
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Open a browser and enter the IP address configured for the VM. You should see the initial setup screen.
+Apri un browser e inserisci l'indirizzo IP configurato per la VM. Dovresti vedere la schermata di configurazione iniziale.
 
 ```plain
 https://<VM IP address>
 ```
 
-### Step 7 - Enter activation code
+### Passo 7 - Inserimento codice di attivazione
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Select your preferred language and enter the activation code that you received via email from HIN. Click on "Next".
+Seleziona la lingua preferita e inserisci il codice di attivazione che hai ricevuto via email da HIN. Fai clic su "Next".
 
-![Activation code entry screen](assets/installation-guide/step7-activation-code.png)
+![Schermata di inserimento codice di attivazione](assets/installation-guide/step7-activation-code.png)
+
+!!! question "Non ho un codice di attivazione"
+    Se non disponi del codice di attivazione, contatta il Supporto HIN via email o telefono (**<support@hin.ch>** / **0848 830 740**). Fare riferimento alla [Sezione Supporto](./Support.md).
+
+    [Clicca qui per inviare un'email](mailto:support@hin.ch?subject=Activation%20code%20required.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20activation%20code%20for%20my%20HIN%20Gateway%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+### Passo 8 - Configurazione rete mesh
+
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
+
+Verifica la configurazione della rete mesh:
+
+- **Indirizzo IP** - L'IP pubblico del traffico in uscita (rilevato automaticamente).
+- **Trasporto** - Il protocollo di trasporto (predefinito: `tcp`).
+- **Porta** - La porta WireGuard (predefinita: `19818`).
+
+??? question "Cos'è un IP pubblico?"
+    Questo è l'indirizzo IP che la macchina utilizzerà per essere accessibile tramite Internet.
+    **Non** si tratta dell'indirizzo IP interno della macchina dietro firewall o NAT, ad esempio `10.0.0.0/8`, `172.16.0.0/12` o `192.168.0.0/16`.
+
+Conferma che i valori siano corretti e fai clic su "Next".
+
+![Schermata di configurazione rete mesh](assets/installation-guide/step8-mesh-network.png)
+
+### Passo 9 - Creazione rete mesh sicura
+
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
+
+Il sistema ora stabilirà la connessione di rete mesh sicura. Questo passaggio collega l'HIN Gateway all'Iris Agent e sincronizza i certificati.
+
+Attendi il completamento del processo. Gli indicatori di stato mostreranno "Up" quando la connessione è stabilita con successo. Fai clic su "Finish".
+
+![Creazione rete mesh sicura](assets/installation-guide/step9-mesh-connecting.png)
+
+!!! failure "Se la connessione fallisce"
+    Se lo stato di Iris Agent o di sincronizzazione dei certificati rimane "Down":
+
+    - Verifica che la porta `19818` (TCP/UDP) sia aperta nel tuo firewall (vedere "Passo 2 - WireGuard").
+    - Verifica che l'indirizzo IP nel "Passo 8 - Configurazione rete mesh" sia corretto e raggiungibile da Internet.
+    - Riavvia il processo o contatta il Supporto HIN via email o telefono (**support@hin.ch** / **0848 830 740**).
+
+### Passo 10 - Accesso a Keycloak
+
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
+
+Una volta stabilita la rete mesh, verrai reindirizzato alla pagina di accesso di Keycloak. Inserisci il nome utente e la password ricevuti da HIN.
+
+![Pagina di accesso Keycloak](assets/installation-guide/step10-keycloak-login.png)
 
 !!! question
-    If you do not have the activation code, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**). Please refer to [Support Section](./Support.md).
+    Se non disponi di questi dati di accesso, contatta il Supporto HIN via email o telefono (**<support@hin.ch>** / **0848 830 740**). Fare riferimento alla [Sezione Supporto](./Support.md).
 
-    [Click here to send an Email](mailto:support@hin.ch?subject=Activation%20code%20required.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20activation%20code%20for%20my%20HIN%20Gateway%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
+    [Clicca qui per inviare un'email](mailto:support@hin.ch?subject=Keycloak%20login%20required.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20Keycloak%20login%20details%20for%20my%20HIN%20Gateway.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-### Step 8 - Mesh network setup
+### Passo 11 - Aggiornamento password
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Verify the mesh network configuration:
+Al primo accesso, ti verrà richiesto di cambiare la password. Inserisci una nuova password sicura e confermala.
 
-- **IP address** - The public IP of the outgoing traffic (auto-detected).
-- **Transport** - The transport protocol (default: `tcp`).
-- **Port** - The WireGuard port (default: `19818`).
+![Schermata di aggiornamento password](assets/installation-guide/step11-update-password.png)
 
-Confirm that the values are correct and click "Next".
+### Passo 12 - Aggiornamento informazioni account
 
-![Mesh network setup screen](assets/installation-guide/step8-mesh-network.png)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-### Step 9 - Establishing secure mesh network
+Completa il tuo profilo account inserendo nome e cognome. L'indirizzo email è precompilato. Fai clic su "Submit" per continuare.
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Schermata di aggiornamento informazioni account](assets/installation-guide/step12-account-info.png)
 
-The system will now establish the secure mesh network connection. This step connects the HIN Gateway to the Iris Agent and synchronises certificates.
+### Passo 13 - Configurazione iniziale e setup domini
 
-Wait until the process completes. The status indicators will show "Up" when the connection is successfully established. Click "Finish".
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-![Establishing secure mesh network](assets/installation-guide/step9-mesh-connecting.png)
+In questa schermata, configura le tue impostazioni iniziali:
 
-!!! failure "If the connection fails"
-    If the Iris Agent or certificate synchronisation status remains "Down":
+- Verifica che tutti i tuoi domini fidati attuali all'interno della Comunità HIN siano visualizzati correttamente.
+- Seleziona quali domini fidati devono essere **Abilitati** per ottenere certificati peer dalla HIN Certification Authority (HIN CA).
+- Indica per quale/i dominio/i il prefisso `sec.<domain>` è già configurato ("Use sec-prefix").
+- Verifica che il nome dell'organizzazione e i proprietari del dominio siano corretti. <br> ![Screenshot](assets/step_13_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" } <br> ![Screenshot](assets/step_13_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+- Importa il file del certificato S/MIME esistente (`.p12`/`.pfx`) dal MGW esistente:
+    1. Espandi il dominio e seleziona l'opzione **P12/PFX File**.
+    2. Se non è stata impostata una password per il file del certificato, lascia vuoto il campo password.
+    3. Fai clic su **"Import Certificate"**.
+    4. Dopo l'importazione del certificato, viene visualizzato il messaggio *Certificate imported successfully*.
+- Fai clic su **"Save Configuration"** alla fine della pagina per salvare le modifiche.
 
-    - Verify that port `19818` (TCP/UDP) is open in your firewall (see "Step 2 - WireGuard").
-    - Verify that the IP address in "Step 8 - Mesh network setup" is correct and reachable from the internet.
-    - Restart the process or contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**).
-
-### Step 10 - Login to Keycloak
-
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
-
-Once the mesh network is established, you will be redirected to the Keycloak login page. Enter the username and password received from HIN.
-
-![Keycloak login page](assets/installation-guide/step10-keycloak-login.png)
-
-!!! question
-    If you do not have these login details, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**). Please refer to [Support Section](./Support.md).
-
-    [Click here to send an Email](mailto:support@hin.ch?subject=Keycloak%20login%20required.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20Keycloak%20login%20details%20for%20my%20HIN%20Gateway.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
-
-### Step 11 - Update password
-
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
-
-On first login, you will be prompted to change your password. Enter a new secure password and confirm it.
-
-![Update password screen](assets/installation-guide/step11-update-password.png)
-
-### Step 12 - Update account information
-
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
-
-Complete your account profile by entering your first name and last name. The email address is pre-filled. Click "Submit" to continue.
-
-![Update account information screen](assets/installation-guide/step12-account-info.png)
-
-### Step 13 - Initial configuration and domain setup
-
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
-
-On this screen, configure your initial settings:
-
-- Verify that all your current trusted domain(s) within the HIN Community are displayed correctly.
-- Select which trusted domain(s) should be **Enabled** to obtain peer certificates from the HIN Certification Authority (HIN CA).
-- Indicate for which domain(s) the `sec.<domain>` prefix is already configured ("Use sec-prefix").
-- Verify that the organization name and domain owners are correct. <br> ![Screenshot](assets/step_13_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" } <br> ![Screenshot](assets/step_13_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-- Import the existing S/MIME certificate file (`.p12`/`.pfx`) from the existing MGW:
-    1. Expand the domain and select the **P12/PFX File** option.
-    2. If no password has been set for the certificate file, leave the password field empty.
-    3. Click **"Import Certificate"**.
-    4. After the certificate has been imported, the message *Certificate imported successfully* is displayed.
-- Click **"Save Configuration"** at the end of the page to save the changes.
-
-![Initial setup screen](assets/installation-guide/step13-initial-setup.png)
+![Schermata di configurazione iniziale](assets/installation-guide/step13-initial-setup.png)
 
 !!! warning
-    - At least one domain must be **Enabled** to continue with the onboarding process. The "Save configuration" button will only become active once this requirement is met.
-    - If you notice that not all trusted domains are displayed or that the organisational information is incorrect, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**).
+    - Almeno un dominio deve essere **Abilitato** per continuare con il processo di onboarding. Il pulsante "Save configuration" diventerà attivo solo una volta soddisfatto questo requisito.
+    - Se noti che non tutti i domini fidati sono visualizzati o che le informazioni organizzative non sono corrette, contatta il Supporto HIN via email o telefono (**<support@hin.ch>** / **0848 830 740**).
 
-!!! danger "Import your existing private key"
-    If you do **not** import the private key from your existing MGW, a new key will be issued. This may result in messages not being decryptable for up to **6 hours**, which could lead to **data loss**.
+!!! danger "Importa la tua chiave privata esistente"
+    Se **non** importi la chiave privata dal tuo MGW esistente, verrà emessa una nuova chiave. Ciò potrebbe comportare l'impossibilità di decriptare i messaggi per un massimo di **6 ore**, il che potrebbe portare a **perdita di dati**.
 
-### Step 14 - Configure mail transport
+### Passo 14 - Configurazione trasporto posta
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-On this screen, configure your mail transport settings for the secure mail relay setup.
+In questa schermata, configura le impostazioni di trasporto della posta per il setup del relay di posta sicuro.
 
-![Mail transport configuration screen](assets/installation-guide/step14-mail-transport.png)
+![Schermata di configurazione trasporto posta](assets/installation-guide/step14-mail-transport.png)
 
-The following settings are available:
+Sono disponibili le seguenti impostazioni:
 
-| Setting | Description |
+| Impostazione | Descrizione |
 |---------|-------------|
-| **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
-| **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
-| **Domains** | Each domain that this gateway handles, along with its relay host (the internal mail server to which inbound mail is delivered). |
-| **Default relay host** | The default SMTP relay for outbound delivery. |
+| **Mail server host name** | Il FQDN di questa istanza del gateway di posta (es. `mail.example.com`). |
+| **Mail server IP addresses** | Gli indirizzi IP pubblici di questo server. Aggiungi IP aggiuntivi se il server è raggiungibile su più indirizzi. |
+| **Domains** | Ogni dominio gestito da questo gateway, insieme al suo host di relay (il server di posta interno a cui viene consegnata la posta in entrata). |
+| **Default relay host** | Il relay SMTP predefinito per la consegna in uscita. |
 
-Under the **Advanced** section, you can optionally configure:
+Nella sezione **Advanced**, puoi facoltativamente configurare:
 
-| Setting | Description |
+| Impostazione | Descrizione |
 |---------|-------------|
-| **Configure TLS** | TLS certificate settings for SMTP connections. |
-| **Content filter** | The internal content filter endpoint (default: `mxengine:1587`). |
-| **Trusted networks** | Additional networks allowed to relay through this gateway. |
+| **Configure TLS** | Impostazioni del certificato TLS per le connessioni SMTP. |
+| **Content filter** | L'endpoint del filtro contenuti interno (predefinito: `mxengine:1587`). |
+| **Trusted networks** | Reti aggiuntive autorizzate a fare relay attraverso questo gateway. |
 
-Additional actions:
+Azioni aggiuntive:
 
-- Add additional domains by clicking "Add domain", if required.
-- Expand the Advanced section to fine-tune mail transport parameters.
+- Aggiungi domini aggiuntivi facendo clic su "Add domain", se necessario.
+- Espandi la sezione Advanced per ottimizzare i parametri di trasporto della posta.
 
 !!! note
-    Ensure that all relay host and domain configurations are correct before proceeding.
+    Assicurati che tutte le configurazioni dell'host di relay e dei domini siano corrette prima di procedere.
 
-Once the configuration has been reviewed and completed, click "Apply configuration" to continue.
+Una volta che la configurazione è stata rivista e completata, fai clic su "Apply configuration" per continuare.
 
-### Step 15 - Configure whitelist headers
+### Passo 15 - Configurazione intestazioni whitelist
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Click **"Domains"**, then select **"Whitelist headers"**.
+Fai clic su **"Domains"**, quindi seleziona **"Whitelist headers"**.
 
-Enter the key exactly as configured in the mail server.
+Inserisci la chiave esattamente come configurata nel server di posta.
 
 ![Screenshot](assets/step_15_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-### Step 16 - Peer certificates
+### Passo 16 - Certificati peer
 
-![Responsibility HIN](https://img.shields.io/badge/Responsibility-HIN-orange)
+![Responsabilità HIN](https://img.shields.io/badge/Responsabilita-HIN-orange)
 
-Peer certificates are issued by the HIN Certification Authority (HIN CA) for enabled domains.
+I certificati peer vengono emessi dalla HIN Certification Authority (HIN CA) per i domini abilitati.
 
-Once the onboarding is complete, navigate to the **Peer certificates** section in the dashboard and click the **"Sync certificates"** button to synchronise your peer certificates from the HIN CA.
+Una volta completato l'onboarding, naviga alla sezione **Peer certificates** nel dashboard e fai clic sul pulsante **"Sync certificates"** per sincronizzare i tuoi certificati peer dalla HIN CA.
 
-![Peer certificates screen](assets/installation-guide/step15-peer-certificates.png)
+![Schermata certificati peer](assets/installation-guide/step15-peer-certificates.png)
 
-### Step 17 - Validate peer certificates
+### Passo 17 - Validazione certificati peer
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Ensure that your domain has received its policy-based peer certificate under **"Domains"**. The status of each domain must be **"Good"**.
+Assicurati che il tuo dominio abbia ricevuto il suo certificato peer basato su policy in **"Domains"**. Lo stato di ciascun dominio deve essere **"Good"**.
 
 ![Screenshot](assets/step_17_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 !!! question
-    Contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**) if you encounter any issues.
+    Contatta il Supporto HIN via email o telefono (**<support@hin.ch>** / **0848 830 740**) se riscontri problemi.
 
-### Step 18 - Configure mail server
+### Passo 18 - Configurazione server di posta
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-If you followed the recommended approach by exporting the private key, importing it into the HIN Gateway, and keeping the **same IP address** as the existing MGW, no changes are required on the email server.
+Se hai seguito l'approccio raccomandato esportando la chiave privata, importandola nell'HIN Gateway e mantenendo **lo stesso indirizzo IP** del MGW esistente, non sono richieste modifiche sul server di posta.
 
-Otherwise, configure your mail server or the associated components so that traffic is routed via the new HIN Gateway. Check and update the following settings, if required:
+In caso contrario, configura il server di posta o i componenti associati in modo che il traffico venga instradato tramite il nuovo HIN Gateway. Controlla e aggiorna le seguenti impostazioni, se necessario:
 
-- SMTP relay / smart host
-- Connectors
-- Transport rules
-- Routing domains
+- Relay SMTP / smart host
+- Connettori
+- Regole di trasporto
+- Domini di routing
 
-See [Exchange Integration](Exchange-integration.md) for detailed instructions.
+Vedere [Integrazione Exchange](Exchange-integration.md) per istruzioni dettagliate.
 
-### Step 19 - Test prior to switchover
+### Passo 19 - Test prima del passaggio
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Repeat the "Step 1.1 - Smoke test". In addition to the smoke test, please test and confirm the following:
+Ripeti il "Passo 1.1 - Smoke test". In aggiunta allo smoke test, testa e conferma quanto segue:
 
-**Outgoing:**
+**In uscita:**
 
-- Verify that the mail server is configured to send emails to the HIN Gateway using an SMTP relay or Exchange connector.
-- Verify that the HIN Gateway can send emails to recipients outside the HIN Community.
-- Verify that the HIN Gateway can send emails to recipients inside the HIN Community via WireGuard.
+- Verifica che il server di posta sia configurato per inviare email all'HIN Gateway utilizzando un relay SMTP o un connettore Exchange.
+- Verifica che l'HIN Gateway possa inviare email a destinatari al di fuori della Comunità HIN.
+- Verifica che l'HIN Gateway possa inviare email a destinatari all'interno della Comunità HIN tramite WireGuard.
 
-**Incoming:**
+**In entrata:**
 
-- Verify that encrypted emails can be received from the HIN Community via WireGuard. A sender from the `hin.ch` domain is the easiest test path.
-- Verify that encrypted emails can be received from the HIN Community via SMTP using S/MIME.
-- Verify that replies from senders outside the HIN Community to an initial secure email (HIN Mail-SEAL) can reach the HIN Gateway.
-- Verify that plain-text emails can be received from external senders outside the HIN Community.
+- Verifica che le email crittografate possano essere ricevute dalla Comunità HIN tramite WireGuard. Un mittente del dominio `hin.ch` è il percorso di test più semplice.
+- Verifica che le email crittografate possano essere ricevute dalla Comunità HIN tramite SMTP utilizzando S/MIME.
+- Verifica che le risposte da mittenti al di fuori della Comunità HIN a una email sicura iniziale (HIN Mail-SEAL) possano raggiungere l'HIN Gateway.
+- Verifica che le email in testo semplice possano essere ricevute da mittenti esterni al di fuori della Comunità HIN.
 
-### Step 20 - Validation after switchover
+### Passo 20 - Validazione dopo il passaggio
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Confirm:
+Conferma:
 
-- Emails delivered
-- Encryption applied
-- No delays or bounces
-- Logging successful
+- Email consegnate
+- Crittografia applicata
+- Nessun ritardo o rimbalzo
+- Logging riuscito
 
-Complete the (**"Acceptance Report"**)[https://www.hin.ch/files/pdf1/gateway-acceptance-en.pdf] and return it to your HIN representative.
+Compila il [**"Acceptance Report"**](https://www.hin.ch/files/pdf1/gateway-acceptance-en.pdf) e consegnalo al tuo rappresentante HIN.
 
-### Step 21 - Take existing MGW out of service
+### Passo 21 - Disattivazione del MGW esistente
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
 !!! warning
-    Do not delete the existing MGW VM immediately - keep it safe until everything is up and running.
+    Non eliminare immediatamente il MGW VM esistente - tienilo al sicuro fino a quando tutto non è in funzione.
 
-1. **Ensure there is no active traffic** - check:
-    - No domains are pointing to the MGW (DNS, SMTP, connectors).
-    - No emails are being forwarded via the old appliance.
-2. **Archive logs** - export and save:
-    - Email logs
-    - Security/audit logs
-    - Required for compliance and troubleshooting
-3. **Clean-up (optional)** - remove:
-    - Firewall rules
-    - DNS entries
-    - Routing configurations that reference the existing MGW
+1. **Assicurati che non ci sia traffico attivo** - controlla:
+    - Nessun dominio punta al MGW (DNS, SMTP, connettori).
+    - Nessuna email viene inoltrata tramite la vecchia appliance.
+2. **Archivia i log** - esporta e salva:
+    - Log delle email
+    - Log di sicurezza/audit
+    - Richiesti per conformità e risoluzione dei problemi
+3. **Pulizia (opzionale)** - rimuovi:
+    - Regole del firewall
+    - Voci DNS
+    - Configurazioni di routing che fanno riferimento al MGW esistente
 
-### Step 22 - Change the password of the VM
+### Passo 22 - Modifica della password della VM
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Please make sure that the VM credentials which were provided to you initially are changed to your own defined password, and keep them in a secured and safe place.
+Assicurati che le credenziali della VM che ti sono state fornite inizialmente vengano modificate con la tua password definita e conservale in un luogo sicuro e protetto.
 
-## Annex 1 - Backing up and restoring the appliance settings
+## Allegato 1 - Backup e ripristino delle impostazioni dell'appliance
 
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-To back up or restore the settings of your HIN appliance, click the **"Administration"** menu in the web administration portal.
+Per eseguire il backup o il ripristino delle impostazioni della tua appliance HIN, fai clic sul menu **"Administration"** nel portale di amministrazione web.
 
 ![Screenshot](assets/annex_1_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-### Backing up settings
+### Backup delle impostazioni
 
-Before you create a backup of the current HIN appliance settings, you must set a backup password. This password is required if you need to restore the backup later.
+Prima di creare un backup delle impostazioni correnti dell'appliance HIN, devi impostare una password di backup. Questa password è richiesta se devi ripristinare il backup in seguito.
 
-- To set or change the backup password, click **"Change Password"**.
-- To create and download a backup file, click **"Download"**.
+- Per impostare o modificare la password di backup, fai clic su **"Change Password"**.
+- Per creare e scaricare un file di backup, fai clic su **"Download"**.
 
-### Changing the backup password
+### Modifica della password di backup
 
-To change the password for future backups, click **"Change Password"**.
+Per modificare la password per i backup futuri, fai clic su **"Change Password"**.
 
 !!! note
-    The new password only applies to backups created **after** the password has been changed. Existing backup files remain protected by the password that was set when they were created.
+    La nuova password si applica solo ai backup creati **dopo** che la password è stata modificata. I file di backup esistenti rimangono protetti dalla password impostata al momento della loro creazione.
 
-### Restoring settings
+### Ripristino delle impostazioni
 
-To restore appliance settings from a backup file, click **"Import Backup File..."**.
+Per ripristinare le impostazioni dell'appliance da un file di backup, fai clic su **"Import Backup File..."**.
 
-In the dialog window, select the required backup file and enter the password associated with that backup. The appliance settings will then be restored from the selected backup file.
+Nella finestra di dialogo, seleziona il file di backup richiesto e inserisci la password associata a quel backup. Le impostazioni dell'appliance verranno quindi ripristinate dal file di backup selezionato.
 
-### Backup using SCP
+### Backup tramite SCP
 
-The MGW supports backing up the appliance via SCP.
+Il MGW supporta il backup dell'appliance tramite SCP.
 
-To use this option, the public key of the system that will access the MGW must be stored under **"Backup using SCP"**. The backup is generated automatically every day at midnight and is stored on the MGW as `backup.tgz`.
+Per utilizzare questa opzione, la chiave pubblica del sistema che accederà al MGW deve essere memorizzata in **"Backup using SCP"**. Il backup viene generato automaticamente ogni giorno a mezzanotte e viene memorizzato sul MGW come `backup.tgz`.
 
-Using the configured public key, the backup file can be retrieved via SCP with the operating system user `backup`. A typical SCP command to retrieve the backup file is:
+Utilizzando la chiave pubblica configurata, il file di backup può essere recuperato tramite SCP con l'utente del sistema operativo `backup`. Un tipico comando SCP per recuperare il file di backup è:
 
 ```bash
 scp backup@192.168.1.60:/backup.tgz .
 ```
 
-This command downloads the file `backup.tgz` from the MGW to the current local directory.
+Questo comando scarica il file `backup.tgz` dal MGW alla directory locale corrente.
 
 !!! note
-    If you enter a new public key, the existing key will be replaced.
+    Se inserisci una nuova chiave pubblica, la chiave esistente verrà sostituita.

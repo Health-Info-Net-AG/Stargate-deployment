@@ -95,7 +95,7 @@ The following items must be available or confirmed before the installation:
 
 - **Export of private key**
     - If you are working on a Windows machine that has access to the Mail Gateway VM via port 22, we can support you during the call in enabling the private key export from the MGW.
-    - If you do not have access to such a machine, please contact HIN Support by email or phone (support@hin.ch / 0848 830 740) to help you establish a support connection via System Administration → Support Connection → Connect.
+    - If you do not have access to such a machine, please contact HIN Support by email or phone (<support@hin.ch> / 0848 830 740) to help you establish a support connection via System Administration → Support Connection → Connect.
 - **Download latest** version of [VM image](vm/VM-Catalog.md)
 - **Firewall** requirements for WireGuard.
   Configure the WireGuard port 19818 (TCP/UDP) in your firewall:
@@ -213,7 +213,7 @@ Upload the selected VM image to your hypervisor.
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Ensure that the VM has a network connection and that a static IP address has been assigned to it. 
+Ensure that the VM has a network connection and that a static IP address has been assigned to it.
 
 **Option A:** Configure the IP address of the virtual machine directly in the hypervisor you are using.
 
@@ -224,14 +224,17 @@ NOTE: The VM image runs an automatic installation during the first boot. If the 
 
 Add an IP address on Linux:
 
-1. Run the «nmtui» command in the console
+1. Run the "nmtui" command in the console
+
     ```bash
     nmtui
     ```
-2. Use the arrow keys to navigate, then press «Enter» to select the «Ethernet connection» for which you want to change the IP address. <br> ![Add IP Addr](assets/ip_addr_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-3. Navigate to «IPv4 Configuration» and change the setting from «Automatic» to «Manual». <br> ![Add IP Addr](assets/ip_addr_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-4. Use the arrow keys to navigate to the fields where you can enter the IP address, gateway, and DNS server. Then select «OK». <br> ![Add IP Addr](assets/ip_addr_3.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+2. Use the arrow keys to navigate, then press "Enter" to select the "Ethernet connection" for which you want to change the IP address. <br> ![Add IP Addr](assets/ip_addr_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+3. Navigate to "IPv4 Configuration" and change the setting from "Automatic" to "Manual". <br> ![Add IP Addr](assets/ip_addr_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+4. Use the arrow keys to navigate to the fields where you can enter the IP address, gateway, and DNS server. Then select "OK". <br> ![Add IP Addr](assets/ip_addr_3.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 5. After saving the IP address configuration, run the following command in the console:
+
     ```bash
     sudo systemctl restart NetworkManager
     ```
@@ -251,7 +254,7 @@ Add an IP address on Linux:
 
 !!! tip
     If you used Option C and configured the network manually, you must run the following commands:
-    
+
     ```bash
     cd /root/stargate-deployment/docker-compose
     ./scripts/purge.sh
@@ -260,7 +263,7 @@ Add an IP address on Linux:
 
     The installation script will automatically detect the server’s IP address from the default route. Any reachable IP address, whether public or private, is sufficient. The actual public endpoint is configured later through the dashboard.
     
-    After the scripts have completed successfully, proceed to «Step 6 – Access via the browser»
+    After the scripts have completed successfully, proceed to "Step 6 – Access via the browser"
     
     !!! question
         If you do not have the HIN admin credentials, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**). Please refer to [Support Section](./Support.md).
@@ -285,8 +288,8 @@ Select your preferred language and enter the activation code that you received v
 
 ![Activation code entry screen](assets/installation-guide/step7-activation-code.png)
 
-!!! question
-    If you do not have the activation code, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**). Please refer to [Support Section](./Support.md).
+!!! question "I do not have an activation code"
+    If you do not have the activation code, please contact HIN Support by email or phone (**<support@hin.ch>** / **0848 830 740**). Please refer to [Support Section](./Support.md).
 
     [Click here to send an Email](mailto:support@hin.ch?subject=Activation%20code%20required.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20activation%20code%20for%20my%20HIN%20Gateway%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
@@ -296,9 +299,13 @@ Select your preferred language and enter the activation code that you received v
 
 Verify the mesh network configuration:
 
-- **IP address** - The public IP of the outgoing traffic (auto-detected).
+- **IP address** - The **public IP** of the outgoing traffic (auto-detected).
 - **Transport** - The transport protocol (default: `tcp`).
 - **Port** - The WireGuard port (default: `19818`).
+
+??? question "What is public IP?"
+    This is an IP address that Machine will use to be accessible via internet.
+    This is **not** internal Machine IP address after Firewall or NAT, e.g. `10.0.0.0/8`, `172.16.0.0/12` or `192.168.0.0/16`.
 
 Confirm that the values are correct and click "Next".
 
@@ -330,7 +337,7 @@ Once the mesh network is established, you will be redirected to the Keycloak log
 ![Keycloak login page](assets/installation-guide/step10-keycloak-login.png)
 
 !!! question
-    If you do not have these login details, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**). Please refer to [Support Section](./Support.md).
+    If you do not have these login details, please contact HIN Support by email or phone (**<support@hin.ch>** / **0848 830 740**). Please refer to [Support Section](./Support.md).
 
     [Click here to send an Email](mailto:support@hin.ch?subject=Keycloak%20login%20required.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20Keycloak%20login%20details%20for%20my%20HIN%20Gateway.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
@@ -371,7 +378,7 @@ On this screen, configure your initial settings:
 
 !!! warning
     - At least one domain must be **Enabled** to continue with the onboarding process. The "Save configuration" button will only become active once this requirement is met.
-    - If you notice that not all trusted domains are displayed or that the organisational information is incorrect, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**).
+    - If you notice that not all trusted domains are displayed or that the organisational information is incorrect, please contact HIN Support by email or phone (**<support@hin.ch>** / **0848 830 740**).
 
 !!! danger "Import your existing private key"
     If you do **not** import the private key from your existing MGW, a new key will be issued. This may result in messages not being decryptable for up to **6 hours**, which could lead to **data loss**.
@@ -440,7 +447,7 @@ Ensure that your domain has received its policy-based peer certificate under **"
 ![Screenshot](assets/step_17_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 !!! question
-    Contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**) if you encounter any issues.
+    Contact HIN Support by email or phone (**<support@hin.ch>** / **0848 830 740**) if you encounter any issues.
 
 ### Step 18 - Configure mail server
 
