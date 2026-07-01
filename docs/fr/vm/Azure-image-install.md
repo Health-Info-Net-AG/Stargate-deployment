@@ -65,31 +65,9 @@ Référence : [Résoudre les problèmes de connectivité SMTP sortant dans Azure
 - Faites défiler vers le bas jusqu'à Mise en réseau et cliquez dessus
 - Cliquez sur **+ Créer une règle de port**, Règle de port entrant, Plages de ports de destination 25, Protocole TCP, nommez-la SMTP, répétez la même étape avec la plage de ports de destination 1587 et nommez-la mxengine
 
-## Se connecter et initialiser l'instance Stargate
+## Installer HIN Gateway
 
-- Connectez-vous à la VM avec l'utilisateur que vous avez choisi lors de la création de la VM et l'adresse IP publique de la nouvelle VM :
-- Pour obtenir le mot de passe `hinadmin`, envoyez un courriel à <support@hin.ch> avec l'objet : **"Password required for VM installation."**
-
-[Cliquez ici pour envoyer un courriel](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
-
-```shell
-ssh hinadmin@11.22.33.44 
-```
-
-- Une fois connecté à la VM :
-
-```shell
-sudo su -
-cd ~/stargate-deployment/docker-compose/
-```
-
-- Utilisez vi/nano pour modifier `customer-config.sh`
-- Les détails de configuration se trouvent dans le [README - Étape 1 : Configurer les paramètres client](../Docker-deploy.md#etape-1-configurer-les-parametres-client)
-- Exécutez le script d'installation :
-
-```shell
-./scripts/install.sh
-```
+Après la création réussie de la VM, procédez aux étapes d'installation et d'intégration comme décrit dans les [instructions](https://health-info-net-ag.github.io/Stargate-deployment/Installation-guide/) fournies.
 
 !!! tip "Support"
 
