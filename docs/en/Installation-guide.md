@@ -287,7 +287,7 @@ Select your preferred language and enter the activation code that you received v
 
 ![Activation code entry screen](assets/installation-guide/step7-activation-code.png)
 
-!!! question
+!!! question "I do not have an activation code"
     If you do not have the activation code, please contact HIN Support by email or phone (**<support@hin.ch>** / **0848 830 740**). Please refer to [Support Section](./Support.md).
 
     [Click here to send an Email](mailto:support@hin.ch?subject=Activation%20code%20required.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20activation%20code%20for%20my%20HIN%20Gateway%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
@@ -298,9 +298,13 @@ Select your preferred language and enter the activation code that you received v
 
 Verify the mesh network configuration:
 
-- **IP address** - The public IP of the outgoing traffic (auto-detected).
+- **IP address** - The **public IP** of the outgoing traffic (auto-detected).
 - **Transport** - The transport protocol (default: `tcp`).
 - **Port** - The WireGuard port (default: `19818`).
+
+??? question "What is public IP?"
+    This is an IP address that Machine will use to be accessible via internet.
+    This is **not** internal Machine IP address after Firewall or NAT, e.g. `10.0.0.0/8`, `172.16.0.0/12` or `192.168.0.0/16`.
 
 Confirm that the values are correct and click "Next".
 

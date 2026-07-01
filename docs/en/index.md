@@ -13,7 +13,7 @@
     * [Windows 11 Pro (Hyper-V) image installation](vm/Windows11pro-image-install.md)
     * [VMware image installation](vm/VMware-image-install.md)
     * [Proxmox image installation](vm/Proxmox-image-install.md)
-    * [Cloudscale.ch](vm/Cloudscale-image-install.md)
+    * [Cloudscale.ch image installation](vm/Cloudscale-image-install.md)
 
 !!! tip "🖨️"
     You can get this documentation printed or saved as PDF, please visit our [Print page view](print_page).
@@ -61,6 +61,7 @@
 | smimekeys-ca-dev.k8s.vereign-cdn.com | `443`| S/MIME CA service |
 | loki.example.com | `443`| Log shipping (Alloy → Loki, optional) |
 | Destination mail servers | `25` | Outbound mail delivery (via MX lookup) |
+| DNS Servers | `53` | Outgoing to Public DNS Servers |
 
 ## Contact us
 

@@ -288,7 +288,7 @@ Wählen Sie Ihre bevorzugte Sprache aus und geben Sie den Aktivierungscode ein, 
 
 ![Bildschirm zur Eingabe des Aktivierungscodes](assets/installation-guide/step7-activation-code.png)
 
-!!! question
+!!! question "Ich habe keinen Aktivierungscode"
     Falls Sie den Aktivationscode nicht haben, wenden Sie sich bitte per E-Mail oder Telefon an den HIN Support (support@hin.ch / 0848 830 740).
 
     [Klicken Sie hier, um eine E-Mail zu senden](mailto:support@hin.ch?subject=Aktivierungscode%20erforderlich.&body=Sehr%20geehrter%20Support,%0A%0Aich%20benötige%20den%20Aktivierungscode%20für%20meine%20HIN-Gateway-Installation.%0A%0ABITTE%20GEBEN%20SIE%20HIER%20IHRE%20KUNDENINFORMATIONEN%20AN){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
@@ -303,8 +303,11 @@ Wählen Sie Ihre bevorzugte Sprache aus und geben Sie den Aktivierungscode ein, 
 - **Transport** - Das Transportprotokoll (Standard: TCP).
 - **Port** - Der WireGuard-Port (Standard: 19818).
 
-Überprüfen Sie, ob die Werte korrekt sind, und klicken Sie auf "Next".
+??? question "Was ist eine öffentliche IP?"
+    Dies ist eine IP-Adresse, die der Rechner verwenden wird, um über das Internet erreichbar zu sein.
+    Es handelt sich **nicht** um die interne IP-Adresse des Rechners hinter einer Firewall oder NAT, z. B. `10.0.0.0/8`, `172.16.0.0/12` oder `192.168.0.0/16`.
 
+Überprüfen Sie, ob die Werte korrekt sind, und klicken Sie auf "Next".
 
 ![Bildschirm für das Mesh-Netzwerk-Setup](assets/installation-guide/step8-mesh-network.png)
 

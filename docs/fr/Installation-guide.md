@@ -277,7 +277,7 @@ Sélectionnez la langue de votre choix et saisissez le code d'activation que vou
 
 ![Activation code entry screen](assets/installation-guide/step7-activation-code.png)
 
-!!! question
+!!! question "Je n'ai pas de code d'activation"
     Si vous ne disposez pas du code d'activation, veuillez contacter le support HIN par e-mail ou par téléphone (<support@hin.ch> / 0848 830 740).
 
 ### Étape 8 - Configuration du mesh network
@@ -289,6 +289,10 @@ Vérifiez la configuration du mesh network:
 - **Adresse IP** - L'adresse IP publique du trafic sortant (détectée automatiquement).
 - **Transport** - Le protocole de transport (par défaut: `tcp`).
 - **Port** - Le port WireGuard (par défaut: `19818`).
+
+??? question "Qu'est-ce qu'une IP publique ?"
+    Il s'agit d'une adresse IP que la machine utilisera pour être accessible via Internet.
+    Ce **n'est pas** l'adresse IP interne de la machine derrière un pare-feu ou un NAT, par exemple `10.0.0.0/8`, `172.16.0.0/12` ou `192.168.0.0/16`.
 
 Vérifiez que les valeurs sont correctes, puis cliquez sur "Next".
 
