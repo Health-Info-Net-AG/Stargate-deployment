@@ -523,7 +523,7 @@ services:
       REMOTE_CONFIG_URL: "http://dashboard:3000/api/internal/installation-config?service=irisagent"
 
       # Certificate Authority Configuration (CertCA)
-      CERT_ROOT_CA: "false"
+      CERT_CA_ROOT: "false"
       SYNC_PEERS_INTERVAL: "30m"
       CERT_CA_IRISAGENT_DOMAIN: "${CERT_CA_IRISAGENT_DOMAIN:-}"
 
