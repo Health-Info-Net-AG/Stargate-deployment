@@ -84,14 +84,15 @@ HIN's objective in this process is to ensure a secure, smooth and fully validate
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Please review the "Stargate Pre-Requisites & Deployment Information" and ensure that all necessary preparatory steps have been completed before the HIN Gateway migration activities begin.
+Please ensure that all necessary preparatory steps have been completed before the HIN Gateway migration activities begin.
 
-The following items must be available or confirmed before the migration:
+The following items must be available or confirmed before the installation:
 
 - **Credentials will be delivered to you by HIN**
     - VM credential
     - Keycloak credential
     - Activation code
+
 - **Export of private key**
     - If you are working on a Windows machine that has access to the Mail Gateway VM via port 22, we can support you during the call in enabling the private key export from the MGW.
     - If you do not have access to such a machine, please contact HIN Support by email or phone (support@hin.ch / 0848 830 740) to help you establish a support connection via System Administration → Support Connection → Connect.
