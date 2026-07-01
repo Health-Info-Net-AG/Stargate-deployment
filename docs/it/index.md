@@ -61,6 +61,7 @@
 | smimekeys-ca-dev.k8s.vereign-cdn.com | `443`| Servizio CA S/MIME |
 | loki.example.com | `443`| Invio log (Alloy → Loki, opzionale) |
 | Server di posta di destinazione | `25` | Consegna posta in uscita (tramite ricerca MX) |
+| Server DNS | `53` | In uscita verso server DNS pubblici |
 
 ## Contattaci
 

@@ -5,7 +5,7 @@
 
 ## Introduction
 
-Ce document fournit un guide complet sur le processus d'installation technique et de migration vers le nouveau HIN Gateway («Stargate Appliance»). Il s'applique aux architectures de messagerie Microsoft 365 utilisant un seul domaine de confiance.
+Ce document fournit un guide complet sur le processus d'installation technique et de migration vers le nouveau HIN Gateway ("Stargate Appliance"). Il s'applique aux architectures de messagerie Microsoft 365 utilisant un seul domaine de confiance.
 
 Ce guide s'adresse aux clients HIN, aux administrateurs informatiques et aux ingénieurs système chargés du déploiement et de la configuration du nouveau HIN Gateway, ainsi que de la migration du Mail Gateway (MGW) existant vers la nouvelle solution.
 
@@ -33,14 +33,14 @@ L'objectif de HIN dans ce processus est d'assurer une migration sécurisée, flu
 ## Foire aux questions
 
 !!! question "Puis-je effectuer l'installation et la migration moi-même?"
-    Oui, l'installation et la migration peuvent être entièrement réalisées par le client, à l'exception de l'«Étape 1.3 - Exporter la ou les clés privées».
+    Oui, l'installation et la migration peuvent être entièrement réalisées par le client, à l'exception de l'"Étape 1.3 - Exporter la ou les clés privées".
 
     Pour des raisons de sécurité et afin de préserver la sécurité de votre clé privée, vous devez contacter le support HIN ou participer à la réunion téléphonique prévue pour la migration afin de recevoir le code nécessaire à l'exportation de la clé privée depuis les passerelles de messagerie actuellement en service.
 
     Si l'installation et la migration ne peuvent être menées à bien, veuillez participer à la réunion d'assistance prévue avec nos ingénieurs.
 
 !!! question "Y aura-t-il une interruption de la distribution des e-mails pendant la migration?"
-    Entre l'«Étape 1.5 - Arrêt de la machine virtuelle MGW existante» et l'«Étape 18 - Configuration du serveur de messagerie», tous les e-mails seront mis en file d'attente sur le serveur de messagerie. Une fois l'«Étape 18 - Configuration du serveur de messagerie» terminée, les e-mails en file d'attente seront envoyés ou remis dans la boîte de réception.
+    Entre l'"Étape 1.5 - Arrêt de la machine virtuelle MGW existante" et l'"Étape 18 - Configuration du serveur de messagerie", tous les e-mails seront mis en file d'attente sur le serveur de messagerie. Une fois l'"Étape 18 - Configuration du serveur de messagerie" terminée, les e-mails en file d'attente seront envoyés ou remis dans la boîte de réception.
 
 !!! question "Des e-mails seront-ils perdus pendant l'installation et la migration?"
     Non, aucun e-mail ne sera perdu pendant l'installation et la migration.
@@ -94,14 +94,14 @@ Les éléments suivants doivent être disponibles ou confirmés avant la migrati
     - Code d'activation
 - **Exportation de la clé privée**
     - Si vous travaillez sur un ordinateur Windows ayant accès à la machine virtuelle Mail Gateway via le port 22, nous pouvons vous aider, pendant l'appel, à activer l'exportation de la clé privée depuis la MGW.
-    - Si vous n'avez pas accès à un tel ordinateur, veuillez contacter le support HIN par e-mail ou par téléphone (support@hin.ch / 0848 830 740) afin que nous puissions vous aider à établir une connexion d'assistance via System Administration -> Support Connection -> Connect.
+    - Si vous n'avez pas accès à un tel ordinateur, veuillez contacter le support HIN par e-mail ou par téléphone (<support@hin.ch> / 0848 830 740) afin que nous puissions vous aider à établir une connexion d'assistance via System Administration -> Support Connection -> Connect.
 - **Télécharger la dernière version** de l'[image de la machine virtuelle](vm/VM-Catalog.md)
 - **Configuration requise de firewall pour WireGuard**.
   Configurez le port WireGuard 19818 (TCP/UDP) dans votre firewall:
     - Trafic entrant et sortant
     - Autoriser le trafic: any-to-HIN Gateway et HIN Gateway-to-any
-- **L'accès DHCP** doit être disponible pour l'«Étape 5 - Connexion réseau à la machine virtuelle» (recommandé).
-- **Exigences en matière de sauvegarde**, voir «Annexe 1 - Sauvegarde et restauration des paramètres de l'appliance».
+- **L'accès DHCP** doit être disponible pour l'"Étape 5 - Connexion réseau à la machine virtuelle" (recommandé).
+- **Exigences en matière de sauvegarde**, voir "Annexe 1 - Sauvegarde et restauration des paramètres de l'appliance".
 - Confirmation que le MGW existant ne sera pas supprimé tant que la procédure d'acceptation n'aura pas été menée à bien.
 - Accès au DNS, aux connecteurs de serveur de messagerie, aux règles de transport et aux paramètres de relais.
 
@@ -133,7 +133,7 @@ Vérifiez que les deux e-mails ont bien été remis, y compris l'objet, le conte
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Effectuez une sauvegarde de l'appliance MGW existant et assurez-vous que la machine virtuelle soit conservée jusqu'à ce que la migration soit terminée avec succès et officiellement acceptée. Pour plus d'informations, consultez l'«Annexe 1 - Sauvegarde et restauration des paramètres de l'appliance».
+Effectuez une sauvegarde de l'appliance MGW existant et assurez-vous que la machine virtuelle soit conservée jusqu'à ce que la migration soit terminée avec succès et officiellement acceptée. Pour plus d'informations, consultez l'"Annexe 1 - Sauvegarde et restauration des paramètres de l'appliance".
 
 ### Étape 1.3 - Exporter la ou des clés privées
 
@@ -142,16 +142,16 @@ Effectuez une sauvegarde de l'appliance MGW existant et assurez-vous que la mach
 ![Responsibility HIN](https://img.shields.io/badge/Responsibility-HIN-orange)
 
 1. Connectez-vous à l'interface web du MGW existant.
-2. Ouvrez «Mail System».
-3. Lancez l'application «HIN_Migration-Tool_v*.exe» fournie par notre technicien d'assistance lors de l'appel.
+2. Ouvrez "Mail System".
+3. Lancez l'application "HIN_Migration-Tool_v*.exe" fournie par notre technicien d'assistance lors de l'appel.
 4. Saisissez le code de déverrouillage que notre technicien d'assistance vous a fourni.
-5. Sélectionnez «Enable export».
+5. Sélectionnez "Enable export".
 6. Saisissez l'adresse IP du MGW.
 7. Attendez la confirmation.
 8. Sélectionnez le domaine de confiance dans l'interface web du MGW.
 9. Faites défiler vers le bas et sélectionnez l'empreinte gérée.
-10. Faites défiler vers le bas jusqu'à la rubrique «PKCS12 download» (vous avez la possibilité de saisir un mot de passe pour chiffrer la clé). Cliquez sur «Download PKCS12» et enregistrez le fichier `*.p12` sur votre ordinateur.
-11. Revenez à l'application «HIN_Migration-Tool_v*.exe» et désactivez le bouton «Export».
+10. Faites défiler vers le bas jusqu'à la rubrique "PKCS12 download" (vous avez la possibilité de saisir un mot de passe pour chiffrer la clé). Cliquez sur "Download PKCS12" et enregistrez le fichier `*.p12` sur votre ordinateur.
+11. Revenez à l'application "HIN_Migration-Tool_v*.exe" et désactivez le bouton "Export".
 
 ### Étape 1.4 - Plan d'urgence / Scénario de repli
 
@@ -179,7 +179,7 @@ Arrêtez la machine virtuelle MGW existante.
 Assurez-vous d'avoir configuré le port WireGuard `19818` (TCP/UDP) dans votre pare-feu:
 
 - Trafic entrant et sortant
-- Autoriser le trafic: «any-to-HIN Gateway» et «HIN Gateway-to-any»
+- Autoriser le trafic: "any-to-HIN Gateway" et "HIN Gateway-to-any"
 
 ### Étape 3 - Sélectionnez la machine virtuelle cible
 
@@ -218,14 +218,17 @@ REMARQUE: l'image de la machine virtuelle exécute une installation automatique 
 
 Ajouter une adresse IP sous Linux:
 
-1. Exécutez la commande «nmtui» dans la console
+1. Exécutez la commande "nmtui" dans la console
+
     ```bash
     nmtui
     ```
-2. Utilisez les touches fléchées pour naviguer, puis appuyez sur «Enter» pour sélectionner la «connexion Ethernet» dont vous souhaitez modifier l'adresse IP. <br> ![Add IP Addr](assets/ip_addr_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-3. Accédez à «Configuration IPv4» et modifiez le paramètre de «Automatique» à «Manuel». <br> ![Add IP Addr](assets/ip_addr_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-4. Utilisez les touches fléchées pour accéder aux champs dans lesquels vous pouvez saisir l'adresse IP, le gateway et le serveur DNS. Sélectionnez ensuite «OK». <br> ![Add IP Addr](assets/ip_addr_3.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+2. Utilisez les touches fléchées pour naviguer, puis appuyez sur "Enter" pour sélectionner la "connexion Ethernet" dont vous souhaitez modifier l'adresse IP. <br> ![Add IP Addr](assets/ip_addr_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+3. Accédez à "Configuration IPv4" et modifiez le paramètre de "Automatique" à "Manuel". <br> ![Add IP Addr](assets/ip_addr_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+4. Utilisez les touches fléchées pour accéder aux champs dans lesquels vous pouvez saisir l'adresse IP, le gateway et le serveur DNS. Sélectionnez ensuite "OK". <br> ![Add IP Addr](assets/ip_addr_3.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 5. Après avoir enregistré la configuration de l'adresse IP, exécutez la commande suivante dans la console:
+
     ```bash
     sudo systemctl restart NetworkManager
     ```
@@ -254,7 +257,7 @@ Ajouter une adresse IP sous Linux:
 
     Le script d'installation détectera automatiquement l'adresse IP du serveur à partir de la route par défaut. Toute adresse IP accessible, qu'elle soit publique ou privée, convient. L'endpoint public effectif est configuré ultérieurement via le dashboard.
 
-    Une fois les scripts exécutés avec succès, passez à l'«Étape 6 - Accès via le navigateur».
+    Une fois les scripts exécutés avec succès, passez à l'"Étape 6 - Accès via le navigateur".
 
 ### Étape 6 - Accès via le navigateur
 
@@ -270,12 +273,12 @@ https://<adresse IP de la machine virtuelle>
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Sélectionnez la langue de votre choix et saisissez le code d'activation que vous avez reçu par e-mail de la part de HIN. Cliquez sur «Next».
+Sélectionnez la langue de votre choix et saisissez le code d'activation que vous avez reçu par e-mail de la part de HIN. Cliquez sur "Next".
 
 ![Activation code entry screen](assets/installation-guide/step7-activation-code.png)
 
-!!! question
-    Si vous ne disposez pas du code d'activation, veuillez contacter le support HIN par e-mail ou par téléphone (support@hin.ch / 0848 830 740).
+!!! question "Je n'ai pas de code d'activation"
+    Si vous ne disposez pas du code d'activation, veuillez contacter le support HIN par e-mail ou par téléphone (<support@hin.ch> / 0848 830 740).
 
 ### Étape 8 - Configuration du mesh network
 
@@ -287,7 +290,11 @@ Vérifiez la configuration du mesh network:
 - **Transport** - Le protocole de transport (par défaut: `tcp`).
 - **Port** - Le port WireGuard (par défaut: `19818`).
 
-Vérifiez que les valeurs sont correctes, puis cliquez sur «Next».
+??? question "Qu'est-ce qu'une IP publique ?"
+    Il s'agit d'une adresse IP que la machine utilisera pour être accessible via Internet.
+    Ce **n'est pas** l'adresse IP interne de la machine derrière un pare-feu ou un NAT, par exemple `10.0.0.0/8`, `172.16.0.0/12` ou `192.168.0.0/16`.
+
+Vérifiez que les valeurs sont correctes, puis cliquez sur "Next".
 
 ![Mesh network setup screen](assets/installation-guide/step8-mesh-network.png)
 
@@ -297,15 +304,15 @@ Vérifiez que les valeurs sont correctes, puis cliquez sur «Next».
 
 Le système va maintenant établir la connexion au mesh network. Cette étape connecte le HIN Gateway à l'agent Iris et synchronise les certificats.
 
-Patientez jusqu'à la fin du processus. Les indicateurs d'état afficheront «Up» lorsque la connexion sera établie avec succès. Cliquez sur «Finish».
+Patientez jusqu'à la fin du processus. Les indicateurs d'état afficheront "Up" lorsque la connexion sera établie avec succès. Cliquez sur "Finish".
 
 ![Establishing secure mesh network](assets/installation-guide/step9-mesh-connecting.png)
 
 !!! failure "Si la connexion échoue"
-    Si la connexion échoue ou si l'état de l'agent Iris ou de la synchronisation des certificats reste «Down»:
+    Si la connexion échoue ou si l'état de l'agent Iris ou de la synchronisation des certificats reste "Down":
 
-    - Vérifiez que le port 19818 (TCP/UDP) est ouvert dans votre firewall (voir «Étape 2 - WireGuard»).
-    - Vérifiez que l'adresse IP indiquée à l'«Étape 8 - Configuration du mesh network» est correcte et accessible depuis Internet.
+    - Vérifiez que le port 19818 (TCP/UDP) est ouvert dans votre firewall (voir "Étape 2 - WireGuard").
+    - Vérifiez que l'adresse IP indiquée à l'"Étape 8 - Configuration du mesh network" est correcte et accessible depuis Internet.
     - Relancez le processus ou contactez le support HIN par e-mail ou par téléphone (support@hin.ch / 0848 830 740).
 
 ### Étape 10 - Connexion à Keycloak
@@ -317,7 +324,7 @@ Une fois le mesh network établi, vous serez redirigé vers la page de connexion
 ![Keycloak login page](assets/installation-guide/step10-keycloak-login.png)
 
 !!! question
-    Si vous ne disposez pas de ces identifiants, veuillez contacter le support HIN par e-mail ou par téléphone (support@hin.ch / 0848 830 740).
+    Si vous ne disposez pas de ces identifiants, veuillez contacter le support HIN par e-mail ou par téléphone (<support@hin.ch> / 0848 830 740).
 
 ### Étape 11 - Mettre à jour le mot de passe
 
@@ -331,7 +338,7 @@ Lors de votre première connexion, vous serez invité à modifier votre mot de p
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Complétez votre profil de compte en saisissant votre prénom et votre nom. L'adresse e-mail est préremplie. Cliquez sur «Submit» pour continuer.
+Complétez votre profil de compte en saisissant votre prénom et votre nom. L'adresse e-mail est préremplie. Cliquez sur "Submit" pour continuer.
 
 ![Update account information screen](assets/installation-guide/step12-account-info.png)
 
@@ -342,21 +349,21 @@ Complétez votre profil de compte en saisissant votre prénom et votre nom. L'ad
 Sur cet écran, configurez vos paramètres initiaux:
 
 - Vérifiez que tous vos domaines de confiance actuels au sein de la communauté HIN s'affichent correctement.
-- Sélectionnez le ou les domaines de confiance qui doivent être «Enabled» pour obtenir des certificats de pair auprès de l'autorité de certification HIN (HIN CA).
-- Indiquez pour quel(s) domaine(s) le préfixe «sec.\<domain\>» est déjà configuré («Use sec-prefix»).
+- Sélectionnez le ou les domaines de confiance qui doivent être "Enabled" pour obtenir des certificats de pair auprès de l'autorité de certification HIN (HIN CA).
+- Indiquez pour quel(s) domaine(s) le préfixe "sec.\<domain\>" est déjà configuré ("Use sec-prefix").
 - Vérifiez que le nom de l'organisation et les propriétaires du domaine sont corrects. <br> ![Screenshot](assets/step_13_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" } <br> ![Screenshot](assets/step_13_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 - Importez le fichier de certificat S/MIME existant (`.p12`/`.pfx`) depuis le MGW existant:
     1. Développez le domaine et sélectionnez l'option Fichier P12/PFX.
-    2. Si aucun mot de passe n'a été défini pour le fichier de certificat, laissez le champ «Mot de passe» vide.
-    3. Cliquez sur «Import Certficate».
-    4. Une fois le certificat importé, le message «Certificate imported successfully» s'affiche.
-- Cliquez sur «Save configuration» en bas de la page pour enregistrer les modifications.
+    2. Si aucun mot de passe n'a été défini pour le fichier de certificat, laissez le champ "Mot de passe" vide.
+    3. Cliquez sur "Import Certficate".
+    4. Une fois le certificat importé, le message "Certificate imported successfully" s'affiche.
+- Cliquez sur "Save configuration" en bas de la page pour enregistrer les modifications.
 
 ![Initial setup screen](assets/installation-guide/step13-initial-setup.png)
 
 !!! warning
-    - Au moins un domaine doit être «Enabled» pour poursuivre le processus d'intégration. Le bouton «Save configuration» ne sera actif qu'une fois cette condition remplie.
-    - Si vous constatez que tous les domaines de confiance ne s'affichent pas ou que les informations relatives à l'organisation sont incorrectes, veuillez contacter le support HIN par e-mail ou par téléphone (support@hin.ch / 0848 830 740).
+    - Au moins un domaine doit être "Enabled" pour poursuivre le processus d'intégration. Le bouton "Save configuration" ne sera actif qu'une fois cette condition remplie.
+    - Si vous constatez que tous les domaines de confiance ne s'affichent pas ou que les informations relatives à l'organisation sont incorrectes, veuillez contacter le support HIN par e-mail ou par téléphone (<support@hin.ch> / 0848 830 740).
 
 !!! danger "Importez votre clé privée existante"
     Si vous n'importez pas la clé privée de votre MGW existant, une nouvelle clé sera générée. Cela peut entraîner l'impossibilité de déchiffrer les messages pendant une durée pouvant aller jusqu'à 6 heures, ce qui pourrait entraîner une perte de données.
@@ -378,7 +385,7 @@ Les paramètres suivants sont disponibles:
 | **Domaines** | Chaque domaine géré par ce gateway, ainsi que son Relay host (le serveur de messagerie interne auquel le courrier entrant est acheminé). |
 | **Relay host par défaut** | Le relais SMTP par défaut pour l'envoi des e-mails. |
 
-Dans la section **«Advanced»**, vous pouvez éventuellement configurer:
+Dans la section **"Advanced"**, vous pouvez éventuellement configurer:
 
 | Paramètre | Description |
 |---------|-------------|
@@ -388,19 +395,19 @@ Dans la section **«Advanced»**, vous pouvez éventuellement configurer:
 
 Actions supplémentaires:
 
-- Ajoutez des domaines supplémentaires en cliquant sur «Add domain», si nécessaire.
-- Développez la section «Advanced» pour affiner les paramètres de transport du courrier.
+- Ajoutez des domaines supplémentaires en cliquant sur "Add domain", si nécessaire.
+- Développez la section "Advanced" pour affiner les paramètres de transport du courrier.
 
 !!! note
     Assurez-vous que toutes les configurations des Relay hosts et des domaines sont correctes avant de continuer.
 
-Une fois la configuration vérifiée et terminée, cliquez sur «Apply configuration» pour continuer.
+Une fois la configuration vérifiée et terminée, cliquez sur "Apply configuration" pour continuer.
 
 ### Étape 15 - Configurer les whitelist headers
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Cliquez sur **«Domains»**, puis sélectionnez **«Whitelist headers»**.
+Cliquez sur **"Domains"**, puis sélectionnez **"Whitelist headers"**.
 
 Saisissez la clé exactement telle qu'elle a été configurée sur le serveur de messagerie.
 
@@ -412,7 +419,7 @@ Saisissez la clé exactement telle qu'elle a été configurée sur le serveur de
 
 Les certificats de pair sont émis par l'autorité de certification HIN (HIN CA) pour les domaines activés.
 
-Une fois l'intégration terminée, accédez à la section **«Peer certificates»** du dashboard et cliquez sur le bouton **«Sync certificates»** pour synchroniser vos certificats de pairs depuis l'autorité de certification HIN.
+Une fois l'intégration terminée, accédez à la section **"Peer certificates"** du dashboard et cliquez sur le bouton **"Sync certificates"** pour synchroniser vos certificats de pairs depuis l'autorité de certification HIN.
 
 ![Peer certificates screen](assets/installation-guide/step15-peer-certificates.png)
 
@@ -420,12 +427,12 @@ Une fois l'intégration terminée, accédez à la section **«Peer certificates�
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Assurez-vous que votre domaine a bien reçu son certificat de pair basé sur une politique sous **«Domains»**. Le statut de chaque domaine doit être **«Good»**.
+Assurez-vous que votre domaine a bien reçu son certificat de pair basé sur une politique sous **"Domains"**. Le statut de chaque domaine doit être **"Good"**.
 
 ![Screenshot](assets/step_17_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 !!! question
-    Contactez le support HIN par e-mail ou par téléphone (support@hin.ch / 0848 830 740) si vous rencontrez des problèmes.
+    Contactez le support HIN par e-mail ou par téléphone (<support@hin.ch> / 0848 830 740) si vous rencontrez des problèmes.
 
 ### Étape 18 - Configurer le serveur de messagerie
 
@@ -446,7 +453,7 @@ Consultez la section [Intégration Exchange](Exchange-integration.md) pour obten
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Répétez l'«Étape 1.1 - Smoke Test». En plus du test de fonctionnement, veuillez tester et valider les étapes suivantes:
+Répétez l'"Étape 1.1 - Smoke Test". En plus du test de fonctionnement, veuillez tester et valider les étapes suivantes:
 
 **Courrier sortant:**
 
@@ -503,7 +510,7 @@ Veuillez vous assurer que les identifiants de la machine virtuelle qui vous ont 
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Pour sauvegarder ou restaurer les paramètres de votre appliance HIN, cliquez sur le menu **«Administration»** dans le portail d'administration Web.
+Pour sauvegarder ou restaurer les paramètres de votre appliance HIN, cliquez sur le menu **"Administration"** dans le portail d'administration Web.
 
 ![Screenshot](assets/annex_1_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
@@ -511,19 +518,19 @@ Pour sauvegarder ou restaurer les paramètres de votre appliance HIN, cliquez su
 
 Avant de créer une sauvegarde des paramètres actuels de votre appliance HIN, vous devez définir un mot de passe de sauvegarde. Ce mot de passe est nécessaire si vous devez restaurer la sauvegarde ultérieurement.
 
-- Pour définir ou modifier le mot de passe de sauvegarde, cliquez sur **«Change Password»**.
-- Pour créer et télécharger un fichier de sauvegarde, cliquez sur **«Download»**.
+- Pour définir ou modifier le mot de passe de sauvegarde, cliquez sur **"Change Password"**.
+- Pour créer et télécharger un fichier de sauvegarde, cliquez sur **"Download"**.
 
 ### Modification du mot de passe de sauvegarde
 
-Pour modifier le mot de passe des futures sauvegardes, cliquez sur **«Change Password»**.
+Pour modifier le mot de passe des futures sauvegardes, cliquez sur **"Change Password"**.
 
 !!! note
     Veuillez noter que le nouveau mot de passe ne s'applique qu'aux sauvegardes créées après la modification du mot de passe. Les fichiers de sauvegarde existants restent protégés par le mot de passe défini lors de leur création.
 
 ### Restauration des paramètres
 
-Pour restaurer les paramètres de l'appliance à partir d'un fichier de sauvegarde, cliquez sur **«Import Backup File»**.
+Pour restaurer les paramètres de l'appliance à partir d'un fichier de sauvegarde, cliquez sur **"Import Backup File"**.
 
 Dans la fenêtre de dialogue, sélectionnez le fichier de sauvegarde souhaité et saisissez le mot de passe associé à cette sauvegarde. Les paramètres de l'appliance seront alors restaurés à partir du fichier de sauvegarde sélectionné.
 
@@ -531,7 +538,7 @@ Dans la fenêtre de dialogue, sélectionnez le fichier de sauvegarde souhaité e
 
 Le MGW prend en charge la sauvegarde de l'appliance via SCP.
 
-Pour utiliser cette option, la clé publique du système qui accédera au MGW doit être enregistrée sous **«Backup using SCP»**. La sauvegarde est générée automatiquement tous les jours à minuit et est stockée sur le MGW sous le nom `backup.tgz`.
+Pour utiliser cette option, la clé publique du système qui accédera au MGW doit être enregistrée sous **"Backup using SCP"**. La sauvegarde est générée automatiquement tous les jours à minuit et est stockée sur le MGW sous le nom `backup.tgz`.
 
 À l'aide de la clé publique configurée, le fichier de sauvegarde peut être récupéré via SCP par l'utilisateur `backup` du système d'exploitation. Une commande SCP type pour récupérer le fichier de sauvegarde est la suivante:
 
