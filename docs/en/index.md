@@ -4,9 +4,46 @@
 
 [What is Stargate?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-## Prerequisites
+## Pre-Requisites
 
-### Installation options
+![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+
+Please ensure that all necessary preparatory steps have been completed before the HIN Gateway migration or new installation activities begin.
+
+The following items must be available or confirmed before the installation:
+
+- **Credentials will be delivered to you by HIN**
+    - VM credential
+    - Keycloak credential
+    - Activation code
+
+- **Export of private key**
+!!! info
+    Export of private keys is only for customers moving from existing MGW to a new HIN Gateway
+
+    - If you are working on a Windows machine that has access to the Mail Gateway VM via port 22, we can support you during the call in enabling the private key export from the MGW.
+    - If you do not have access to such a machine, please contact HIN Support by email or phone (support@hin.ch / 0848 830 740) to help you establish a support connection via System Administration → Support Connection → Connect.
+- **Download latest** version of [VM image](vm/VM-Catalog.md)
+- **Firewall** requirements for WireGuard.
+  Configure the WireGuard port 19818 (TCP/UDP) in your firewall:
+    - Incoming and outgoing traffic
+    - Allow traffic: any-to-HIN Gateway and HIN Gateway-to-any
+- **DHCP access** should be available. For more information see "Installation Guidelines".
+
+- **Backup requirements** - see "Annex 1 - Backing up and restoring the appliance settings".
+!!! info
+    Backup requirements is only for customers moving from existing MGW to a new HIN Gateway
+
+- Confirmation that the existing MGW will **not** be deleted until acceptance has been completed.
+!!! info
+    Keeping the existing MGW available till acceptance report have been completed is only for customers moving from existing MGW to a new HIN Gateway
+
+- Access to DNS, mail server connectors, transport rules, and relay settings.
+
+## Deployment Information
+
+
+### Installation Options
 
 * VM image installation:
     * [Azure VM image installation](vm/Azure-image-install.md)
@@ -61,7 +98,9 @@
 | smimekeys-ca-dev.k8s.vereign-cdn.com | `443`| S/MIME CA service |
 | loki.example.com | `443`| Log shipping (Alloy → Loki, optional) |
 | Destination mail servers | `25` | Outbound mail delivery (via MX lookup) |
-| DNS Servers | `53` | Outgoing to Public DNS Servers |
+| Standard DNS queries and responses | `53` | DNS resolve |
+| NTP servers | UDP `123` | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
+| Internal network access for Keycloak  | TCP `8090` | Its used to authenticate users in HIN Gateway Dashboard via Keycloak |
 
 ## Contact us
 
