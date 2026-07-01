@@ -522,6 +522,11 @@ services:
       # Dashboard config fetch
       REMOTE_CONFIG_URL: "http://dashboard:3000/api/internal/installation-config?service=irisagent"
 
+      # Certificate Authority Configuration (CertCA)
+      CERT_ROOT_CA: "false"
+      SYNC_PEERS_INTERVAL: "30m"
+      CERT_CA_IRISAGENT_DOMAIN: "${CERT_CA_IRISAGENT_DOMAIN:-}"
+
       LOG_LEVEL: "debug"
     ports:
       - "8083:8080"
