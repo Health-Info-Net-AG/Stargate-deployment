@@ -61,7 +61,9 @@
 | smimekeys-ca-dev.k8s.vereign-cdn.com | `443`| Servizio CA S/MIME |
 | loki.example.com | `443`| Invio log (Alloy → Loki, opzionale) |
 | Server di posta di destinazione | `25` | Consegna posta in uscita (tramite ricerca MX) |
-| Server DNS | `53` | In uscita verso server DNS pubblici |
+| Server DNS | UDP+TCP `53` | In uscita verso server DNS pubblici |
+| Server NTP | UDP `123` | NTP sincronizza gli orologi di computer, server, dispositivi di rete e macchine virtuali con fonti di tempo precise |
+| Accesso alla rete interna per Keycloak | TCP `8090` | Viene utilizzato per autenticare gli utenti nel HIN Gateway Dashboard tramite Keycloak |
 
 ## Contattaci
 
