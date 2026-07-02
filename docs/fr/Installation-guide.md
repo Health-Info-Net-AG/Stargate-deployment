@@ -241,6 +241,11 @@ Ajouter une adresse IP sous Linux:
     ```bash
     cd /root/stargate-deployment/docker-compose
     ./scripts/purge.sh
+    # Update configuration with a new ip, by editing it with nano
+    # SERVER_STATIC_IP=<NEW IP>
+    nano customer-config.sh
+    # OR use sed
+    # sed -i 's/old IP/new IP/g' customer-config.sh
     ./scripts/install.sh
     ```
 
@@ -252,6 +257,11 @@ Ajouter une adresse IP sous Linux:
     ```bash
     cd /root/stargate-deployment/docker-compose
     ./scripts/purge.sh
+    # Update configuration with a new ip, by editing it with nano
+    # SERVER_STATIC_IP=<NEW IP>
+    nano customer-config.sh
+    # OR use sed
+    # sed -i 's/old IP/new IP/g' customer-config.sh
     ./scripts/install.sh
     ```
 
@@ -351,6 +361,14 @@ Sur cet écran, configurez vos paramètres initiaux:
 - Vérifiez que tous vos domaines de confiance actuels au sein de la communauté HIN s'affichent correctement.
 - Sélectionnez le ou les domaines de confiance qui doivent être "Enabled" pour obtenir des certificats de pair auprès de l'autorité de certification HIN (HIN CA).
 - Indiquez pour quel(s) domaine(s) le préfixe "sec.\<domain\>" est déjà configuré ("Use sec-prefix").
+
+??? tip "Comment vérifier si mon domaine est configuré avec un Security Prefix ?"
+    Ouvrez notre outil en ligne dans votre navigateur : https://trust.hin.ls-infra.me/, saisissez `sec.<domain>` et cliquez sur le bouton **Check**. Si le message suivant s'affiche :
+
+    ✅ Ce domaine est chiffré.
+
+    Alors votre domaine est configuré avec un Security Prefix et vous devez activer l'option **Use sec-prefix**.
+
 - Vérifiez que le nom de l'organisation et les propriétaires du domaine sont corrects. <br> ![Screenshot](assets/step_13_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" } <br> ![Screenshot](assets/step_13_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 - Importez le fichier de certificat S/MIME existant (`.p12`/`.pfx`) depuis le MGW existant:
     1. Développez le domaine et sélectionnez l'option Fichier P12/PFX.

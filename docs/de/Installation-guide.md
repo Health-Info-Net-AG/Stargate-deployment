@@ -246,6 +246,11 @@ Stellen Sie sicher, dass die VM über eine Netzwerkverbindung verfügt und ihr e
     ```bash
     cd /root/stargate-deployment/docker-compose
     ./scripts/purge.sh
+    # Update configuration with a new ip, by editing it with nano
+    # SERVER_STATIC_IP=<NEW IP>
+    nano customer-config.sh
+    # OR use sed
+    # sed -i 's/old IP/new IP/g' customer-config.sh
     ./scripts/install.sh
     ```
 
@@ -257,6 +262,11 @@ Stellen Sie sicher, dass die VM über eine Netzwerkverbindung verfügt und ihr e
     ```bash
     cd /root/stargate-deployment/docker-compose
     ./scripts/purge.sh
+    # Update configuration with a new ip, by editing it with nano
+    # SERVER_STATIC_IP=<NEW IP>
+    nano customer-config.sh
+    # OR use sed
+    # sed -i 's/old IP/new IP/g' customer-config.sh
     ./scripts/install.sh
     ```
 
@@ -366,6 +376,14 @@ Konfigurieren Sie auf diesem Bildschirm Ihre Grundeinstellungen:
 - Überprüfen Sie, ob alle Ihre aktuellen vertrauenswürdigen Domänen innerhalb der HIN Community korrekt angezeigt werden.
 - Wählen Sie aus, welche vertrauenswürdigen Domänen "Enabled" sein sollen, um Peer-Zertifikate von der HIN Zertifizierungsstelle (HIN CA) zu erhalten.
 - Geben Sie an, für welche Domäne(n) das Präfix "sec.\<domain\>" bereits konfiguriert ist ("Use sec-prefix").
+
+??? tip "Wie kann ich prüfen, ob meine Domain mit einem Security Prefix eingerichtet ist?"
+    Öffnen Sie unser Online-Tool im Browser: https://trust.hin.ls-infra.me/, geben Sie `sec.<domain>` ein und klicken Sie auf die Schaltfläche **Check**. Wenn folgende Meldung angezeigt wird:
+
+    ✅ Diese Domain ist verschlüsselt.
+
+    Dann ist Ihre Domain mit einem Security Prefix eingerichtet und Sie müssen die Option **Use sec-prefix** aktivieren.
+
 - Überprüfen Sie, ob der Organisationsname und die Domain-Inhaber korrekt sind. <br> ![Screenshot](assets/step_13_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" } <br> ![Screenshot](assets/step_13_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 - Importieren Sie die vorhandene S/MIME-Zertifikatsdatei (`.p12`/`.pfx`) vom bestehenden MGW:
     1. Erweitern Sie die Domäne und wählen Sie die Option "P12/PFX-Datei".

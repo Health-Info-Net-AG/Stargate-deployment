@@ -247,6 +247,11 @@ Add an IP address on Linux:
     ```bash
     cd /root/stargate-deployment/docker-compose
     ./scripts/purge.sh
+    # Update configuration with a new ip, by editing it with nano
+    # SERVER_STATIC_IP=<NEW IP>
+    nano customer-config.sh
+    # OR use sed
+    # sed -i 's/old IP/new IP/g' customer-config.sh
     ./scripts/install.sh
     ```
 
@@ -258,6 +263,11 @@ Add an IP address on Linux:
     ```bash
     cd /root/stargate-deployment/docker-compose
     ./scripts/purge.sh
+    # Update configuration with a new ip, by editing it with nano
+    # SERVER_STATIC_IP=<NEW IP>
+    nano customer-config.sh
+    # OR use sed
+    # sed -i 's/old IP/new IP/g' customer-config.sh
     ./scripts/install.sh
     ```
 
@@ -366,6 +376,14 @@ On this screen, configure your initial settings:
 - Verify that all your current trusted domain(s) within the HIN Community are displayed correctly.
 - Select which trusted domain(s) should be **Enabled** to obtain peer certificates from the HIN Certification Authority (HIN CA).
 - Indicate for which domain(s) the `sec.<domain>` prefix is already configured ("Use sec-prefix").
+
+??? tip "How to check if my domain is set up with a Security Prefix?"
+    You can open our online tool in your browser: https://trust.hin.ls-infra.me/, enter `sec.<domain>`, and click the **Check** button. If you see the message:
+
+    ✅ This domain is encrypted.
+
+    Then your domain is set up with a Security Prefix, and you have to enable the **Use sec-prefix** option.
+
 - Verify that the organization name and domain owners are correct. <br> ![Screenshot](assets/step_13_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" } <br> ![Screenshot](assets/step_13_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 - Import the existing S/MIME certificate file (`.p12`/`.pfx`) from the existing MGW:
     1. Expand the domain and select the **P12/PFX File** option.
