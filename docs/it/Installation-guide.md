@@ -244,6 +244,11 @@ Aggiungere un indirizzo IP su Linux:
     ```bash
     cd /root/stargate-deployment/docker-compose
     ./scripts/purge.sh
+    # Update configuration with a new ip, by editing it with nano
+    # SERVER_STATIC_IP=<NEW IP>
+    nano customer-config.sh
+    # OR use sed
+    # sed -i 's/old IP/new IP/g' customer-config.sh
     ./scripts/install.sh
     ```
 
@@ -255,6 +260,11 @@ Aggiungere un indirizzo IP su Linux:
     ```bash
     cd /root/stargate-deployment/docker-compose
     ./scripts/purge.sh
+    # Update configuration with a new ip, by editing it with nano
+    # SERVER_STATIC_IP=<NEW IP>
+    nano customer-config.sh
+    # OR use sed
+    # sed -i 's/old IP/new IP/g' customer-config.sh
     ./scripts/install.sh
     ```
 
@@ -363,6 +373,14 @@ In questa schermata, configura le tue impostazioni iniziali:
 - Verifica che tutti i tuoi domini fidati attuali all'interno della Comunità HIN siano visualizzati correttamente.
 - Seleziona quali domini fidati devono essere **Abilitati** per ottenere certificati peer dalla HIN Certification Authority (HIN CA).
 - Indica per quale/i dominio/i il prefisso `sec.<domain>` è già configurato ("Use sec-prefix").
+
+??? tip "Come verificare se il mio dominio è configurato con un Security Prefix?"
+    Apri il nostro strumento online nel browser: https://trust.hin.ls-infra.me/, inserisci `sec.<domain>` e fai clic sul pulsante **Check**. Se viene visualizzato il messaggio:
+
+    ✅ Questo dominio è crittografato.
+
+    Allora il tuo dominio è configurato con un Security Prefix e devi abilitare l'opzione **Use sec-prefix**.
+
 - Verifica che il nome dell'organizzazione e i proprietari del dominio siano corretti. <br> ![Screenshot](assets/step_13_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" } <br> ![Screenshot](assets/step_13_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 - Importa il file del certificato S/MIME esistente (`.p12`/`.pfx`) dal MGW esistente:
     1. Espandi il dominio e seleziona l'opzione **P12/PFX File**.
