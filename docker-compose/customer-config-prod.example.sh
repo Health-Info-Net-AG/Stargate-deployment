@@ -150,7 +150,6 @@ POLICY_SYNC_REPO_PASS=""
 POLICY_SYNC_REPO_BRANCH=""
 POLICY_SYNC_REPO_FOLDER=""
 POLICY_SYNC_INTERVAL="1h"
-POLICY_SYNC_VERSION="dev"
 
 # ==============================================================================
 # OPTIONAL: Monitoring Configuration
