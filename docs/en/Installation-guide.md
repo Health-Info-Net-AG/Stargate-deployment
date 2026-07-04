@@ -147,16 +147,16 @@ Create a backup of the existing MGW appliance and ensure that the VM is retained
     Please download tool `HIN_Migration-Tool_v*.exe` under the Link: [link](https://link) -->
 
 1. Log into the existing MGW webGUI.
-2. Open **"Mail System"**.
-3. Run the **`HIN_Migration-Tool_v*.exe`** application provided by the support engineer during the call.
-4. Enter the unlock code that the support engineer provides to you.
-5. Select **"Enable export"**.
-6. Enter the MGW IP address.
-7. Wait for confirmation.
-8. Select the trusted domain in the MGW webGUI.
-9. Scroll down and select the managed fingerprint.
-10. Scroll down to the **"PKCS12 download"** category (you may optionally enter a password to encrypt the key). Press **"Download PKCS12"** and save the `*.p12` file on the computer.
-11. Return to the `HIN_Migration-Tool_v*.exe` application and disable the **Export** button.
+2. Open **"Mail System"**. <br> ![Open Mail System](assets/installation-guide/step1.3-2-open-mail-system.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+3. Run the **`HIN_Migration-Tool_v*.exe`** application provided by the support engineer during the call. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+4. Enter the unlock code that the support engineer provides to you. <br> ![Enter unlock code](assets/installation-guide/step1.3-4-unlock-code.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+5. Select **"Enable export"**. <br> ![Enable export](assets/installation-guide/step1.3-5-enable-export.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+6. Enter the MGW IP address. <br> ![Enter MGW IP address](assets/installation-guide/step1.3-6-mgw-ip.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+7. Wait for confirmation. <br> ![Wait for confirmation](assets/installation-guide/step1.3-7-confirmation.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+8. Select the trusted domain in the MGW webGUI. <br> ![Select trusted domain](assets/installation-guide/step1.3-8-trusted-domain.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+9. Scroll down and select the managed fingerprint. <br> ![Select managed fingerprint](assets/installation-guide/step1.3-9-managed-fingerprint.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+10. Scroll down to the **"PKCS12 download"** category (you may optionally enter a password to encrypt the key). Press **"Download PKCS12"** and save the `*.p12` file on the computer. <br> ![PKCS12 download](assets/installation-guide/step1.3-10-pkcs12-download.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+11. Return to the `HIN_Migration-Tool_v*.exe` application and disable the **Export** button. <br> ![Disable export](assets/installation-guide/step1.3-11-disable-export.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ### Step 1.4 - Contingency plan / fallback scenario
 
