@@ -25,8 +25,8 @@
 ### Requisiti del server
 
 |      | Minimo | Consigliato |
-| :--- | :-----: | :---------: |
-| CPU, Core| 4 | 6 |
+| :--- | :-----: | :--------: |
+| CPU, Core | 4 | 6 |
 | RAM, GB | 8 | 12 |
 | SSD, GB | 60 | 60 |
 
@@ -47,23 +47,24 @@
 #### Accesso di rete in entrata (il firewall deve consentire)
 
 | Porta | Protocollo | Scopo |
-|------|----------|---------|
+| :---- | :--------: | :---- |
 | `25` | TCP | SMTP - ricezione di posta da server esterni |
 | `8084` | TCP | HTTP - callback di sigillatura da servizio di sigillatura remoto |
 | `19818` | UDP+TCP | WireGuard - tunnel crittografato per la comunicazione agente-agente. Leggi la nostra [Valutazione di sicurezza WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
 
 #### Accesso di rete in uscita (il server deve raggiungere)
 
-| Destinazione | Porta | Scopo |
-|-------------|------|---------|
-| hub.docker.com | `443`| Registry delle immagini Docker |
-| mxengine-dev.k8s.vereign-cdn.com | `443`| Servizio di sigillatura remoto |
-| smimekeys-ca-dev.k8s.vereign-cdn.com | `443`| Servizio CA S/MIME |
-| loki.example.com | `443`| Invio log (Alloy → Loki, opzionale) |
-| Server di posta di destinazione | `25` | Consegna posta in uscita (tramite ricerca MX) |
-| Server DNS | UDP+TCP `53` | In uscita verso server DNS pubblici |
-| Server NTP | UDP `123` | NTP sincronizza gli orologi di computer, server, dispositivi di rete e macchine virtuali con fonti di tempo precise |
-| Accesso alla rete interna per Keycloak | TCP `8090` | Viene utilizzato per autenticare gli utenti nel HIN Gateway Dashboard tramite Keycloak |
+| Destinazione | Porta | Protocollo | Scopo |
+| :----------- | :---: | :--------: | :---- |
+| hub.docker.com | `443` | TCP | Registry delle immagini Docker |
+| mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Servizio di sigillatura remoto |
+| smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | Servizio CA S/MIME |
+| loki.example.com | `443` | TCP | Invio log (Alloy → Loki, opzionale) |
+| Server di aggiornamento di Alpine, AlmaLinux, ecc. | `80` | TCP | Vari server di aggiornamento |
+| Server di posta di destinazione | `25` | TCP | Consegna posta in uscita (tramite ricerca MX) |
+| Server DNS | `53` | UDP+TCP | In uscita verso server DNS pubblici |
+| Server NTP | `123` | UDP | NTP sincronizza gli orologi di computer, server, dispositivi di rete e macchine virtuali con fonti di tempo precise |
+| Accesso alla rete interna per Keycloak | `8090` | TCP | Viene utilizzato per autenticare gli utenti nel HIN Gateway Dashboard tramite Keycloak |
 
 ## Contattaci
 

@@ -39,7 +39,6 @@ Das Ziel von HIN bei diesem Prozess ist es, eine sichere, reibungslose und volls
 
     Sollten die Installation und die Migration nicht erfolgreich abgeschlossen werden können, nehmen Sie bitte am geplanten Support-Gespräch mit unseren Technikern teil.
 
-
 !!! question "Wird es während der Migration zu Unterbrüchen bei der E-Mail-Zustellung kommen?"
     Zwischen "Schritt 1.5 - Bestehende MGW-VM abschalten" und "Schritt 18 - Mailserver konfigurieren" werden alle E-Mails auf dem Mailserver in die Warteschlange gestellt. Sobald "Schritt 18 - Mailserver konfigurieren" abgeschlossen ist, werden die in der Warteschlange befindlichen E-Mails versendet oder in das Postfach zugestellt.
 
@@ -113,7 +112,6 @@ Die folgenden Punkte müssen vor der Migration verfügbar sein oder bestätigt w
 
     Falls Sie keinen Zugriff auf einen solchen Rechner haben, wenden Sie sich bitte an den HIN [Support](./Support.md) per E-Mail oder Telefon (support@hin.ch / 0848 830 740), um eine Support-Verbindung über Systemverwaltung --> Support-Verbindung --> Verbinden herzustellen.
 
-
 - Für "Schritt 5 - Netzwerkverbindung zur VM" sollte ein DHCP-Zugang verfügbar sein (empfohlen).
 - Anforderungen an die Datensicherung, siehe "[Anhang 1 - Sichern und Wiederherstellen der Appliance-Einstellungen](#anhang-1-sichern-und-wiederherstellen-der-appliance-einstellungen)".
 - Bestätigung, dass das bestehende MGW erst nach Abschluss der Abnahme gelöscht wird.
@@ -149,16 +147,16 @@ Erstellen Sie ein Backup der bestehenden MGW-Appliance und stellen Sie sicher, d
     Bitte laden Sie das Tool `HIN_Migration-Tool_v*.exe` unter folgendem Link herunter: [link](https://link) -->
 
 1. Melden Sie sich bei der bestehenden MGW-Web-GUI an.
-2. Öffnen Sie "Mail System".
-3. Führen Sie die Anwendung "HIN_Migration-Tool_v*.exe" aus, die Ihnen unser Support-Mitarbeiter während des Gesprächs zur Verfügung gestellt hat.
-4. Geben Sie den Freischaltcode ein, den Ihnen unser Support-Mitarbeiter mitgeteilt hat.
-5. Wählen Sie "Enable export" aus.
-6. Geben Sie die MGW-IP-Adresse ein.
-7. Warten Sie auf die Bestätigung.
-8. Wählen Sie die vertrauenswürdige Domäne in der MGW-Web-GUI aus.
-9. Scrollen Sie nach unten und wählen Sie den verwalteten Fingerabdruck aus.
-10. Scrollen Sie nach unten zur Kategorie "PKCS12 download" (Sie haben die Möglichkeit, ein Passwort zur Verschlüsselung des Schlüssels einzugeben). Klicken Sie auf "Download PKCS12" und speichern Sie die `*.p12`-Datei auf dem Computer.
-11. Kehren Sie zur App "HIN_Migration-Tool_v*.exe" zurück und deaktivieren Sie die Schaltfläche "Exportieren".
+2. Öffnen Sie **„Mail System“**. <br> ![Mail System öffnen](assets/installation-guide/step1.3-2-open-mail-system.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+3. Starten Sie die Anwendung **`HIN_Migration-Tool_v*.exe`**, die Ihnen während des Anrufs vom Support-Mitarbeiter zur Verfügung gestellt wurde. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+4. Geben Sie den Freischaltcode ein, den Ihnen der Support-Mitarbeiter mitteilt. <br> ![Freischaltcode eingeben](assets/installation-guide/step1.3-4-unlock-code.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+5. Wählen Sie **„Export aktivieren“**. <br> ![Export aktivieren](assets/installation-guide/step1.3-5-enable-export.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+6. Geben Sie die MGW-IP-Adresse ein. <br> ![MGW-IP-Adresse eingeben](assets/installation-guide/step1.3-6-mgw-ip.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+7. Warten Sie auf die Bestätigung. <br> ![Auf Bestätigung warten](assets/installation-guide/step1.3-7-confirmation.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+8. Wählen Sie die vertrauenswürdige Domäne in der MGW-WebGUI aus. <br> ![Vertrauenswürdige Domäne auswählen](assets/installation-guide/step1.3-8-trusted-domain.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+9. Scrollen Sie nach unten und wählen Sie den verwalteten Fingerabdruck aus. <br> ![Verwalteten Fingerabdruck auswählen](assets/installation-guide/step1.3-9-managed-fingerprint.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+10. Scrollen Sie nach unten zum Abschnitt **„PKCS12 download“** (optional können Sie ein Passwort zum Verschlüsseln des Schlüssels eingeben). Klicken Sie auf **„Download PKCS12“** und speichern Sie die Datei `*.p12` auf dem Computer. <br> ![PKCS12-Download](assets/installation-guide/step1.3-10-pkcs12-download.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+11. Kehren Sie zur Anwendung `HIN_Migration-Tool_v*.exe` zurück und deaktivieren Sie die Schaltfläche **Export**. <br> ![Export deaktivieren](assets/installation-guide/step1.3-11-disable-export.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ### Schritt 1.4 - Notfallplan / Ausweichszenario
 
@@ -227,13 +225,16 @@ Stellen Sie sicher, dass die VM über eine Netzwerkverbindung verfügt und ihr e
 **Eine IP-Adresse unter Linux hinzufügen:**
 
 1. Führen Sie den Befehl "nmtui" in der Konsole aus.
+
     ```bash
     nmtui
     ```
+
 2. Navigieren Sie mit den Pfeiltasten und drücken Sie dann "Enter", um die "Ethernet-Verbindung" auszuwählen, deren IP-Adresse Sie ändern möchten. <br> ![IP-Adresse hinzufügen](assets/ip_addr_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 3. Navigieren Sie zu "IPv4-Konfiguration" und ändern Sie die Einstellung von "Automatisch" auf "Manuell". <br> ![IP-Adresse hinzufügen](assets/ip_addr_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 4. Navigieren Sie mit den Pfeiltasten zu den Feldern, in denen Sie die IP-Adresse, das Gateway und den DNS-Server eingeben können. Wählen Sie anschliessend "OK". <br> ![IP-Adresse hinzufügen](assets/ip_addr_3.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 5. Führen Sie nach dem Speichern der IP-Adresskonfiguration den folgenden Befehl in der Konsole aus:
+
     ```bash
     sudo systemctl restart NetworkManager
     ```
@@ -452,7 +453,7 @@ Geben Sie den Schlüssel genau so ein, wie er auf dem Mailserver konfiguriert is
 
 Peer-Zertifikate werden von der HIN Zertifizierungsstelle (HIN CA) für aktivierte Domains ausgestellt.
 
-Sobald das Onboarding abgeschlossen ist, navigieren Sie im Dashboard zum Abschnitt «Peer certificates» und klicken Sie auf die Schaltfläche «Sync certificates», um Ihre Peer-Zertifikate von der HIN CA zu synchronisieren.
+Sobald das Onboarding abgeschlossen ist, navigieren Sie im Dashboard zum Abschnitt "Peer certificates" und klicken Sie auf die Schaltfläche "Sync certificates", um Ihre Peer-Zertifikate von der HIN CA zu synchronisieren.
 
 ![Bildschirm für Peer-Zertifikate](assets/installation-guide/step15-peer-certificates.png)
 
@@ -460,7 +461,7 @@ Sobald das Onboarding abgeschlossen ist, navigieren Sie im Dashboard zum Abschni
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
 
-Stellen Sie sicher, dass Ihre Domain ihr richtlinienbasiertes Peer-Zertifikat unter «Domains» erhalten hat. Der Status jeder Domäne muss «Good» lauten.
+Stellen Sie sicher, dass Ihre Domain ihr richtlinienbasiertes Peer-Zertifikat unter "Domains" erhalten hat. Der Status jeder Domäne muss "Good" lauten.
 
 ![Screenshot](assets/step_17_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
@@ -493,7 +494,6 @@ Wiederholen Sie den "[Schritt 1.1 - Smoke-Test](#schritt-11-smoke-test)". Zusät
 - Stellen Sie sicher, dass der Mailserver so konfiguriert ist, dass er E-Mails über ein SMTP-Relay oder einen Exchange-Konnektor an das HIN Gateway versendet.
 - Stellen Sie sicher, dass das HIN Gateway E-Mails an Empfänger ausserhalb der HIN Community versenden kann.
 - Stellen Sie sicher, dass das HIN Gateway E-Mails über WireGuard an Empfänger innerhalb der HIN Community senden kann.
-
 
 **Eingehender Verkehr:**
 
@@ -572,7 +572,6 @@ Wählen Sie im Dialogfenster die gewünschte Sicherungsdatei aus und geben Sie d
 Das MGW unterstützt die Sicherung des Geräts über SCP.
 
 Um diese Option zu nutzen, muss der öffentliche Schlüssel des Systems, das auf den MGW zugreifen soll, unter "Backup using SCP" hinterlegt sein. Die Sicherungsdatei wird täglich um Mitternacht automatisch erstellt und auf dem MGW als `backup.tgz` gespeichert.
-
 
 Mit dem konfigurierten öffentlichen Schlüssel kann die Sicherungsdatei über SCP mit dem Betriebssystembenutzer `backup` abgerufen werden. Ein typischer SCP-Befehl zum Abrufen der Sicherungsdatei lautet:
 

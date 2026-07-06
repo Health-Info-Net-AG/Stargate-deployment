@@ -142,16 +142,16 @@ Effectuez une sauvegarde de l'appliance MGW existant et assurez-vous que la mach
 ![Responsibility HIN](https://img.shields.io/badge/Responsibility-HIN-orange)
 
 1. Connectez-vous à l'interface web du MGW existant.
-2. Ouvrez "Mail System".
-3. Lancez l'application "HIN_Migration-Tool_v*.exe" fournie par notre technicien d'assistance lors de l'appel.
-4. Saisissez le code de déverrouillage que notre technicien d'assistance vous a fourni.
-5. Sélectionnez "Enable export".
-6. Saisissez l'adresse IP du MGW.
-7. Attendez la confirmation.
-8. Sélectionnez le domaine de confiance dans l'interface web du MGW.
-9. Faites défiler vers le bas et sélectionnez l'empreinte gérée.
-10. Faites défiler vers le bas jusqu'à la rubrique "PKCS12 download" (vous avez la possibilité de saisir un mot de passe pour chiffrer la clé). Cliquez sur "Download PKCS12" et enregistrez le fichier `*.p12` sur votre ordinateur.
-11. Revenez à l'application "HIN_Migration-Tool_v*.exe" et désactivez le bouton "Export".
+2. Ouvrez **"Mail System"**. <br> ![Mail System](assets/installation-guide/step1.3-2-open-mail-system.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+3. Lancez l'application **`HIN_Migration-Tool_v*.exe`** fournie par l'ingénieur du support pendant l'appel. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+4. Saisissez le code de déverrouillage fourni par l'ingénieur du support. <br> ![Saisir le code de déverrouillage](assets/installation-guide/step1.3-4-unlock-code.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+5. Sélectionnez **"Enable export"**. <br> ![Activer l'exportation](assets/installation-guide/step1.3-5-enable-export.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+6. Saisissez l'adresse IP du MGW. <br> ![Saisir l'adresse IP du MGW](assets/installation-guide/step1.3-6-mgw-ip.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+7. Attendez la confirmation. <br> ![Attendre la confirmation](assets/installation-guide/step1.3-7-confirmation.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+8. Sélectionnez le domaine de confiance dans l'interface web (webGUI) du MGW. <br> ![Sélectionner le domaine de confiance](assets/installation-guide/step1.3-8-trusted-domain.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+9. Faites défiler vers le bas et sélectionnez l'empreinte numérique gérée. <br> ![Sélectionner l'empreinte numérique gérée](assets/installation-guide/step1.3-9-managed-fingerprint.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+10. Faites défiler jusqu'à la section **"PKCS12 download"** (vous pouvez, si vous le souhaitez, saisir un mot de passe pour chiffrer la clé). Cliquez sur **"PKCS12 download"** et enregistrez le fichier `*.p12` sur l'ordinateur. <br> ![Téléchargement PKCS12](assets/installation-guide/step1.3-10-pkcs12-download.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+11. Revenez à l'application `HIN_Migration-Tool_v*.exe` et désactivez le bouton **Export**. <br> ![Désactiver l'exportation](assets/installation-guide/step1.3-11-disable-export.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ### Étape 1.4 - Plan d'urgence / Scénario de repli
 
@@ -363,7 +363,7 @@ Sur cet écran, configurez vos paramètres initiaux:
 - Indiquez pour quel(s) domaine(s) le préfixe "sec.\<domain\>" est déjà configuré ("Use sec-prefix").
 
 ??? tip "Comment vérifier si mon domaine est configuré avec un Security Prefix ?"
-    Ouvrez notre outil en ligne dans votre navigateur : https://trust.hin.ls-infra.me/, saisissez `sec.<domain>` et cliquez sur le bouton **Check**. Si le message suivant s'affiche :
+    Ouvrez notre outil en ligne dans votre navigateur : <https://trust.hin.ls-infra.me/>, saisissez `sec.<domain>` et cliquez sur le bouton **Check**. Si le message suivant s'affiche :
 
     ✅ Ce domaine est chiffré.
 
