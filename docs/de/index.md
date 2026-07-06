@@ -60,6 +60,7 @@
 | mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Entfernter Sealer-Dienst |
 | smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | S/MIME-CA-Dienst |
 | loki.example.com | `443` | TCP | Log-Versand (Alloy → Loki, optional) |
+| Update-Server von Alpine, AlmaLinux usw. | `80` | TCP | Verschiedene Update-Server |
 | Ziel-Mailserver | `25` | TCP | Zustellung ausgehender E-Mails (via MX-Lookup) |
 | DNS-Server | `53` | UDP+TCP | Ausgehend an öffentliche DNS-Server |
 | NTP-Server | `123` | UDP | NTP synchronisiert die Uhren von Computern, Servern, Netzwerkgeräten und virtuellen Maschinen mit präzisen Zeitquellen |

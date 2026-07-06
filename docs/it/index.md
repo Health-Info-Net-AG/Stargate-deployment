@@ -60,6 +60,7 @@
 | mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Servizio di sigillatura remoto |
 | smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | Servizio CA S/MIME |
 | loki.example.com | `443` | TCP | Invio log (Alloy → Loki, opzionale) |
+| Server di aggiornamento di Alpine, AlmaLinux, ecc. | `80` | TCP | Vari server di aggiornamento |
 | Server di posta di destinazione | `25` | TCP | Consegna posta in uscita (tramite ricerca MX) |
 | Server DNS | `53` | UDP+TCP | In uscita verso server DNS pubblici |
 | Server NTP | `123` | UDP | NTP sincronizza gli orologi di computer, server, dispositivi di rete e macchine virtuali con fonti di tempo precise |

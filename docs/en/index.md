@@ -96,6 +96,7 @@ The following items must be available or confirmed before the installation:
 | mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Remote sealer service |
 | smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | S/MIME CA service |
 | loki.example.com | `443` | TCP | Log shipping (Alloy → Loki, optional) |
+| Update Server of alpine, almalinux, etc. | `80` | TCP | Various Update servers |
 | Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
 | Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
 | NTP servers | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
