@@ -35,7 +35,7 @@ echo "nproc output: $(nproc)" >> "$TEMP_FILE"
 lscpu | grep -E "Model name|CPU MHz|CPU\(s\)|Thread" >> "$TEMP_FILE"
 
 echo -e "\n# NETWORK\n" >> "$TEMP_FILE"
-nmcli device show $(ip route show default | awk '{print $5}') 2>>/dev/null || { resolvectl status | grep "DNS Servers"; ip addr show $(ip route show default | awk '{print $5}'); } >> "$TEMP_FILE"
+nmcli device show $(ip route show default | awk '{print $5}') 2>>/dev/null  >> "$TEMP_FILE" || { resolvectl status | grep "DNS Servers"; ip addr show $(ip route show default | awk '{print $5}'); } >> "$TEMP_FILE"
 ip route >> "$TEMP_FILE"
 
 echo -e "\n# RAM\n" >> "$TEMP_FILE"
