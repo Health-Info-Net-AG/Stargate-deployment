@@ -147,16 +147,16 @@ Erstellen Sie ein Backup der bestehenden MGW-Appliance und stellen Sie sicher, d
     Bitte laden Sie das Tool `HIN_Migration-Tool_v*.exe` unter folgendem Link herunter: [link](https://link) -->
 
 1. Melden Sie sich bei der bestehenden MGW-Web-GUI an.
-2. Öffnen Sie "Mail System".
-3. Führen Sie die Anwendung "HIN_Migration-Tool_v*.exe" aus, die Ihnen unser Support-Mitarbeiter während des Gesprächs zur Verfügung gestellt hat.
-4. Geben Sie den Freischaltcode ein, den Ihnen unser Support-Mitarbeiter mitgeteilt hat.
-5. Wählen Sie "Enable export" aus.
-6. Geben Sie die MGW-IP-Adresse ein.
-7. Warten Sie auf die Bestätigung.
-8. Wählen Sie die vertrauenswürdige Domäne in der MGW-Web-GUI aus.
-9. Scrollen Sie nach unten und wählen Sie den verwalteten Fingerabdruck aus.
-10. Scrollen Sie nach unten zur Kategorie "PKCS12 download" (Sie haben die Möglichkeit, ein Passwort zur Verschlüsselung des Schlüssels einzugeben). Klicken Sie auf "Download PKCS12" und speichern Sie die `*.p12`-Datei auf dem Computer.
-11. Kehren Sie zur App "HIN_Migration-Tool_v*.exe" zurück und deaktivieren Sie die Schaltfläche "Exportieren".
+2. Öffnen Sie **„Mail System“**. <br> ![Mail System öffnen](assets/installation-guide/step1.3-2-open-mail-system.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+3. Starten Sie die Anwendung **`HIN_Migration-Tool_v*.exe`**, die Ihnen während des Anrufs vom Support-Mitarbeiter zur Verfügung gestellt wurde. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+4. Geben Sie den Freischaltcode ein, den Ihnen der Support-Mitarbeiter mitteilt. <br> ![Freischaltcode eingeben](assets/installation-guide/step1.3-4-unlock-code.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+5. Wählen Sie **„Export aktivieren“**. <br> ![Export aktivieren](assets/installation-guide/step1.3-5-enable-export.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+6. Geben Sie die MGW-IP-Adresse ein. <br> ![MGW-IP-Adresse eingeben](assets/installation-guide/step1.3-6-mgw-ip.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+7. Warten Sie auf die Bestätigung. <br> ![Auf Bestätigung warten](assets/installation-guide/step1.3-7-confirmation.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+8. Wählen Sie die vertrauenswürdige Domäne in der MGW-WebGUI aus. <br> ![Vertrauenswürdige Domäne auswählen](assets/installation-guide/step1.3-8-trusted-domain.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+9. Scrollen Sie nach unten und wählen Sie den verwalteten Fingerabdruck aus. <br> ![Verwalteten Fingerabdruck auswählen](assets/installation-guide/step1.3-9-managed-fingerprint.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+10. Scrollen Sie nach unten zum Abschnitt **„PKCS12 download“** (optional können Sie ein Passwort zum Verschlüsseln des Schlüssels eingeben). Klicken Sie auf **„Download PKCS12“** und speichern Sie die Datei `*.p12` auf dem Computer. <br> ![PKCS12-Download](assets/installation-guide/step1.3-10-pkcs12-download.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+11. Kehren Sie zur Anwendung `HIN_Migration-Tool_v*.exe` zurück und deaktivieren Sie die Schaltfläche **Export**. <br> ![Export deaktivieren](assets/installation-guide/step1.3-11-disable-export.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ### Schritt 1.4 - Notfallplan / Ausweichszenario
 
@@ -453,7 +453,7 @@ Geben Sie den Schlüssel genau so ein, wie er auf dem Mailserver konfiguriert is
 
 Peer-Zertifikate werden von der HIN Zertifizierungsstelle (HIN CA) für aktivierte Domains ausgestellt.
 
-Sobald das Onboarding abgeschlossen ist, navigieren Sie im Dashboard zum Abschnitt «Peer certificates» und klicken Sie auf die Schaltfläche «Sync certificates», um Ihre Peer-Zertifikate von der HIN CA zu synchronisieren.
+Sobald das Onboarding abgeschlossen ist, navigieren Sie im Dashboard zum Abschnitt "Peer certificates" und klicken Sie auf die Schaltfläche "Sync certificates", um Ihre Peer-Zertifikate von der HIN CA zu synchronisieren.
 
 ![Bildschirm für Peer-Zertifikate](assets/installation-guide/step15-peer-certificates.png)
 
@@ -461,7 +461,7 @@ Sobald das Onboarding abgeschlossen ist, navigieren Sie im Dashboard zum Abschni
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
 
-Stellen Sie sicher, dass Ihre Domain ihr richtlinienbasiertes Peer-Zertifikat unter «Domains» erhalten hat. Der Status jeder Domäne muss «Good» lauten.
+Stellen Sie sicher, dass Ihre Domain ihr richtlinienbasiertes Peer-Zertifikat unter "Domains" erhalten hat. Der Status jeder Domäne muss "Good" lauten.
 
 ![Screenshot](assets/step_17_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
