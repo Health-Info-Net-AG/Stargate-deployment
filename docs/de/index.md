@@ -26,7 +26,7 @@
 
 |      | Minimum | Empfohlen |
 | :--- | :-----: | :---------: |
-| CPU, Kerne| 4 | 6 |
+| CPU, Kerne | 4 | 6 |
 | RAM, GB | 8 | 12 |
 | SSD, GB | 60 | 60 |
 
@@ -47,23 +47,23 @@
 #### Eingehender Netzwerkzugriff (Firewall muss erlauben)
 
 | Port | Protokoll | Zweck |
-|------|----------|---------|
+| :--- | :-------: | :---- |
 | `25` | TCP | SMTP – Empfangen von E-Mails von externen Servern |
 | `8084` | TCP | HTTP – Seal-Callback von einem entfernten Sealer-Dienst |
 | `19818` | UDP+TCP | WireGuard – Verschlüsselter Tunnel für die Agent-zu-Agent-Kommunikation. Lesen Sie unser [Sicherheitsgutachten zu WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
 
 #### Ausgehender Netzwerkzugriff (Server muss erreichen können)
 
-| Ziel | Port | Zweck |
-|-------------|------|---------|
-| hub.docker.com | `443`| Docker-Image-Registry |
-| mxengine-dev.k8s.vereign-cdn.com | `443`| Entfernter Sealer-Dienst |
-| smimekeys-ca-dev.k8s.vereign-cdn.com | `443`| S/MIME-CA-Dienst |
-| loki.example.com | `443`| Log-Versand (Alloy → Loki, optional) |
-| Ziel-Mailserver | `25` | Zustellung ausgehender E-Mails (via MX-Lookup) |
-| DNS-Server | UDP+TCP `53` | Ausgehend an öffentliche DNS-Server |
-| NTP-Server | UDP `123` | NTP synchronisiert die Uhren von Computern, Servern, Netzwerkgeräten und virtuellen Maschinen mit präzisen Zeitquellen |
-| Interner Netzwerkzugriff für Keycloak | TCP `8090` | Wird verwendet, um Benutzer im HIN Gateway Dashboard über Keycloak zu authentifizieren |
+| Ziel | Port | Protokoll | Zweck |
+| :--- | :--: | :-------: | :---- |
+| hub.docker.com | `443` | TCP | Docker-Image-Registry |
+| mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Entfernter Sealer-Dienst |
+| smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | S/MIME-CA-Dienst |
+| loki.example.com | `443` | TCP | Log-Versand (Alloy → Loki, optional) |
+| Ziel-Mailserver | `25` | TCP | Zustellung ausgehender E-Mails (via MX-Lookup) |
+| DNS-Server | `53` | UDP+TCP | Ausgehend an öffentliche DNS-Server |
+| NTP-Server | `123` | UDP | NTP synchronisiert die Uhren von Computern, Servern, Netzwerkgeräten und virtuellen Maschinen mit präzisen Zeitquellen |
+| Interner Netzwerkzugriff für Keycloak | `8090` | TCP | Wird verwendet, um Benutzer im HIN Gateway Dashboard über Keycloak zu authentifizieren |
 
 ## Kontaktieren Sie uns
 

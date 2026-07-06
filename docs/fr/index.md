@@ -25,8 +25,8 @@
 ### Exigences du serveur
 
 |      | Minimum | Recommandé |
-| :--- | :-----: | :---------: |
-| CPU, Cœurs| 4 | 6 |
+| :--- | :-----: | :--------: |
+| CPU, Cœurs | 4 | 6 |
 | RAM, GB | 8 | 12 |
 | SSD, GB | 60 | 60 |
 
@@ -47,23 +47,23 @@
 #### Accès réseau entrant (le pare-feu doit autoriser)
 
 | Port | Protocole | Objectif |
-|------|----------|---------|
+| :--- | :-------: | :------- |
 | `25` | TCP | SMTP - réception des courriels des serveurs externes |
 | `8084` | TCP | HTTP - rappel de scellement du service de scellement distant |
 | `19818` | UDP+TCP | WireGuard - tunnel crypté pour la communication agent-à-agent. Lisez notre [Évaluation de sécurité WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
 
 #### Accès réseau sortant (le serveur doit atteindre)
 
-| Destination | Port | Objectif |
-|-------------|------|---------|
-| hub.docker.com | `443`| Registre d'images Docker |
-| mxengine-dev.k8s.vereign-cdn.com | `443`| Service de scellement distant |
-| smimekeys-ca-dev.k8s.vereign-cdn.com | `443`| Service CA S/MIME |
-| loki.example.com | `443`| Envoi de logs (Alloy → Loki, optionnel) |
-| Serveurs de courrier de destination | `25` | Livraison des courriels sortants (via recherche MX) |
-| Serveurs DNS | UDP+TCP `53` | Sortant vers les serveurs DNS publics |
-| Serveurs NTP | UDP `123` | NTP synchronise les horloges des ordinateurs, serveurs, équipements réseau et machines virtuelles avec des sources de temps précises |
-| Accès au réseau interne pour Keycloak | TCP `8090` | Utilisé pour authentifier les utilisateurs dans le tableau de bord HIN Gateway via Keycloak |
+| Destination | Port | Protocole | Objectif |
+| :---------- | :--: | :-------: | :------- |
+| hub.docker.com | `443` | TCP | Registre d'images Docker |
+| mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Service de scellement distant |
+| smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | Service CA S/MIME |
+| loki.example.com | `443` | TCP | Envoi de logs (Alloy → Loki, optionnel) |
+| Serveurs de courrier de destination | `25` | TCP | Livraison des courriels sortants (via recherche MX) |
+| Serveurs DNS | `53` | UDP+TCP | Sortant vers les serveurs DNS publics |
+| Serveurs NTP | `123` | UDP | NTP synchronise les horloges des ordinateurs, serveurs, équipements réseau et machines virtuelles avec des sources de temps précises |
+| Accès au réseau interne pour Keycloak | `8090` | TCP | Utilisé pour authentifier les utilisateurs dans le tableau de bord HIN Gateway via Keycloak |
 
 ## Contactez-nous
 

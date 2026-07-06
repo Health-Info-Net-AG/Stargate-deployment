@@ -62,7 +62,7 @@ The following items must be available or confirmed before the installation:
 
 |      | Minimum | Recommended |
 | :--- | :-----: | :---------: |
-| CPU, Cores| 4 | 6 |
+| CPU, Cores | 4 | 6 |
 | RAM, GB | 8 | 12 |
 | SSD, GB | 60 | 60 |
 
@@ -83,23 +83,23 @@ The following items must be available or confirmed before the installation:
 #### Inbound Network Access (firewall must allow)
 
 | Port | Protocol | Purpose |
-|------|----------|---------|
+| :--- | :------: | :------ |
 | `25` | TCP | SMTP - receiving mail from external servers |
 | `8084` | TCP | HTTP - seal callback from remote sealer service |
 | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication. Read our [Security Assessment WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
 
 #### Outbound Network Access (server must reach)
 
-| Destination | Port | Purpose |
-|-------------|------|---------|
-| hub.docker.com | `443`| Docker image registry |
-| mxengine-dev.k8s.vereign-cdn.com | `443`| Remote sealer service |
-| smimekeys-ca-dev.k8s.vereign-cdn.com | `443`| S/MIME CA service |
-| loki.example.com | `443`| Log shipping (Alloy → Loki, optional) |
-| Destination mail servers | `25` | Outbound mail delivery (via MX lookup) |
-| Standard DNS queries and responses | UDP+TCP `53` | DNS resolve |
-| NTP servers | UDP `123` | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
-| Internal network access for Keycloak  | TCP `8090` | Its used to authenticate users in HIN Gateway Dashboard via Keycloak |
+| Destination | Port | Protocol | Purpose |
+| :---------- | :--: | :------: | :------ |
+| hub.docker.com | `443` | TCP | Docker image registry |
+| mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Remote sealer service |
+| smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | S/MIME CA service |
+| loki.example.com | `443` | TCP | Log shipping (Alloy → Loki, optional) |
+| Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
+| Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
+| NTP servers | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
+| Internal network access for Keycloak | `8090` | TCP | Its used to authenticate users in HIN Gateway Dashboard via Keycloak |
 
 ## Contact us
 
