@@ -343,6 +343,12 @@ Warten Sie, bis der Vorgang abgeschlossen ist. Die Statusanzeigen zeigen "Up" an
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
 
+!!! warning
+    Port `8180` muss für Keycloak geöffnet sein. Er muss nicht aus dem gesamten Internet erreichbar sein. Er sollte jedoch zwischen **Ihrem Administrationsrechner** und der VM, die Sie installieren, erreichbar sein. Andernfalls können Sie keine Verbindung zu Keycloak herstellen und die Installation nicht fortsetzen.
+
+    ??? tip "Was tun, wenn ein Verbindungsfehler angezeigt wird?"
+        Bitte prüfen Sie, ob Port `8180` von Ihrem Rechner zur VM erreichbar ist. Nachdem Sie die Konfiguration aktualisiert haben, kehren Sie zur Benutzeroberfläche unter `https://<VM IP address>` zurück und klicken Sie auf die Schaltfläche „Login“.
+
 Sobald das Mesh-Netzwerk eingerichtet ist, werden Sie zur Keycloak-Anmeldeseite weitergeleitet. Geben Sie den Benutzernamen und das Passwort ein, die Sie von HIN erhalten haben.
 
 ![Keycloak-Anmeldeseite](assets/installation-guide/step10-keycloak-login.png)
