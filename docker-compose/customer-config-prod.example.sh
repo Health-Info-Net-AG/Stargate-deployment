@@ -89,7 +89,7 @@ MTACONF_VERSION="v0.0.6"
 OPS_AGENT_VERSION="v0.0.3"
 
 # renovate: datasource=docker depName=clamav/clamav
-CLAMAV_VERSION="1.5.2-35"
+CLAMAV_VERSION="1.5.3"
 
 # ==============================================================================
 # OPTIONAL: Infrastructure Versions
