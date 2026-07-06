@@ -42,7 +42,6 @@ The following items must be available or confirmed before the installation:
 
 ## Deployment Information
 
-
 ### Installation Options
 
 * VM image installation:

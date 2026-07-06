@@ -39,7 +39,6 @@ Das Ziel von HIN bei diesem Prozess ist es, eine sichere, reibungslose und volls
 
     Sollten die Installation und die Migration nicht erfolgreich abgeschlossen werden können, nehmen Sie bitte am geplanten Support-Gespräch mit unseren Technikern teil.
 
-
 !!! question "Wird es während der Migration zu Unterbrüchen bei der E-Mail-Zustellung kommen?"
     Zwischen "Schritt 1.5 - Bestehende MGW-VM abschalten" und "Schritt 18 - Mailserver konfigurieren" werden alle E-Mails auf dem Mailserver in die Warteschlange gestellt. Sobald "Schritt 18 - Mailserver konfigurieren" abgeschlossen ist, werden die in der Warteschlange befindlichen E-Mails versendet oder in das Postfach zugestellt.
 
@@ -112,7 +111,6 @@ Die folgenden Punkte müssen vor der Migration verfügbar sein oder bestätigt w
     Falls Sie an einem Windows-Rechner arbeiten, der über Port 22 Zugriff auf die Mail Gateway-VM hat, können wir Sie während des Anrufs unterstützen, um den Export des privaten Schlüssels vom MGW zu aktivieren.
 
     Falls Sie keinen Zugriff auf einen solchen Rechner haben, wenden Sie sich bitte an den HIN [Support](./Support.md) per E-Mail oder Telefon (support@hin.ch / 0848 830 740), um eine Support-Verbindung über Systemverwaltung --> Support-Verbindung --> Verbinden herzustellen.
-
 
 - Für "Schritt 5 - Netzwerkverbindung zur VM" sollte ein DHCP-Zugang verfügbar sein (empfohlen).
 - Anforderungen an die Datensicherung, siehe "[Anhang 1 - Sichern und Wiederherstellen der Appliance-Einstellungen](#anhang-1-sichern-und-wiederherstellen-der-appliance-einstellungen)".
@@ -227,13 +225,16 @@ Stellen Sie sicher, dass die VM über eine Netzwerkverbindung verfügt und ihr e
 **Eine IP-Adresse unter Linux hinzufügen:**
 
 1. Führen Sie den Befehl "nmtui" in der Konsole aus.
+
     ```bash
     nmtui
     ```
+
 2. Navigieren Sie mit den Pfeiltasten und drücken Sie dann "Enter", um die "Ethernet-Verbindung" auszuwählen, deren IP-Adresse Sie ändern möchten. <br> ![IP-Adresse hinzufügen](assets/ip_addr_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 3. Navigieren Sie zu "IPv4-Konfiguration" und ändern Sie die Einstellung von "Automatisch" auf "Manuell". <br> ![IP-Adresse hinzufügen](assets/ip_addr_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 4. Navigieren Sie mit den Pfeiltasten zu den Feldern, in denen Sie die IP-Adresse, das Gateway und den DNS-Server eingeben können. Wählen Sie anschliessend "OK". <br> ![IP-Adresse hinzufügen](assets/ip_addr_3.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 5. Führen Sie nach dem Speichern der IP-Adresskonfiguration den folgenden Befehl in der Konsole aus:
+
     ```bash
     sudo systemctl restart NetworkManager
     ```
@@ -494,7 +495,6 @@ Wiederholen Sie den "[Schritt 1.1 - Smoke-Test](#schritt-11-smoke-test)". Zusät
 - Stellen Sie sicher, dass das HIN Gateway E-Mails an Empfänger ausserhalb der HIN Community versenden kann.
 - Stellen Sie sicher, dass das HIN Gateway E-Mails über WireGuard an Empfänger innerhalb der HIN Community senden kann.
 
-
 **Eingehender Verkehr:**
 
 - Stellen Sie sicher, dass verschlüsselte E-Mails aus der HIN Community über WireGuard empfangen werden können. Ein Absender aus der Domäne hin.ch ist der einfachste Testweg.
@@ -572,7 +572,6 @@ Wählen Sie im Dialogfenster die gewünschte Sicherungsdatei aus und geben Sie d
 Das MGW unterstützt die Sicherung des Geräts über SCP.
 
 Um diese Option zu nutzen, muss der öffentliche Schlüssel des Systems, das auf den MGW zugreifen soll, unter "Backup using SCP" hinterlegt sein. Die Sicherungsdatei wird täglich um Mitternacht automatisch erstellt und auf dem MGW als `backup.tgz` gespeichert.
-
 
 Mit dem konfigurierten öffentlichen Schlüssel kann die Sicherungsdatei über SCP mit dem Betriebssystembenutzer `backup` abgerufen werden. Ein typischer SCP-Befehl zum Abrufen der Sicherungsdatei lautet:
 
