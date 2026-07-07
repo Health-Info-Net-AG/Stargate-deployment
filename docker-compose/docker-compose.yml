@@ -527,6 +527,9 @@ services:
       SYNC_PEERS_INTERVAL: "30m"
       CERT_CA_IRISAGENT_DOMAIN: "${CERT_CA_IRISAGENT_DOMAIN:-}"
 
+      # message size limit
+      HTTP_MAX_REQUEST_BODY_SIZE: "31457280"
+
       LOG_LEVEL: "debug"
     ports:
       - "8083:8080"
