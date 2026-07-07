@@ -180,4 +180,5 @@ nav:
           - Windows 11 pro: vm/Windows11pro-image-install.md
           - Cloudscale: vm/Cloudscale-image-install.md
   - VM Images catalog: vm/VM-Catalog.md
+  - Release Notes: Release-notes.md
   - Support / Contact us: Support.md
