@@ -143,7 +143,7 @@ Effectuez une sauvegarde de l'appliance MGW existant et assurez-vous que la mach
 
 1. Connectez-vous à l'interface web du MGW existant.
 2. Ouvrez **"Mail System"**. <br> ![Mail System](assets/installation-guide/step1.3-2-open-mail-system.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-3. Lancez l'application **`HIN_Migration-Tool_v*.exe`** fournie par l'ingénieur du support pendant l'appel. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+3. Lancez l'application [**`HIN_Migration-Tool_v*.exe`**](https://images.hin.ch/mgw/HIN_MigrationTool-v3.0.exe) fournie par l'ingénieur du support pendant l'appel. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 4. Saisissez le code de déverrouillage fourni par l'ingénieur du support. <br> ![Saisir le code de déverrouillage](assets/installation-guide/step1.3-4-unlock-code.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 5. Sélectionnez **"Enable export"**. <br> ![Activer l'exportation](assets/installation-guide/step1.3-5-enable-export.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 6. Saisissez l'adresse IP du MGW. <br> ![Saisir l'adresse IP du MGW](assets/installation-guide/step1.3-6-mgw-ip.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }

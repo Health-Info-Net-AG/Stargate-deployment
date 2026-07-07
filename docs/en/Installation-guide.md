@@ -148,7 +148,7 @@ Create a backup of the existing MGW appliance and ensure that the VM is retained
 
 1. Log into the existing MGW webGUI.
 2. Open **"Mail System"**. <br> ![Open Mail System](assets/installation-guide/step1.3-2-open-mail-system.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-3. Run the **`HIN_Migration-Tool_v*.exe`** application provided by the support engineer during the call. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+3. Run the [**`HIN_Migration-Tool_v*.exe`**](https://images.hin.ch/mgw/HIN_MigrationTool-v3.0.exe) application provided by the support engineer during the call. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 4. Enter the unlock code that the support engineer provides to you. <br> ![Enter unlock code](assets/installation-guide/step1.3-4-unlock-code.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 5. Select **"Enable export"**. <br> ![Enable export](assets/installation-guide/step1.3-5-enable-export.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 6. Enter the MGW IP address. <br> ![Enter MGW IP address](assets/installation-guide/step1.3-6-mgw-ip.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
