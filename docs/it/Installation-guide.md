@@ -140,14 +140,14 @@ Crea un backup dell'appliance MGW esistente e assicurati che la VM venga conserv
 ![Responsabilità HIN](https://img.shields.io/badge/Responsabilita-HIN-orange)
 
 !!! warning "Assistenza HIN richiesta"
-    Questo passaggio richiede un codice di sblocco fornito da un ingegnere del supporto HIN durante la chiamata pianificata. Contatta il Supporto HIN o partecipa alla chiamata di migrazione pianificata prima di iniziare.
+    Per questo passaggio è necessario un codice di sblocco. Il codice viene fornito da un support engineer HIN. Se desidera proseguire l’installazione autonomamente, La invitiamo a contattare il supporto HIN per richiedere il codice di sblocco. In caso contrario, il codice di sblocco Le sarà fornito durante la chiamata di migrazione pianificata.
 
 <!-- !!! info
     Scarica lo strumento `HIN_Migration-Tool_v*.exe` al link: [link](https://link) -->
 
 1. Accedi alla webGUI del MGW esistente.
 2. Aprire **"Mail System"**. <br> ![Aprire Mail System](assets/installation-guide/step1.3-2-open-mail-system.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-3. Avviare l'applicazione [**`HIN_Migration-Tool_v*.exe`**](https://images.hin.ch/mgw/HIN_MigrationTool-v3.0.exe) fornita dal tecnico dell'assistenza durante la chiamata. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+3. Avviare l’applicazione cliccando su [**`HIN_Migration-Tool_v*.exe`**](https://images.hin.ch/mgw/HIN_MigrationTool-v3.0.exe) se si desidera eseguire l’installazione autonomamente. In alternativa, è possibile attendere la chiamata di migrazione, durante la quale il support engineer assisterà l’utente durante l’installazione. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 4. Inserire il codice di sblocco fornito dal tecnico dell'assistenza. <br> ![Inserire il codice di sblocco](assets/installation-guide/step1.3-4-unlock-code.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 5. Selezionare **"Enable export"**. <br> ![Abilitare l'esportazione](assets/installation-guide/step1.3-5-enable-export.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 6. Inserire l'indirizzo IP dell'MGW. <br> ![Inserire l'indirizzo IP dell'MGW](assets/installation-guide/step1.3-6-mgw-ip.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
