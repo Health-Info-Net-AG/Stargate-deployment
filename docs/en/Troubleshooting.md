@@ -232,3 +232,19 @@ If the health check still shows failures after the steps above, open a ticket vi
 - The **health-check output** (`./scripts/health-check.sh -v`).
 - A **log bundle** link from `./scripts/send-logs-to-support.sh` (see [Provide logs to support](Docker-advanced.md#provide-logs-to-support)).
 - What you were doing when it broke, and any screenshots.
+
+## Update Verimesh Instance
+
+The following instructions describe how to update a Verimesh instance from v0.5.1 to v0.5.3.
+
+*Note:* You will need to login to the VM using the Linux administrator account.
+
+### Update Steps
+1. Edit the .env file and update the ops-agent version to 0.0.3.
+2. Edit the customer configuration and update the ops-agent version to 0.0.3 there as well.
+3. Switch to the main branch: `git checkout main` 
+4. Pull the latest changes: `git pull` 
+5. Update the ops-agent container: `docker compose up -d ops-agent` 
+6. Log in to the Dashboard.
+6. Navigate to Settings.
+7. In the Update section at the bottom of the page, enter the target version (v0.5.3) and start the update process.
