@@ -141,14 +141,15 @@ Create a backup of the existing MGW appliance and ensure that the VM is retained
 ![Responsibility HIN](https://img.shields.io/badge/Responsibility-HIN-orange)
 
 !!! warning "HIN assistance required"
-    This step requires an unlock code that is provided by a HIN support engineer during the planned call. Contact HIN Support or join the planned migration call before starting.
+    An unlock code is required for this step. The code is provided by a HIN Support Engineer.
+If you would like to continue the installation on your own, please contact HIN Support to request the unlock code. Otherwise, the unlock code will be provided during the planned migration call.
 
 <!-- !!! info
     Please download tool `HIN_Migration-Tool_v*.exe` under the Link: [link](https://link) -->
 
 1. Log into the existing MGW webGUI.
 2. Open **"Mail System"**. <br> ![Open Mail System](assets/installation-guide/step1.3-2-open-mail-system.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-3. Run the [**`HIN_Migration-Tool_v*.exe`**](https://images.hin.ch/mgw/HIN_MigrationTool-v3.0.exe) application provided by the support engineer during the call. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+3. Run the application by clicking on [**`HIN_Migration-Tool_v*.exe`**](https://images.hin.ch/mgw/HIN_MigrationTool-v3.0.exe) if you want to install it yourself. Alternatively, you can wait until the migration call, where the support engineer will assist you with the installation. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 4. Enter the unlock code that the support engineer provides to you. <br> ![Enter unlock code](assets/installation-guide/step1.3-4-unlock-code.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 5. Select **"Enable export"**. <br> ![Enable export](assets/installation-guide/step1.3-5-enable-export.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 6. Enter the MGW IP address. <br> ![Enter MGW IP address](assets/installation-guide/step1.3-6-mgw-ip.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
