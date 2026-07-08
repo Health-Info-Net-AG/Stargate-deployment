@@ -209,7 +209,6 @@ WG_TRANSPORT_MODE=tcp
 | Stalwart SMTP | localhost:25 |
 | APISIX Gateway | <http://localhost:9080> |
 | Keycloak | <https://localhost:8180> |
-| PostgreSQL | localhost:5432 |
 
 ## Health Checks
 
