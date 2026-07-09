@@ -23,27 +23,25 @@ Bitte beachten Sie die [Empfohlenen Anforderungen](./index.md#server-anforderung
     
     [Als ZIP herunterladen](https://github.com/Health-Info-Net-AG/Stargate-deployment/archive/refs/heads/main.zip){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-Erstellen Sie vor der Installation die Kundenkonfigurationsdatei und füllen Sie sie aus:
-
-Kopieren Sie die Vorlage:
+Das Installationsskript erstellt `customer-config.sh` beim ersten Start automatisch aus der mitgelieferten Vorlage, sodass eine Neuinstallation **keine manuelle Konfiguration** benötigt. Wenn Sie sie lieber selbst erstellen möchten, kopieren Sie die Vorlage:
 
 ```bash
 cp customer-config-prod.example.sh customer-config.sh
 ```
 
-Bearbeiten Sie die Konfigurationsdatei:
+Sie müssen darin **nichts** bearbeiten - jeder Wert wird entweder automatisch erkannt oder später über das Dashboard konfiguriert:
 
-```bash
-nano customer-config.sh
-```
+| Einstellung | Wie sie gesetzt wird |
+|---------|---------------|
+| `SERVER_STATIC_IP` | Automatisch von der primären Netzwerkschnittstelle des Servers erkannt. |
+| `CUSTOMER_NAME` | Standardmäßig der System-Hostname. |
+| `DEPLOYMENT_NAME` | Von `CUSTOMER_NAME` abgeleitet (wird in Log-Labels und im Alloy-Hostname verwendet). |
+| Passwörter & Schlüssel (`POSTGRES_PASSWORD`, `S3_SECRET_KEY`, `VAULT_TOKEN`, `WG_PRIVATE_KEY`) | Werden beim ersten Start sicher generiert und in `customer-config.sh` zurückgeschrieben. |
 
-**Erforderliche Einstellungen – Sie müssen diese ausfüllen:**
+Mail-Domains, der Mail-Hostname, S/MIME-Zertifikate und WireGuard-Peers werden alle zur Laufzeit über das Dashboard konfiguriert, nachdem der Stack läuft - sie sind nicht Teil von `customer-config.sh`.
 
-| Einstellung | Beschreibung | Beispiel |
-|---------|-------------|---------|
-| `SERVER_STATIC_IP` | Die reale statische öffentliche IP dieses Servers. Wird verwendet, um die WireGuard-Tunneladresse und die MXEngine-Callback-URL abzuleiten. | `203.0.113.10` |
-| `CUSTOMER_NAME` | Kunden-/Organisationsname (wird für Identifikation und Protokollierung verwendet). | `Acme Corp` |
-| `DEPLOYMENT_NAME` | Eindeutiger Bereitstellungsbezeichner (wird in Log-Labels und Alloy-Hostname verwendet). | `stargate-acme` |
+!!! note "Hinter NAT oder einer Floating IP?"
+    Die automatische Erkennung verwendet die IP der primären Schnittstelle des Servers. Wenn Ihr Server über eine *andere* öffentliche oder Floating IP erreicht wird (üblich bei NAT), setzen Sie `SERVER_STATIC_IP` vor der Installation auf diese öffentliche IP in `customer-config.sh`, damit die Dashboard- und Keycloak-Login-URLs auf die erreichbare Adresse zeigen. Lassen Sie es andernfalls leer.
 
 Mail-Domains und der Stalwart-Hostname werden zur Laufzeit über die `/mail`-Seite des Dashboards konfiguriert; sie sind nicht Teil von `customer-config.sh`.
 

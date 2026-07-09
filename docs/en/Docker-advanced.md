@@ -72,10 +72,13 @@ The Stargate deployment repository receives updates to scripts (`install.sh`, `s
 ./scripts/backup.sh
 ```
 
-#### 2. Pull the latest changes from the repository
+#### 2. Fetch and apply the latest changes
+
+The repository is the single source of truth for tracked files, so update by resetting to the latest revision. This replaces tracked files (scripts, `docker-compose.yml`, config templates) with the repository's versions:
 
 ```bash
-git pull
+git fetch origin
+git reset --hard origin/main
 ```
 
 #### 3. Restart services to pick up any script or config changes
@@ -86,7 +89,7 @@ git pull
 ```
 
 !!! note
-    `git pull` will not overwrite your `customer-config.sh`, `.env`, or `secrets/` directory - these are in `.gitignore`. If you have local changes to tracked files (e.g. `docker-compose.yml`), git will warn you. In that case, stash your changes first with `git stash`, pull, then re-apply with `git stash pop`.
+    Your `customer-config.sh`, `.env`, and `secrets/` directory are in `.gitignore`, so this does **not** touch them - your configuration and credentials are preserved. Always put customisation in `customer-config.sh`, never by editing tracked files such as `docker-compose.yml`: a hard reset - and the automatic updates triggered from the dashboard - will revert any tracked-file edits. This is intentional; keeping every deployment identical to the repository is what lets updates apply reliably and without manual conflict resolution.
 
 If the update includes changes to the config template, compare it with your existing config to see if new variables were added:
 
@@ -96,51 +99,16 @@ diff customer-config.sh customer-config-prod.example.sh
 
 ### Update Service Images
 
-#### Update a Single Service
+Application versions are managed **exclusively through the dashboard**. Each release is a versioned *manifest* that pins a known-good, tested combination of all service versions together; the dashboard's update page lists the available releases, and applying one pulls the matching images and recreates the affected services for you.
 
-Edit the version in `.env`:
+To update:
 
-```bash
-sed -i 's/MXENGINE_VERSION=.*/MXENGINE_VERSION=v0.0.31/' .env
-```
+1. Open the dashboard and go to the update page.
+2. Select the target release.
+3. Confirm - the dashboard applies the release manifest and recreates the changed services.
 
-Then pull the container and recreate:
-
-```bash
-docker compose pull mxengine
-docker compose up -d --force-recreate mxengine
-```
-
-#### Quick Test (without editing .env)
-
-Override the version directly:
-
-```bash
-MXENGINE_VERSION=v0.0.31 docker compose up -d --force-recreate mxengine
-```
-
-#### Update Multiple Services
-
-Edit versions in `.env`, then pull containers and recreate:
-
-```bash
-docker compose pull smimekeys-client policy irisagent mxengine
-docker compose up -d --force-recreate smimekeys-client policy irisagent mxengine
-```
-
-#### Update All Services
-
-Pull all latest images
-
-```bash
-docker compose pull
-```
-
-Recreate all services
-
-```bash
-docker compose up -d --force-recreate
-```
+!!! warning "Do not change versions by hand"
+    Do not edit individual `*_VERSION` values in `customer-config.sh` or `.env` to update applications. Versions are released and tested together as a set - hand-picking one produces an untested combination, and the change would be reverted by the next dashboard update anyway. Always update from the dashboard.
 
 #### Cleanup Old Images
 
@@ -152,12 +120,7 @@ docker image prune -f
 
 #### Rollback
 
-To roll back, edit `.env` to the previous version and recreate:
-
-```bash
-sed -i 's/MXENGINE_VERSION=.*/MXENGINE_VERSION=v0.0.30/' .env
-docker compose up -d --force-recreate mxengine
-```
+To roll back, select an earlier release on the dashboard's update page and apply it - the same mechanism runs in reverse, pinning the previous tested set. Do not roll back by editing versions by hand.
 
 ## Configuration
 
@@ -447,13 +410,7 @@ docker exec stargate-mxengine nc -zv stalwart 10026
 
 ### Updating the mtaconf image
 
-The mtaconf container is pulled from the registry. To update to a new tag:
-
-```bash
-sed -i 's/MTACONF_VERSION=.*/MTACONF_VERSION=<new-tag>/' .env
-docker compose pull mtaconf
-docker compose up -d mtaconf
-```
+Like every service, the mtaconf image version is part of a release and is updated through the dashboard - not by editing its tag by hand. Select the target release on the dashboard's update page to apply it.
 
 ### Stargate Troubleshooting
 

@@ -21,29 +21,25 @@ Please refer to [Recommended Requirements](./index.md#server-requirements)
 
     If you do not have `git` installed, you can always get an archive with all files inside. Download it via the following link. [Download as ZIP](https://github.com/Health-Info-Net-AG/Stargate-deployment/archive/refs/heads/main.zip){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-Before installation, create and fill in the customer configuration file:
-
-Copy the template:
+The installer creates `customer-config.sh` automatically from the bundled template on first run, so a fresh install needs **no manual configuration**. If you prefer to create it yourself, copy the template:
 
 ```bash
 cp customer-config-prod.example.sh customer-config.sh
 ```
 
-Edit the config file:
+You do **not** need to edit it - every value is either auto-detected or configured later via the dashboard:
 
-```bash
-nano customer-config.sh
-```
+| Setting | How it is set |
+|---------|---------------|
+| `SERVER_STATIC_IP` | Auto-detected from the server's primary network interface. |
+| `CUSTOMER_NAME` | Defaults to the system hostname. |
+| `DEPLOYMENT_NAME` | Derived from `CUSTOMER_NAME` (used in log labels and the Alloy hostname). |
+| Passwords & keys (`POSTGRES_PASSWORD`, `S3_SECRET_KEY`, `VAULT_TOKEN`, `WG_PRIVATE_KEY`) | Generated securely on first run and saved back to `customer-config.sh`. |
 
-**Required settings — you must fill these in:**
+Mail domains, the mail hostname, S/MIME certificates, and WireGuard peers are all configured at runtime via the dashboard after the stack is up - they are not part of `customer-config.sh`.
 
-| Setting | Description | Example |
-|---------|-------------|---------|
-| `SERVER_STATIC_IP` | This server's real static public IP. Used to derive WireGuard tunnel address and MXEngine callback URL. | `203.0.113.10` |
-| `CUSTOMER_NAME` | Customer/organization name (used for identification and logging). | `Acme Corp` |
-| `DEPLOYMENT_NAME` | Unique deployment identifier (used in log labels and Alloy hostname). | `stargate-acme` |
-
-Mail domains and the Stalwart hostname are configured at runtime via the dashboard's `/mail` page; they are not part of `customer-config.sh`.
+!!! note "Behind NAT or a floating IP?"
+    Auto-detection uses the IP of the server's primary interface. If your server is reached on a *different* public or floating IP (common with NAT), set `SERVER_STATIC_IP` to that public IP in `customer-config.sh` before installing, so the dashboard and Keycloak login URLs point at the reachable address. Otherwise leave it empty.
 
 **Auto-derived settings — leave empty unless you need to override:**
 
