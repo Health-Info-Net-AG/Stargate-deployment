@@ -240,8 +240,8 @@ The following instructions describe how to update a Verimesh instance from v0.5.
 *Note:* You will need to login to the VM using the Linux administrator account.
 
 ### Update Steps
-1. Edit the .env file and update the ops-agent version to 0.0.3.
-2. Edit the customer configuration and update the ops-agent version to 0.0.3 there as well.
+1. Edit the .env file and update the ops-agent version to v0.0.3.
+2. Edit the customer configuration and update the ops-agent version to v0.0.3 there as well.
 3. Switch to the main branch: `git checkout main` 
 4. Pull the latest changes: `git pull` 
 5. Update the ops-agent container: `docker compose up -d ops-agent` 
@@ -260,7 +260,7 @@ To resolve this, the following manual configuration must be completed in the *Ke
 
 ### Resolution Steps
 
-1. Open the keycloak on the env and put in the url - `/admin/master/console/` 
+1. Open the keycloak on the env and put in the url - `<VM IP address>/admin/master/console/` 
     user: Admin
     pass: get the admin pass from the .env of the machine (you need to login on linux console)
 
