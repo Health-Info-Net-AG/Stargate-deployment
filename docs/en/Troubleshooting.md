@@ -232,3 +232,50 @@ If the health check still shows failures after the steps above, open a ticket vi
 - The **health-check output** (`./scripts/health-check.sh -v`).
 - A **log bundle** link from `./scripts/send-logs-to-support.sh` (see [Provide logs to support](Docker-advanced.md#provide-logs-to-support)).
 - What you were doing when it broke, and any screenshots.
+
+## Update Verimesh Instance
+
+The following instructions describe how to update a Verimesh instance from v0.5.1 to v0.5.3.
+
+*Note:* You will need to login to the VM using the Linux administrator account.
+
+### Update Steps
+1. Edit the .env file and update the ops-agent version to v0.0.3.
+2. Edit the customer configuration and update the ops-agent version to v0.0.3 there as well.
+3. Switch to the main branch: `git checkout main` 
+4. Pull the latest changes: `git pull` 
+5. Update the ops-agent container: `docker compose up -d ops-agent` 
+6. Log in to the Dashboard.
+6. Navigate to Settings.
+7. In the Update section at the bottom of the page, enter the target version (v0.5.3) and start the update process.
+
+
+## Setup updated keycloak
+
+Note: This instructions is valid if you are running on VM image v0.5.1 and then you updated to newer version. 
+
+After the latest Keycloak update, a breaking change causes authenticated users to be unexpectedly redirected to the login page when navigating to specific application routes (e.g., Peers, Peer Certificates).
+
+To resolve this, the following manual configuration must be completed in the *Keycloak UI*.
+
+### Resolution Steps
+
+1. Open the keycloak on the env and put in the url - `<VM IP address>/admin/master/console/` 
+    user: Admin
+    pass: get the admin pass from the .env of the machine (you need to login on linux console)
+
+2. Admin console - change realm to → realm stargate:
+3. Go to Clients → dashboard
+4. Navigate to the Client scopes tab → click dashboard-dedicated
+5. Select Configure a new mapper → Audience
+6. Set the following configurations:
+    * Name: apisix-audience
+    * Included client audience: apisix (select from dropdown)
+    * Included custom audience: (leave empty)
+    * Add to access token: On
+    * Add to token introspection: On
+    * Add to ID token / lightweight token: Off
+
+7. Click Save
+
+ <br> ![keycloak-console](assets/troubleshooting/keycloak-update.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
