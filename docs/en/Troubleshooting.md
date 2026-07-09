@@ -153,6 +153,23 @@ cat ../update.log                             # the update script output
 - After it finishes, confirm versions applied: `./scripts/gather-app-versions.sh` (or check `docker compose ps` image tags).
 - If a service is stuck after an update, `docker compose up -d <service>` to recreate it.
 
+**Update starts but nothing happens (updating from an older version).** If the ops-agent log stops at `pulling deployment repo ...` and the update never proceeds, the repository on the VM most likely has **local edits to a tracked file** (commonly a hand-patched `docker-compose.yml`). That makes the ops-agent's `git checkout` refuse to run, so the update stalls. Force-reset the repository to the latest revision, then re-run the update. Git is the single source of truth; this discards local edits to **tracked** files only - `customer-config.sh`, `.env`, and `secrets/` are gitignored and preserved:
+
+```bash
+cd /root/stargate-deployment
+git fetch origin
+git checkout -f main
+git reset --hard origin/main
+sed -i 's/^OPS_AGENT_VERSION=.*/OPS_AGENT_VERSION="v0.0.3"/' docker-compose/customer-config.sh   # v0.0.3 or newer
+cd docker-compose
+./scripts/update.sh
+```
+
+`update.sh` regenerates `.env`, pulls the images, and recreates the affected services - you do **not** need to restart Stargate manually. When it completes, retry the update from the dashboard; it will now proceed.
+
+!!! warning
+    Do not use `git pull` here. On a working tree with local edits it aborts with "local changes would be overwritten", which forces a `git stash` / merge-conflict / manual-recovery detour. The `git checkout -f` + `git reset --hard` sequence above avoids that entirely and is the safe, repeatable way to bring the repo current.
+
 ### Dozzle (log viewer) not reachable
 
 - URL is `https://<SERVER_IP>:8190`; it requires a **Keycloak login** (same realm as the dashboard) via oauth2-proxy.

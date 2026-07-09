@@ -107,7 +107,7 @@ To update:
 2. Select the target release.
 3. Confirm - the dashboard applies the release manifest and recreates the changed services.
 
-!!! warning "Do not change versions by hand"
+!!! warning "Do not manually change versions"
     Do not edit individual `*_VERSION` values in `customer-config.sh` or `.env` to update applications. Versions are released and tested together as a set - hand-picking one produces an untested combination, and the change would be reverted by the next dashboard update anyway. Always update from the dashboard.
 
 #### Cleanup Old Images
