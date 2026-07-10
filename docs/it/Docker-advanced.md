@@ -72,10 +72,13 @@ Il repository di deployment di Stargate riceve aggiornamenti per script (`instal
 ./scripts/backup.sh
 ```
 
-#### 2. Eseguire il pull delle ultime modifiche dal repository
+#### 2. Recuperare e applicare le ultime modifiche
+
+Il repository è l'unica fonte di verità per i file tracciati. Aggiornare quindi ripristinando all'ultima revisione. Questo sostituisce i file tracciati (script, `docker-compose.yml`, modelli di configurazione) con le versioni del repository:
 
 ```bash
-git pull
+git fetch origin
+git reset --hard origin/main
 ```
 
 #### 3. Riavviare i servizi per applicare eventuali modifiche a script o configurazione
@@ -86,7 +89,7 @@ git pull
 ```
 
 !!! note
-    `git pull` non sovrascriverà `customer-config.sh`, `.env` o la directory `secrets/` - questi sono in `.gitignore`. Se si hanno modifiche locali a file tracciati (es. `docker-compose.yml`), git avviserà. In tal caso, mettere da parte le modifiche prima con `git stash`, fare pull, quindi riapplicare con `git stash pop`.
+    `customer-config.sh`, `.env` e la directory `secrets/` sono in `.gitignore`, quindi questa operazione **non** li tocca - la configurazione e le credenziali vengono preservate. Effettuare sempre le personalizzazioni in `customer-config.sh`, mai modificando file tracciati come `docker-compose.yml`: un hard reset - e gli aggiornamenti automatici attivati dalla dashboard - annullerà qualsiasi modifica ai file tracciati. Ciò è intenzionale; mantenere ogni distribuzione identica al repository è ciò che consente agli aggiornamenti di essere applicati in modo affidabile e senza risoluzione manuale dei conflitti.
 
 Se l'aggiornamento include modifiche al modello di configurazione, confrontarlo con la configurazione esistente per vedere se sono state aggiunte nuove variabili:
 
@@ -96,51 +99,16 @@ diff customer-config.sh customer-config-prod.example.sh
 
 ### Aggiornare le immagini dei servizi
 
-#### Aggiornare un singolo servizio
+Le versioni delle applicazioni sono gestite **esclusivamente tramite la dashboard**. Ogni release è un *manifest* con versione che fissa insieme una combinazione nota e testata di tutte le versioni dei servizi; la pagina di aggiornamento della dashboard elenca le release disponibili e applicandone una vengono scaricate le immagini corrispondenti e ricreati per voi i servizi interessati.
 
-Modificare la versione in `.env`:
+Per aggiornare:
 
-```bash
-sed -i 's/MXENGINE_VERSION=.*/MXENGINE_VERSION=v0.0.31/' .env
-```
+1. Aprire la dashboard e andare alla pagina di aggiornamento.
+2. Selezionare la release desiderata.
+3. Confermare - la dashboard applica il manifest della release e ricrea i servizi modificati.
 
-Quindi eseguire il pull del container e ricrearlo:
-
-```bash
-docker compose pull mxengine
-docker compose up -d --force-recreate mxengine
-```
-
-#### Test rapido (senza modificare .env)
-
-Sovrascrivere la versione direttamente:
-
-```bash
-MXENGINE_VERSION=v0.0.31 docker compose up -d --force-recreate mxengine
-```
-
-#### Aggiornare più servizi
-
-Modificare le versioni in `.env`, quindi eseguire il pull dei container e ricrearli:
-
-```bash
-docker compose pull smimekeys-client policy irisagent mxengine
-docker compose up -d --force-recreate smimekeys-client policy irisagent mxengine
-```
-
-#### Aggiornare tutti i servizi
-
-Eseguire il pull di tutte le ultime immagini
-
-```bash
-docker compose pull
-```
-
-Ricreare tutti i servizi
-
-```bash
-docker compose up -d --force-recreate
-```
+!!! warning "Non modificare le versioni manualmente"
+    Non modificare i singoli valori `*_VERSION` in `customer-config.sh` o `.env` per aggiornare le applicazioni. Le versioni vengono rilasciate e testate insieme come un insieme - sceglierne una manualmente produce una combinazione non testata e la modifica verrebbe comunque annullata dal successivo aggiornamento della dashboard. Aggiornare sempre dalla dashboard.
 
 #### Pulire le vecchie immagini
 
@@ -152,12 +120,7 @@ docker image prune -f
 
 #### Rollback
 
-Per eseguire un rollback, modificare `.env` alla versione precedente e ricreare:
-
-```bash
-sed -i 's/MXENGINE_VERSION=.*/MXENGINE_VERSION=v0.0.30/' .env
-docker compose up -d --force-recreate mxengine
-```
+Per eseguire un rollback, selezionare una release precedente nella pagina di aggiornamento della dashboard e applicarla - lo stesso meccanismo viene eseguito al contrario, fissando l'insieme testato precedente. Non eseguire il rollback modificando le versioni manualmente.
 
 ## Configurazione
 
@@ -447,13 +410,7 @@ docker exec stargate-mxengine nc -zv stalwart 10026
 
 ### Aggiornamento dell'immagine mtaconf
 
-Il container mtaconf viene scaricato dal registry. Per aggiornare a un nuovo tag:
-
-```bash
-sed -i 's/MTACONF_VERSION=.*/MTACONF_VERSION=<nuovo-tag>/' .env
-docker compose pull mtaconf
-docker compose up -d mtaconf
-```
+Come ogni servizio, la versione dell'immagine mtaconf fa parte di una release e si aggiorna tramite la dashboard - non modificando il suo tag manualmente. Selezionare la release desiderata nella pagina di aggiornamento della dashboard per applicarla.
 
 ### Risoluzione dei problemi di Stargate
 
