@@ -118,7 +118,7 @@ LOKI_VERSION="3.7.3"
 # renovate: datasource=docker depName=grafana/alloy
 ALLOY_VERSION="v1.17.1"
 # renovate: datasource=docker depName=prom/node-exporter
-NODE_EXPORTER_VERSION="v1.11.1"
+NODE_EXPORTER_VERSION="v1.12.0"
 # renovate: datasource=docker depName=stalwartlabs/stalwart
 STALWART_VERSION="v0.16"
 # renovate: datasource=docker depName=quay.io/oauth2-proxy/oauth2-proxy
