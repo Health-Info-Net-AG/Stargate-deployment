@@ -96,9 +96,26 @@ Die folgenden Punkte müssen vor der Migration verfügbar sein oder bestätigt w
     - Wenn Sie an einem Windows-Rechner arbeiten, der über Port 22 Zugriff auf die Mail-Gateway-VM hat, können wir Sie während des Gesprächs dabei unterstützen, den Export des privaten Schlüssels aus dem MGW zu aktivieren.
     - Falls Sie keinen Zugriff auf einen solchen Rechner haben, wenden Sie sich bitte per E-Mail oder Telefon (support@hin.ch / 0848 830 740) an den HIN Support, damit wir Ihnen helfen können, eine Supportverbindung über "Systemadministration" -> "Supportverbindung" -> "Verbinden" herzustellen.
 - **Lade die neueste Version** des [VM-Images](vm/VM-Catalog.md) herunter.
-- **Firewall-Anforderungen für WireGuard**. Konfigurieren Sie den WireGuard-Port 19818 (TCP/UDP) in Ihrer Firewall:
-    - Eingehender und ausgehender Datenverkehr
-    - Verkehr zulassen: "any-to-HIN Gateway" und "HIN Gateway-to-any"
+- **Firewall**:
+    - Erlauben Sie den Datenverkehr: beliebig → HIN Gateway und HIN Gateway → beliebig
+        - WireGuard: Siehe [Serveranforderungen – Eingehender Netzwerkzugriff](./index.md#eingehender-netzwerkzugriff-firewall-muss-erlauben):
+        - Konfigurieren Sie den WireGuard-Port `19818` (TCP/UDP) in Ihrer Firewall.
+        - Eingehender und ausgehender Datenverkehr
+    - Erlauben Sie den Datenverkehr: Administrationsrechner → HIN Gateway-VM
+        - Anforderungen für die Installation:
+            - HTTPS-Port `443`
+                - Eingehender und ausgehender Datenverkehr
+            - Keycloak-Port `8180`
+                - Eingehender und ausgehender Datenverkehr
+        - Anforderungen für die Fehlerbehebung (optional, um Protokolle einzusehen und alle Parameter zu ändern):
+            - SSH-Port `22`
+                - Eingehender und ausgehender Datenverkehr
+            - Dozzle-Port `8190`
+                - Eingehender und ausgehender Datenverkehr
+- Für "[Schritt 5 - Netzwerkverbindung zur VM](#schritt-5-netzwerkverbindung-zur-vm)" sollte ein **DHCP-Zugang** verfügbar sein (empfohlen).
+- Anforderungen an die **Datensicherung**, siehe "[Anhang 1 - Sichern und Wiederherstellen der Appliance-Einstellungen](#anhang-1-sichern-und-wiederherstellen-der-appliance-einstellungen)".
+- Bestätigung, dass das bestehende MGW erst nach Abschluss der Abnahme gelöscht wird.
+- Zugriff auf DNS, Mailserver-Konnektoren, Transportregeln und Relay-Einstellungen.
 
 !!! info "Warum WireGuard?"
     Der WireGuard-Port erfüllt zwei wichtige Funktionen:

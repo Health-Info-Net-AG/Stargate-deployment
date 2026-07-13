@@ -96,11 +96,23 @@ I seguenti elementi devono essere disponibili o confermati prima della migrazion
     - Se stai lavorando su una macchina Windows che ha accesso alla VM del Mail Gateway tramite la porta 22, possiamo supportarti durante la chiamata nell'abilitare l'esportazione della chiave privata dal MGW.
     - Se non hai accesso a tale macchina, contatta il Supporto HIN via email o telefono (<support@hin.ch> / 0848 830 740) per aiutarti a stabilire una connessione di supporto tramite Amministrazione sistema → Connessione di supporto → Connetti.
 - **Scarica l'ultima** versione dell'[immagine VM](vm/VM-Catalog.md)
-- **Requisiti firewall** per WireGuard.
-  Configura la porta WireGuard 19818 (TCP/UDP) nel tuo firewall:
-    - Traffico in entrata e in uscita
-    - Consenti traffico: any-to-HIN Gateway e HIN Gateway-to-any
-- **L'accesso DHCP** dovrebbe essere disponibile per il "Passo 5 - Connessione di rete alla VM" (raccomandato).
+- **Firewall**:
+    - Consentire il traffico: da qualsiasi origine a HIN Gateway e da HIN Gateway a qualsiasi destinazione
+        - WireGuard: fare riferimento a [Requisiti del server - Accesso alla rete in ingresso](./index.md#accesso-di-rete-in-entrata-il-firewall-deve-consentire):
+        - Configurare la porta WireGuard `19818` (TCP/UDP) nel firewall.
+        - Traffico in ingresso e in uscita
+    - Consentire il traffico: macchina amministrativa → VM HIN Gateway
+        - Requisiti per l'installazione:
+            - Porta HTTPS `443`
+                - Traffico in ingresso e in uscita
+            - Porta Keycloak `8180`
+                - Traffico in ingresso e in uscita
+        - Requisiti per la risoluzione dei problemi (opzionale, necessario per visualizzare i log e modificare tutti i parametri):
+            - Porta SSH `22`
+                - Traffico in ingresso e in uscita
+            - Porta Dozzle `8190`
+                - Traffico in ingresso e in uscita
+- **L'accesso DHCP** dovrebbe essere disponibile per il "[Passo 5 - Connessione di rete alla VM](#passo-5-connessione-di-rete-alla-vm)" (raccomandato).
 - **Requisiti di backup** - vedere "Allegato 1 - Backup e ripristino delle impostazioni dell'appliance".
 - Conferma che il MGW esistente **non** verrà eliminato fino al completamento dell'accettazione.
 - Accesso a DNS, connettori del server di posta, regole di trasporto e impostazioni di relay.
