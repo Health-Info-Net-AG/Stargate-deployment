@@ -96,11 +96,23 @@ Les éléments suivants doivent être disponibles ou confirmés avant la migrati
     - Si vous travaillez sur un ordinateur Windows ayant accès à la machine virtuelle Mail Gateway via le port 22, nous pouvons vous aider, pendant l'appel, à activer l'exportation de la clé privée depuis la MGW.
     - Si vous n'avez pas accès à un tel ordinateur, veuillez contacter le support HIN par e-mail ou par téléphone (<support@hin.ch> / 0848 830 740) afin que nous puissions vous aider à établir une connexion d'assistance via System Administration -> Support Connection -> Connect.
 - **Télécharger la dernière version** de l'[image de la machine virtuelle](vm/VM-Catalog.md)
-- **Configuration requise de firewall pour WireGuard**.
-  Configurez le port WireGuard 19818 (TCP/UDP) dans votre firewall:
-    - Trafic entrant et sortant
-    - Autoriser le trafic: any-to-HIN Gateway et HIN Gateway-to-any
-- **L'accès DHCP** doit être disponible pour l'"Étape 5 - Connexion réseau à la machine virtuelle" (recommandé).
+- **Pare-feu** :
+    - Autorisez le trafic : de n'importe quelle source vers HIN Gateway et de HIN Gateway vers n'importe quelle destination
+        - WireGuard : veuillez consulter [Configuration requise du serveur - Accès réseau entrant](./index.md#acces-reseau-entrant-le-pare-feu-doit-autoriser) :
+            - Configurez le port WireGuard `19818` (TCP/UDP) dans votre pare-feu.
+                - Trafic entrant et sortant
+    - Autorisez le trafic : poste d'administration → VM HIN Gateway
+        - Exigences pour l'installation :
+            - Port HTTPS `443`
+                - Trafic entrant et sortant
+            - Port Keycloak `8180`
+                - Trafic entrant et sortant
+        - Exigences pour le dépannage (facultatif, requis pour consulter les journaux et modifier tous les paramètres) :
+            - Port SSH `22`
+                - Trafic entrant et sortant
+            - Port Dozzle `8190`
+                - Trafic entrant et sortant
+- **L'accès DHCP** doit être disponible pour l'"[Étape 5 - Connexion réseau à la machine virtuelle](#etape-5-connexion-reseau-a-la-machine-virtuelle)" (recommandé).
 - **Exigences en matière de sauvegarde**, voir "Annexe 1 - Sauvegarde et restauration des paramètres de l'appliance".
 - Confirmation que le MGW existant ne sera pas supprimé tant que la procédure d'acceptation n'aura pas été menée à bien.
 - Accès au DNS, aux connecteurs de serveur de messagerie, aux règles de transport et aux paramètres de relais.
