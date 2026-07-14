@@ -88,6 +88,19 @@ The following items must be available or confirmed before the installation:
 | `8084` | TCP | HTTP - seal callback from remote sealer service |
 | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication. Read our [Security Assessment WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
 
+#### Inbound VM Access (your administrative machine to the HIN Gateway VM)
+
+!!! important
+    These firewall rules should be applied only between your administrative machine and the HIN Gateway VM. There is no need to expose these ports to the Internet.
+
+| Port | Protocol | Purpose |
+| :--- | :------: | :------ |
+| `80` | TCP | Redirects HTTP traffic to HTTPS |
+| `443` | TCP | Used to manage the HIN Gateway through the web dashboard |
+| `8180` | TCP | Used by Keycloak to authenticate users for the HIN Gateway dashboard |
+| `8190` | TCP | Optional. Required for troubleshooting and viewing logs |
+| `22` | TCP | Optional. Required for troubleshooting and modifying configuration |
+
 #### Outbound Network Access (server must reach)
 
 | Destination | Port | Protocol | Purpose |
@@ -100,7 +113,6 @@ The following items must be available or confirmed before the installation:
 | Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
 | Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
 | NTP servers | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
-| Internal network access for Keycloak | `8090` | TCP | Its used to authenticate users in HIN Gateway Dashboard via Keycloak |
 
 ## Contact us
 
