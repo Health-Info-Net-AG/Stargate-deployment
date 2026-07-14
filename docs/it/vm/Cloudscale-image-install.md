@@ -21,10 +21,13 @@
 - Inserisci il tuo **FQDN** o nome host preferito.
 - In **Sistema operativo**, seleziona **Immagini personalizzate** e scegli l'immagine importata.
 - In **Flavor di calcolo**, seleziona **Flex-4-2** o **Flex-8-2** a seconda del carico previsto (può essere regolato in seguito). Vedi [Requisiti del server](../index.md#requisiti-del-server) per i dettagli.
-- In **Capacità di archiviazione**, imposta almeno **20 GB**. Fare riferimento ai [Requisiti del server](../index.md#requisiti-del-server).
+- In **Capacità di archiviazione**, imposta almeno **30 GB**. Fare riferimento ai [Requisiti del server](../index.md#requisiti-del-server).
 - In **Posizione del server**, seleziona la zona preferita.
 - In **Gestione della rete**, abilita solo **IPv4** se l'istanza Stargate deve essere accessibile via Internet (es., per Office 365).
 - In **Sicurezza di accesso**, seleziona la tua chiave SSH (utilizzabile con l'utente `almalinux`).
+- Nella sezione **Password**, imposta una password sicura a tua scelta.
+!!! tip "Senza una password, l'autenticazione SSH tramite password è disabilitata"
+    Per il primo accesso devi comunque utilizzare la password iniziale fornita da HIN. Tuttavia, se non imposti una nuova password, cloud-init disabiliterà l'autenticazione SSH tramite password per tutti gli utenti, consentendo l'accesso SSH solo tramite chiave pubblica.
 - Fai clic su **Avvia**.
 
 ## Accedi e inizializza l'istanza Stargate

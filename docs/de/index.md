@@ -52,6 +52,19 @@
 | `8084` | TCP | HTTP – Seal-Callback von einem entfernten Sealer-Dienst |
 | `19818` | UDP+TCP | WireGuard – Verschlüsselter Tunnel für die Agent-zu-Agent-Kommunikation. Lesen Sie unser [Sicherheitsgutachten zu WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
 
+#### Eingehender VM-Zugriff (von Ihrem Administrationsrechner zur HIN Gateway VM)
+
+!!! important
+    Diese Firewall-Regeln sollten nur zwischen Ihrem Administrationsrechner und der HIN Gateway VM angewendet werden. Es ist nicht erforderlich, diese Ports für das Internet freizugeben.
+
+| Port | Protokoll | Zweck |
+| :--- | :-------: | :---- |
+| `80` | TCP | Leitet HTTP-Datenverkehr auf HTTPS um |
+| `443` | TCP | Dient zur Verwaltung des HIN Gateway über das Web-Dashboard |
+| `8180` | TCP | Wird von Keycloak zur Authentifizierung von Benutzern für das HIN Gateway Dashboard verwendet |
+| `8190` | TCP | Optional. Erforderlich für die Fehlerbehebung und das Anzeigen von Protokollen |
+| `22` | TCP | Optional. Erforderlich für die Fehlerbehebung und das Ändern der Konfiguration |
+
 #### Ausgehender Netzwerkzugriff (Server muss erreichen können)
 
 | Ziel | Port | Protokoll | Zweck |
@@ -64,7 +77,6 @@
 | Ziel-Mailserver | `25` | TCP | Zustellung ausgehender E-Mails (via MX-Lookup) |
 | DNS-Server | `53` | UDP+TCP | Ausgehend an öffentliche DNS-Server |
 | NTP-Server | `123` | UDP | NTP synchronisiert die Uhren von Computern, Servern, Netzwerkgeräten und virtuellen Maschinen mit präzisen Zeitquellen |
-| Interner Netzwerkzugriff für Keycloak | `8090` | TCP | Wird verwendet, um Benutzer im HIN Gateway Dashboard über Keycloak zu authentifizieren |
 
 ## Kontaktieren Sie uns
 
