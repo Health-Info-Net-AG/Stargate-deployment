@@ -21,10 +21,13 @@
 - Entrez votre **FQDN** ou nom d'hôte préféré.
 - Sous **Système d'exploitation**, sélectionnez **Images personnalisées** et choisissez votre image importée.
 - Sous **Flavor de calcul**, sélectionnez **Flex-4-2** ou **Flex-8-2** en fonction de la charge prévue (peut être ajusté ultérieurement). Voir [Exigences du serveur](../index.md#exigences-du-serveur) pour plus de détails.
-- Sous **Capacité de stockage**, définissez au moins **20 Go**. Veuillez vous référer aux [Exigences du serveur](../index.md#exigences-du-serveur).
+- Sous **Capacité de stockage**, définissez au moins **30 Go**. Veuillez vous référer aux [Exigences du serveur](../index.md#exigences-du-serveur).
 - Sous **Emplacement du serveur**, sélectionnez votre zone préférée.
 - Sous **Gestion du réseau**, activez uniquement **IPv4** si l'instance Stargate doit être accessible sur Internet (par exemple, pour Office 365).
 - Sous **Sécurité d'accès**, sélectionnez votre clé SSH (utilisable avec l'utilisateur `almalinux`).
+- Sous **Mot de passe**, définissez un mot de passe sécurisé de votre choix.
+!!! tip "Sans mot de passe, l'authentification SSH par mot de passe est désactivée"
+    Vous devez tout de même utiliser le mot de passe initial fourni par HIN lors de votre première connexion. Toutefois, si vous ne définissez pas de nouveau mot de passe, cloud-init désactivera l'authentification SSH par mot de passe pour tous les utilisateurs, de sorte que l'accès SSH ne sera possible qu'à l'aide d'une clé publique.
 - Cliquez sur **Lancer**.
 
 ## Installer HIN Gateway
