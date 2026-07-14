@@ -9,6 +9,31 @@ PROD_FILE="docker-compose/customer-config-prod.example.sh"
 
 SEMVER_RE='^v[0-9]+\.[0-9]+\.[0-9]+$'              # v1.0.0 (manual milestones)
 
+SVC_BASE="https://code.vereign.com/svdh"
+
+service_repo() {   # first-party service NAME (no _VERSION) -> repo slug; empty otherwise
+  case "$1" in
+    SMIMEKEYS) echo smimekeys ;;
+    POLICY|POLICY_SYNC) echo policy ;;
+    IRISAGENT) echo irisagent ;;
+    MXENGINE) echo mxengine ;;
+    DASHBOARD) echo dashboard ;;
+    MTACONF) echo mtaconf ;;
+    *) echo "" ;;
+  esac
+}
+
+is_semver() { printf '%s' "$1" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; }
+
+release_link() {   # $1=NAME $2=VERSION -> markdown cell
+  local repo; repo="$(service_repo "$1")"
+  if [ -n "$repo" ] && is_semver "$2"; then
+    printf '[notes](%s/%s/-/releases/%s)' "$SVC_BASE" "$repo" "$2"
+  else
+    printf '—'
+  fi
+}
+
 
 prev_tag() {
   git tag --merged "$1" --sort=-v:refname 2>/dev/null \
@@ -48,7 +73,8 @@ parse_versions() {
 }
 
 TMP_PROD="$(mktemp)"
-trap 'rm -f "$TMP_PROD"' EXIT
+TMP_PREV=""
+trap 'rm -f "$TMP_PROD" "$TMP_PREV"' EXIT
 
 git show "${REF}:${PROD_FILE}" 2>/dev/null | parse_versions > "$TMP_PROD" || true
 
@@ -62,10 +88,39 @@ if [ -n "${CI_PIPELINE_URL:-}" ]; then
 fi
 echo "### Service versions"
 echo
-echo "| Service | Version |"
-echo "|---------|---------|"
-awk -F'\t' '{ printf "| %s | %s |\n", $1, $2 }' "$TMP_PROD"
+echo "| Service | Version | Release |"
+echo "|---------|---------|---------|"
+while IFS=$'\t' read -r svc ver; do
+  [ -n "$svc" ] || continue
+  printf '| %s | %s | %s |\n' "$svc" "$ver" "$(release_link "$svc" "$ver")"
+done < "$TMP_PROD"
 echo
+
+if [ -n "$PREV_TAG" ]; then
+  TMP_PREV="$(mktemp)"
+  git show "${PREV_TAG}:${PROD_FILE}" 2>/dev/null | parse_versions > "$TMP_PREV" || true
+  echo "### Service releases changed since ${PREV_TAG}"
+  echo
+  seen=""
+  changed=0
+  while IFS=$'\t' read -r svc ver; do
+    repo="$(service_repo "$svc")"; [ -n "$repo" ] || continue
+    prev="$(awk -F'\t' -v k="$svc" '$1==k{print $2}' "$TMP_PREV")"
+    [ "$ver" != "$prev" ] || continue
+    key="${repo}:${ver}"
+    case " $seen " in *" $key "*) continue ;; esac
+    seen="$seen $key"
+    if is_semver "$ver"; then
+      link=" ([release](${SVC_BASE}/${repo}/-/releases/${ver}))"
+    else
+      link=""
+    fi
+    printf -- '- %s %s → **%s**%s\n' "$svc" "${prev:-(new)}" "$ver" "$link"
+    changed=1
+  done < "$TMP_PROD"
+  [ "$changed" -eq 1 ] || echo "_No first-party service version changes._"
+  echo
+fi
 if [ -n "$PREV_TAG" ]; then
   echo "### Changes since ${PREV_TAG}"
 else
