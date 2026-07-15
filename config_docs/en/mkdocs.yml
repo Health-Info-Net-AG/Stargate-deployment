@@ -181,4 +181,5 @@ nav:
           - Cloudscale: vm/Cloudscale-image-install.md
   - VM Images catalog: vm/VM-Catalog.md
   - Troubleshooting: Troubleshooting.md
+  - Release Notes: Release-notes.md
   - Support / Contact us: Support.md
