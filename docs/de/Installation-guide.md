@@ -96,9 +96,26 @@ Die folgenden Punkte müssen vor der Migration verfügbar sein oder bestätigt w
     - Wenn Sie an einem Windows-Rechner arbeiten, der über Port 22 Zugriff auf die Mail-Gateway-VM hat, können wir Sie während des Gesprächs dabei unterstützen, den Export des privaten Schlüssels aus dem MGW zu aktivieren.
     - Falls Sie keinen Zugriff auf einen solchen Rechner haben, wenden Sie sich bitte per E-Mail oder Telefon (support@hin.ch / 0848 830 740) an den HIN Support, damit wir Ihnen helfen können, eine Supportverbindung über "Systemadministration" -> "Supportverbindung" -> "Verbinden" herzustellen.
 - **Lade die neueste Version** des [VM-Images](vm/VM-Catalog.md) herunter.
-- **Firewall-Anforderungen für WireGuard**. Konfigurieren Sie den WireGuard-Port 19818 (TCP/UDP) in Ihrer Firewall:
-    - Eingehender und ausgehender Datenverkehr
-    - Verkehr zulassen: "any-to-HIN Gateway" und "HIN Gateway-to-any"
+- **Firewall**:
+    - Erlauben Sie den Datenverkehr: beliebig → HIN Gateway und HIN Gateway → beliebig
+        - WireGuard: Siehe [Serveranforderungen – Eingehender Netzwerkzugriff](./index.md#eingehender-netzwerkzugriff-firewall-muss-erlauben):
+        - Konfigurieren Sie den WireGuard-Port `19818` (TCP/UDP) in Ihrer Firewall.
+        - Eingehender und ausgehender Datenverkehr
+    - Erlauben Sie den Datenverkehr: Administrationsrechner → HIN Gateway-VM
+        - Anforderungen für die Installation:
+            - HTTPS-Port `443`
+                - Eingehender und ausgehender Datenverkehr
+            - Keycloak-Port `8180`
+                - Eingehender und ausgehender Datenverkehr
+        - Anforderungen für die Fehlerbehebung (optional, um Protokolle einzusehen und alle Parameter zu ändern):
+            - SSH-Port `22`
+                - Eingehender und ausgehender Datenverkehr
+            - Dozzle-Port `8190`
+                - Eingehender und ausgehender Datenverkehr
+- Für "[Schritt 5 - Netzwerkverbindung zur VM](#schritt-5-netzwerkverbindung-zur-vm)" sollte ein **DHCP-Zugang** verfügbar sein (empfohlen).
+- Anforderungen an die **Datensicherung**, siehe "[Anhang 1 - Sichern und Wiederherstellen der Appliance-Einstellungen](#anhang-1-sichern-und-wiederherstellen-der-appliance-einstellungen)".
+- Bestätigung, dass das bestehende MGW erst nach Abschluss der Abnahme gelöscht wird.
+- Zugriff auf DNS, Mailserver-Konnektoren, Transportregeln und Relay-Einstellungen.
 
 !!! info "Warum WireGuard?"
     Der WireGuard-Port erfüllt zwei wichtige Funktionen:
@@ -141,14 +158,14 @@ Erstellen Sie ein Backup der bestehenden MGW-Appliance und stellen Sie sicher, d
 ![Verantwortlichkeit HIN](https://img.shields.io/badge/Verantwortlichkeit-HIN-orange)
 
 !!! warning "Unterstützung durch HIN erforderlich"
-    Dieser Schritt erfordert einen Freischaltcode, der von einem HIN-Support-Ingenieur während des geplanten Anrufs bereitgestellt wird. Kontaktieren Sie den HIN Support oder nehmen Sie an der geplanten Migrationssitzung teil, bevor Sie beginnen.
+    Für diesen Schritt ist ein Freischaltcode erforderlich. Der Code wird von einem HIN Support Engineer bereitgestellt. Wenn Sie die Installation selbstständig fortsetzen möchten, kontaktieren Sie bitte den HIN Support, um den Freischaltcode anzufordern. Andernfalls wird Ihnen der Freischaltcode während des geplanten Migrationstermins zur Verfügung gestellt.
 
 <!-- !!! info
     Bitte laden Sie das Tool `HIN_Migration-Tool_v*.exe` unter folgendem Link herunter: [link](https://link) -->
 
 1. Melden Sie sich bei der bestehenden MGW-Web-GUI an.
 2. Öffnen Sie **„Mail System“**. <br> ![Mail System öffnen](assets/installation-guide/step1.3-2-open-mail-system.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-3. Starten Sie die Anwendung [**`HIN_Migration-Tool_v*.exe`**](https://images.hin.ch/mgw/HIN_MigrationTool-v3.0.exe), die Ihnen während des Anrufs vom Support-Mitarbeiter zur Verfügung gestellt wurde. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+3. Starten Sie die Anwendung, indem Sie auf [**`HIN_Migration-Tool_v*.exe`**](https://images.hin.ch/mgw/HIN_MigrationTool-v3.0.exe) klicken, wenn Sie die Installation selbst durchführen möchten. Alternativ können Sie bis zum Migrationstermin warten, bei dem der Support Engineer Sie bei der Installation unterstützt. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 4. Geben Sie den Freischaltcode ein, den Ihnen der Support-Mitarbeiter mitteilt. <br> ![Freischaltcode eingeben](assets/installation-guide/step1.3-4-unlock-code.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 5. Wählen Sie **„Export aktivieren“**. <br> ![Export aktivieren](assets/installation-guide/step1.3-5-enable-export.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 6. Geben Sie die MGW-IP-Adresse ein. <br> ![MGW-IP-Adresse eingeben](assets/installation-guide/step1.3-6-mgw-ip.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }

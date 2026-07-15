@@ -97,11 +97,23 @@ The following items must be available or confirmed before the installation:
     - If you are working on a Windows machine that has access to the Mail Gateway VM via port 22, we can support you during the call in enabling the private key export from the MGW.
     - If you do not have access to such a machine, please contact HIN Support by email or phone (<support@hin.ch> / 0848 830 740) to help you establish a support connection via System Administration → Support Connection → Connect.
 - **Download latest** version of [VM image](vm/VM-Catalog.md)
-- **Firewall** requirements for WireGuard.
-  Configure the WireGuard port 19818 (TCP/UDP) in your firewall:
-    - Incoming and outgoing traffic
+- **Firewall**:
     - Allow traffic: any-to-HIN Gateway and HIN Gateway-to-any
-- **DHCP access** should be available for "Step 5 - Network connection to the VM" (recommended).
+        - WireGuard, please refer to [Server Requirements - Inbound Network Access](./index.md#inbound-network-access-firewall-must-allow):
+            - Configure the WireGuard port `19818` (TCP/UDP) in your firewall
+                - Incoming and outgoing traffic
+    - Allow traffic: your administrative machine-to-HIN Gateway VM
+        - Installation requirements:
+            - HTTPS port `443`
+                - Incoming and outgoing traffic
+            - Keycloak port `8180`
+                - Incoming and outgoing traffic
+        - Troubleshooting requirements (optional needed to see logs, modify all parameters):
+            - SSH port `22`
+                - Incoming and outgoing traffic
+            - Dozzle port `8190`
+                - Incoming and outgoing traffic
+- **DHCP access** should be available for "[Step 5 - Network connection to the VM](#step-5-network-connection-to-the-vm)" (recommended).
 - **Backup requirements** - see "Annex 1 - Backing up and restoring the appliance settings".
 - Confirmation that the existing MGW will **not** be deleted until acceptance has been completed.
 - Access to DNS, mail server connectors, transport rules, and relay settings.
@@ -134,6 +146,16 @@ Verify that both emails are delivered successfully, including subject, content a
 
 Create a backup of the existing MGW appliance and ensure that the VM is retained until the migration has been successfully completed and formally accepted. For more information, see "Annex 1 - Backing up and restoring the appliance settings".
 
+!!! info "Check current MGW routing configuration"
+    Before shutting down the existing MGW, check the following configuration values and note them down. You will likely need them later when configuring the HIN Gateway:
+
+    1. Log in to the MGW and go to **"Mail System → Outgoing server"** and check whether anything is configured there.
+    2. For each domain hosted on the MGW, go to `Mail System → <domain> → Forwarding server` and `Mail System → <domain> → Send ALL outgoing mails from this domain to the following SMTP server`, and record the current values.
+    <br> ![domain-relay-host](assets/installation-guide/step1.2-domain-relay-host.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+!!! tip "MGW header check"
+    If you use the `Header check` option in the MGW, note down the configured value as well. You can set up the same header check later in the HIN Gateway.
+
 ### Step 1.3 - Export private key(s)
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
@@ -141,14 +163,15 @@ Create a backup of the existing MGW appliance and ensure that the VM is retained
 ![Responsibility HIN](https://img.shields.io/badge/Responsibility-HIN-orange)
 
 !!! warning "HIN assistance required"
-    This step requires an unlock code that is provided by a HIN support engineer during the planned call. Contact HIN Support or join the planned migration call before starting.
+    An unlock code is required for this step. The code is provided by a HIN Support Engineer.
+If you would like to continue the installation on your own, please contact HIN Support to request the unlock code. Otherwise, the unlock code will be provided during the planned migration call.
 
 <!-- !!! info
     Please download tool `HIN_Migration-Tool_v*.exe` under the Link: [link](https://link) -->
 
 1. Log into the existing MGW webGUI.
 2. Open **"Mail System"**. <br> ![Open Mail System](assets/installation-guide/step1.3-2-open-mail-system.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-3. Run the [**`HIN_Migration-Tool_v*.exe`**](https://images.hin.ch/mgw/HIN_MigrationTool-v3.0.exe) application provided by the support engineer during the call. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+3. Run the application by clicking on [**`HIN_Migration-Tool_v*.exe`**](https://images.hin.ch/mgw/HIN_MigrationTool-v3.0.exe) if you want to install it yourself. Alternatively, you can wait until the migration call, where the support engineer will assist you with the installation. <br> ![HIN Migration Tool](assets/installation-guide/step1.3-3-migration-tool.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 4. Enter the unlock code that the support engineer provides to you. <br> ![Enter unlock code](assets/installation-guide/step1.3-4-unlock-code.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 5. Select **"Enable export"**. <br> ![Enable export](assets/installation-guide/step1.3-5-enable-export.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 6. Enter the MGW IP address. <br> ![Enter MGW IP address](assets/installation-guide/step1.3-6-mgw-ip.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
@@ -384,7 +407,7 @@ On this screen, configure your initial settings:
 - Indicate for which domain(s) the `sec.<domain>` prefix is already configured ("Use sec-prefix").
 
 ??? tip "How to check if my domain is set up with a Security Prefix?"
-    You can open our online tool in your browser: https://trust.hin.ls-infra.me/, enter `sec.<domain>`, and click the **Check** button. If you see the message:
+    You can open our online tool in your browser: <https://trust.hin.ls-infra.me/>, enter `sec.<domain>`, and click the **Check** button. If you see the message:
 
     ✅ This domain is encrypted.
 
@@ -473,7 +496,7 @@ Ensure that your domain has received its policy-based peer certificate under **"
 !!! question
     Contact HIN Support by email or phone (**<support@hin.ch>** / **0848 830 740**) if you encounter any issues.
 
-### Step 18 - Configure mail server
+### Step 18 - Configure mail server and HIN Gateway
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
@@ -481,12 +504,41 @@ If you followed the recommended approach by exporting the private key, importing
 
 Otherwise, configure your mail server or the associated components so that traffic is routed via the new HIN Gateway. Check and update the following settings, if required:
 
+#### Email server
+
 - SMTP relay / smart host
 - Connectors
 - Transport rules
 - Routing domains
 
 See [Exchange Integration](Exchange-integration.md) for detailed instructions.
+
+#### HIN Gateway config
+
+- Go to the `Settings` page and, for each domain, add a **Relay host** using the value you recorded from the MGW's `Forwarding server` field in "Step 1.2 - Backing up the existing MGW".
+  <br> ![domain-relay-host](assets/installation-guide/step18-add-domain-relay.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+- On the same `Settings` page, set the **Default relay host**.
+- If you are using Microsoft 365 / Exchange Online, add its published outbound IP ranges to **`Settings` → `Trusted networks`** so the HIN Gateway trusts and relays mail coming from Exchange Online:
+
+    ```text
+    40.92.0.0/15
+    40.107.0.0/16
+    51.4.72.0/24
+    51.4.80.0/27
+    51.5.72.0/24
+    51.5.80.0/27
+    52.100.0.0/14
+    104.47.0.0/17
+    2a01:111:f400::/48
+    2a01:111:f403::/48
+    2a01:4180:4050:400::/64
+    2a01:4180:4050:800::/64
+    2a01:4180:4051:400::/64
+    2a01:4180:4051:800::/64
+    ```
+
+  <br> ![domain-relay-host](assets/installation-guide/step18-add-default-relay-and-network.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ### Step 19 - Test prior to switchover
 

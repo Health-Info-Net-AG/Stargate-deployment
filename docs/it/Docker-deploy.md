@@ -21,29 +21,25 @@ Fare riferimento a [Requisiti raccomandati](./index.md#requisiti-del-server)
 
     Se non si ha `git` installato, è sempre possibile ottenere un archivio con tutti i file all'interno. Scaricarlo tramite il seguente link. [Scarica come ZIP](https://github.com/Health-Info-Net-AG/Stargate-deployment/archive/refs/heads/main.zip){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-Prima dell'installazione, creare e compilare il file di configurazione cliente:
-
-Copiare il modello:
+Lo script di installazione crea automaticamente `customer-config.sh` dal modello fornito al primo avvio, quindi una nuova installazione non richiede **alcuna configurazione manuale**. Se si preferisce crearlo manualmente, copiare il modello:
 
 ```bash
 cp customer-config-prod.example.sh customer-config.sh
 ```
 
-Modificare il file di configurazione:
+**Non** è necessario modificarlo - ogni valore viene rilevato automaticamente oppure configurato successivamente tramite la dashboard:
 
-```bash
-nano customer-config.sh
-```
+| Impostazione | Come viene impostata |
+|---------|---------------|
+| `SERVER_STATIC_IP` | Rilevato automaticamente dall'interfaccia di rete principale del server. |
+| `CUSTOMER_NAME` | Per impostazione predefinita, il nome host del sistema. |
+| `DEPLOYMENT_NAME` | Derivato da `CUSTOMER_NAME` (utilizzato nelle etichette dei log e nel nome host di Alloy). |
+| Password e chiavi (`POSTGRES_PASSWORD`, `S3_SECRET_KEY`, `VAULT_TOKEN`, `WG_PRIVATE_KEY`) | Generate in modo sicuro al primo avvio e riscritte in `customer-config.sh`. |
 
-**Impostazioni richieste — è necessario compilarle:**
+I domini di posta, il nome host di posta, i certificati S/MIME e i peer WireGuard sono tutti configurati in fase di esecuzione tramite la dashboard dopo l'avvio dello stack - non fanno parte di `customer-config.sh`.
 
-| Impostazione | Descrizione | Esempio |
-|---------|-------------|---------|
-| `SERVER_STATIC_IP` | L'IP pubblico statico reale di questo server. Utilizzato per derivare l'indirizzo del tunnel WireGuard e l'URL di callback di MXEngine. | `203.0.113.10` |
-| `CUSTOMER_NAME` | Nome del cliente/organizzazione (utilizzato per identificazione e logging). | `Acme Corp` |
-| `DEPLOYMENT_NAME` | Identificatore univoco del deployment (utilizzato nelle etichette dei log e nel nome host di Alloy). | `stargate-acme` |
-
-I domini di posta e il nome host di Stalwart sono configurati in fase di esecuzione tramite la pagina `/mail` del dashboard; non fanno parte di `customer-config.sh`.
+!!! note "Dietro NAT o un IP flottante?"
+    Il rilevamento automatico utilizza l'IP dell'interfaccia principale del server. Se il server è raggiungibile tramite un IP pubblico o flottante *diverso* (comune con il NAT), impostare `SERVER_STATIC_IP` su quell'IP pubblico in `customer-config.sh` prima dell'installazione, in modo che gli URL della dashboard e di login di Keycloak puntino all'indirizzo raggiungibile. In caso contrario, lasciarlo vuoto.
 
 **Impostazioni auto-derivate — lasciare vuote a meno che non sia necessario sovrascriverle:**
 

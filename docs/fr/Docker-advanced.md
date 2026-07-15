@@ -72,10 +72,13 @@ Le dépôt de déploiement Stargate reçoit des mises à jour des scripts (`inst
 ./scripts/backup.sh
 ```
 
-#### 2. Récupérez les dernières modifications du dépôt
+#### 2. Récupérez et appliquez les dernières modifications
+
+Le dépôt est la source unique de vérité pour les fichiers suivis. Mettez donc à jour en réinitialisant sur la dernière révision. Cela remplace les fichiers suivis (scripts, `docker-compose.yml`, modèles de configuration) par les versions du dépôt:
 
 ```bash
-git pull
+git fetch origin
+git reset --hard origin/main
 ```
 
 #### 3. Redémarrez les services pour prendre en compte les modifications de scripts ou de configuration
@@ -86,7 +89,7 @@ git pull
 ```
 
 !!! note
-    `git pull` n'écrasera pas votre `customer-config.sh`, `.env` ou le répertoire `secrets/` - ils sont dans `.gitignore`. Si vous avez des modifications locales sur des fichiers suivis (ex. `docker-compose.yml`), git vous avertira. Dans ce cas, mettez de côté vos modifications d'abord avec `git stash`, faites un pull, puis réappliquez avec `git stash pop`.
+    Votre `customer-config.sh`, `.env` et le répertoire `secrets/` sont dans `.gitignore`, donc cette opération n'y touche **pas** - votre configuration et vos identifiants sont préservés. Effectuez toujours vos personnalisations dans `customer-config.sh`, jamais en modifiant des fichiers suivis comme `docker-compose.yml`: une réinitialisation matérielle - et les mises à jour automatiques déclenchées depuis le tableau de bord - annulera toute modification des fichiers suivis. C'est intentionnel; le fait que chaque déploiement reste identique au dépôt est ce qui permet aux mises à jour de s'appliquer de manière fiable et sans résolution manuelle de conflits.
 
 Si la mise à jour inclut des modifications du modèle de configuration, comparez-le avec votre configuration existante pour voir si de nouvelles variables ont été ajoutées:
 
@@ -96,51 +99,16 @@ diff customer-config.sh customer-config-prod.example.sh
 
 ### Mettre à jour les images des services
 
-#### Mettre à jour un service unique
+Les versions des applications sont gérées **exclusivement via le tableau de bord**. Chaque version est un *manifeste* versionné qui fige ensemble une combinaison connue et testée de toutes les versions de services; la page de mise à jour du tableau de bord liste les versions disponibles, et l'application de l'une d'elles récupère les images correspondantes et recrée les services concernés pour vous.
 
-Modifiez la version dans `.env`:
+Pour mettre à jour:
 
-```bash
-sed -i 's/MXENGINE_VERSION=.*/MXENGINE_VERSION=v0.0.31/' .env
-```
+1. Ouvrez le tableau de bord et accédez à la page de mise à jour.
+2. Sélectionnez la version cible.
+3. Confirmez - le tableau de bord applique le manifeste de version et recrée les services modifiés.
 
-Puis récupérez le conteneur et recréez-le:
-
-```bash
-docker compose pull mxengine
-docker compose up -d --force-recreate mxengine
-```
-
-#### Test rapide (sans modifier .env)
-
-Remplacez la version directement:
-
-```bash
-MXENGINE_VERSION=v0.0.31 docker compose up -d --force-recreate mxengine
-```
-
-#### Mettre à jour plusieurs services
-
-Modifiez les versions dans `.env`, puis récupérez les conteneurs et recréez-les:
-
-```bash
-docker compose pull smimekeys-client policy irisagent mxengine
-docker compose up -d --force-recreate smimekeys-client policy irisagent mxengine
-```
-
-#### Mettre à jour tous les services
-
-Récupérez toutes les dernières images
-
-```bash
-docker compose pull
-```
-
-Recréez tous les services
-
-```bash
-docker compose up -d --force-recreate
-```
+!!! warning "Ne changez pas les versions à la main"
+    Ne modifiez pas les valeurs `*_VERSION` individuelles dans `customer-config.sh` ou `.env` pour mettre à jour les applications. Les versions sont publiées et testées ensemble en tant qu'ensemble - en choisir une à la main produit une combinaison non testée, et la modification serait de toute façon annulée par la prochaine mise à jour du tableau de bord. Mettez toujours à jour depuis le tableau de bord.
 
 #### Nettoyer les anciennes images
 
@@ -152,12 +120,7 @@ docker image prune -f
 
 #### Retour arrière
 
-Pour effectuer un retour arrière, modifiez `.env` vers la version précédente et recréez:
-
-```bash
-sed -i 's/MXENGINE_VERSION=.*/MXENGINE_VERSION=v0.0.30/' .env
-docker compose up -d --force-recreate mxengine
-```
+Pour effectuer un retour arrière, sélectionnez une version antérieure sur la page de mise à jour du tableau de bord et appliquez-la - le même mécanisme s'exécute en sens inverse et fige l'ensemble testé précédent. N'effectuez pas de retour arrière en modifiant les versions à la main.
 
 ## Configuration
 
@@ -209,7 +172,6 @@ WG_TRANSPORT_MODE=tcp
 | Stalwart SMTP | localhost:25 |
 | Passerelle APISIX | <http://localhost:9080> |
 | Keycloak | <https://localhost:8180> |
-| PostgreSQL | localhost:5432 |
 
 ## Contrôles de santé
 
@@ -452,13 +414,7 @@ docker exec stargate-mxengine nc -zv stalwart 10026
 
 ### Mise à jour de l'image mtaconf
 
-Le conteneur mtaconf est récupéré du registre. Pour mettre à jour vers un nouveau tag:
-
-```bash
-sed -i 's/MTACONF_VERSION=.*/MTACONF_VERSION=<nouveau-tag>/' .env
-docker compose pull mtaconf
-docker compose up -d mtaconf
-```
+Comme tout service, la version de l'image mtaconf fait partie d'une version et se met à jour via le tableau de bord - pas en modifiant son tag à la main. Sélectionnez la version cible sur la page de mise à jour du tableau de bord pour l'appliquer.
 
 ### Dépannage de Stargate
 

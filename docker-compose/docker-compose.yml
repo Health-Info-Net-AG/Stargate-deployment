@@ -20,8 +20,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init/postgres:/docker-entrypoint-initdb.d:ro
-    ports:
-      - "5432:5432"
+    # No host port mapping: postgres is reachable only from inside the
+    # docker network at postgres:5432. Do not re-expose it on the host.
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -527,6 +527,9 @@ services:
       SYNC_PEERS_INTERVAL: "30m"
       CERT_CA_IRISAGENT_DOMAIN: "${CERT_CA_IRISAGENT_DOMAIN:-}"
 
+      # message size limit
+      HTTP_MAX_REQUEST_BODY_SIZE: "31457280"
+
       LOG_LEVEL: "debug"
     ports:
       - "8083:8080"
@@ -978,6 +981,7 @@ services:
       VAULT_TOKEN: "${VAULT_TOKEN}"
       VAULT_MOUNT_PATH: "secret-mtaconf"
       HTTP_ADDR: ":8080"
+      HTTP_WRITE_TIMEOUT: "60s"
       DASHBOARD_CONFIG_URL: "http://dashboard:3000/api/internal/installation-config?service=stalwart"
       LOG_LEVEL: "info"
     tmpfs:
