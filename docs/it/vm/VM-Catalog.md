@@ -32,6 +32,8 @@ Qui puoi trovare un catalogo VM attuale per diverse piattaforme. Non dimenticare
 
         Puoi aggiungere l'argomento `-Algorithm SHA256` per forzare l'uso di SHA256.
 
+[![Latest Release](https://img.shields.io/endpoint?style=for-the-badge&url=https://health-info-net-ag.github.io/Stargate-deployment/badges/release.json)](https://github.com/Health-Info-Net-AG/Stargate-deployment)
+
 | Nome immagine | Tipo immagine | Dimensione immagine | Link | Somma di controllo SHA256 |
-| :--------- | :--------: | :--------- | :--: | :-------------- |
+| :------------ | :-----------: | :------------------ | :--: | :------------------------ |
 --8<-- "docs/assets/VM-Catalog-with-links.md"

@@ -32,6 +32,8 @@ Here you can find a current VM Catalog for different platforms. Please do not fo
 
         You can add the `-Algorithm SHA256` argument to force SHA256 use.
 
-| Image Name | Image Type | Image Größe | Link | SHA256 Checksum |
+[![Latest Release](https://img.shields.io/endpoint?style=for-the-badge&url=https://health-info-net-ag.github.io/Stargate-deployment/badges/release.json)](https://github.com/Health-Info-Net-AG/Stargate-deployment)
+
+| Image Name | Image Type | Image Size | Link | SHA256 Checksum |
 | :--------- | :--------: | :--------- | :--: | :-------------- |
 --8<-- "docs/assets/VM-Catalog-with-links.md"
