@@ -27,6 +27,11 @@ update_env_token() {
   if grep -q "^VAULT_TOKEN=" "$ENV_FILE"; then
       sed -i "s/^VAULT_TOKEN=.*/VAULT_TOKEN=\"$token\"/" "$ENV_FILE"
   else
+    # Ensure a trailing newline first so the append can't merge onto the
+    # last existing line (see persist_secret).
+    if [ -s "$ENV_FILE" ] && [ "$(tail -c1 "$ENV_FILE")" != "" ]; then
+      echo "" >> "$ENV_FILE"
+    fi
     echo "VAULT_TOKEN=\"$token\"" >> "$ENV_FILE"
   fi
   echo "Updated VAULT_TOKEN in .env file"
@@ -74,6 +79,13 @@ persist_secret() {
   if grep -q "^${key}=" "$file"; then
     sed -i "s|^${key}=.*|${key}=\"${value}\"|" "$file"
   else
+    # Ensure the file ends with a newline before appending, otherwise the new
+    # assignment merges onto the last existing line (e.g. a version key the
+    # ops-agent wrote without a trailing newline), corrupting both into an
+    # invalid value. Same guard as sync_customer_config().
+    if [ -s "$file" ] && [ "$(tail -c1 "$file")" != "" ]; then
+      echo "" >> "$file"
+    fi
     echo "${key}=\"${value}\"" >> "$file"
   fi
 }
@@ -514,6 +526,11 @@ save_wireguard_key_to_config() {
       sed -i "s|^WG_PRIVATE_KEY=.*|WG_PRIVATE_KEY=\"$WG_KEY\"|" "$CONFIG_FILE"
     else
       # No WG_PRIVATE_KEY line in the config (unusual) -- append it.
+      # Ensure a trailing newline first so the append can't merge onto the
+      # last existing line (see persist_secret).
+      if [ -s "$CONFIG_FILE" ] && [ "$(tail -c1 "$CONFIG_FILE")" != "" ]; then
+        echo "" >> "$CONFIG_FILE"
+      fi
       echo "WG_PRIVATE_KEY=\"$WG_KEY\"" >> "$CONFIG_FILE"
     fi
     echo "WireGuard private key saved to customer-config.sh"
