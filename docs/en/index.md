@@ -82,6 +82,46 @@ The following items must be available or confirmed before the installation:
 
 #### Inbound Network Access (firewall must allow)
 
+??? tip "Firewall note"
+
+    Depending on your firewall or NAT configuration, you may need to explicitly allow traffic for the required ports. Refer to your firewall and NAT documentation for details.
+
+    The VM must be able to **accept incoming** connections on the required service ports and **send responses back** to the requester. With a stateful firewall (such as `iptables` using `conntrack`), return traffic is automatically allowed by the `ESTABLISHED,RELATED` rules.
+
+    Example `iptables` configuration:
+
+    ```bash
+    # Allow return traffic for established connections
+    iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+    # Allow inbound TCP connections to the open ports
+    iptables -A INPUT -p tcp -m multiport --dports 25,8084,19818 -j ACCEPT
+
+    # Allow outbound TCP connections to the open ports
+    iptables -A OUTPUT -p tcp -m multiport --dports 25,8084,19818 -j ACCEPT
+
+    # Allow inbound UDP port 19818 for Wireguard
+    iptables -A INPUT -p udp --dport 19818 -j ACCEPT
+
+    # Allow outbound UDP port 19818 for Wireguard
+    iptables -A OUTPUT -p udp --dport 19818 -j ACCEPT
+
+    # Additional Services that VM shall be able to reach
+    # DNS
+    iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
+    iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+
+    # NTP
+    iptables -A OUTPUT -p udp --dport 123 -j ACCEPT
+
+    # HTTP
+    iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT
+
+    # HTTPS
+    iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT
+    ```
+
 | Port | Protocol | Purpose |
 | :--- | :------: | :------ |
 | `25` | TCP | SMTP - receiving mail from external servers |
@@ -90,7 +130,7 @@ The following items must be available or confirmed before the installation:
 
 #### Inbound VM Access (your administrative machine to the HIN Gateway VM)
 
-!!! important
+!!! info
     These firewall rules should be applied only between your administrative machine and the HIN Gateway VM. There is no need to expose these ports to the Internet.
 
 | Port | Protocol | Purpose |

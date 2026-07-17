@@ -46,6 +46,46 @@
 
 #### Accès réseau entrant (le pare-feu doit autoriser)
 
+??? tip "Remarque concernant le pare-feu"
+
+    Selon la configuration de votre pare-feu ou de votre NAT, il peut être nécessaire d'autoriser explicitement le trafic sur les ports requis. Consultez la documentation de votre pare-feu ou de votre configuration NAT pour plus d'informations.
+
+    La VM doit pouvoir **accepter les connexions entrantes** sur les ports de service requis et **renvoyer les réponses** au demandeur. Avec un pare-feu à états (par exemple `iptables` utilisant `conntrack`), le trafic de retour est automatiquement autorisé par les règles `ESTABLISHED,RELATED`.
+
+    Exemple de configuration `iptables` :
+
+    ```bash
+    # Autoriser le trafic de retour des connexions établies
+    iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+    # Autoriser les connexions TCP entrantes vers les ports ouverts
+    iptables -A INPUT -p tcp -m multiport --dports 25,8084,19818 -j ACCEPT
+
+    # Autoriser les connexions TCP sortantes vers les ports ouverts
+    iptables -A OUTPUT -p tcp -m multiport --dports 25,8084,19818 -j ACCEPT
+
+    # Autoriser le port UDP 19818 entrant pour WireGuard
+    iptables -A INPUT -p udp --dport 19818 -j ACCEPT
+
+    # Autoriser le port UDP 19818 sortant pour WireGuard
+    iptables -A OUTPUT -p udp --dport 19818 -j ACCEPT
+
+    # Services supplémentaires auxquels la VM doit pouvoir accéder
+    # DNS
+    iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
+    iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+
+    # NTP
+    iptables -A OUTPUT -p udp --dport 123 -j ACCEPT
+
+    # HTTP
+    iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT
+
+    # HTTPS
+    iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT
+    ```
+
 | Port | Protocole | Objectif |
 | :--- | :-------: | :------- |
 | `25` | TCP | SMTP - réception des courriels des serveurs externes |
@@ -54,7 +94,7 @@
 
 #### Accès entrant à la VM (de votre poste d'administration vers la VM HIN Gateway)
 
-!!! important
+!!! info
     Ces règles de pare-feu doivent être appliquées uniquement entre votre poste d'administration et la VM HIN Gateway. Il n'est pas nécessaire d'exposer ces ports à Internet.
 
 | Port | Protocole | Objectif |
