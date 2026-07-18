@@ -160,6 +160,7 @@ not_in_nav: |
 nav:
   - Home: index.md
   - Installation Guides:
+      - Quick Start: Quick Start.md
       - Single domain, M365: Installation-guide.md
   #      - New Customers: New-customers.md
   - Technical configuration and Integration:
