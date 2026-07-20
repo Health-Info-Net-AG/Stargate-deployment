@@ -46,6 +46,46 @@
 
 #### Eingehender Netzwerkzugriff (Firewall muss erlauben)
 
+??? tip "Firewall-Hinweis"
+
+    Abhängig von Ihrer Firewall- oder NAT-Konfiguration müssen Sie den Datenverkehr für die erforderlichen Ports möglicherweise explizit zulassen. Weitere Informationen finden Sie in der Dokumentation Ihrer Firewall bzw. NAT-Konfiguration.
+
+    Die VM muss **eingehende** Verbindungen auf den erforderlichen Dienstports **akzeptieren** und **Antworten zurück** an den Anfragenden senden können. Bei einer zustandsbehafteten Firewall (z. B. `iptables` mit `conntrack`) wird der Rückverkehr durch die `ESTABLISHED,RELATED`-Regeln automatisch zugelassen.
+
+    Beispiel für eine `iptables`-Konfiguration:
+
+    ```bash
+    # Rückverkehr für bestehende Verbindungen zulassen
+    iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+    # Eingehende TCP-Verbindungen zu den offenen Ports zulassen
+    iptables -A INPUT -p tcp -m multiport --dports 25,8084,19818 -j ACCEPT
+
+    # Ausgehende TCP-Verbindungen zu den offenen Ports zulassen
+    iptables -A OUTPUT -p tcp -m multiport --dports 25,8084,19818 -j ACCEPT
+
+    # Eingehenden UDP-Port 19818 für WireGuard zulassen
+    iptables -A INPUT -p udp --dport 19818 -j ACCEPT
+
+    # Ausgehenden UDP-Port 19818 für WireGuard zulassen
+    iptables -A OUTPUT -p udp --dport 19818 -j ACCEPT
+
+    # Zusätzliche Dienste, die von der VM erreichbar sein müssen
+    # DNS
+    iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
+    iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+
+    # NTP
+    iptables -A OUTPUT -p udp --dport 123 -j ACCEPT
+
+    # HTTP
+    iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT
+
+    # HTTPS
+    iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT
+    ```
+
 | Port | Protokoll | Zweck |
 | :--- | :-------: | :---- |
 | `25` | TCP | SMTP – Empfangen von E-Mails von externen Servern |
@@ -54,7 +94,7 @@
 
 #### Eingehender VM-Zugriff (von Ihrem Administrationsrechner zur HIN Gateway VM)
 
-!!! important
+!!! info
     Diese Firewall-Regeln sollten nur zwischen Ihrem Administrationsrechner und der HIN Gateway VM angewendet werden. Es ist nicht erforderlich, diese Ports für das Internet freizugeben.
 
 | Port | Protokoll | Zweck |
