@@ -52,8 +52,12 @@ STARGATE_SOURCE_ONLY=1 source "$SCRIPT_DIR/install.sh"
 . "$SCRIPT_DIR/lib/config-sync.sh"
 . "$SCRIPT_DIR/lib/manifest.sh"
 
-# Parse arguments
-ENV_ONLY=false
+# Parse arguments. ENV_ONLY defaults from STARGATE_UPDATE_ENV_ONLY so that
+# `--release <tag> --env-only` survives the flag-less re-exec below: without
+# this, the re-exec'd process would always fall through to a full restart,
+# silently ignoring --env-only rather than doing what was actually asked
+# (stage the release's config/versions without restarting yet).
+ENV_ONLY="${STARGATE_UPDATE_ENV_ONLY:-false}"
 SKIP_BACKUP=false
 RELEASE_TAG=""
 LIST_RELEASES=false
@@ -188,7 +192,11 @@ if [ -n "$RELEASE_TAG" ]; then
   # passed through only so the continued run's banner below can still name
   # the release; it has no effect on control flow, so this remains correct
   # even against a $RELEASE_TAG whose update.sh predates this flag entirely.
+  # STARGATE_UPDATE_ENV_ONLY carries the original --env-only choice through
+  # the same way, so `--release <tag> --env-only` actually stops after
+  # regenerating .env instead of silently doing a full restart.
   export STARGATE_UPDATE_RELEASE="$RELEASE_TAG"
+  export STARGATE_UPDATE_ENV_ONLY="$ENV_ONLY"
   exec "$SCRIPT_DIR/update.sh"
 fi
 
