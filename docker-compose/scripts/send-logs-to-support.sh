@@ -8,6 +8,9 @@ set -euo pipefail
 #   --all      - all logs, could be too big to upload
 # Please refer to https://docs.docker.com/reference/cli/docker/container/logs/#options
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
 if [[ " $* " == *" --all "* ]]; then
     args=()   # no tail/since/until restrictions
 elif [ "$#" -eq 0 ]; then
@@ -35,7 +38,23 @@ echo "nproc output: $(nproc)" >> "$TEMP_FILE"
 lscpu | grep -E "Model name|CPU MHz|CPU\(s\)|Thread" >> "$TEMP_FILE"
 
 echo -e "\n# NETWORK\n" >> "$TEMP_FILE"
-nmcli device show $(ip route show default | awk '{print $5}') 2>>/dev/null  >> "$TEMP_FILE" || { resolvectl status | grep "DNS Servers"; ip addr show $(ip route show default | awk '{print $5}'); } >> "$TEMP_FILE"
+# Prefer nmcli, then resolvectl+ip addr, then plain ip addr -- whichever
+# network stack is actually present (NetworkManager, systemd-networkd, or
+# neither). Guarded with `command -v` and `|| true`/`|| echo` throughout: an
+# absent tool must never abort the whole script under set -e/pipefail (it
+# previously did -- a host with neither nmcli nor resolvectl installed would
+# die here before ever reaching the container logs below).
+DEFAULT_IFACE="$(ip route show default 2>/dev/null | awk '{print $5; exit}')"
+if [ -z "$DEFAULT_IFACE" ]; then
+  echo "(no default route found)" >> "$TEMP_FILE"
+elif command -v nmcli >/dev/null 2>&1; then
+  nmcli device show "$DEFAULT_IFACE" >> "$TEMP_FILE" 2>&1 || echo "(nmcli failed)" >> "$TEMP_FILE"
+elif command -v resolvectl >/dev/null 2>&1; then
+  { resolvectl status 2>&1 | grep "DNS Servers"; ip addr show "$DEFAULT_IFACE" 2>&1; } >> "$TEMP_FILE" || true
+else
+  echo "(nmcli/resolvectl not available; showing interface only)" >> "$TEMP_FILE"
+  ip addr show "$DEFAULT_IFACE" >> "$TEMP_FILE" 2>&1 || true
+fi
 ip route >> "$TEMP_FILE"
 
 echo -e "\n# RAM\n" >> "$TEMP_FILE"
@@ -44,6 +63,21 @@ free -h >> "$TEMP_FILE"
 echo -e "\n# Disk: size and type (rotational=1 means HDD, 0 means SSD)\n" >> "$TEMP_FILE"
 df -hT /  >> "$TEMP_FILE"
 lsblk -d -o NAME,SIZE,ROTA,MODEL  >> "$TEMP_FILE"
+echo -e "\n######\n" >> "$TEMP_FILE"
+
+# Add update.sh's own status/history -- whether an update is still in-flight
+# (systemd scope launched by the ops-agent's RunUpdateScript, or by a manual
+# ./scripts/update.sh --release run) vs. dead, and what update.sh itself
+# logged. This is the single piece that's needed to diagnose "the update
+# started but nothing happened" without a second round-trip asking for it.
+echo -e "\n# UPDATE STATUS\n" >> "$TEMP_FILE"
+systemctl status stargate-update.scope >> "$TEMP_FILE" 2>&1 || true
+echo -e "\n# update.log\n" >> "$TEMP_FILE"
+if [ -f "$PROJECT_DIR/update.log" ]; then
+  cat "$PROJECT_DIR/update.log" >> "$TEMP_FILE"
+else
+  echo "(no update.log -- no update has been run yet)" >> "$TEMP_FILE"
+fi
 echo -e "\n######\n" >> "$TEMP_FILE"
 
 while IFS= read -r container; do

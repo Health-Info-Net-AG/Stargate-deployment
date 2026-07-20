@@ -1,12 +1,40 @@
 #!/bin/bash
 set -eo pipefail
 
+# Usage: backup.sh [--label NAME]
+#   --label NAME   Append NAME to the backup's directory/archive name, e.g.
+#                  "v0.5.0-pre_update" (used by update.sh before a --release
+#                  jump so the backup is identifiable at a glance). Sanitized
+#                  to filesystem-safe characters. Purely cosmetic -- restore.sh
+#                  treats the archive name as an opaque path either way.
+LABEL=""
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --label)
+      LABEL="${2:-}"
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Usage: $0 [--label NAME]"
+      exit 1
+      ;;
+  esac
+done
+# Keep only filesystem-safe characters.
+LABEL="$(printf '%s' "$LABEL" | tr -c 'A-Za-z0-9._-' '_')"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 BACKUP_DIR="$PROJECT_DIR/backups"
 SECRETS_DIR="$PROJECT_DIR/secrets"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-BACKUP_SUBDIR="$BACKUP_DIR/$TIMESTAMP"
+# BACKUP_NAME is TIMESTAMP, optionally suffixed with the label -- used for both
+# the working subdirectory and the final archive, so a labeled backup is
+# identifiable by filename alone while still sorting chronologically.
+BACKUP_NAME="$TIMESTAMP"
+[ -n "$LABEL" ] && BACKUP_NAME="${TIMESTAMP}_${LABEL}"
+BACKUP_SUBDIR="$BACKUP_DIR/$BACKUP_NAME"
 
 # read_env_var() reads one KEY from .env without sourcing the file (Compose
 # .env values may be unquoted and would break `source` under `set -e`). We only
@@ -35,6 +63,7 @@ echo "  Stargate Full Backup"
 echo "============================================"
 echo ""
 echo "Timestamp: $TIMESTAMP"
+[ -n "$LABEL" ] && echo "Label: $LABEL"
 echo "Backup directory: $BACKUP_SUBDIR"
 echo ""
 
@@ -293,6 +322,7 @@ cat > "$BACKUP_SUBDIR/manifest.json" << EOF
 {
   "backup_version": "2.0",
   "timestamp": "$TIMESTAMP",
+  "label": "$LABEL",
   "created_at": "$(date -Iseconds)",
   "hostname": "$(hostname)",
   "contents": {
@@ -322,13 +352,13 @@ echo "============================================"
 echo ""
 
 cd "$BACKUP_DIR"
-tar -czf "${TIMESTAMP}.tar.gz" "$TIMESTAMP"
+tar -czf "${BACKUP_NAME}.tar.gz" "$BACKUP_NAME"
 # The archive contains Vault unseal keys/root token, KV secrets, and the WG
 # private key -- restrict it to the owner (it is not encrypted).
-chmod 600 "${TIMESTAMP}.tar.gz"
-rm -rf "$TIMESTAMP"
+chmod 600 "${BACKUP_NAME}.tar.gz"
+rm -rf "$BACKUP_NAME"
 
-ARCHIVE_PATH="$BACKUP_DIR/${TIMESTAMP}.tar.gz"
+ARCHIVE_PATH="$BACKUP_DIR/${BACKUP_NAME}.tar.gz"
 ARCHIVE_SIZE=$(du -h "$ARCHIVE_PATH" | cut -f1)
 
 echo "  ✓ Archive created"
@@ -356,7 +386,7 @@ echo ""
 echo "  To restore on a new machine:"
 echo "  ----------------------------"
 echo "  1. Copy this archive to the new machine"
-echo "  2. Run: ./scripts/restore.sh ${TIMESTAMP}.tar.gz"
+echo "  2. Run: ./scripts/restore.sh ${BACKUP_NAME}.tar.gz"
 echo ""
 
 # ==============================================================================
