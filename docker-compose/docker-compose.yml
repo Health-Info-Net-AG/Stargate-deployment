@@ -956,7 +956,7 @@ services:
       - stargate-network
 
   mtaconf:
-    image: registry.vereign.io/svdh/mtaconf:${MTACONF_VERSION:-dev}
+    image: healthinfonetag/mtaconf:${MTACONF_VERSION:-dev}
     container_name: stargate-mtaconf
     restart: unless-stopped
     logging:
@@ -1080,7 +1080,7 @@ services:
 
   # Ops Agent - executes infrastructure commands (updates, restarts) from dashboard via NATS
   ops-agent:
-    image: registry.vereign.io/svdh/stargate-ops:${OPS_AGENT_VERSION:-dev}
+    image: healthinfonetag/stargate-ops:${OPS_AGENT_VERSION:-dev}
     container_name: stargate-ops-agent
     restart: unless-stopped
     logging:

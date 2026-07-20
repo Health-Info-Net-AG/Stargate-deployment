@@ -5,42 +5,102 @@ set -eo pipefail
 # Stargate Update Script
 # ==============================================================================
 # Re-reads customer-config.sh, regenerates .env, and restarts all services.
+# Can also jump the deployment repo itself to a specific tested release.
 #
 # Use cases:
 #   - Bump image versions (change *_VERSION in customer-config.sh, then run this)
 #   - Update mail domains, WireGuard config, or any other customer settings
 #   - Change passwords or credentials (except VAULT_TOKEN, which is preserved)
+#   - Jump straight to a released version, including installs several
+#     versions behind: --release <tag>
 #
 # Usage:
-#   ./scripts/update.sh              # regenerate .env and restart
-#   ./scripts/update.sh --env-only   # regenerate .env without restarting
+#   ./scripts/update.sh                    # regenerate .env and restart
+#   ./scripts/update.sh --env-only         # regenerate .env without restarting
+#   ./scripts/update.sh --list-releases    # show available release tags
+#   ./scripts/update.sh --release <tag> [--skip-backup]
+#                                          # update the deployment repo to
+#                                          # <tag>, apply that release's
+#                                          # tested app versions (a backup is
+#                                          # taken first unless --skip-backup
+#                                          # is given), then run the normal
+#                                          # update flow below
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 ENV_FILE="$PROJECT_DIR/.env"
+LOG_FILE="$PROJECT_DIR/update.log"
+
+# Mirror this run's stdout+stderr into $LOG_FILE (in addition to the
+# terminal), so a failed update is diagnosable from the log file alone --
+# picked up by send-logs-to-support.sh -- without needing to have been
+# watched live. Guarded so this is a no-op on the internal re-exec that
+# --release performs after checking out the target tag (below): that
+# re-exec'd process inherits the already-redirected stdout/stderr rather than
+# attaching a second tee on top.
+if [ -z "${STARGATE_UPDATE_LOG_ACTIVE:-}" ]; then
+  export STARGATE_UPDATE_LOG_ACTIVE=1
+  exec > >(tee -a "$LOG_FILE") 2>&1
+fi
+
+echo "$(date -Iseconds) update.sh invoked: $0 $*"
 
 # Source install.sh for shared functions (load_customer_config, generate_env_file, etc.)
 STARGATE_SOURCE_ONLY=1 source "$SCRIPT_DIR/install.sh"
 . "$SCRIPT_DIR/lib/env.sh"
 . "$SCRIPT_DIR/lib/config-sync.sh"
+. "$SCRIPT_DIR/lib/manifest.sh"
 
-# Parse arguments
-ENV_ONLY=false
-for arg in "$@"; do
-  case "$arg" in
-    --env-only) ENV_ONLY=true ;;
+# Parse arguments. ENV_ONLY defaults from STARGATE_UPDATE_ENV_ONLY so that
+# `--release <tag> --env-only` survives the flag-less re-exec below: without
+# this, the re-exec'd process would always fall through to a full restart,
+# silently ignoring --env-only rather than doing what was actually asked
+# (stage the release's config/versions without restarting yet).
+ENV_ONLY="${STARGATE_UPDATE_ENV_ONLY:-false}"
+SKIP_BACKUP=false
+RELEASE_TAG=""
+LIST_RELEASES=false
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --env-only)
+      ENV_ONLY=true
+      shift
+      ;;
+    --skip-backup)
+      SKIP_BACKUP=true
+      shift
+      ;;
+    --release)
+      RELEASE_TAG="${2:-}"
+      if [ -z "$RELEASE_TAG" ]; then
+        echo "ERROR: --release requires a tag argument, e.g. --release v0.5.3"
+        exit 1
+      fi
+      shift 2
+      ;;
+    --list-releases)
+      LIST_RELEASES=true
+      shift
+      ;;
     -h|--help)
-      echo "Usage: $0 [--env-only]"
+      echo "Usage: $0 [--env-only] [--release <tag> [--skip-backup]] [--list-releases]"
       echo ""
-      echo "  --env-only   Regenerate .env without restarting services"
+      echo "  --env-only        Regenerate .env without restarting services"
+      echo "  --release <tag>   Update the deployment repo to <tag> and apply that"
+      echo "                    release's tested app versions, then run the normal"
+      echo "                    update flow. Takes a backup first unless"
+      echo "                    --skip-backup is given."
+      echo "  --skip-backup     Skip the pre-update backup (only with --release)"
+      echo "  --list-releases   List available release tags"
       echo ""
-      echo "Edit customer-config.sh first, then run this script to apply changes."
+      echo "With no flags: edit customer-config.sh first, then run this script to"
+      echo "apply changes."
       exit 0
       ;;
     *)
-      echo "Unknown option: $arg"
-      echo "Usage: $0 [--env-only]"
+      echo "Unknown option: $1"
+      echo "Usage: $0 [--env-only] [--release <tag>] [--list-releases]"
       exit 1
       ;;
   esac
@@ -48,8 +108,103 @@ done
 
 cd "$PROJECT_DIR"
 
+if [ "$LIST_RELEASES" = true ]; then
+  echo "Fetching available releases from origin..."
+  if ! manifest_git_fetch_origin; then
+    echo "ERROR: could not fetch from 'origin' -- check network/remote access."
+    exit 1
+  fi
+  echo ""
+  echo "Recent release tags (most recent first). '(manifest available)' means"
+  echo "'--release <tag>' can be used today; '(no manifest yet)' means the"
+  echo "release's manifest MR hasn't been merged to main yet."
+  echo ""
+  while read -r t; do
+    [ -n "$t" ] || continue
+    if manifest_exists "$t"; then
+      echo "  $t  (manifest available)"
+    else
+      echo "  $t  (no manifest yet)"
+    fi
+  done < <(git tag --sort=-creatordate | head -20)
+  TOTAL=$(git tag | wc -l)
+  echo ""
+  echo "Showing 20 most recent of $TOTAL total tags. Run 'git tag' for the full list."
+  exit 0
+fi
+
+if [ -n "$RELEASE_TAG" ]; then
+  echo "============================================"
+  echo "  Release update: $RELEASE_TAG"
+  echo "============================================"
+  echo ""
+
+  echo "=== Fetching release manifest ==="
+  MANIFEST_JSON="$(manifest_fetch_json "$RELEASE_TAG")"
+  echo "  Manifest found for $RELEASE_TAG."
+  echo ""
+
+  # Captured before anything is touched, purely for the backup label below.
+  CURRENT_VERSION="$(detect_app_version "$PROJECT_DIR")"
+
+  if [ "$SKIP_BACKUP" = true ]; then
+    echo "=== Skipping backup (--skip-backup) ==="
+  else
+    echo "=== Backing up before update (this can take a few minutes) ==="
+    "$SCRIPT_DIR/backup.sh" --label "${CURRENT_VERSION}-pre_update"
+  fi
+  echo ""
+
+  echo "=== Applying versions from $RELEASE_TAG ==="
+  manifest_apply_images "$MANIFEST_JSON" "$CONFIG_FILE"
+  echo ""
+
+  echo "=== Updating deployment repo to $RELEASE_TAG ==="
+  # Force past any local edits to tracked files (e.g. a hand-patched
+  # docker-compose.yml) -- git is the single source of truth here, matching
+  # the fix already applied to the ops-agent's own GitPull. Same
+  # non-interactive guards as manifest_git_fetch_origin, so an unreachable
+  # remote or a hidden prompt fails fast instead of hanging.
+  if ! GIT_TERMINAL_PROMPT=0 \
+       GIT_SSH_COMMAND='ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10' \
+       timeout "$MANIFEST_GIT_TIMEOUT" git checkout -f "$RELEASE_TAG" </dev/null; then
+    echo "ERROR: git checkout of $RELEASE_TAG failed or timed out."
+    echo "Nothing else has been touched -- customer-config.sh now has $RELEASE_TAG's"
+    echo "versions applied, but the deployment repo itself is still on its previous"
+    echo "revision. Re-running '$0 --release $RELEASE_TAG' is safe and will retry."
+    exit 1
+  fi
+  echo ""
+
+  echo "Continuing update as release $RELEASE_TAG..."
+  echo ""
+  # Re-exec a FRESH copy of this script (now checked out at $RELEASE_TAG),
+  # with NO flags. This is deliberate, not incidental: the checkout above just
+  # rewrote this very file on disk out from under the running process, and a
+  # bash script cannot safely keep executing inline once its own source file
+  # has changed underneath it (the same reasoning behind the ops-agent
+  # splitting GitPull from a separately-launched RunUpdateScript, rather than
+  # continuing in-process after the checkout). customer-config.sh already has
+  # the target versions (applied above, a data-file edit, safe at any time),
+  # so the freshly re-exec'd plain `update.sh` does exactly the right thing
+  # with its own -- possibly different -- code, whether $RELEASE_TAG is newer
+  # or older than what was running a moment ago. STARGATE_UPDATE_RELEASE is
+  # passed through only so the continued run's banner below can still name
+  # the release; it has no effect on control flow, so this remains correct
+  # even against a $RELEASE_TAG whose update.sh predates this flag entirely.
+  # STARGATE_UPDATE_ENV_ONLY carries the original --env-only choice through
+  # the same way, so `--release <tag> --env-only` actually stops after
+  # regenerating .env instead of silently doing a full restart.
+  export STARGATE_UPDATE_RELEASE="$RELEASE_TAG"
+  export STARGATE_UPDATE_ENV_ONLY="$ENV_ONLY"
+  exec "$SCRIPT_DIR/update.sh"
+fi
+
 echo "============================================"
 echo "  Stargate Configuration Update"
+if [ -n "${STARGATE_UPDATE_RELEASE:-}" ]; then
+  echo "  (continuing --release $STARGATE_UPDATE_RELEASE)"
+fi
 echo "============================================"
 echo ""
 
@@ -107,12 +262,15 @@ if [ "$ENV_ONLY" = true ]; then
   exit 0
 fi
 
-# Pull new images and restart changed services
-echo "Pulling updated images..."
-docker compose pull --quiet
+# Pull new images and restart changed services. Deliberately NOT --quiet:
+# Compose's own per-service progress ("Pulling mxengine ... done") is exactly
+# the visibility that was missing when diagnosing past update issues -- a
+# silent multi-minute block here reads as a hang.
+echo "=== Pulling images ==="
+docker compose pull
 
 echo ""
-echo "Starting services with updated configuration..."
+echo "=== Recreating services ==="
 docker compose up -d --remove-orphans
 
 # Handle Dozzle enable/disable and credential updates
@@ -155,6 +313,10 @@ echo "============================================"
 echo ""
 echo "  Changes applied from: $CONFIG_FILE"
 echo "  Environment file:     $ENV_FILE"
+if [ -n "${STARGATE_UPDATE_RELEASE:-}" ]; then
+  echo "  Release:              $STARGATE_UPDATE_RELEASE"
+fi
 echo ""
 echo "  Verify with: docker compose ps"
+echo "  Full log:    $LOG_FILE"
 echo ""
