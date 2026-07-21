@@ -633,6 +633,7 @@ services:
       PENDING_MESSAGE_EXPIRATION: "1m"
 
       # Forbidden SMTP for members in the list
+      MEMBERS_CHECK: "false"
       MEMBERS_URL: "https://app.hin.ch/mgw/maildomains"
       MEMBERS_SYNC_INTERVAL: "1h"
 
