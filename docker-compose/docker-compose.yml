@@ -711,6 +711,7 @@ services:
       NEXT_PUBLIC_APP_URL: "${DASHBOARD_PUBLIC_URL:-https://localhost}"
       SHOW_DEV_PAGES: "${DASHBOARD_SHOW_DEV_PAGES:-false}"
       IS_ROOT: "false"
+      HOSPITAL_DATA_CACHE_TTL_SECONDS: "21600"
 
       # Stargate deployment release tag (server-side; read at runtime).
       APP_VERSION: "${APP_VERSION:-unknown}"
