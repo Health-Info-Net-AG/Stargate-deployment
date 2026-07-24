@@ -984,7 +984,7 @@ services:
       VAULT_MOUNT_PATH: "secret-mtaconf"
       HTTP_ADDR: ":8080"
       HTTP_WRITE_TIMEOUT: "60s"
-      DASHBOARD_CONFIG_URL: "http://dashboard:3000/api/internal/installation-config?service=stalwart"
+      DASHBOARD_CONFIG_URL: "http://dashboard:3000/api/internal/installation-config?service=mta"
       LOG_LEVEL: "info"
     tmpfs:
       - /tmp:size=10M,mode=1777,uid=1001,gid=1001
