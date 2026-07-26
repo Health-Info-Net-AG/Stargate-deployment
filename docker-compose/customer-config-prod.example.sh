@@ -116,7 +116,7 @@ CADDY_VERSION="2-alpine"
 # renovate: datasource=docker depName=grafana/loki
 LOKI_VERSION="3.7.3"
 # renovate: datasource=docker depName=grafana/alloy
-ALLOY_VERSION="v1.17.1"
+ALLOY_VERSION="v1.18.0"
 # renovate: datasource=docker depName=prom/node-exporter
 NODE_EXPORTER_VERSION="v1.12.1"
 # renovate: datasource=docker depName=stalwartlabs/stalwart
