@@ -430,40 +430,56 @@ On this screen, configure your initial settings:
 !!! danger "Import your existing private key"
     If you do **not** import the private key from your existing MGW, a new key will be issued. This may result in messages not being decryptable for up to **6 hours**, which could lead to **data loss**.
 
-### Step 14 - Configure mail transport
-
-![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
-
-On this screen, configure your mail transport settings for the secure mail relay setup.
-
-![Mail transport configuration screen](assets/installation-guide/step14-mail-transport.png)
-
-The following settings are available:
+![Setup screen](assets/installation-guide/step13-initial-setup2.png)
 
 | Setting | Description |
 |---------|-------------|
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
-| **Domains** | Each domain that this gateway handles, along with its relay host (the internal mail server to which inbound mail is delivered). |
-| **Default relay host** | The default SMTP relay for outbound delivery. |
+| **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
 
-Under the **Advanced** section, you can optionally configure:
+
+
+### Step 14 - Configure mail transport
+
+![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+
+##### Settings page
+
+On this page under `Settings` menu, configure your global mail transport settings for the secure mail relay setup which are common for the whole instance. Detailed configuration for each domain can be performed under `Domains` -> `$domain`
+
+![Mail transport configuration screen](assets/installation-guide/step14-mail-transport2.png)
+
+The following settings are available `Settings` menu:
 
 | Setting | Description |
 |---------|-------------|
-| **Configure TLS** | TLS certificate settings for SMTP connections. |
-| **Content filter** | The internal content filter endpoint (default: `mxengine:1587`). |
+| **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
+| **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
+| **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
+| **Default inbound relay** | The default SMTP relay for inbound delivery |
+| **Default outbound relay** | The default SMTP relay for outbound delivery |
+
+
+##### Domains page
+
+Under the **Domains** menu, for each available domain you can configure specific transport route:
+
+![Domain transport configuration screen](assets/installation-guide/step14-domain-mail-transport.png)
+
+| Setting | Description |
+|---------|-------------|
+| **Inbound relay** | The  SMTP relay for inbound delivery for selected domain |
+| **Outbound relay** | The SMTP relay for outbound delivery for selected domain. This setting corespond to `Forwarding server` setting from old MGW |
 | **Trusted networks** | Additional networks allowed to relay through this gateway. |
+| **ARC** | Recommended to keep it as is |
+| **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate|
 
-Additional actions:
-
-- Add additional domains by clicking "Add domain", if required.
-- Expand the Advanced section to fine-tune mail transport parameters.
 
 !!! note
     Ensure that all relay host and domain configurations are correct before proceeding.
 
-Once the configuration has been reviewed and completed, click "Apply configuration" to continue.
+Once the configuration has been reviewed and completed, click "Save" to continue.
 
 ### Step 15 - Configure whitelist headers
 
