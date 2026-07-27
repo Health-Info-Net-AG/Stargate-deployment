@@ -114,7 +114,7 @@ SEAWEEDFS_VERSION="4.39"
 # renovate: datasource=docker depName=caddy
 CADDY_VERSION="2-alpine"
 # renovate: datasource=docker depName=grafana/loki
-LOKI_VERSION="3.7.3"
+LOKI_VERSION="3.7.4"
 # renovate: datasource=docker depName=grafana/alloy
 ALLOY_VERSION="v1.17.1"
 # renovate: datasource=docker depName=prom/node-exporter
