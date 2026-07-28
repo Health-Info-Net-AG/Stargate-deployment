@@ -101,7 +101,7 @@ The following items must be available or confirmed before the installation:
     - Allow traffic: any-to-HIN Gateway and HIN Gateway-to-any
         - WireGuard, please refer to [Server Requirements - Inbound Network Access](./index.md#inbound-network-access-firewall-must-allow):
             - Configure the WireGuard port `19818` (TCP/UDP) in your firewall
-                - Incoming and outgoing traffic
+            - Incoming and outgoing traffic
     - Allow traffic: your administrative machine-to-HIN Gateway VM
         - Installation requirements:
             - HTTPS port `443`
@@ -111,8 +111,38 @@ The following items must be available or confirmed before the installation:
         - Troubleshooting requirements (optional needed to see logs, modify all parameters):
             - SSH port `22`
                 - Incoming and outgoing traffic
+                ??? warning "Important to read if you expose SSH to the internet"
+                    If you allow SSH (port 22) access via the internet, you **must change the password** to a secure one. Run the following command in the terminal to set a new password:
+
+                    ```bash
+                    passwd
+                    ```
+
+                    !!! tip
+                        It is strongly recommended to disable password login for all users and use SSH key authentication. To do this, add your SSH public key to `/home/hinadmin/.ssh/authorized_keys`.
+
+                        ```bash
+                        mkdir ~/.ssh
+                        echo "YOUR PUBLIC KEY" >> ~/.ssh/authorized_keys
+                        chmod 600 ~/.ssh/authorized_keys
+                        ```
+
+                        Verify that you can log in using this key.
+
+                        - Log out of the SSH session.
+                        - Log in again. You **should not** be prompted for a password.
+
+                        After that, disable password authentication in SSHD. Use the command below, or manually set `PasswordAuthentication no` in configuration:
+
+                        ```bash
+                        sudo find /etc/ssh -type f -exec sed -i 's/^PasswordAuthentication yes/PasswordAuthentication no/g' {} +
+                        # Restart the SSHD service
+                        sudo systemctl restart sshd
+                        ```
+
             - Dozzle port `8190`
                 - Incoming and outgoing traffic
+
 - **DHCP access** should be available for "[Step 5 - Network connection to the VM](#step-5-network-connection-to-the-vm)" (recommended).
 - **Backup requirements** - see "Annex 1 - Backing up and restoring the appliance settings".
 - Confirmation that the existing MGW will **not** be deleted until acceptance has been completed.

@@ -94,14 +94,14 @@ Die folgenden Punkte müssen vor der Migration verfügbar sein oder bestätigt w
     - Aktivierungscode
 - **Export des privaten Schlüssels**
     - Wenn Sie an einem Windows-Rechner arbeiten, der über Port 22 Zugriff auf die Mail-Gateway-VM hat, können wir Sie während des Gesprächs dabei unterstützen, den Export des privaten Schlüssels aus dem MGW zu aktivieren.
-    - Falls Sie keinen Zugriff auf einen solchen Rechner haben, wenden Sie sich bitte per E-Mail oder Telefon (support@hin.ch / 0848 830 740) an den HIN Support, damit wir Ihnen helfen können, eine Supportverbindung über "Systemadministration" -> "Supportverbindung" -> "Verbinden" herzustellen.
+    - Falls Sie keinen Zugriff auf einen solchen Rechner haben, wenden Sie sich bitte per E-Mail oder Telefon (<support@hin.ch> / 0848 830 740) an den HIN Support, damit wir Ihnen helfen können, eine Supportverbindung über "Systemadministration" -> "Supportverbindung" -> "Verbinden" herzustellen.
 - **Lade die neueste Version** des [VM-Images](vm/VM-Catalog.md) herunter.
 - **Firewall**:
-    - Erlauben Sie den Datenverkehr: beliebig → HIN Gateway und HIN Gateway → beliebig
+    - Erlauben Sie den Datenverkehr: beliebig zum HIN Gateway und HIN Gateway zum beliebig
         - WireGuard: Siehe [Serveranforderungen – Eingehender Netzwerkzugriff](./index.md#eingehender-netzwerkzugriff-firewall-muss-erlauben):
-        - Konfigurieren Sie den WireGuard-Port `19818` (TCP/UDP) in Ihrer Firewall.
-        - Eingehender und ausgehender Datenverkehr
-    - Erlauben Sie den Datenverkehr: Administrationsrechner → HIN Gateway-VM
+            - Konfigurieren Sie den WireGuard-Port `19818` (TCP/UDP) in Ihrer Firewall.
+            - Eingehender und ausgehender Datenverkehr
+    - Erlauben Sie den Datenverkehr: Administrationsrechner zum HIN Gateway-VM
         - Anforderungen für die Installation:
             - HTTPS-Port `443`
                 - Eingehender und ausgehender Datenverkehr
@@ -110,8 +110,38 @@ Die folgenden Punkte müssen vor der Migration verfügbar sein oder bestätigt w
         - Anforderungen für die Fehlerbehebung (optional, um Protokolle einzusehen und alle Parameter zu ändern):
             - SSH-Port `22`
                 - Eingehender und ausgehender Datenverkehr
+                ??? warning "Wichtig, wenn Sie SSH über das Internet verfügbar machen"
+                    Wenn Sie SSH (Port 22) über das Internet erreichbar machen, **müssen Sie das Passwort** in ein sicheres Passwort ändern. Führen Sie den folgenden Befehl im Terminal aus, um ein neues Passwort festzulegen:
+
+                    ```bash
+                    passwd
+                    ```
+
+                    !!! tip
+                        Es wird dringend empfohlen, die Passwortanmeldung für alle Benutzer zu deaktivieren und die SSH-Schlüsselauthentifizierung zu verwenden. Fügen Sie dazu Ihren öffentlichen SSH-Schlüssel zu `/home/hinadmin/.ssh/authorized_keys` hinzu.
+
+                        ```bash
+                        mkdir ~/.ssh
+                        echo "YOUR PUBLIC KEY" >> ~/.ssh/authorized_keys
+                        chmod 600 ~/.ssh/authorized_keys
+                        ```
+
+                        Überprüfen Sie, dass Sie sich mit diesem Schlüssel anmelden können.
+
+                        - Melden Sie sich von der SSH-Sitzung ab.
+                        - Melden Sie sich erneut an. Sie **sollten nicht** zur Eingabe eines Passworts aufgefordert werden.
+
+                        Deaktivieren Sie anschließend die Passwortauthentifizierung in SSHD. Verwenden Sie den folgenden Befehl oder setzen Sie `PasswordAuthentication no` manuell in der Konfiguration:
+
+                        ```bash
+                        sudo find /etc/ssh -type f -exec sed -i 's/^PasswordAuthentication yes/PasswordAuthentication no/g' {} +
+                        # SSHD-Dienst neu starten
+                        sudo systemctl restart sshd
+                        ```
+
             - Dozzle-Port `8190`
                 - Eingehender und ausgehender Datenverkehr
+
 - Für "[Schritt 5 - Netzwerkverbindung zur VM](#schritt-5-netzwerkverbindung-zur-vm)" sollte ein **DHCP-Zugang** verfügbar sein (empfohlen).
 - Anforderungen an die **Datensicherung**, siehe "[Anhang 1 - Sichern und Wiederherstellen der Appliance-Einstellungen](#anhang-1-sichern-und-wiederherstellen-der-appliance-einstellungen)".
 - Bestätigung, dass das bestehende MGW erst nach Abschluss der Abnahme gelöscht wird.

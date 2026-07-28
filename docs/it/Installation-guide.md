@@ -99,8 +99,8 @@ I seguenti elementi devono essere disponibili o confermati prima della migrazion
 - **Firewall**:
     - Consentire il traffico: da qualsiasi origine a HIN Gateway e da HIN Gateway a qualsiasi destinazione
         - WireGuard: fare riferimento a [Requisiti del server - Accesso alla rete in ingresso](./index.md#accesso-di-rete-in-entrata-il-firewall-deve-consentire):
-        - Configurare la porta WireGuard `19818` (TCP/UDP) nel firewall.
-        - Traffico in ingresso e in uscita
+            - Configurare la porta WireGuard `19818` (TCP/UDP) nel firewall.
+            - Traffico in ingresso e in uscita
     - Consentire il traffico: macchina amministrativa → VM HIN Gateway
         - Requisiti per l'installazione:
             - Porta HTTPS `443`
@@ -110,8 +110,38 @@ I seguenti elementi devono essere disponibili o confermati prima della migrazion
         - Requisiti per la risoluzione dei problemi (opzionale, necessario per visualizzare i log e modificare tutti i parametri):
             - Porta SSH `22`
                 - Traffico in ingresso e in uscita
+                ??? warning "Importante da leggere se esponi SSH a Internet"
+                    Se consenti l'accesso SSH (porta 22) tramite Internet, **devi modificare la password** impostandone una sicura. Esegui il seguente comando nel terminale per impostare una nuova password:
+
+                    ```bash
+                    passwd
+                    ```
+
+                    !!! tip
+                        Si consiglia vivamente di disabilitare l'accesso tramite password per tutti gli utenti e utilizzare l'autenticazione con chiave SSH. Per farlo, aggiungi la tua chiave pubblica SSH a `/home/hinadmin/.ssh/authorized_keys`.
+
+                        ```bash
+                        mkdir ~/.ssh
+                        echo "YOUR PUBLIC KEY" >> ~/.ssh/authorized_keys
+                        chmod 600 ~/.ssh/authorized_keys
+                        ```
+
+                        Verifica di poter accedere utilizzando questa chiave.
+
+                        - Disconnettiti dalla sessione SSH.
+                        - Accedi nuovamente. **Non dovrebbe** essere richiesta la password.
+
+                        Successivamente, disabilita l'autenticazione tramite password in SSHD. Utilizza il comando seguente oppure imposta manualmente `PasswordAuthentication no` nella configurazione:
+
+                        ```bash
+                        sudo find /etc/ssh -type f -exec sed -i 's/^PasswordAuthentication yes/PasswordAuthentication no/g' {} +
+                        # Riavvia il servizio SSHD
+                        sudo systemctl restart sshd
+                        ```
+
             - Porta Dozzle `8190`
                 - Traffico in ingresso e in uscita
+
 - **L'accesso DHCP** dovrebbe essere disponibile per il "[Passo 5 - Connessione di rete alla VM](#passo-5-connessione-di-rete-alla-vm)" (raccomandato).
 - **Requisiti di backup** - vedere "Allegato 1 - Backup e ripristino delle impostazioni dell'appliance".
 - Conferma che il MGW esistente **non** verrà eliminato fino al completamento dell'accettazione.

@@ -1,8 +1,8 @@
-# Stargate Pre-Requisites & Deployment Information
+# HIN Gateway Pre-Requisites & Deployment Information
 
 ![Logo](assets/stargate_visual.png)
 
-[What is Stargate?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
+[What is HIN Gateway?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ## Pre-Requisites
 
@@ -56,7 +56,7 @@ The following items must be available or confirmed before the installation:
 
 ### Exchange Integration
 
-* [Exchange integration](Exchange-integration.md) - Configure Microsoft Exchange (Online and On-Premises) connectors and transport rules to route mail through Stargate
+* [Exchange integration](Exchange-integration.md) - Configure Microsoft Exchange (Online and On-Premises) connectors and transport rules to route mail through HIN Gateway
 
 ### Server Requirements
 
@@ -158,7 +158,7 @@ The following items must be available or confirmed before the installation:
 
 !!! tip "Support"
 
-    For any questions or issues related to the deployment and operation of the HIN Mail (Stargate) appliance, please contact HIN support.
+    For any questions or issues related to the deployment and operation of the HIN Gateway appliance, please contact HIN support.
 
     Please include relevant information such as the customer name, appliance version, and screenshots/[logs](./Docker-advanced.md#provide-logs-to-support) where applicable, to help us process your request efficiently.
 

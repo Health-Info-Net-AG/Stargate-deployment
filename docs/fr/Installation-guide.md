@@ -96,11 +96,11 @@ Les éléments suivants doivent être disponibles ou confirmés avant la migrati
     - Si vous travaillez sur un ordinateur Windows ayant accès à la machine virtuelle Mail Gateway via le port 22, nous pouvons vous aider, pendant l'appel, à activer l'exportation de la clé privée depuis la MGW.
     - Si vous n'avez pas accès à un tel ordinateur, veuillez contacter le support HIN par e-mail ou par téléphone (<support@hin.ch> / 0848 830 740) afin que nous puissions vous aider à établir une connexion d'assistance via System Administration -> Support Connection -> Connect.
 - **Télécharger la dernière version** de l'[image de la machine virtuelle](vm/VM-Catalog.md)
-- **Pare-feu** :
+- **Pare-feu**:
     - Autorisez le trafic : de n'importe quelle source vers HIN Gateway et de HIN Gateway vers n'importe quelle destination
         - WireGuard : veuillez consulter [Configuration requise du serveur - Accès réseau entrant](./index.md#acces-reseau-entrant-le-pare-feu-doit-autoriser) :
-            - Configurez le port WireGuard `19818` (TCP/UDP) dans votre pare-feu.
-                - Trafic entrant et sortant
+        - Configurez le port WireGuard `19818` (TCP/UDP) dans votre pare-feu.
+            - Trafic entrant et sortant
     - Autorisez le trafic : poste d'administration → VM HIN Gateway
         - Exigences pour l'installation :
             - Port HTTPS `443`
@@ -110,8 +110,38 @@ Les éléments suivants doivent être disponibles ou confirmés avant la migrati
         - Exigences pour le dépannage (facultatif, requis pour consulter les journaux et modifier tous les paramètres) :
             - Port SSH `22`
                 - Trafic entrant et sortant
+                ??? warning "Important à lire si vous exposez SSH à Internet"
+                    Si vous autorisez l'accès SSH (port 22) via Internet, vous **devez remplacer le mot de passe** par un mot de passe sécurisé. Exécutez la commande suivante dans le terminal pour définir un nouveau mot de passe :
+
+                    ```bash
+                    passwd
+                    ```
+
+                    !!! tip
+                        Il est fortement recommandé de désactiver l'authentification par mot de passe pour tous les utilisateurs et d'utiliser l'authentification par clé SSH. Pour cela, ajoutez votre clé publique SSH à `/home/hinadmin/.ssh/authorized_keys`.
+
+                        ```bash
+                        mkdir ~/.ssh
+                        echo "YOUR PUBLIC KEY" >> ~/.ssh/authorized_keys
+                        chmod 600 ~/.ssh/authorized_keys
+                        ```
+
+                        Vérifiez que vous pouvez vous connecter à l'aide de cette clé.
+
+                        - Déconnectez-vous de la session SSH.
+                        - Connectez-vous à nouveau. Vous **ne devriez pas** être invité à saisir un mot de passe.
+
+                        Désactivez ensuite l'authentification par mot de passe dans SSHD. Utilisez la commande ci-dessous ou définissez manuellement `PasswordAuthentication no` dans la configuration :
+
+                        ```bash
+                        sudo find /etc/ssh -type f -exec sed -i 's/^PasswordAuthentication yes/PasswordAuthentication no/g' {} +
+                        # Redémarrer le service SSHD
+                        sudo systemctl restart sshd
+                        ```
+
             - Port Dozzle `8190`
                 - Trafic entrant et sortant
+
 - **L'accès DHCP** doit être disponible pour l'"[Étape 5 - Connexion réseau à la machine virtuelle](#etape-5-connexion-reseau-a-la-machine-virtuelle)" (recommandé).
 - **Exigences en matière de sauvegarde**, voir "Annexe 1 - Sauvegarde et restauration des paramètres de l'appliance".
 - Confirmation que le MGW existant ne sera pas supprimé tant que la procédure d'acceptation n'aura pas été menée à bien.
