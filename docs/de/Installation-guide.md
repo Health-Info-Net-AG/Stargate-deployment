@@ -247,6 +247,7 @@ Wählen Sie eines der verfügbaren virtuellen Images aus und richten Sie es gem�
     - [Windows 11 Pro (Hyper-V)-Image](vm/Windows11pro-image-install.md)
     - [VMware-Image](vm/VMware-image-install.md)
     - [Proxmox-Image](vm/Proxmox-image-install.md)
+    - [Cloudscale](vm/Cloudscale-image-install.md)
 - [Konfiguration von Microsoft Exchange](Exchange-integration.md)
 
 ### Schritt 4 - VM-Image laden

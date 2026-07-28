@@ -240,6 +240,7 @@ Sélectionnez l'une des images virtuelles disponibles et provisionnez-la comme d
     - [Image Windows 11 Pro (Hyper-V)](vm/Windows11pro-image-install.md)
     - [Image VMware](vm/VMware-image-install.md)
     - [Image Proxmox](vm/Proxmox-image-install.md)
+    - [Cloudscale](vm/Cloudscale-image-install.md)
 - [Configuration de Microsoft Exchange](Exchange-integration.md)
 
 ### Étape 4 - Charger l'image de machine virtuelle
