@@ -99,8 +99,8 @@ Les éléments suivants doivent être disponibles ou confirmés avant la migrati
 - **Pare-feu**:
     - Autorisez le trafic : de n'importe quelle source vers HIN Gateway et de HIN Gateway vers n'importe quelle destination
         - WireGuard : veuillez consulter [Configuration requise du serveur - Accès réseau entrant](./index.md#acces-reseau-entrant-le-pare-feu-doit-autoriser) :
-        - Configurez le port WireGuard `19818` (TCP/UDP) dans votre pare-feu.
-            - Trafic entrant et sortant
+            - Configurez le port WireGuard `19818` (TCP/UDP) dans votre pare-feu.
+                - Trafic entrant et sortant
     - Autorisez le trafic : poste d'administration → VM HIN Gateway
         - Exigences pour l'installation :
             - Port HTTPS `443`

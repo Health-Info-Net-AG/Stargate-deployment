@@ -100,7 +100,7 @@ I seguenti elementi devono essere disponibili o confermati prima della migrazion
     - Consentire il traffico: da qualsiasi origine a HIN Gateway e da HIN Gateway a qualsiasi destinazione
         - WireGuard: fare riferimento a [Requisiti del server - Accesso alla rete in ingresso](./index.md#accesso-di-rete-in-entrata-il-firewall-deve-consentire):
             - Configurare la porta WireGuard `19818` (TCP/UDP) nel firewall.
-            - Traffico in ingresso e in uscita
+                - Traffico in ingresso e in uscita
     - Consentire il traffico: macchina amministrativa → VM HIN Gateway
         - Requisiti per l'installazione:
             - Porta HTTPS `443`

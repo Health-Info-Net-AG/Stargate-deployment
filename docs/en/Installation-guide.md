@@ -101,7 +101,7 @@ The following items must be available or confirmed before the installation:
     - Allow traffic: any-to-HIN Gateway and HIN Gateway-to-any
         - WireGuard, please refer to [Server Requirements - Inbound Network Access](./index.md#inbound-network-access-firewall-must-allow):
             - Configure the WireGuard port `19818` (TCP/UDP) in your firewall
-            - Incoming and outgoing traffic
+                - Incoming and outgoing traffic
     - Allow traffic: your administrative machine-to-HIN Gateway VM
         - Installation requirements:
             - HTTPS port `443`

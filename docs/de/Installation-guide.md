@@ -100,7 +100,7 @@ Die folgenden Punkte müssen vor der Migration verfügbar sein oder bestätigt w
     - Erlauben Sie den Datenverkehr: beliebig zum HIN Gateway und HIN Gateway zum beliebig
         - WireGuard: Siehe [Serveranforderungen – Eingehender Netzwerkzugriff](./index.md#eingehender-netzwerkzugriff-firewall-muss-erlauben):
             - Konfigurieren Sie den WireGuard-Port `19818` (TCP/UDP) in Ihrer Firewall.
-            - Eingehender und ausgehender Datenverkehr
+                - Eingehender und ausgehender Datenverkehr
     - Erlauben Sie den Datenverkehr: Administrationsrechner zum HIN Gateway-VM
         - Anforderungen für die Installation:
             - HTTPS-Port `443`
