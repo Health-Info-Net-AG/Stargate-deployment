@@ -2,7 +2,7 @@ site_name: HIN Gateway - Logiciels et documentation
 site_url: https://Health-Info-Net-AG.github.io/stargate-deployment/
 site_author: HIN AG
 site_description: >-
-  Stargate deployment User Dokumentation. Docker, Helmcharts, Virtual Machine, Azure, usw.
+  Documentation utilisateur pour le déploiement de HIN Gateway. Docker, Helm Charts, Machine virtuelle, Azure, etc.
 
 docs_dir: "../../docs/fr"
 site_dir: "../../site/fr"
