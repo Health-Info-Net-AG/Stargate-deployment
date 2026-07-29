@@ -45,11 +45,14 @@ It reports pass/fail for: **containers** (running/healthy), **liveness** endpoin
 | All containers live | `docker ps -a --format '{{.Names}}' \| xargs -I{} sh -c 'docker logs --timestamps -f {} 2>&1 \| sed "s/^/[{}] /"'` | Merged, prefixed by container |
 | Web log viewer | Dozzle at `https://<SERVER_IP>:8190` (Keycloak login) | Browse all container logs in a UI |
 
-To hand logs to HIN support, use the upload script and share the returned link - see **[Provide logs to support](Docker-advanced.md#provide-logs-to-support)**:
+To hand logs to HIN support, use the upload script: it collects the last N log lines from **every** service (plus host and version info), uploads them, and prints a link to share - see **[Provide logs to support](Docker-advanced.md#provide-logs-to-support)**:
 
 ```bash
-./scripts/send-logs-to-support.sh --all          # or --since 1h  / --tail 500
+./scripts/send-logs-to-support.sh --tail 5000     # last 5000 lines from each service
+# other options:  --since 1h   |   --until 5m   |   --all   (no argument = --tail 500)
 ```
+
+The upload is capped at 20 MB, so on a busy appliance prefer `--tail`/`--since` over `--all`.
 
 ---
 
@@ -176,6 +179,39 @@ cd docker-compose
 - It only runs when `DOZZLE_ENABLED="true"`. Check: `docker compose ps dozzle oauth2-proxy`.
 - Ensure the firewall allows **`:8190`** inbound. See **[Monitoring and Logs](Monitoring.md)**.
 
+### Onboarding: entering the activation code returns an error
+
+If the activation code is rejected, check in order:
+
+- **Wrong code** - it wasn't copied in full (a truncated copy-paste, an extra space, or a missing character). Re-copy the complete code and re-enter it.
+- **Code already used** - it was already consumed by a previous onboarding. Request a fresh code.
+- **WireGuard / connectivity to HIN** - the `irisagent` tunnel isn't up, so the code can't be validated against HIN. See *WireGuard tunnel down* above (`./scripts/health-check.sh -v`, `docker logs stargate-irisagent`).
+- **No domain tied to the registration** - the customer's HIN registration has no domain associated with it, so there is nothing to activate. This is resolved on the HIN side.
+
+### Onboarding: activation code accepted, but no domains are listed
+
+**Most likely cause: the WireGuard tunnel is not established** - usually a **wrong public IP** or a **firewall port not open**. Without the tunnel the appliance cannot fetch the domain list from HIN.
+
+- Verify `SERVER_STATIC_IP` in `customer-config.sh` matches the real public IP.
+- Confirm **`19818` (UDP *and* TCP)** is open inbound/outbound.
+- Confirm the peer is registered on the HIN side for this IP (support step).
+- `docker logs stargate-irisagent` should show a recent handshake; if not, fix the tunnel first (see *WireGuard tunnel down* above).
+
+### Changing the server IP address (initial setup only)
+
+If the server IP was wrong or unset at first boot, reset cleanly and reinstall:
+
+```bash
+./scripts/purge.sh                 # destroys ALL data - see warning below
+nano customer-config.sh            # set SERVER_STATIC_IP=<NEW IP>
+./scripts/install.sh
+```
+
+The TLS certificate and several service URLs are derived from the IP at first boot, so a purge + reinstall regenerates them for the new address.
+
+!!! danger "Only before onboarding"
+    `purge.sh` **permanently deletes all data** - databases, Vault, and the S/MIME keys. This is safe **only on a fresh, not-yet-onboarded appliance**. **Never run `purge.sh` to change the IP of a live/onboarded gateway** - it causes data loss and mail that can no longer be decrypted. For a production IP change, contact support.
+
 ---
 
 ## 5. Storage & disk
@@ -277,11 +313,11 @@ To resolve this, the following manual configuration must be completed in the *Ke
 
 ### Resolution Steps
 
-1. Open the keycloak on the env and put in the url - `<VM IP address>/admin/master/console/` 
-    user: Admin
-    pass: get the admin pass from the .env of the machine (you need to login on linux console)
+1. Open Keycloak in your browser at `https://<VM IP address>:8180/admin/master/console/`
+    - The **`:8180` port is required** - Keycloak is served on port 8180. Opening the IP with no port reaches the dashboard (`:443`) instead, which redirects you to the **stargate**-realm login where the admin user does not exist (this is the usual cause of "invalid username or password" / "wrong realm" here).
+    - Log in against the **master** realm (the `/admin/master/console/` path selects it) with username `admin` (the `KEYCLOAK_ADMIN_USER` value - lowercase) and the `KEYCLOAK_ADMIN_PASSWORD` value from the machine's `.env` (read it from the Linux console).
 
-2. Admin console - change realm to → realm stargate:
+2. In the admin console, switch the realm selector (top-left) from **master** to **stargate**:
 3. Go to Clients → dashboard
 4. Navigate to the Client scopes tab → click dashboard-dedicated
 5. Select Configure a new mapper → Audience
