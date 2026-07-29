@@ -79,13 +79,13 @@ S3_BUCKET_NAME="stargate-bucket"
 # Use "dev" for the latest development builds,
 # or specify exact versions like "v0.0.3"
 
-SMIMEKEYS_VERSION="7fa809e0"
-POLICY_VERSION="v0.0.8"
-IRISAGENT_VERSION="v0.0.8"
-MXENGINE_VERSION="5684f633"
-POLICY_SYNC_VERSION="v0.0.8"
-DASHBOARD_VERSION="v0.0.115-test"
-MTACONF_VERSION="v0.0.9-test"
+SMIMEKEYS_VERSION="v0.0.25"
+POLICY_VERSION="v0.0.11"
+IRISAGENT_VERSION="v0.0.10"
+MXENGINE_VERSION="v0.0.51"
+POLICY_SYNC_VERSION="v0.0.11"
+DASHBOARD_VERSION="v0.0.72"
+MTACONF_VERSION="v0.0.7"
 OPS_AGENT_VERSION="v0.0.5"
 
 # renovate: datasource=docker depName=clamav/clamav
