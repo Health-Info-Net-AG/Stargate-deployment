@@ -2,8 +2,10 @@
 
 A structured guide to diagnosing a Stargate appliance from the command line: what to check, where the logs are, and safe recovery actions.
 
-!!! info "Where to run these commands"
-    Run everything below from the **deployment directory** - the folder containing `docker-compose.yml` and `scripts/` (on VM images this is typically `/root/stargate-deployment/docker-compose`, or the directory you installed into). All `docker compose` and `./scripts/*` commands assume that working directory.
+!!! info "Where the scripts are"
+    The helper scripts live in the deployment directory under `scripts/`. Commands below use the **full path for VM images**: `/root/stargate-deployment/docker-compose/scripts/`. If you installed elsewhere, substitute your own install directory (the folder that contains `docker-compose.yml` and `scripts/`).
+
+    `docker compose ...` commands must be run **from the deployment directory**:
 
     ```bash
     cd /root/stargate-deployment/docker-compose   # adjust to your install path
@@ -18,13 +20,13 @@ One command summarizes the whole appliance:
 === "Quick"
 
     ```bash
-    ./scripts/health-check.sh
+    /root/stargate-deployment/docker-compose/scripts/health-check.sh
     ```
 
 === "Verbose"
 
     ```bash
-    ./scripts/health-check.sh -v
+    /root/stargate-deployment/docker-compose/scripts/health-check.sh -v
     ```
 
 It reports pass/fail for: **containers** (running/healthy), **liveness** endpoints (smimekeys, policy, irisagent, mxengine), **Vault** seal status, **PostgreSQL** connectivity + databases, **SeaweedFS**, the **WireGuard** tunnel + peer handshakes, **Stalwart** MTA (ports 25 / 10026), **Prometheus** metrics endpoints, and **disk / memory**.
@@ -39,7 +41,7 @@ It reports pass/fail for: **containers** (running/healthy), **liveness** endpoin
 | Layer | Command | What it shows |
 |-------|---------|---------------|
 | Boot / first-install / auto-start | `sudo journalctl -u stargate -n 200 --no-pager` | The systemd service that runs `start.sh` on boot and the first-boot install |
-| Update runs | `cat ../update.log` (deployment root, one level above `docker-compose/`) | Output of the last dashboard/host-triggered `update.sh` |
+| Update runs | `cat /root/stargate-deployment/update.log` | Output of the last dashboard/host-triggered `update.sh` |
 | A single service | `docker logs stargate-<service> --tail 100` | e.g. `stargate-dashboard`, `stargate-mxengine`, `stargate-keycloak` |
 | Follow one service live | `docker logs -f stargate-mxengine` | Real-time |
 | All containers live | `docker ps -a --format '{{.Names}}' \| xargs -I{} sh -c 'docker logs --timestamps -f {} 2>&1 \| sed "s/^/[{}] /"'` | Merged, prefixed by container |
@@ -48,7 +50,7 @@ It reports pass/fail for: **containers** (running/healthy), **liveness** endpoin
 To hand logs to HIN support, use the upload script: it collects the last N log lines from **every** service (plus host and version info), uploads them, and prints a link to share - see **[Provide logs to support](Docker-advanced.md#provide-logs-to-support)**:
 
 ```bash
-./scripts/send-logs-to-support.sh --tail 5000     # last 5000 lines from each service
+/root/stargate-deployment/docker-compose/scripts/send-logs-to-support.sh --tail 5000     # last 5000 lines from each service
 # other options:  --since 1h   |   --until 5m   |   --all   (no argument = --tail 500)
 ```
 
@@ -100,7 +102,7 @@ docker compose restart <service>        # just restart it
 This is the most common issue - **certificates fail when the tunnel is down**, so always fix the tunnel first.
 
 ```bash
-./scripts/health-check.sh -v      # shows WireGuard peer + handshake status
+/root/stargate-deployment/docker-compose/scripts/health-check.sh -v      # shows WireGuard peer + handshake status
 docker logs stargate-irisagent | grep -iE "handshake|peer|cert|wireguard"
 ```
 
@@ -116,7 +118,7 @@ docker logs stargate-vault-init
 ```
 
 - Vault must be **unsealed** for smimekeys/mxengine/policy to work. Keys live in `secrets/vault-keys.json`.
-- If `vault-init` exited non-zero, the keys file may be missing/corrupt - check its logs; re-running `./scripts/init-vault.sh` re-attempts unseal.
+- If `vault-init` exited non-zero, the keys file may be missing/corrupt - check its logs; re-running `/root/stargate-deployment/docker-compose/scripts/init-vault.sh` re-attempts unseal.
 
 !!! danger "Do not delete `secrets/vault-keys.json`"
     Losing it means losing access to all stored secrets. Keep a backup.
@@ -149,11 +151,11 @@ docker logs stargate-postgres --tail 50
 
 ```bash
 docker logs stargate-ops-agent --tail 40      # the update orchestrator
-cat ../update.log                             # the update script output
+cat /root/stargate-deployment/update.log      # the update script output
 ```
 
 - The ops-agent pulls the release manifest, writes versions to `customer-config.sh`, then runs `update.sh` on the host.
-- After it finishes, confirm versions applied: `./scripts/gather-app-versions.sh` (or check `docker compose ps` image tags).
+- After it finishes, confirm versions applied: `/root/stargate-deployment/docker-compose/scripts/gather-app-versions.sh` (or check `docker compose ps` image tags).
 - If a service is stuck after an update, `docker compose up -d <service>` to recreate it.
 
 **Update starts but nothing happens (updating from an older version).** If the ops-agent log stops at `pulling deployment repo ...` and the update never proceeds, the repository on the VM most likely has **local edits to a tracked file** (commonly a hand-patched `docker-compose.yml`). That makes the ops-agent's `git checkout` refuse to run, so the update stalls. Force-reset the repository to the latest revision, then re-run the update. Git is the single source of truth; this discards local edits to **tracked** files only - `customer-config.sh`, `.env`, and `secrets/` are gitignored and preserved:
@@ -165,7 +167,7 @@ git checkout -f main
 git reset --hard origin/main
 sed -i 's/^OPS_AGENT_VERSION=.*/OPS_AGENT_VERSION="v0.0.3"/' docker-compose/customer-config.sh   # v0.0.3 or newer
 cd docker-compose
-./scripts/update.sh
+/root/stargate-deployment/docker-compose/scripts/update.sh
 ```
 
 `update.sh` regenerates `.env`, pulls the images, and recreates the affected services - you do **not** need to restart Stargate manually. When it completes, retry the update from the dashboard; it will now proceed.
@@ -185,7 +187,7 @@ If the activation code is rejected, check in order:
 
 - **Wrong code** - it wasn't copied in full (a truncated copy-paste, an extra space, or a missing character). Re-copy the complete code and re-enter it.
 - **Code already used** - it was already consumed by a previous onboarding. Request a fresh code.
-- **WireGuard / connectivity to HIN** - the `irisagent` tunnel isn't up, so the code can't be validated against HIN. See *WireGuard tunnel down* above (`./scripts/health-check.sh -v`, `docker logs stargate-irisagent`).
+- **WireGuard / connectivity to HIN** - the `irisagent` tunnel isn't up, so the code can't be validated against HIN. See *WireGuard tunnel down* above (`/root/stargate-deployment/docker-compose/scripts/health-check.sh -v`, `docker logs stargate-irisagent`).
 - **No domain tied to the registration** - the customer's HIN registration has no domain associated with it, so there is nothing to activate. This is resolved on the HIN side.
 
 ### Onboarding: activation code accepted, but no domains are listed
@@ -202,9 +204,9 @@ If the activation code is rejected, check in order:
 If the server IP was wrong or unset at first boot, reset cleanly and reinstall:
 
 ```bash
-./scripts/purge.sh                 # destroys ALL data - see warning below
+/root/stargate-deployment/docker-compose/scripts/purge.sh                 # destroys ALL data - see warning below
 nano customer-config.sh            # set SERVER_STATIC_IP=<NEW IP>
-./scripts/install.sh
+/root/stargate-deployment/docker-compose/scripts/install.sh
 ```
 
 The TLS certificate and several service URLs are derived from the IP at first boot, so a purge + reinstall regenerates them for the new address.
@@ -269,11 +271,11 @@ Ordered least- to most-disruptive:
 ```bash
 docker compose up -d <service>       # recreate one stuck service
 sudo systemctl restart stargate      # restart the whole stack (via start.sh)
-./scripts/stop.sh  &&  ./scripts/start.sh
+/root/stargate-deployment/docker-compose/scripts/stop.sh  &&  /root/stargate-deployment/docker-compose/scripts/start.sh
 ```
 
 !!! warning "Backups & destructive recovery"
-    `./scripts/backup.sh` and `./scripts/restore.sh` handle data backup/restore. `./scripts/purge.sh` **deletes all data** (databases, Vault, storage) for a clean reinstall - use only as a last resort and only with a current backup. Details: [Docker Advanced configuration](Docker-advanced.md).
+    `/root/stargate-deployment/docker-compose/scripts/backup.sh` and `/root/stargate-deployment/docker-compose/scripts/restore.sh` handle data backup/restore. `/root/stargate-deployment/docker-compose/scripts/purge.sh` **deletes all data** (databases, Vault, storage) for a clean reinstall - use only as a last resort and only with a current backup. Details: [Docker Advanced configuration](Docker-advanced.md).
 
 ---
 
@@ -281,9 +283,9 @@ sudo systemctl restart stargate      # restart the whole stack (via start.sh)
 
 If the health check still shows failures after the steps above, open a ticket via **[Support / Contact us](Support.md)** and include:
 
-- The **appliance version** (`./scripts/gather-app-versions.sh`) and **customer name**.
-- The **health-check output** (`./scripts/health-check.sh -v`).
-- A **log bundle** link from `./scripts/send-logs-to-support.sh` (see [Provide logs to support](Docker-advanced.md#provide-logs-to-support)).
+- The **appliance version** (`/root/stargate-deployment/docker-compose/scripts/gather-app-versions.sh`) and **customer name**.
+- The **health-check output** (`/root/stargate-deployment/docker-compose/scripts/health-check.sh -v`).
+- A **log bundle** link from `/root/stargate-deployment/docker-compose/scripts/send-logs-to-support.sh` (see [Provide logs to support](Docker-advanced.md#provide-logs-to-support)).
 - What you were doing when it broke, and any screenshots.
 
 ## Update Verimesh Instance
