@@ -248,24 +248,6 @@ Ajouter une adresse IP sous Linux:
     sudo systemctl restart NetworkManager
     ```
 
-??? warning "Le réseau doit être configuré avant le premier démarrage"
-    L'image de la machine virtuelle exécute une installation automatique lors du premier démarrage. Si le réseau n'est pas configuré à ce stade, l'installation échouera car l'adresse IP du serveur ne pourra pas être déterminée.
-
-    REMARQUE si vous avez utilisé l'option C et configuré le réseau manuellement, vous devez exécuter les commandes suivantes:
-
-    ```bash
-    cd /root/stargate-deployment/docker-compose
-    ./scripts/purge.sh
-    # Update configuration with a new ip, by editing it with nano
-    # SERVER_STATIC_IP=<NEW IP>
-    nano customer-config.sh
-    # OR use sed
-    # sed -i 's/old IP/new IP/g' customer-config.sh
-    ./scripts/install.sh
-    ```
-
-    Le script d'installation détectera automatiquement l'adresse IP du serveur à partir de la route par défaut. Toute adresse IP accessible, qu'elle soit publique ou privée, convient. L'endpoint public effectif est configuré ultérieurement via le dashboard.
-
 !!! tip
     REMARQUE si vous avez utilisé l'option C et configuré le réseau manuellement, vous devez exécuter les commandes suivantes:
 
@@ -473,20 +455,49 @@ Assurez-vous que votre domaine a bien reçu son certificat de pair basé sur une
 !!! question
     Contactez le support HIN par e-mail ou par téléphone (<support@hin.ch> / 0848 830 740) si vous rencontrez des problèmes.
 
-### Étape 18 - Configurer le serveur de messagerie
+### Étape 18 - Configurer le serveur de messagerie et le HIN Gateway
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
 Si vous avez suivi la procédure recommandée, à savoir exporter la clé privée, l'importer dans le HIN Gateway et conserver la même adresse IP que celle du MGW existant, aucune modification n'est nécessaire sur le serveur de messagerie.
 
-Dans le cas contraire, configurez votre serveur de messagerie ou les composants associés afin que le trafic soit acheminé via le nouveau HIN Gateway. Vérifiez et mettez à jour les paramètres suivants, si nécessaire:
+Sinon, configurez votre serveur de messagerie ou les composants associés de manière à ce que le trafic soit acheminé via le nouveau HIN Gateway. Vérifiez et mettez à jour les paramètres suivants si nécessaire:
 
-- Relais SMTP / smart host
+#### Serveur de messagerie
+
+- Relais SMTP / hôte intelligent
 - Connecteurs
 - Règles de transport
-- Routing domains
+- Domaines de routage
 
-Consultez la section [Intégration Exchange](Exchange-integration.md) pour obtenir des instructions détaillées.
+Voir [Intégration à Exchange](Exchange-integration.md) pour obtenir des instructions détaillées.
+
+#### Configuration du HIN Gateway
+
+- Accédez à la page `Settings` et, pour chaque domaine, ajoutez un **hôte de relais** en utilisant la valeur que vous avez relevée dans le champ `Forwarding server` du MGW dans "Étape 1.2 - Sauvegarde du MGW existant".
+  <br> ![domain-relay-host](assets/installation-guide/step18-add-domain-relay.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+- Sur la même page `Settings`, configurez l'**hôte de relais par défaut**.
+- Si vous utilisez Microsoft 365 / Exchange Online, ajoutez dans **`Settings` → `Trusted networks`** les plages d'adresses IP sortantes publiées par Microsoft, afin que le HIN Gateway considère comme fiables les e-mails provenant d'Exchange Online et les relaie:
+
+    ```text
+    40.92.0.0/15
+    40.107.0.0/16
+    51.4.72.0/24
+    51.4.80.0/27
+    51.5.72.0/24
+    51.5.80.0/27
+    52.100.0.0/14
+    104.47.0.0/17
+    2a01:111:f400::/48
+    2a01:111:f403::/48
+    2a01:4180:4050:400::/64
+    2a01:4180:4050:800::/64
+    2a01:4180:4051:400::/64
+    2a01:4180:4051:800::/64
+    ```
+
+  <br> ![domain-relay-host](assets/installation-guide/step18-add-default-relay-and-network.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ### Étape 19 - Test avant la migration
 

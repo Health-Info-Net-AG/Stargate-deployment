@@ -248,24 +248,6 @@ Aggiungere un indirizzo IP su Linux:
     sudo systemctl restart NetworkManager
     ```
 
-??? warning "La rete deve essere configurata prima del primo avvio"
-    L'immagine VM esegue un'installazione automatica al primo avvio. Se la rete non è ancora configurata (nessun indirizzo IP assegnato tramite DHCP o config statico), l'installazione fallirà perché l'IP del server non può essere rilevato.
-
-    Se ciò accade, configura la rete manualmente, quindi esegui:
-
-    ```bash
-    cd /root/stargate-deployment/docker-compose
-    ./scripts/purge.sh
-    # Update configuration with a new ip, by editing it with nano
-    # SERVER_STATIC_IP=<NEW IP>
-    nano customer-config.sh
-    # OR use sed
-    # sed -i 's/old IP/new IP/g' customer-config.sh
-    ./scripts/install.sh
-    ```
-
-    Lo script di installazione rileverà automaticamente l'IP del server dalla route predefinita. Qualsiasi IP raggiungibile (pubblico o privato) è sufficiente - l'endpoint pubblico effettivo viene configurato successivamente tramite il dashboard.
-
 !!! tip
     Se hai utilizzato l'Opzione C e configurato la rete manualmente, devi eseguire i seguenti comandi:
 
@@ -482,20 +464,49 @@ Assicurati che il tuo dominio abbia ricevuto il suo certificato peer basato su p
 !!! question
     Contatta il Supporto HIN via email o telefono (**<support@hin.ch>** / **0848 830 740**) se riscontri problemi.
 
-### Passo 18 - Configurazione server di posta
+### Passo 18 - Configurazione del server di posta e dell'HIN Gateway
 
 ![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Se hai seguito l'approccio raccomandato esportando la chiave privata, importandola nell'HIN Gateway e mantenendo **lo stesso indirizzo IP** del MGW esistente, non sono richieste modifiche sul server di posta.
+Se è stata seguita la procedura raccomandata esportando la chiave privata, importandola nell'HIN Gateway e mantenendo lo stesso indirizzo IP del MGW esistente non è necessario apportare alcuna modifica al server di posta elettronica.
 
-In caso contrario, configura il server di posta o i componenti associati in modo che il traffico venga instradato tramite il nuovo HIN Gateway. Controlla e aggiorna le seguenti impostazioni, se necessario:
+In caso contrario è necessario configurare il server di posta o i componenti associati affinché il traffico venga gestito tramite il nuovo HIN Gateway. Se necessario bisogna verificare e aggiornare le seguenti impostazioni:
+
+#### Server di posta elettronica
 
 - Relay SMTP / smart host
 - Connettori
 - Regole di trasporto
 - Domini di routing
 
-Vedere [Integrazione Exchange](Exchange-integration.md) per istruzioni dettagliate.
+Per istruzioni dettagliate si consulti [Integrazione con Exchange](Exchange-integration.md).
+
+#### Configurazione dell'HIN Gateway
+
+- Vai alla pagina delle Impostazioni (`Settings`) e, per ogni dominio, aggiungi un **relay host** utilizzando il valore registrato dal campo `Forwarding server` del MGW al "Passo 1.2 - Backup del MGW esistente".
+  <br> ![domain-relay-host](assets/installation-guide/step18-add-domain-relay.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+- Sulla stessa pagina delle Impostazioni (`Settings`) imposta il **default relay host**.
+- Se utilizzi Microsoft 365 / Exchange Online aggiungi i relativi range di indirizzi IP in uscita pubblicati al percorso **`Settings` → `Trusted networks`** affinché l'HIN Gateway consideri attendibili e inoltri i messaggi provenienti da Exchange Online:
+
+    ```text
+    40.92.0.0/15
+    40.107.0.0/16
+    51.4.72.0/24
+    51.4.80.0/27
+    51.5.72.0/24
+    51.5.80.0/27
+    52.100.0.0/14
+    104.47.0.0/17
+    2a01:111:f400::/48
+    2a01:111:f403::/48
+    2a01:4180:4050:400::/64
+    2a01:4180:4050:800::/64
+    2a01:4180:4051:400::/64
+    2a01:4180:4051:800::/64
+    ```
+
+  <br> ![domain-relay-host](assets/installation-guide/step18-add-default-relay-and-network.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ### Passo 19 - Test prima del passaggio
 
