@@ -1,4 +1,4 @@
-# Stargate Pre-Requisites & Deployment Information
+# Stargate Deployment Information
 
 ![Logo](assets/stargate_visual.png)
 
