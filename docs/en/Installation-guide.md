@@ -262,23 +262,6 @@ Add an IP address on Linux:
     sudo systemctl restart NetworkManager
     ```
 
-??? warning "Network must be configured before first boot"
-    The VM image runs an automatic installation on first boot. If the network is not yet configured (no IP address assigned via DHCP or static config), the installation will fail because the server IP cannot be detected.
-
-    If this happens, configure the network manually, then run:
-
-    ```bash
-    cd /root/stargate-deployment/docker-compose
-    ./scripts/purge.sh
-    # Update configuration with a new ip, by editing it with nano
-    # SERVER_STATIC_IP=<NEW IP>
-    nano customer-config.sh
-    # OR use sed
-    # sed -i 's/old IP/new IP/g' customer-config.sh
-    ./scripts/install.sh
-    ```
-
-    The install script will auto-detect the server's IP from the default route. Any reachable IP (public or private) is sufficient - the actual public endpoint is configured later through the dashboard.
 
 !!! tip
     If you used Option C and configured the network manually, you must run the following commands:
