@@ -114,16 +114,18 @@ create_milter() {
     --field "tempFailOnError=true"
 }
 
-# mailauth MTA hook (HTTP, DATA stage). Runs on every listener EXCEPT
-# 'reinject' (:10026), so it verifies + stamps Authentication-Results + ARC-seals
-# once on ingress and DKIM-signs on authenticated submission, but does NOT re-run
-# on the mxengine reinject round-trip (avoids a duplicate Authentication-Results
-# header and a double ARC seal). Uses the same scoping mechanism as the ClamAV milter, but the inverse condition (every listener except 'reinject').
+# mailauth MTA hook (HTTP, DATA stage). Runs on BOTH SMTP listeners ('smtp'
+# :25 and 'reinject' :10026) — same scope as the ClamAV milter — because it
+# does different work on each leg: on ingress (:25) it verifies with the real
+# client IP and stamps Authentication-Results; on egress (:10026, after
+# mxengine) it DKIM-signs outbound and ARC-seals inbound over the final body.
+# mailauth branches internally on context.server.port + domain role, so it must
+# see both legs (scoping to smtp-only would drop all signing and sealing).
 # NOTE: a MtaHook must be created WITHOUT an enable expression and then scoped via
 # a follow-up `update` (the validated path); creating with enable inline fails
 # validation. This differs from MtaMilter, which accepts enable at create time.
 MAILAUTH_HOOK_URL="${MAILAUTH_HOOK_URL:-http://mailauth:8080/hook}"
-MAILAUTH_HOOK_SCOPE="{\"match\":{\"0\":{\"if\":\"listener != 'reinject'\",\"then\":\"true\"}},\"else\":\"false\"}"
+MAILAUTH_HOOK_SCOPE="{\"match\":{\"0\":{\"if\":\"listener == 'smtp' || listener == 'reinject'\",\"then\":\"true\"}},\"else\":\"false\"}"
 
 create_mta_hook() {
   local url="$1" hid
@@ -131,7 +133,7 @@ create_mta_hook() {
   # MtaHook has no settable name; identify an existing one by its URL.
   hid=$(cli query MtaHook 2>/dev/null | awk -v u="$url" 'NR>1 && index($0, u) {print $1; exit}') || true
   if [ -z "$hid" ]; then
-    log "creating MTA hook: ${url} (DATA stage, all listeners except reinject)"
+    log "creating MTA hook: ${url} (DATA stage, smtp + reinject listeners)"
     cli create MtaHook \
       --field "url=${url}" \
       --field 'stages={"data":true}' \
@@ -142,7 +144,7 @@ create_mta_hook() {
   fi
   [ -n "$hid" ] || { log "ERROR: could not resolve MtaHook id for ${url}"; return 1; }
 
-  log "scoping mailauth hook ${hid} to all listeners except reinject"
+  log "scoping mailauth hook ${hid} to smtp + reinject listeners"
   cli update MtaHook "$hid" --json "{\"enable\":${MAILAUTH_HOOK_SCOPE}}"
 }
 

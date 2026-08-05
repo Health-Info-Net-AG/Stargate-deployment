@@ -731,6 +731,10 @@ services:
       # Fail closed: temp-reject (451) if a configured domain cannot be signed
       MAILAUTH_ALLOW_UNSIGNED: "false"
 
+      # Egress leg = the reinject listener port: sign/seal there, verify on ingress.
+      # (authserv-id is NOT set here — it comes from the dashboard config hostname.)
+      MAILAUTH_REINJECT_PORT: "10026"
+
       RUST_LOG: "info"
     ports:
       - "8086:8080"
