@@ -34,6 +34,8 @@ get_version "smimekeys-client" "smimekeys-client" "8080"
 get_version "policy" "policy" "8080"
 get_version "irisagent" "irisagent" "8080"
 get_version "mxengine" "mxengine" "8080"
+get_version "idagent" "idagent" "8080"
+get_version "mailauth" "mailauth" "8080"
 
 # Set permissions so node-exporter can read (it runs as non-root)
 chmod 644 "$TEMP_FILE"

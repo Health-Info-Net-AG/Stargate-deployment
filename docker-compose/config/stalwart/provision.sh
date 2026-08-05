@@ -114,6 +114,38 @@ create_milter() {
     --field "tempFailOnError=true"
 }
 
+# mailauth MTA hook (HTTP, DATA stage). Runs on every listener EXCEPT
+# 'reinject' (:10026), so it verifies + stamps Authentication-Results + ARC-seals
+# once on ingress and DKIM-signs on authenticated submission, but does NOT re-run
+# on the mxengine reinject round-trip (avoids a duplicate Authentication-Results
+# header and a double ARC seal). Uses the same scoping mechanism as the ClamAV milter, but the inverse condition (every listener except 'reinject').
+# NOTE: a MtaHook must be created WITHOUT an enable expression and then scoped via
+# a follow-up `update` (the validated path); creating with enable inline fails
+# validation. This differs from MtaMilter, which accepts enable at create time.
+MAILAUTH_HOOK_URL="${MAILAUTH_HOOK_URL:-http://mailauth:8080/hook}"
+MAILAUTH_HOOK_SCOPE="{\"match\":{\"0\":{\"if\":\"listener != 'reinject'\",\"then\":\"true\"}},\"else\":\"false\"}"
+
+create_mta_hook() {
+  local url="$1" hid
+
+  # MtaHook has no settable name; identify an existing one by its URL.
+  hid=$(cli query MtaHook 2>/dev/null | awk -v u="$url" 'NR>1 && index($0, u) {print $1; exit}') || true
+  if [ -z "$hid" ]; then
+    log "creating MTA hook: ${url} (DATA stage, all listeners except reinject)"
+    cli create MtaHook \
+      --field "url=${url}" \
+      --field 'stages={"data":true}' \
+      --field "tempFailOnError=true"
+    hid=$(cli query MtaHook 2>/dev/null | awk -v u="$url" 'NR>1 && index($0, u) {print $1; exit}') || true
+  else
+    log "MTA hook (${url}) already exists (id=${hid}); reconciling scope"
+  fi
+  [ -n "$hid" ] || { log "ERROR: could not resolve MtaHook id for ${url}"; return 1; }
+
+  log "scoping mailauth hook ${hid} to all listeners except reinject"
+  cli update MtaHook "$hid" --json "{\"enable\":${MAILAUTH_HOOK_SCOPE}}"
+}
+
 # SMTP inbound (port 25) - receives external mail
 create_listener "smtp" "0.0.0.0:25" "smtp" "false"
 
@@ -148,6 +180,10 @@ fi
 # =============================================================================
 # Anti-virus: ClamAV rejects infected mail at SMTP (OnInfected Reject in clamav-milter.conf); tempFailOnError defers mail if ClamAV is down instead of passing it unscanned (fail-closed).
 create_milter "clamav" "${CLAMAV_MILTER_HOST:-clamav}" "${CLAMAV_MILTER_PORT:-7357}"
+
+# Email authentication (mailauth MTA hook): SPF/DKIM/DMARC/ARC verify + seal
+# inbound, DKIM-sign authenticated outbound. Fail-closed (tempFailOnError=true).
+create_mta_hook "$MAILAUTH_HOOK_URL"
 
 # Anti-spam: disabled. Stalwart's built-in spam filter is explicitly turned off
 # here (rather than left unconfigured) so that re-running provision reconciles a

@@ -110,7 +110,9 @@ else
   vault secrets enable -address=http://vault:8200 -path=secret-irisagent kv-v2 || echo "secret-irisagent already exists"
   vault secrets enable -address=http://vault:8200 -path=secret-mxengine kv-v2 || echo "secret-mxengine already exists"
   vault secrets enable -address=http://vault:8200 -path=secret-mtaconf kv-v2 || echo "secret-mtaconf already exists"
-  
+  vault secrets enable -address=http://vault:8200 -path=secret-idagent kv-v2 || echo "secret-idagent already exists"
+  vault secrets enable -address=http://vault:8200 -path=secret-mailauth kv-v2 || echo "secret-mailauth already exists"
+
   echo "Vault mounts created!"
   
   # Write WireGuard private key to Vault if provided

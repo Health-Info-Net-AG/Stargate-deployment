@@ -88,6 +88,13 @@ DASHBOARD_VERSION="v0.0.72"
 MTACONF_VERSION="v0.0.7"
 OPS_AGENT_VERSION="v0.0.5"
 
+# idagent (KERI identity) + mailauth (SPF/DKIM/DMARC/ARC). Images being
+# published; leave empty to fall back to the :dev tag, pin real tags before
+# rollout. IDAGENT_VERSION here is the KERI idagent, NOT the WireGuard agent
+# (that is IRISAGENT_VERSION above).
+IDAGENT_VERSION=""
+MAILAUTH_VERSION=""
+
 # renovate: datasource=docker depName=clamav/clamav
 CLAMAV_VERSION="1.5.3"
 

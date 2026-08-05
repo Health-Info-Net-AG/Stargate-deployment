@@ -655,6 +655,90 @@ services:
     labels:
       - autoheal=true
 
+  idagent:
+    image: healthinfonetag/idagent:${IDAGENT_VERSION:-dev}
+    container_name: stargate-idagent
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      vault-init:
+        condition: service_completed_successfully
+    environment:
+      LOG_LEVEL: "info"
+      HTTP_HOST: ""
+      HTTP_PORT: "8080"
+      HTTP_IDLE_TIMEOUT: "180s"
+      HTTP_READ_TIMEOUT: "60s"
+      HTTP_WRITE_TIMEOUT: "60s"
+
+      # Databases: identity (DB_URI) + KERI Key Event Log (KERI_DB_URL)
+      DB_URI: "postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/idagent"
+      KERI_DB_URL: "postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/idagent_keri"
+      KERI_DB_PATH: "/data/keri"
+
+      # Vault (Ed25519 seed storage)
+      VAULT_ADDRESS: "http://vault:8200"
+      VAULT_TOKEN: "${VAULT_TOKEN}"
+      VAULT_MOUNT_PATH: "secret-idagent"
+      VAULT_KV2_MAX_VERSIONS: "2"
+      VAULT_KV2_CAS_REQUIRED: "false"
+      VAULT_KV2_DELETE_VERSION_AFTER: "0s"
+
+      # KERI: local-only KEL (no external witness pool)
+      KERI_WITNESSES: "[]"
+      KERI_WITNESS_THRESHOLD: "0"
+    volumes:
+      - idagent_keri_data:/data/keri
+    ports:
+      - "8085:8080"
+    networks:
+      - stargate-network
+    labels:
+      - autoheal=true
+
+  mailauth:
+    image: healthinfonetag/mailauth:${MAILAUTH_VERSION:-dev}
+    container_name: stargate-mailauth
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+    depends_on:
+      vault-init:
+        condition: service_completed_successfully
+      dashboard:
+        condition: service_healthy
+    environment:
+      MAILAUTH_BIND_ADDR: "0.0.0.0:8080"
+      MAILAUTH_MAX_BODY_MB: "50"
+
+      # Vault (reads DKIM/ARC private keys per request)
+      MAILAUTH_VAULT_ADDRESS: "http://vault:8200"
+      MAILAUTH_VAULT_TOKEN: "${VAULT_TOKEN}"
+      MAILAUTH_VAULT_MOUNT_PATH: "secret-mailauth"
+
+      # Per-domain config from the dashboard (falls back to POST /config)
+      MAILAUTH_DASHBOARD_CONFIG_URL: "http://dashboard:3000/api/internal/installation-config?service=mailauth"
+
+      # Fail closed: temp-reject (451) if a configured domain cannot be signed
+      MAILAUTH_ALLOW_UNSIGNED: "false"
+
+      RUST_LOG: "info"
+    ports:
+      - "8086:8080"
+    networks:
+      - stargate-network
+    labels:
+      - autoheal=true
+
   apisix:
     image: apache/apisix:${APISIX_VERSION:-3.15.0-debian}
     container_name: stargate-apisix
@@ -1216,6 +1300,7 @@ volumes:
   alloy_data:
   textfile_collector:
   dashboard_cache:
+  idagent_keri_data:
 
 networks:
   stargate-network:
