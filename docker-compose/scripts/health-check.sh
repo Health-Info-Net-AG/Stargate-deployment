@@ -71,6 +71,15 @@ elif [ -n "$ps_status" ]; then
   warn "stargate-policy-sync status: $ps_status (optional service)"
 fi
 
+# watcher is optional (compose profile keri-watcher; only run when this
+# deployment verifies external anchors)
+watcher_status=$(docker inspect -f '{{.State.Status}}' stargate-watcher 2>/dev/null)
+if [ "$watcher_status" = "running" ]; then
+  pass "stargate-watcher"
+elif [ -n "$watcher_status" ]; then
+  warn "stargate-watcher status: $watcher_status (optional service)"
+fi
+
 echo ""
 
 # ------------------------------------------------------------------

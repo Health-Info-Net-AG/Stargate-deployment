@@ -95,6 +95,30 @@ OPS_AGENT_VERSION="v0.0.5"
 IDAGENT_VERSION=""
 MAILAUTH_VERSION=""
 
+# keriox-tools image (KERI witness/watcher, built from a pinned commit). Only the
+# per-deployment `watcher` (compose profile keri-watcher) uses it here. Empty ->
+# :dev tag.
+KERIOX_VERSION=""
+
+# --- KERI topology (idagent) ---------------------------------------------------
+# Local-only by default (empty witnesses / threshold 0 = today's behavior).
+#
+# KERI_WITNESSES: a JSON ARRAY of the shared witness pool's OOBI objects,
+# SINGLE-quoted so the inner double-quotes survive in .env. Each element is a
+# FULL OOBI object {eid, scheme, url} - not a bare URL. Example:
+#   KERI_WITNESSES='[{"eid":"BJq7...","scheme":"http","url":"http://witness-1-host:3232/"}]'
+# KERI_WITNESS_THRESHOLD: receipts required at inception; must be <= the number
+# of witnesses. IMPORTANT: with threshold > 0 the pool MUST be reachable before
+# idagent's FIRST start, or inception fails without receipts.
+KERI_WITNESSES='[]'
+KERI_WITNESS_THRESHOLD="0"
+#
+# KERI_WATCHER_OOBI: a SINGLE watcher OOBI object (one {eid, scheme, url}, NOT an
+# array), SINGLE-quoted. Only needed to verify OTHER orgs' anchors - enable the
+# per-deployment watcher via `--profile keri-watcher`; leave empty otherwise.
+# Example: KERI_WATCHER_OOBI='{"eid":"BF2t...","scheme":"http","url":"http://watcher-host:3235/"}'
+KERI_WATCHER_OOBI=''
+
 # renovate: datasource=docker depName=clamav/clamav
 CLAMAV_VERSION="1.5.3"
 

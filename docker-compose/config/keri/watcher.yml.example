@@ -1,0 +1,40 @@
+# Per-deployment KERI watcher configuration.
+#
+# COPY this file to `watcher.yml` (gitignored) and fill in the real values before
+# enabling the `keri-watcher` compose profile:
+#     cp config/keri/watcher.yml.example config/keri/watcher.yml
+#     docker compose --profile keri-watcher up -d watcher
+#
+# The watcher is ONLY needed when this deployment verifies OTHER orgs' anchored
+# keys (idagent's POST /v1/anchor/verify against a foreign AID). A deployment that
+# only verifies its own anchors needs no watcher - leave the profile disabled and
+# idagent's KERI_WATCHER_OOBI empty.
+#
+# PREREQUISITES:
+#   - The shared witness pool must already be running and reachable; put its real
+#     witness OOBIs in `initial_oobis` below (they must match idagent's
+#     KERI_WITNESSES).
+#   - `seed` is this watcher's FIXED identity. It deterministically derives the
+#     watcher's AID, which is the `eid` you then put in idagent's
+#     KERI_WATCHER_OOBI. Keep it secret and STABLE - a new seed on restart changes
+#     the AID and breaks every controller that designated this watcher. Generate
+#     one with the dkms tooling. (This file is gitignored precisely because it
+#     holds that secret.)
+#   - `public_url` MUST be the URL OTHER parties can reach this watcher at. The
+#     `watcher` service publishes port 3235 directly as plain HTTP (no built-in
+#     TLS), so use http://<this-host-or-domain>:3235/ - or, if you front it with a
+#     TLS-terminating reverse proxy, set this to that https URL. An internal
+#     hostname produces OOBIs other parties cannot resolve.
+
+seed: "REPLACE_ME_fixed_CESR_ed25519_seed_for_this_watcher"
+db_path: /db/watcher
+tel_storage_path: /db/tel
+http_port: 3235
+public_url: "http://REPLACE_ME_reachable_host:3235/"
+
+# The shared witness pool this watcher resolves at startup. One entry per witness;
+# must match idagent's KERI_WITNESSES.
+initial_oobis:
+  - eid: "REPLACE_ME_witness_1_eid"
+    scheme: http
+    url: "http://REPLACE_ME_witness_1_host:3232/"
