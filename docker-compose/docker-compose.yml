@@ -895,7 +895,11 @@ services:
 
       VAULT_ADDRESS: "http://vault:8200"
       VAULT_TOKEN: "${VAULT_TOKEN}"
+      # TLS private keys (mtaconf reads these back)
       VAULT_MOUNT_PATH: "secret-mtaconf"
+      # DKIM/ARC private keys the dashboard writes for mailauth to read back;
+      # must equal the mailauth service's MAILAUTH_VAULT_MOUNT_PATH
+      MAILAUTH_VAULT_MOUNT_PATH: "secret-mailauth"
 
       #monitoring
       LOKI_URL: "http://loki:3100"

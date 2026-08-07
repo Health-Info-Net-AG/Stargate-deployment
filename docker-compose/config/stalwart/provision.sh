@@ -124,7 +124,7 @@ create_milter() {
 # NOTE: a MtaHook must be created WITHOUT an enable expression and then scoped via
 # a follow-up `update` (the validated path); creating with enable inline fails
 # validation. This differs from MtaMilter, which accepts enable at create time.
-MAILAUTH_HOOK_URL="${MAILAUTH_HOOK_URL:-http://mailauth:8080/hook}"
+MAILAUTH_HOOK_URL="${MAILAUTH_HOOK_URL:-http://mailauth:8080/v1/hook}"
 MAILAUTH_HOOK_SCOPE="{\"match\":{\"0\":{\"if\":\"listener == 'smtp' || listener == 'reinject'\",\"then\":\"true\"}},\"else\":\"false\"}"
 
 create_mta_hook() {
