@@ -102,7 +102,7 @@ CLAMAV_VERSION="1.5.3"
 # renovate: datasource=docker depName=postgres
 POSTGRES_VERSION="18-alpine"
 # renovate: datasource=docker depName=quay.io/keycloak/keycloak
-KEYCLOAK_VERSION="26.7.0"
+KEYCLOAK_VERSION="26.7.1"
 # renovate: datasource=docker depName=hashicorp/vault
 VAULT_VERSION="1.21.4"
 # renovate: datasource=docker depName=apache/apisix
