@@ -130,17 +130,19 @@ MAILAUTH_HOOK_SCOPE="{\"match\":{\"0\":{\"if\":\"listener == 'smtp' || listener 
 create_mta_hook() {
   local url="$1" hid
 
-  # MtaHook has no settable name; identify an existing one by its URL.
-  hid=$(cli query MtaHook 2>/dev/null | awk -v u="$url" 'NR>1 && index($0, u) {print $1; exit}') || true
+  # Identify our hook by the mailauth host, not the full URL, so a path/version
+  # change reconciles the existing hook in place instead of orphaning it.
+  hid=$(cli query MtaHook 2>/dev/null | awk 'NR>1 && /mailauth:/ {print $1; exit}') || true
   if [ -z "$hid" ]; then
     log "creating MTA hook: ${url} (DATA stage, smtp + reinject listeners)"
     cli create MtaHook \
       --field "url=${url}" \
       --field 'stages={"data":true}' \
       --field "tempFailOnError=true"
-    hid=$(cli query MtaHook 2>/dev/null | awk -v u="$url" 'NR>1 && index($0, u) {print $1; exit}') || true
+    hid=$(cli query MtaHook 2>/dev/null | awk 'NR>1 && /mailauth:/ {print $1; exit}') || true
   else
-    log "MTA hook (${url}) already exists (id=${hid}); reconciling scope"
+    log "MTA hook exists (id=${hid}); updating url to ${url}"
+    cli update MtaHook "$hid" --field "url=${url}"
   fi
   [ -n "$hid" ] || { log "ERROR: could not resolve MtaHook id for ${url}"; return 1; }
 
@@ -186,6 +188,12 @@ create_milter "clamav" "${CLAMAV_MILTER_HOST:-clamav}" "${CLAMAV_MILTER_PORT:-73
 # Email authentication (mailauth MTA hook): SPF/DKIM/DMARC/ARC verify + seal
 # inbound, DKIM-sign authenticated outbound. Fail-closed (tempFailOnError=true).
 create_mta_hook "$MAILAUTH_HOOK_URL"
+
+# mailauth owns inbound email authentication, so turn off Stalwart's own
+# SPF/DKIM/DMARC verification (ARC already defaults to disable; Reverse-IP left
+# as-is). Each field is an Expression; an empty match + else "disable" clears it.
+log "disabling Stalwart inbound SPF/DKIM/DMARC verification (mailauth owns these)"
+cli update SenderAuth singleton --json '{"dkimVerify":{"match":{},"else":"disable"},"spfEhloVerify":{"match":{},"else":"disable"},"spfFromVerify":{"match":{},"else":"disable"},"dmarcVerify":{"match":{},"else":"disable"}}'
 
 # Anti-spam: disabled. Stalwart's built-in spam filter is explicitly turned off
 # here (rather than left unconfigured) so that re-running provision reconciles a
