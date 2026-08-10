@@ -95,9 +95,10 @@ OPS_AGENT_VERSION="v0.0.5"
 IDAGENT_VERSION=""
 MAILAUTH_VERSION=""
 
-# keriox-tools image (KERI witness/watcher, built from a pinned commit). Only the
-# per-deployment `watcher` (compose profile keri-watcher) uses it here. Empty ->
-# :dev tag.
+# keriox-watcher image tag (per-deployment watcher; built from a pinned keriox
+# commit - see the keriox-tools repo, which also builds keriox-witness for the
+# shared pool). Only the `watcher` service (profile keri-watcher) uses it here.
+# Empty -> :dev tag.
 KERIOX_VERSION=""
 
 # --- KERI topology (idagent) ---------------------------------------------------

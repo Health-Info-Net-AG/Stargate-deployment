@@ -20,17 +20,17 @@
 #     the AID and breaks every controller that designated this watcher. Generate
 #     one with the dkms tooling. (This file is gitignored precisely because it
 #     holds that secret.)
-#   - `public_url` MUST be the URL OTHER parties can reach this watcher at. The
-#     `watcher` service publishes port 3235 directly as plain HTTP (no built-in
-#     TLS), so use http://<this-host-or-domain>:3235/ - or, if you front it with a
-#     TLS-terminating reverse proxy, set this to that https URL. An internal
-#     hostname produces OOBIs other parties cannot resolve.
+#   - `public_url` is the URL idagent uses to reach this watcher. The watcher is a
+#     LOCAL sidecar (its port is NOT published to the host); idagent talks to it
+#     over the internal docker network, so this stays the internal service name:
+#     http://watcher:3235/ . (Unlike a witness, the watcher is not consumed by
+#     other parties, so it does not need an externally reachable URL.)
 
 seed: "REPLACE_ME_fixed_CESR_ed25519_seed_for_this_watcher"
 db_path: /db/watcher
 tel_storage_path: /db/tel
 http_port: 3235
-public_url: "http://REPLACE_ME_reachable_host:3235/"
+public_url: "http://watcher:3235/"
 
 # The shared witness pool this watcher resolves at startup. One entry per witness;
 # must match idagent's KERI_WITNESSES.

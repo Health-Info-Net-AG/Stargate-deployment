@@ -771,17 +771,20 @@ services:
     labels:
       - autoheal=true
 
-  # KERI watcher (per-deployment). Fetches + validates external AIDs' KELs from
-  # the shared witness pool on behalf of idagent (POST /v1/anchor/verify against a
-  # foreign AID). OPT-IN: only needed when this deployment verifies OTHER orgs'
-  # anchors - enable with `docker compose --profile keri-watcher up -d`.
+  # KERI watcher (per-deployment). A LOCAL, non-exposed sidecar: it fetches +
+  # validates external AIDs' KELs from the shared witness pool on behalf of
+  # idagent (POST /v1/anchor/verify against a foreign AID). idagent reaches it
+  # over the internal network at http://watcher:3235/; the watcher only makes
+  # OUTBOUND calls to the witnesses, so its port is NOT published to the host.
+  # OPT-IN: only needed when this deployment verifies OTHER orgs' anchors -
+  # enable with `docker compose --profile keri-watcher up -d`.
   # PREREQUISITES before enabling: (1) the shared witness pool must be running and
   # reachable; (2) copy config/keri/watcher.yml.example -> config/keri/watcher.yml
   # (gitignored) and fill in this watcher's fixed seed + the pool's initial_oobis;
-  # (3) set idagent's KERI_WATCHER_OOBI to this watcher's OOBI. The keriox image is
-  # built from a pinned commit (see the keriox-tools repo).
+  # (3) set idagent's KERI_WATCHER_OOBI to this watcher's OOBI. Image built from a
+  # pinned keriox commit (see the keriox-tools repo).
   watcher:
-    image: healthinfonetag/keriox-tools:${KERIOX_VERSION:-dev}
+    image: healthinfonetag/keriox-watcher:${KERIOX_VERSION:-dev}
     container_name: stargate-watcher
     profiles: ["keri-watcher"]
     restart: unless-stopped
@@ -797,8 +800,6 @@ services:
       - /bin/sh
       - -c
       - mkdir -p /db/watcher /db/tel && exec /usr/local/bin/watcher --config-file=/config/watcher.yml
-    ports:
-      - "3235:3235"
     healthcheck:
       test: ["CMD", "bash", "-c", ":> /dev/tcp/127.0.0.1/3235"]
       interval: 10s
