@@ -5,7 +5,7 @@ Distribuisci Stargate su Proxmox
 ## Ottenere l'URL del file immagine
 
 - Fai riferimento al [Catalogo VM](VM-Catalog.md?h=qcow2) per un elenco di immagini con URL.
-- Copia l'URL negli appunti, ad esempio `https://images.hin.ch/vm-images/Verimesh-HINGateway.v0.5.1.x86_64.qcow2`
+- Copia l'URL negli appunti, ad esempio `https://images.hin.ch/vm-images/hingateway_v0.0.0.x86_64.qcow2`
 
 ## Importare il file immagine in Proxmox
 
@@ -34,7 +34,7 @@ Distribuisci Stargate su Proxmox
 
 ## Installare HIN Gateway
 
-Dopo che la VM è stata creata con successo, procedi con i passaggi di installazione e onboarding come descritto nelle [istruzioni](https://health-info-net-ag.github.io/Stargate-deployment/Installation-guide/) fornite.
+Dopo che la VM è stata creata con successo, procedi con i passaggi di installazione e onboarding come descritto nelle [istruzioni](../Installation-guide.md) fornite.
 
 !!! tip "Supporto"
 
