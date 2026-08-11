@@ -581,6 +581,7 @@ services:
       INBOUND_SMTP_TLS: "false"
       INBOUND_SMTP_AUTH: "false"
       INBOUND_SMTP_FORWARD_ENCRYPTED_ON_FAILURE: "false"
+      INBOUND_PRESERVE_HEADERS_ON_DECRYPT: "Authentication-Results"
       REMOTE_CONFIG_URL: "http://dashboard:3000/api/internal/installation-config?service=mxengine"
 
       # Database
@@ -660,7 +661,8 @@ services:
   # but a freshly-created named volume can be root-owned depending on the engine,
   # which would block writes. This one-shot chowns it before idagent starts.
   idagent-data-fixer:
-    image: healthinfonetag/idagent:${IDAGENT_VERSION:-dev}
+    image: registry.vereign.io/svdh/idagent:${IDAGENT_VERSION:-dev}
+
     container_name: stargate-idagent-data-fixer
     user: root
     logging:
@@ -675,7 +677,7 @@ services:
       - stargate-network
 
   idagent:
-    image: healthinfonetag/idagent:${IDAGENT_VERSION:-dev}
+    image: registry.vereign.io/svdh/idagent:${IDAGENT_VERSION:-dev}
     container_name: stargate-idagent
     restart: unless-stopped
     logging:
@@ -731,7 +733,7 @@ services:
       - autoheal=true
 
   mailauth:
-    image: healthinfonetag/mailauth:${MAILAUTH_VERSION:-dev}
+    image: registry.vereign.io/svdh/mailauth:${MAILAUTH_VERSION:-dev}
     container_name: stargate-mailauth
     restart: unless-stopped
     logging:

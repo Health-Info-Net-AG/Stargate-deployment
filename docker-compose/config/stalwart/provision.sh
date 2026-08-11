@@ -190,10 +190,12 @@ create_milter "clamav" "${CLAMAV_MILTER_HOST:-clamav}" "${CLAMAV_MILTER_PORT:-73
 create_mta_hook "$MAILAUTH_HOOK_URL"
 
 # mailauth owns inbound email authentication, so turn off Stalwart's own
-# SPF/DKIM/DMARC verification (ARC already defaults to disable; Reverse-IP left
-# as-is). Each field is an Expression; an empty match + else "disable" clears it.
-log "disabling Stalwart inbound SPF/DKIM/DMARC verification (mailauth owns these)"
-cli update SenderAuth singleton --json '{"dkimVerify":{"match":{},"else":"disable"},"spfEhloVerify":{"match":{},"else":"disable"},"spfFromVerify":{"match":{},"else":"disable"},"dmarcVerify":{"match":{},"else":"disable"}}'
+# verification entirely (SPF/DKIM/DMARC/ARC + Reverse-IP). Otherwise Stalwart
+# stamps its own Authentication-Results (e.g. iprev=pass) under the same
+# authserv-id as mailauth, colliding with the header mailauth carries forward.
+# Each field is an Expression; an empty match + else "disable" clears it.
+log "disabling Stalwart inbound SPF/DKIM/DMARC/ARC/IPRev verification (mailauth owns these)"
+cli update SenderAuth singleton --json '{"dkimVerify":{"match":{},"else":"disable"},"arcVerify":{"match":{},"else":"disable"},"spfEhloVerify":{"match":{},"else":"disable"},"spfFromVerify":{"match":{},"else":"disable"},"dmarcVerify":{"match":{},"else":"disable"},"reverseIpVerify":{"match":{},"else":"disable"}}'
 
 # Anti-spam: disabled. Stalwart's built-in spam filter is explicitly turned off
 # here (rather than left unconfigured) so that re-running provision reconciles a
