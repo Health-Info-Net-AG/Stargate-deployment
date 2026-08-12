@@ -42,7 +42,7 @@ discovery.docker "stargate" {
       "stargate-mtaconf",
       "stargate-stalwart",
       "stargate-idagent",
-      "stargate-mailauth"
+      "stargate-mailauth",
     ]
   }
 }
