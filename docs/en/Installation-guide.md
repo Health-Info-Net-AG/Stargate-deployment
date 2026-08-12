@@ -262,6 +262,34 @@ Add an IP address on Linux:
     sudo systemctl restart NetworkManager
     ```
 
+??? tip "Cloud-init overrides VM network settings after reboot"
+    It is possible sometimes that Cloud-init overrides VM network settings after reboot. This is harmful when no DHCP configured and VM will be booted without any IP and Route configuration. To disable this behavior please perform following actions:
+
+    1. Stop cloud-init regenerating network config each boot:
+    ```bash
+    printf 'network: {config: disabled}\n' | sudo tee /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+    ```
+    2. Remove the cloud-init/DHCP profile so it can't autoconnect anymore:
+    ```bash
+    # get name of cloud-init interface
+    nmcli connection show
+    # use the exact NAME from `nmcli connection show`
+    nmcli con delete "cloud-init <iface>
+    ```
+    3. Pin the manual profile as the autoconnect winner:
+    ```bash
+    nmcli con mod "<manual-profile>" ipv4.method manual ipv4.addresses <IP>/<PREFIX> \
+    ipv4.gateway <GW> ipv4.dns "<DNS>" connection.autoconnect yes connection.autoconnect-priority 100
+    nmcli con up "<manual-profile>"
+    ```
+    4. Prove it survives. Reboot VM:
+    ```bash
+    sudo reboot
+    ```
+    then check current network configuration:
+    ```bash
+    nmcli device status; ip -4 addr
+    ```
 
 !!! tip
     If you used Option C and configured the network manually, you must run the following commands:
@@ -437,6 +465,36 @@ Under the **Advanced** section, you can optionally configure:
 | **Configure TLS** | TLS certificate settings for SMTP connections. |
 | **Content filter** | The internal content filter endpoint (default: `mxengine:1587`). |
 | **Trusted networks** | Additional networks allowed to relay through this gateway. |
+
+??? tip "How to test TLS connection?"
+    You can always test if configured TLS Certificate was applied on your connection to HIN Gateway or not. Execute following command directly from HIN Gateway Terminal:
+
+    ```bash
+    openssl s_client -connect 127.0.0.1:25 -starttls smtp -servername mail.<YOUR_DOMAIN>
+    ```
+
+    Or, directly from your local machine:
+
+    ```bash
+    openssl s_client -connect <HIN Gateway IP>:25 -starttls smtp -servername mail.<YOUR_DOMAIN>
+    ```
+
+    In output you will see all data related to your TLS connection and used Certificate.
+
+??? question "How to convert `pfx` to `pem` TLS Certificate?"
+    Use openssl command:
+
+    ```bash
+    openssl pkcs12 -in <Certificate>.pfx -out <Certificate>.pem -nodes
+    ```
+
+    E.g.:
+
+    ```bash
+    openssl pkcs12 -in certificate.pfx -out keyStore.pem -nodes
+    # Sometimes you need to add -legacy argument to system with older Certificates generators
+    openssl pkcs12 -in certificate.pfx -out keyStore.pem -nodes -legacy
+    ```
 
 Additional actions:
 

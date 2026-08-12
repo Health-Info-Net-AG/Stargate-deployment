@@ -248,6 +248,35 @@ Aggiungere un indirizzo IP su Linux:
     sudo systemctl restart NetworkManager
     ```
 
+??? tip "Cloud-init sovrascrive le impostazioni di rete della VM dopo il riavvio"
+    A volte può accadere che Cloud-init sovrascriva le impostazioni di rete della VM dopo un riavvio. Questo è problematico quando non è configurato alcun DHCP e la VM viene avviata senza alcuna configurazione IP e di routing. Per disabilitare questo comportamento, eseguire le seguenti operazioni:
+
+    1. Impedire a Cloud-init di rigenerare la configurazione di rete a ogni avvio:
+    ```bash
+    printf 'network: {config: disabled}\n' | sudo tee /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+    ```
+    2. Rimuovere il profilo Cloud-init/DHCP in modo che non possa più connettersi automaticamente:
+    ```bash
+    # ottenere il nome dell'interfaccia Cloud-init
+    nmcli connection show
+    # utilizzare il NAME esatto da `nmcli connection show`
+    nmcli con delete "cloud-init <iface>
+    ```
+    3. Impostare il profilo manuale come profilo preferito per la connessione automatica:
+    ```bash
+    nmcli con mod "<manual-profile>" ipv4.method manual ipv4.addresses <IP>/<PREFIX> \
+    ipv4.gateway <GW> ipv4.dns "<DNS>" connection.autoconnect yes connection.autoconnect-priority 100
+    nmcli con up "<manual-profile>"
+    ```
+    4. Verificare che la configurazione sopravviva al riavvio. Riavviare la VM:
+    ```bash
+    sudo reboot
+    ```
+    quindi controllare la configurazione di rete corrente:
+    ```bash
+    nmcli device status; ip -4 addr
+    ```
+
 !!! tip
     Se hai utilizzato l'Opzione C e configurato la rete manualmente, devi eseguire i seguenti comandi:
 
@@ -422,6 +451,36 @@ Nella sezione **Advanced**, puoi facoltativamente configurare:
 | **Configure TLS** | Impostazioni del certificato TLS per le connessioni SMTP. |
 | **Content filter** | L'endpoint del filtro contenuti interno (predefinito: `mxengine:1587`). |
 | **Trusted networks** | Reti aggiuntive autorizzate a fare relay attraverso questo gateway. |
+
+??? tip "Come testare una connessione TLS?"
+    È sempre possibile verificare se il certificato TLS configurato è stato applicato alla connessione al HIN Gateway. Eseguire il seguente comando direttamente nel terminale del HIN Gateway:
+
+    ```bash
+    openssl s_client -connect 127.0.0.1:25 -starttls smtp -servername mail.<YOUR_DOMAIN>
+    ```
+
+    Oppure direttamente dal proprio computer locale:
+
+    ```bash
+    openssl s_client -connect <HIN Gateway IP>:25 -starttls smtp -servername mail.<YOUR_DOMAIN>
+    ```
+
+    Nell'output saranno visualizzati tutti i dati relativi alla connessione TLS e al certificato utilizzato.
+
+??? question "Come convertire un certificato TLS da `pfx` a `pem`?"
+    Utilizzare il seguente comando openssl:
+
+    ```bash
+    openssl pkcs12 -in <Certificate>.pfx -out <Certificate>.pem -nodes
+    ```
+
+    Ad esempio:
+
+    ```bash
+    openssl pkcs12 -in certificate.pfx -out keyStore.pem -nodes
+    # A volte è necessario aggiungere l'argomento -legacy sui sistemi con generatori di certificati meno recenti
+    openssl pkcs12 -in certificate.pfx -out keyStore.pem -nodes -legacy
+    ```
 
 Azioni aggiuntive:
 
