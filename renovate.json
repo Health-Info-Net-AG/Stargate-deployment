@@ -1,4 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"]
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Bump container image tags pinned in docker-compose.yml, driven by the '# renovate: datasource=... depName=...' comment above each image line.",
+      "fileMatch": ["^docker-compose/docker-compose\\.yml$"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: versioning=(?<versioning>\\S+))?\\s+image:\\s*\\S+:(?<currentValue>\\S+)"
+      ]
+    }
+  ]
 }
