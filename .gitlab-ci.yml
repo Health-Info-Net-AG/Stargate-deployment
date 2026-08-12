@@ -44,15 +44,44 @@ generate_manifest:
     - if: $CI_COMMIT_TAG
   script:
     - |
-      CONFIG="docker-compose/customer-config-prod.example.sh"
-      KEYS="SMIMEKEYS_VERSION POLICY_VERSION IRISAGENT_VERSION MXENGINE_VERSION POLICY_SYNC_VERSION DASHBOARD_VERSION MTACONF_VERSION OPS_AGENT_VERSION DOZZLE_VERSION CLAMAV_VERSION POSTGRES_VERSION KEYCLOAK_VERSION VAULT_VERSION APISIX_VERSION NATS_VERSION SEAWEEDFS_VERSION CADDY_VERSION LOKI_VERSION ALLOY_VERSION NODE_EXPORTER_VERSION STALWART_VERSION OAUTH2_PROXY_VERSION"
+      # Image versions now live in docker-compose.yml (pinned per git tag), not in
+      # customer-config. This reads the tags back OUT of the compose image: lines so
+      # the release manifest still records the exact versions a release shipped
+      # (same manifest schema the dashboard/ops-agent consume). MAP is
+      # "<MANIFEST_KEY> <image repo path in compose>"; keep it in sync with the
+      # image: lines in docker-compose.yml.
+      COMPOSE="docker-compose/docker-compose.yml"
+      MAP="SMIMEKEYS_VERSION healthinfonetag/smimekeys
+      POLICY_VERSION healthinfonetag/policy
+      IRISAGENT_VERSION healthinfonetag/irisagent
+      MXENGINE_VERSION healthinfonetag/mxengine
+      POLICY_SYNC_VERSION healthinfonetag/policy-sync
+      DASHBOARD_VERSION healthinfonetag/dashboard
+      MTACONF_VERSION healthinfonetag/mtaconf
+      OPS_AGENT_VERSION healthinfonetag/stargate-ops
+      DOZZLE_VERSION amir20/dozzle
+      CLAMAV_VERSION clamav/clamav
+      POSTGRES_VERSION postgres
+      KEYCLOAK_VERSION quay.io/keycloak/keycloak
+      VAULT_VERSION hashicorp/vault
+      APISIX_VERSION apache/apisix
+      NATS_VERSION nats
+      SEAWEEDFS_VERSION chrislusf/seaweedfs
+      CADDY_VERSION caddy
+      LOKI_VERSION grafana/loki
+      ALLOY_VERSION grafana/alloy
+      NODE_EXPORTER_VERSION prom/node-exporter
+      STALWART_VERSION stalwartlabs/stalwart
+      OAUTH2_PROXY_VERSION quay.io/oauth2-proxy/oauth2-proxy"
       echo "{" > manifest.json
       echo "  \"version\": \"${CI_COMMIT_TAG}\"," >> manifest.json
       echo "  \"deployment_tag\": \"${CI_COMMIT_TAG}\"," >> manifest.json
       echo "  \"images\": {" >> manifest.json
       FIRST=true
-      for KEY in $KEYS; do
-        VALUE=$(grep "^${KEY}=" "$CONFIG" | tail -1 | cut -d'"' -f2)
+      echo "$MAP" | while read -r KEY REPO; do
+        [ -n "$KEY" ] || continue
+        # tag = substring after the last ':' on the matching image: line
+        VALUE=$(grep -E "^[[:space:]]*image:[[:space:]]*${REPO}:" "$COMPOSE" | head -1 | sed 's/.*://' | tr -d '[:space:]')
         if [ -n "$VALUE" ]; then
           if [ "$FIRST" = true ]; then FIRST=false; else echo "," >> manifest.json; fi
           printf "    \"%s\": \"%s\"" "$KEY" "$VALUE" >> manifest.json

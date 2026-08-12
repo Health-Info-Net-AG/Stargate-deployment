@@ -5,7 +5,7 @@ services:
   # ===================
 
   postgres:
-    image: postgres:${POSTGRES_VERSION:-18-alpine}
+    image: postgres:18-alpine
     container_name: stargate-postgres
     restart: unless-stopped
     logging:
@@ -34,7 +34,7 @@ services:
 
   # Fix vault data volume permissions
   vault-data-fixer:
-    image: hashicorp/vault:${VAULT_VERSION:-1.19.0}
+    image: hashicorp/vault:1.21.4
     container_name: stargate-vault-data-fixer
     user: root
     logging:
@@ -49,7 +49,7 @@ services:
       - stargate-network
 
   vault:
-    image: hashicorp/vault:${VAULT_VERSION:-1.19.0}
+    image: hashicorp/vault:1.21.4
     container_name: stargate-vault
     restart: unless-stopped
     logging:
@@ -87,7 +87,7 @@ services:
       - autoheal=true
 
   seaweedfs:
-    image: chrislusf/seaweedfs:${SEAWEEDFS_VERSION:-4.34}
+    image: chrislusf/seaweedfs:4.40
     container_name: stargate-seaweedfs
     restart: unless-stopped
     logging:
@@ -177,7 +177,7 @@ services:
 
   # Vault initialization container
   vault-init:
-    image: hashicorp/vault:${VAULT_VERSION:-1.19.0}
+    image: hashicorp/vault:1.21.4
     container_name: stargate-vault-init
     user: root
     logging:
@@ -200,7 +200,7 @@ services:
       - stargate-network
 
   keycloak:
-    image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION:-26.5.3}
+    image: quay.io/keycloak/keycloak:26.7.0
     container_name: stargate-keycloak
     restart: unless-stopped
     logging:
@@ -291,7 +291,7 @@ services:
       - autoheal=true
 
   nats:
-    image: nats:${NATS_VERSION:-2.14-alpine}
+    image: nats:2.14-alpine
     container_name: stargate-nats
     restart: unless-stopped
     logging:
@@ -350,7 +350,7 @@ services:
   # ===================
 
   smimekeys-client:
-    image: healthinfonetag/smimekeys:${SMIMEKEYS_VERSION:-dev}
+    image: healthinfonetag/smimekeys:v0.0.25
     container_name: stargate-smimekeys-client
     restart: unless-stopped
     logging:
@@ -418,7 +418,7 @@ services:
       - autoheal=true
 
   policy:
-    image: healthinfonetag/policy:${POLICY_VERSION:-dev}
+    image: healthinfonetag/policy:v0.0.11
     container_name: stargate-policy
     restart: unless-stopped
     logging:
@@ -462,7 +462,7 @@ services:
       - autoheal=true
 
   irisagent:
-    image: healthinfonetag/irisagent:${IRISAGENT_VERSION:-dev}
+    image: healthinfonetag/irisagent:v0.0.10
     container_name: stargate-irisagent
     restart: unless-stopped
     logging:
@@ -541,7 +541,7 @@ services:
       - autoheal=true
 
   mxengine:
-    image: healthinfonetag/mxengine:${MXENGINE_VERSION:-dev}
+    image: healthinfonetag/mxengine:v0.0.51
     container_name: stargate-mxengine
     restart: unless-stopped
     logging:
@@ -656,7 +656,7 @@ services:
       - autoheal=true
 
   apisix:
-    image: apache/apisix:${APISIX_VERSION:-3.15.0-debian}
+    image: apache/apisix:3.17.0-debian
     container_name: stargate-apisix
     restart: unless-stopped
     logging:
@@ -692,7 +692,7 @@ services:
       - autoheal=true
 
   dashboard:
-    image: healthinfonetag/dashboard:${DASHBOARD_VERSION:-dev}
+    image: healthinfonetag/dashboard:v0.0.72
     container_name: stargate-dashboard
     restart: unless-stopped
     logging:
@@ -771,7 +771,7 @@ services:
   # Caddy reverse proxy — terminates TLS for Keycloak (:8180) and the
   # dashboard (:443), and redirects plain HTTP (:80) to HTTPS.
   caddy:
-    image: caddy:${CADDY_VERSION:-2-alpine}
+    image: caddy:2-alpine
     container_name: stargate-caddy
     restart: unless-stopped
     logging:
@@ -802,7 +802,7 @@ services:
   # ===================
 
   node-exporter:
-    image: prom/node-exporter:${NODE_EXPORTER_VERSION:-v1.11.1}
+    image: prom/node-exporter:v1.12.1
     container_name: stargate-node-exporter
     restart: unless-stopped
     logging:
@@ -865,7 +865,7 @@ services:
   # ===================
 
   clamav:
-    image: clamav/clamav:${CLAMAV_VERSION:-1.4}
+    image: clamav/clamav:1.5.3
     container_name: stargate-clamav
     restart: unless-stopped
     logging:
@@ -895,7 +895,7 @@ services:
       - autoheal=true
 
   stalwart:
-    image: stalwartlabs/stalwart:${STALWART_VERSION:-v0.16}
+    image: stalwartlabs/stalwart:v0.16
     container_name: stargate-stalwart
     restart: unless-stopped
     logging:
@@ -958,7 +958,7 @@ services:
       - stargate-network
 
   mtaconf:
-    image: healthinfonetag/mtaconf:${MTACONF_VERSION:-dev}
+    image: healthinfonetag/mtaconf:v0.0.7
     container_name: stargate-mtaconf
     restart: unless-stopped
     logging:
@@ -994,7 +994,7 @@ services:
       - autoheal=true
 
   loki:
-    image: grafana/loki:${LOKI_VERSION:-3.7.3}
+    image: grafana/loki:3.7.4
     container_name: stargate-loki
     restart: unless-stopped
     logging:
@@ -1020,7 +1020,7 @@ services:
       - stargate-network
 
   alloy:
-    image: grafana/alloy:${ALLOY_VERSION:-v1.16.1}
+    image: grafana/alloy:v1.18.0
     container_name: stargate-alloy
     restart: unless-stopped
     logging:
@@ -1052,7 +1052,7 @@ services:
   # Policy sync service - syncs policies from Git repository to database
   # Automatically syncs policies when POLICY_SYNC_REPO_URL is configured
   policy-sync:
-    image: healthinfonetag/policy-sync:${POLICY_SYNC_VERSION:-dev}
+    image: healthinfonetag/policy-sync:v0.0.11
     container_name: stargate-policy-sync
     restart: unless-stopped
     logging:
@@ -1082,7 +1082,7 @@ services:
 
   # Ops Agent - executes infrastructure commands (updates, restarts) from dashboard via NATS
   ops-agent:
-    image: healthinfonetag/stargate-ops:${OPS_AGENT_VERSION:-dev}
+    image: healthinfonetag/stargate-ops:v0.0.5
     container_name: stargate-ops-agent
     restart: unless-stopped
     logging:
@@ -1124,7 +1124,7 @@ services:
   # Dozzle - Real-time log viewer for all containers
   # Access at: http://localhost:8090
   dozzle:
-    image: amir20/dozzle:${DOZZLE_VERSION:-v10.5.0}
+    image: amir20/dozzle:v10.5.0
     container_name: stargate-dozzle
     restart: unless-stopped
     profiles: [dozzle]
@@ -1164,7 +1164,7 @@ services:
   # identity headers. Caddy terminates TLS in front of it on :8190.
   # Any authenticated realm user is allowed (no email-domain restriction).
   oauth2-proxy:
-    image: quay.io/oauth2-proxy/oauth2-proxy:${OAUTH2_PROXY_VERSION:-v7.13.0}
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.3
     container_name: stargate-oauth2-proxy
     restart: unless-stopped
     profiles: [dozzle]
