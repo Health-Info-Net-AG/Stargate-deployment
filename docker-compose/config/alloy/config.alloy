@@ -41,6 +41,8 @@ discovery.docker "stargate" {
       "stargate-mxengine",
       "stargate-mtaconf",
       "stargate-stalwart",
+      "stargate-idagent",
+      "stargate-mailauth"
     ]
   }
 }
