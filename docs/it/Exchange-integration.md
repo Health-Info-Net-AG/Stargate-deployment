@@ -13,23 +13,7 @@ Questa guida spiega come configurare Microsoft Exchange (Online e On-Premises) p
 
 Stargate agisce come relay di posta tra server di posta esterni e l'ambiente Exchange. Sono supportati due modelli di integrazione:
 
-**Modello A - Stargate come MX primario (raccomandato per l'elaborazione S/MIME in entrata):**
-
-```mermaid
-flowchart LR
-    I1 --> mx15 --> mx20
-    EO --> TR --> OC --> Stargate --> I2
-    I1["Internet"]
-    I2["Internet"]
-    mx15["Stargate (priorità MX 15)"]
-    mx20["Exchange Online (priorità MX 20)"]
-    EO["Exchange Online"]
-    TR["Regola di trasporto"]
-    OC["Connettore in uscita"]
-    Stargate
-```
-
-**Modello B - Exchange Online come MX primario con regole di trasporto:**
+**Modello A - Exchange Online come MX primario con regole di trasporto:**
 
 ```mermaid
 flowchart LR
@@ -45,6 +29,22 @@ flowchart LR
     C["Connettore"]
     S1["Stargate"]
     S2["Stargate"]
+```
+
+**Modello B - Stargate come MX primario:**
+
+```mermaid
+flowchart LR
+    I1 --> mx15 --> mx20
+    EO --> TR --> OC --> Stargate --> I2
+    I1["Internet"]
+    I2["Internet"]
+    mx15["Stargate (priorità MX 15)"]
+    mx20["Exchange Online (priorità MX 20)"]
+    EO["Exchange Online"]
+    TR["Regola di trasporto"]
+    OC["Connettore in uscita"]
+    Stargate
 ```
 
 In entrambi i modelli, sono necessari:

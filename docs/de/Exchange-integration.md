@@ -13,23 +13,7 @@ Dieser Leitfaden erklärt, wie Sie Microsoft Exchange (Online und On-Premises) k
 
 Stargate fungiert als Mail-Relay zwischen externen Mailservern und Ihrer Exchange-Umgebung. Es werden zwei Integrationsmuster unterstützt:
 
-**Muster A – Stargate als primärer MX (empfohlen für eingehende S/MIME-Verarbeitung):**
-
-```mermaid
-flowchart LR
-    I1 --> mx15 --> mx20
-    EO --> TR --> OC --> Stargate --> I2
-    I1["Internet"]
-    I2["Internet"]
-    mx15["Stargate (MX-Priorität 15)"]
-    mx20["Exchange Online (MX-Priorität 20)"]
-    EO["Exchange Online"]
-    TR["Transportregel"]
-    OC["Ausgehender Connector"]
-    Stargate
-```
-
-**Muster B – Exchange Online als primärer MX mit Transportregeln:**
+**Muster A – Exchange Online als primärer MX mit Transportregeln:**
 
 ```mermaid
 flowchart LR
@@ -45,6 +29,22 @@ flowchart LR
     C["Connector"]
     S1["Stargate"]
     S2["Stargate"]
+```
+
+**Muster B – Stargate als primärer MX:**
+
+```mermaid
+flowchart LR
+    I1 --> mx15 --> mx20
+    EO --> TR --> OC --> Stargate --> I2
+    I1["Internet"]
+    I2["Internet"]
+    mx15["Stargate (MX-Priorität 15)"]
+    mx20["Exchange Online (MX-Priorität 20)"]
+    EO["Exchange Online"]
+    TR["Transportregel"]
+    OC["Ausgehender Connector"]
+    Stargate
 ```
 
 In beiden Mustern benötigen Sie:
