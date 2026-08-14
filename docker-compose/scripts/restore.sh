@@ -23,20 +23,36 @@ cd "$PROJECT_DIR"
 # archive's config/secrets are copied in.
 init_data_layout
 
+# Wipe the service-state dirs that restore re-populates from the archive so a
+# restore onto an ALREADY-INSTALLED machine (e.g. a bootc appliance that
+# fresh-installed on first boot) re-initializes them cleanly instead of
+# colliding. Validated failures without this: Vault cannot be unsealed with the
+# backup's keys against install-generated storage (HTTP 400); pg_dumpall over
+# existing databases/roles errors "already exists" and leaves stale data. No-op
+# on a truly fresh machine. Runs as root; init_data_layout re-creates+re-owns.
+reset_stateful_storage() {
+  echo "  Resetting stateful storage (vault, postgres, seaweedfs) for a clean re-import..."
+  rm -rf "$DATA_DIR/vault" "$DATA_DIR/postgres" "$DATA_DIR/seaweedfs"
+  init_data_layout
+}
+
 # ==============================================================================
 # Usage
 # ==============================================================================
 usage() {
-  echo "Usage: $0 <backup-file.tar.gz>"
+  echo "Usage: $0 [--yes|-y] <backup-file.tar.gz>"
   echo ""
   echo "Restore Stargate from a backup archive."
   echo ""
   echo "Arguments:"
   echo "  backup-file.tar.gz  Path to the backup archive (absolute or relative)"
   echo ""
+  echo "Options:"
+  echo "  --yes, -y            Skip the confirmation prompt (non-interactive use)"
+  echo ""
   echo "Examples:"
   echo "  $0 backups/20260130_143022.tar.gz"
-  echo "  $0 /root/stargate-backup.tar.gz"
+  echo "  $0 --yes /root/stargate-backup.tar.gz"
   echo ""
   echo "This script will:"
   echo "  1. Stop any running services"
@@ -48,15 +64,23 @@ usage() {
   echo "  7. Restore Vault keys and unseal"
   echo "  8. Start application services (via the 'stargate' systemd unit)"
   echo ""
+  echo "WARNING: this REPLACES all data on this machine (Vault, PostgreSQL and"
+  echo "         object storage are reset before the backup is re-imported)."
+  echo ""
   exit 1
 }
 
 # Check arguments
-if [ $# -ne 1 ]; then
-  usage
-fi
-
-BACKUP_FILE="$1"
+ASSUME_YES=0
+BACKUP_FILE=""
+for arg in "$@"; do
+  case "$arg" in
+    --yes|-y) ASSUME_YES=1 ;;
+    -h|--help) usage; exit 0 ;;
+    *) BACKUP_FILE="$arg" ;;
+  esac
+done
+if [ -z "$BACKUP_FILE" ]; then usage; exit 1; fi
 
 # Resolve the backup path. An absolute path is used as-is; otherwise try, in
 # order: relative to the directory the command was run from, relative to the
@@ -73,7 +97,7 @@ elif [ -f "$BACKUP_DIR/$(basename "$BACKUP_FILE")" ]; then
 fi
 
 if [ ! -f "$BACKUP_FILE" ]; then
-  echo "ERROR: Backup file not found: $1"
+  echo "ERROR: Backup file not found: $BACKUP_FILE"
   echo "  Searched: $INVOCATION_DIR/, $PROJECT_DIR/, and $BACKUP_DIR/"
   exit 1
 fi
@@ -84,6 +108,19 @@ echo "============================================"
 echo ""
 echo "Backup file: $BACKUP_FILE"
 echo ""
+
+if [ "$ASSUME_YES" -ne 1 ]; then
+  if [ ! -t 0 ]; then
+    echo "ERROR: restore replaces ALL data on this machine and needs confirmation."
+    echo "       Re-run with --yes for non-interactive use (e.g. dashboard/automation)."
+    exit 1
+  fi
+  echo "WARNING: this REPLACES all data on this machine with the backup"
+  echo "         (Vault, PostgreSQL and object storage are reset and re-imported)."
+  printf "Type 'yes' to continue: "
+  read -r reply
+  [ "$reply" = "yes" ] || { echo "Aborted."; exit 1; }
+fi
 
 # install_docker() and setup_systemd_service() are provided by lib/ (sourced above).
 
@@ -395,6 +432,9 @@ EOF
 chmod 600 "$ENV_FILE"  # holds all secrets
 
 echo "  ✓ Environment file generated"
+echo ""
+
+reset_stateful_storage
 echo ""
 
 # ==============================================================================
