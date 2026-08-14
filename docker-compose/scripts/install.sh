@@ -125,7 +125,7 @@ load_customer_config() {
   POSTGRES_PASSWORD="$(resolve_secret "$POSTGRES_PASSWORD" POSTGRES_PASSWORD)"
   # S3 credentials: support legacy MINIO_ROOT_USER/PASSWORD for existing customer-configs
   S3_ACCESS_KEY="${S3_ACCESS_KEY:-${MINIO_ROOT_USER:-minioadmin}}"
-  S3_SECRET_KEY="$(resolve_secret "${S3_SECRET_KEY:-$MINIO_ROOT_PASSWORD}" S3_SECRET_KEY)"
+  S3_SECRET_KEY="$(resolve_secret "${S3_SECRET_KEY:-${MINIO_ROOT_PASSWORD:-}}" S3_SECRET_KEY)"
   S3_BUCKET_NAME="${S3_BUCKET_NAME:-stargate-bucket}"
 
   # Image versions are pinned directly in docker-compose.yml (not env-driven) so
