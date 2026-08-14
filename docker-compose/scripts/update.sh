@@ -213,8 +213,8 @@ if [ -f "$ENV_FILE" ]; then
   EXISTING_VAULT_TOKEN=$(read_env_var VAULT_TOKEN "$ENV_FILE")
 fi
 
-# Fall back to vault-keys.json if .env has no token
-KEYS_FILE="$PROJECT_DIR/secrets/vault-keys.json"
+# Fall back to vault-keys.json if .env has no token. KEYS_FILE is already set
+# (from the sourced install.sh) to "$SECRETS_DIR/vault-keys.json".
 if [ -z "$EXISTING_VAULT_TOKEN" ] && [ -f "$KEYS_FILE" ]; then
   EXISTING_VAULT_TOKEN=$(jq -r '.root_token' "$KEYS_FILE" 2>/dev/null || true)
   if [ -n "$EXISTING_VAULT_TOKEN" ]; then

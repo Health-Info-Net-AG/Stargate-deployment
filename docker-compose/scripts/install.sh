@@ -279,7 +279,7 @@ LOKI_URL="$LOKI_URL"
 ALLOY_HOSTNAME="$DEPLOYMENT_NAME"
 
 # Policy Sync (optional - syncs policies from Git repo)
-# To enable: compose --profile policy-sync up -d
+# To enable: docker compose --profile policy-sync up -d
 POLICY_SYNC_REPO_URL="${POLICY_SYNC_REPO_URL:-https://github.com/Health-Info-Net-AG/Stargate-policies.git}"
 POLICY_SYNC_REPO_USER="${POLICY_SYNC_REPO_USER:-}"
 POLICY_SYNC_REPO_PASS="${POLICY_SYNC_REPO_PASS:-}"
@@ -635,7 +635,7 @@ wait $LOG_PID 2>/dev/null || true
 if [ "$VAULT_INIT_EXIT" != "0" ]; then
   echo ""
   echo "ERROR: vault-init exited with code $VAULT_INIT_EXIT"
-  echo "Check logs: compose logs vault-init"
+  echo "Check logs: docker compose logs vault-init"
   exit 1
 fi
 
@@ -697,7 +697,7 @@ if [ -f "$KEYS_FILE" ]; then
 
 else
   echo "ERROR: Vault keys file not found."
-  echo "Check vault-init logs: compose logs vault-init"
+  echo "Check vault-init logs: docker compose logs vault-init"
   exit 1
 fi
 

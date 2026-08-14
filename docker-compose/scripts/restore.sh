@@ -10,11 +10,18 @@ INVOCATION_DIR="$PWD"  # caller's working directory, captured before the cd belo
 . "$SCRIPT_DIR/lib/systemd.sh"
 . "$SCRIPT_DIR/lib/docker.sh"
 . "$SCRIPT_DIR/lib/env.sh"
+. "$SCRIPT_DIR/init-data-layout.sh"   # defines init_data_layout (does not auto-run when sourced)
 
 # Detect distribution / package manager (sets DIST_ID, PKGMGR).
 detect_distro
 
 cd "$PROJECT_DIR"
+
+# Create the /var/data layout (secrets/, tls/, keycloak/, apisix/, backups/,
+# and the per-service data dirs) before anything writes into it or any
+# `compose up` auto-creates them as root. Idempotent -- safe to run before the
+# archive's config/secrets are copied in.
+init_data_layout
 
 # ==============================================================================
 # Usage
@@ -90,9 +97,9 @@ echo "  1. Stopping Running Services"
 echo "============================================"
 echo ""
 
-if docker compose ps -q 2>/dev/null | grep -q .; then
+if compose ps -q 2>/dev/null | grep -q .; then
   echo "Stopping existing services..."
-  docker compose down --remove-orphans 2>/dev/null || true
+  compose down --remove-orphans 2>/dev/null || true
   echo "  ✓ Services stopped"
 else
   echo "  - No running services found"
@@ -399,7 +406,7 @@ echo "============================================"
 echo ""
 
 echo "Starting PostgreSQL, Vault, SeaweedFS..."
-docker compose up -d postgres vault seaweedfs
+compose up -d postgres vault seaweedfs
 
 echo "Waiting for PostgreSQL to be ready..."
 # Probe over TCP (-h 127.0.0.1), NOT the Unix socket. On a fresh data volume the
@@ -491,7 +498,7 @@ echo ""
 # Detached + `docker wait` captures the init container's exit code; compose's
 # `depends_on: vault (service_healthy)` makes vault-init wait for Vault first.
 echo "Initializing / unsealing Vault via vault-init..."
-docker compose up -d vault-init
+compose up -d vault-init
 
 VAULT_INIT_EXIT=$(docker wait stargate-vault-init 2>/dev/null) || VAULT_INIT_EXIT=1
 if [ "$VAULT_INIT_EXIT" != "0" ]; then
@@ -619,7 +626,7 @@ echo "  11. Verifying Services"
 echo "============================================"
 echo ""
 
-docker compose ps
+compose ps
 
 echo ""
 
