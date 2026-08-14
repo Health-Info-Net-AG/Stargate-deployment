@@ -192,6 +192,13 @@ if [ -f "$BACKUP_CONTENT/manifest.json" ]; then
   if [ "$BACKUP_VERSION" != "2.0" ]; then
     echo "WARNING: Backup version $BACKUP_VERSION may not be fully compatible"
   fi
+
+  SOURCE_VER=$(jq -r '.source_app_version // "unknown"' "$BACKUP_CONTENT/manifest.json" 2>/dev/null)
+  CURRENT_VER=$(detect_app_version "$PROJECT_DIR")
+  if [ "$SOURCE_VER" != "unknown" ] && [ "$SOURCE_VER" != "$CURRENT_VER" ]; then
+    echo "  NOTE: backup was taken on $SOURCE_VER; this appliance is $CURRENT_VER."
+    echo "        Services will run their own schema migrations on first start after restore."
+  fi
 else
   echo "  - No manifest found (older backup format)"
 fi

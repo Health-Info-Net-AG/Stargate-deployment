@@ -323,6 +323,7 @@ cat > "$BACKUP_SUBDIR/manifest.json" << EOF
   "label": "$LABEL",
   "created_at": "$(date -Iseconds)",
   "hostname": "$(hostname)",
+  "source_app_version": "$(detect_app_version "$PROJECT_DIR")",
   "contents": {
     "database": {
       "full_dump": true,
