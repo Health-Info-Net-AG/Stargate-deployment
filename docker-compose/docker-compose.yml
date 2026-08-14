@@ -19,7 +19,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       PGDATA: /var/lib/postgresql/data
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ${STARGATE_DATA_DIR:-/var/data}/postgres:/var/lib/postgresql/data
       - ./init/postgres:/docker-entrypoint-initdb.d:ro
     # No host port mapping: postgres is reachable only from inside the
     # docker network at postgres:5432. Do not re-expose it on the host.
@@ -33,23 +33,6 @@ services:
     labels:
       - autoheal=true
 
-  # Fix vault data volume permissions
-  vault-data-fixer:
-    # renovate: datasource=docker depName=hashicorp/vault
-    image: hashicorp/vault:1.21.4
-    container_name: stargate-vault-data-fixer
-    user: root
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "5"
-    entrypoint: /bin/sh -c "chown -R vault:vault /vault/data && echo 'Vault data permissions fixed'"
-    volumes:
-      - vault_data:/vault/data
-    networks:
-      - stargate-network
-
   vault:
     # renovate: datasource=docker depName=hashicorp/vault
     image: hashicorp/vault:1.21.4
@@ -60,16 +43,13 @@ services:
       options:
         max-size: "100m"
         max-file: "5"
-    depends_on:
-      vault-data-fixer:
-        condition: service_completed_successfully
     cap_add:
       - IPC_LOCK
     environment:
       VAULT_ADDR: "http://127.0.0.1:8200"
       VAULT_API_ADDR: "http://0.0.0.0:8200"
     volumes:
-      - vault_data:/vault/data
+      - ${STARGATE_DATA_DIR:-/var/data}/vault:/vault/data
       - ./config/vault:/vault/config:ro
     # ports:
     #   - "8200:8200"
@@ -135,7 +115,7 @@ services:
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-minioadmin}
       S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
     volumes:
-      - seaweedfs_data:/data
+      - ${STARGATE_DATA_DIR:-/var/data}/seaweedfs:/data
     ports:
       - "8333:8333"
     healthcheck:
@@ -199,7 +179,7 @@ services:
       WG_PRIVATE_KEY: ${WG_PRIVATE_KEY:-}
     volumes:
       - ./scripts:/scripts:ro
-      - ./secrets:/secrets
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/secrets:/secrets
     entrypoint: /bin/sh -c "apk add --no-cache jq && /scripts/init-vault.sh"
     networks:
       - stargate-network
@@ -235,7 +215,7 @@ services:
       - start
       - --import-realm
     volumes:
-      - ./config/keycloak/generated:/opt/keycloak/data/import:ro
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/keycloak:/opt/keycloak/data/import:ro
     ports:
       - "8181:8080" # Direct HTTP for in-network OIDC discovery via host.docker.internal
     healthcheck:
@@ -284,7 +264,7 @@ services:
         max-file: "5"
     volumes:
       - ./config/apisix/apisix.yaml.template:/templates/apisix.yaml.template:ro
-      - ./config/apisix/generated:/output
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/apisix:/output
     environment:
       KEYCLOAK_APISIX_CLIENT_SECRET: ${KEYCLOAK_APISIX_CLIENT_SECRET:-changeme}
     command: >
@@ -685,7 +665,7 @@ services:
       APISIX_ADMIN_KEY: ${APISIX_ADMIN_KEY:-changeme}
     volumes:
       - ./config/apisix/config.yaml:/usr/local/apisix/conf/config.yaml:ro
-      - ./config/apisix/generated/apisix.yaml:/usr/local/apisix/conf/apisix.yaml
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/apisix/apisix.yaml:/usr/local/apisix/conf/apisix.yaml
     ports:
       - "9080:9080" # Gateway — main entry point for API traffic
       - "9180:9180" # Admin API (read-only in standalone mode)
@@ -766,7 +746,7 @@ services:
     tmpfs:
       - /tmp:size=50M,noexec
     volumes:
-      - dashboard_cache:/app/.next/cache
+      - ${STARGATE_DATA_DIR:-/var/data}/dashboard_cache:/app/.next/cache
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -800,7 +780,7 @@ services:
         condition: service_healthy
     volumes:
       - ./config/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./config/caddy/ssl:/etc/caddy/ssl:ro
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/tls:/etc/caddy/ssl:ro
     ports:
       - "80:80"
       - "443:443"
@@ -829,7 +809,7 @@ services:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/rootfs:ro
-      - textfile_collector:/textfile_collector:ro
+      - ${STARGATE_DATA_DIR:-/var/data}/textfile_collector:/textfile_collector:ro
     command:
       - "--path.procfs=/host/proc"
       - "--path.sysfs=/host/sys"
@@ -860,7 +840,7 @@ services:
       - mxengine
     volumes:
       - ./scripts/gather-app-versions.sh:/scripts/gather-app-versions.sh:ro
-      - textfile_collector:/textfile_collector
+      - ${STARGATE_DATA_DIR:-/var/data}/textfile_collector:/textfile_collector
     entrypoint: /bin/sh
     command:
       - -c
@@ -894,7 +874,7 @@ services:
       CLAMAV_NO_MILTERD: "false"
     volumes:
       # Persist the virus signature DB so it is not re-downloaded on every restart (freshclam keeps it current in the background).
-      - clamav_data:/var/lib/clamav
+      - ${STARGATE_DATA_DIR:-/var/data}/clamav:/var/lib/clamav
       - ./config/clamav/clamav-milter.conf:/etc/clamav/clamav-milter.conf:ro
     mem_limit: 1536m
     healthcheck:
@@ -928,7 +908,7 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-postgres}"
     volumes:
       - ./config/stalwart/config.json:/etc/stalwart/config.json:ro
-      - stalwart_data:/var/lib/stalwart
+      - ${STARGATE_DATA_DIR:-/var/data}/stalwart:/var/lib/stalwart
     ports:
       # :25 is the public MX listener (external SMTP traffic arrives here).
       # :10026 is the internal reinject port — mxengine reaches it via the
@@ -1024,7 +1004,7 @@ services:
     command: -config.file=/etc/loki/loki.yaml
     volumes:
       - ./config/loki/loki.yaml:/etc/loki/loki.yaml:ro
-      - loki_data:/loki
+      - ${STARGATE_DATA_DIR:-/var/data}/loki:/loki
     deploy:
       resources:
         limits:
@@ -1059,7 +1039,7 @@ services:
     volumes:
       - ./config/alloy/config.alloy:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - alloy_data:/var/lib/alloy/data
+      - ${STARGATE_DATA_DIR:-/var/data}/alloy:/var/lib/alloy/data
     environment:
       LOKI_URL: "${LOKI_URL:-http://loki:3100}"
       LOCAL_LOKI_URL: "http://loki:3100"
@@ -1229,17 +1209,6 @@ services:
       - stargate-network
     labels:
       - autoheal=true
-
-volumes:
-  postgres_data:
-  vault_data:
-  seaweedfs_data:
-  stalwart_data:
-  clamav_data:
-  loki_data:
-  alloy_data:
-  textfile_collector:
-  dashboard_cache:
 
 networks:
   stargate-network:
