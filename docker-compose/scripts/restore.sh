@@ -740,9 +740,15 @@ echo "    docker compose logs -f <service-name>"
 echo ""
 
 # Move a consumed archive out of the drop zone so a re-run or a future
-# first-boot check won't re-trigger on it.
+# first-boot check won't re-trigger on it. Best-effort: this cleanup must
+# never flip an already-successful restore's exit code to non-zero (dashboard
+# / bootc first-boot automation reads restore.sh's exit status).
 if [ "${BACKUP_FILE#"$DATA_DIR/restore/"}" != "$BACKUP_FILE" ]; then
-  mkdir -p "$DATA_DIR/restore/restored"
-  mv -f "$BACKUP_FILE" "$DATA_DIR/restore/restored/" 2>/dev/null \
-    && echo "  Archive moved to $DATA_DIR/restore/restored/ (won't re-trigger)."
+  if mkdir -p "$DATA_DIR/restore/restored" 2>/dev/null \
+     && mv -f "$BACKUP_FILE" "$DATA_DIR/restore/restored/" 2>/dev/null; then
+    echo "  Archive moved to $DATA_DIR/restore/restored/ (won't re-trigger)."
+  else
+    echo "  NOTE: could not move consumed archive out of the drop zone (restore still succeeded)."
+  fi
 fi
+exit 0
