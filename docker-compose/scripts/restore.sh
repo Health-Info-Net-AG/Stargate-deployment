@@ -3,10 +3,8 @@ set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+. "$SCRIPT_DIR/lib/paths.sh"
 INVOCATION_DIR="$PWD"  # caller's working directory, captured before the cd below
-SECRETS_DIR="$PROJECT_DIR/secrets"
-ENV_FILE="$PROJECT_DIR/.env"
-CONFIG_FILE="$PROJECT_DIR/customer-config.sh"
 
 # Shared helpers (use SCRIPT_DIR/PROJECT_DIR defined above).
 . "$SCRIPT_DIR/lib/systemd.sh"
@@ -63,13 +61,13 @@ elif [ -f "$INVOCATION_DIR/$BACKUP_FILE" ]; then
   BACKUP_FILE="$INVOCATION_DIR/$BACKUP_FILE"
 elif [ -f "$PROJECT_DIR/$BACKUP_FILE" ]; then
   BACKUP_FILE="$PROJECT_DIR/$BACKUP_FILE"
-elif [ -f "$PROJECT_DIR/backups/$(basename "$BACKUP_FILE")" ]; then
-  BACKUP_FILE="$PROJECT_DIR/backups/$(basename "$BACKUP_FILE")"
+elif [ -f "$BACKUP_DIR/$(basename "$BACKUP_FILE")" ]; then
+  BACKUP_FILE="$BACKUP_DIR/$(basename "$BACKUP_FILE")"
 fi
 
 if [ ! -f "$BACKUP_FILE" ]; then
   echo "ERROR: Backup file not found: $1"
-  echo "  Searched: $INVOCATION_DIR/, $PROJECT_DIR/, and $PROJECT_DIR/backups/"
+  echo "  Searched: $INVOCATION_DIR/, $PROJECT_DIR/, and $BACKUP_DIR/"
   exit 1
 fi
 
@@ -236,7 +234,6 @@ done
 
 # Restore TLS certificates (Caddy)
 if [ -d "$BACKUP_CONTENT/config/caddy-ssl" ] && [ "$(ls -A "$BACKUP_CONTENT/config/caddy-ssl" 2>/dev/null)" ]; then
-  TLS_DIR="$PROJECT_DIR/config/caddy/ssl"
   mkdir -p "$TLS_DIR"
   cp "$BACKUP_CONTENT/config/caddy-ssl"/* "$TLS_DIR/"
   chmod 600 "$TLS_DIR"/*.key 2>/dev/null || true

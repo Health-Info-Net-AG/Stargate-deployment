@@ -25,9 +25,9 @@ done
 LABEL="$(printf '%s' "$LABEL" | tr -c 'A-Za-z0-9._-' '_')"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC2034 # required by lib/paths.sh's calling convention (used by its compose() helper), unused directly here
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-BACKUP_DIR="$PROJECT_DIR/backups"
-SECRETS_DIR="$PROJECT_DIR/secrets"
+. "$SCRIPT_DIR/lib/paths.sh"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 # BACKUP_NAME is TIMESTAMP, optionally suffixed with the label -- used for both
 # the working subdirectory and the final archive, so a labeled backup is
@@ -41,13 +41,13 @@ BACKUP_SUBDIR="$BACKUP_DIR/$BACKUP_NAME"
 # need POSTGRES_USER, POSTGRES_PASSWORD and VAULT_TOKEN here.
 . "$SCRIPT_DIR/lib/env.sh"
 
-if [ -f "$PROJECT_DIR/.env" ]; then
-  POSTGRES_USER=$(read_env_var POSTGRES_USER "$PROJECT_DIR/.env")
-  POSTGRES_PASSWORD=$(read_env_var POSTGRES_PASSWORD "$PROJECT_DIR/.env")
-  VAULT_TOKEN=$(read_env_var VAULT_TOKEN "$PROJECT_DIR/.env")
-  S3_ACCESS_KEY=$(read_env_var S3_ACCESS_KEY "$PROJECT_DIR/.env")
-  S3_SECRET_KEY=$(read_env_var S3_SECRET_KEY "$PROJECT_DIR/.env")
-  S3_BUCKET_NAME=$(read_env_var S3_BUCKET_NAME "$PROJECT_DIR/.env")
+if [ -f "$ENV_FILE" ]; then
+  POSTGRES_USER=$(read_env_var POSTGRES_USER "$ENV_FILE")
+  POSTGRES_PASSWORD=$(read_env_var POSTGRES_PASSWORD "$ENV_FILE")
+  VAULT_TOKEN=$(read_env_var VAULT_TOKEN "$ENV_FILE")
+  S3_ACCESS_KEY=$(read_env_var S3_ACCESS_KEY "$ENV_FILE")
+  S3_SECRET_KEY=$(read_env_var S3_SECRET_KEY "$ENV_FILE")
+  S3_BUCKET_NAME=$(read_env_var S3_BUCKET_NAME "$ENV_FILE")
 fi
 
 POSTGRES_USER="${POSTGRES_USER:-postgres}"
@@ -141,7 +141,6 @@ echo "  3. Backing up Customer Configuration"
 echo "============================================"
 echo ""
 
-CONFIG_FILE="$PROJECT_DIR/customer-config.sh"
 if [ -f "$CONFIG_FILE" ]; then
   cp "$CONFIG_FILE" "$BACKUP_SUBDIR/config/"
   echo "  ✓ customer-config.sh backed up"
@@ -157,8 +156,8 @@ else
 fi
 
 # Also backup .env for reference (contains generated values)
-if [ -f "$PROJECT_DIR/.env" ]; then
-  cp "$PROJECT_DIR/.env" "$BACKUP_SUBDIR/config/"
+if [ -f "$ENV_FILE" ]; then
+  cp "$ENV_FILE" "$BACKUP_SUBDIR/config/"
   echo "  ✓ .env backed up (for reference)"
 fi
 
@@ -192,13 +191,12 @@ if [ $CERT_COUNT -eq 0 ]; then
 fi
 
 # Backup TLS certificates (Caddy)
-TLS_DIR="$PROJECT_DIR/config/caddy/ssl"
 if [ -d "$TLS_DIR" ] && [ "$(ls -A "$TLS_DIR" 2>/dev/null)" ]; then
   mkdir -p "$BACKUP_SUBDIR/config/caddy-ssl"
   cp "$TLS_DIR"/* "$BACKUP_SUBDIR/config/caddy-ssl/"
   echo "  ✓ TLS certificates (Caddy) backed up"
 else
-  echo "  - No TLS certificates found in config/caddy/ssl/"
+  echo "  - No TLS certificates found in $TLS_DIR"
 fi
 
 # ==============================================================================
