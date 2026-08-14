@@ -25,12 +25,14 @@ cd stargate-deployment/docker-compose   # or /root/stargate-deployment/docker-co
 ./scripts/backup.sh --label pre-bootc
 ```
 
-`backup.sh` prints the archive's full path in its own summary output (`Archive: ...`) - read it from there rather than assuming a location. Depending on how old the install is, the archive lands either under `/var/data/backups/` (already relocated per the [Data Layout](Docker-advanced.md#data-layout) doc) or the older `docker-compose/backups/` path. Either way, the printed path is authoritative.
+`backup.sh` prints the archive's full path in its own summary output (`Archive: ...`) - read it from there rather than assuming a location. Depending on how old the install is, the archive lands either under `/var/data/backups/` (already relocated per the [Data Layout](Docker-advanced.md#data-layout) doc) or the older `docker-compose/backups/` path. Either way, the printed path is authoritative - use the exact filename it prints, not a guessed one.
+
+The label is appended as a **suffix** to the timestamp, e.g. `20260814_153000_pre-bootc.tar.gz` - the commands below use `*_pre-bootc.tar.gz` accordingly.
 
 Copy the resulting `.tar.gz` off the old machine to somewhere safe (your workstation, a jump host, or object storage) before decommissioning it:
 
 ```bash
-scp <old-vm>:/path/from/backup-output/pre-bootc_*.tar.gz .
+scp <old-vm>:/path/from/backup-output/*_pre-bootc.tar.gz .
 ```
 
 !!! note
@@ -51,7 +53,7 @@ docker compose ps
 `init-data-layout.sh` creates `/var/data/restore/` on every install (including the appliance's own first boot) as the designated drop zone for restore archives. Copy the archive there:
 
 ```bash
-scp pre-bootc_*.tar.gz root@<new-appliance-ip>:/var/data/restore/
+scp *_pre-bootc.tar.gz root@<new-appliance-ip>:/var/data/restore/
 ```
 
 ## Step 4: Run the restore
@@ -59,7 +61,7 @@ scp pre-bootc_*.tar.gz root@<new-appliance-ip>:/var/data/restore/
 On the appliance:
 
 ```bash
-sudo ./scripts/restore.sh --yes /var/data/restore/pre-bootc_*.tar.gz
+sudo ./scripts/restore.sh --yes /var/data/restore/*_pre-bootc.tar.gz
 ```
 
 `--yes` (or `-y`) skips the interactive confirmation prompt, which is required here since `restore.sh` refuses to run non-interactively without it.
