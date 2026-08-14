@@ -2,15 +2,15 @@
 set -eo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-SECRETS_DIR="$PROJECT_DIR/secrets"
-KEYS_FILE="$SECRETS_DIR/vault-keys.json"
-ENV_FILE="$PROJECT_DIR/.env"
-CONFIG_FILE="$PROJECT_DIR/customer-config.sh"
 
 # Shared helpers (use SCRIPT_DIR/PROJECT_DIR defined above).
 . "$SCRIPT_DIR/lib/systemd.sh"
 . "$SCRIPT_DIR/lib/docker.sh"
 . "$SCRIPT_DIR/lib/env.sh"
+. "$SCRIPT_DIR/lib/paths.sh"
+. "$SCRIPT_DIR/init-data-layout.sh"   # defines init_data_layout (does not auto-run when sourced)
+
+KEYS_FILE="$SECRETS_DIR/vault-keys.json"
 
 # install_docker() is provided by lib/docker.sh (sourced above).
 # NOTE: the installer's prologue (distro detection, banner, already-installed
@@ -279,7 +279,7 @@ LOKI_URL="$LOKI_URL"
 ALLOY_HOSTNAME="$DEPLOYMENT_NAME"
 
 # Policy Sync (optional - syncs policies from Git repo)
-# To enable: docker compose --profile policy-sync up -d
+# To enable: compose --profile policy-sync up -d
 POLICY_SYNC_REPO_URL="${POLICY_SYNC_REPO_URL:-https://github.com/Health-Info-Net-AG/Stargate-policies.git}"
 POLICY_SYNC_REPO_USER="${POLICY_SYNC_REPO_USER:-}"
 POLICY_SYNC_REPO_PASS="${POLICY_SYNC_REPO_PASS:-}"
@@ -336,7 +336,7 @@ generate_tls_cert() {
   echo "============================================"
   echo ""
 
-  local ssl_dir="$PROJECT_DIR/config/caddy/ssl"
+  local ssl_dir="$TLS_DIR"
   mkdir -p "$ssl_dir"
 
   if [ -f "$ssl_dir/server.crt" ] && [ -f "$ssl_dir/server.key" ]; then
@@ -379,7 +379,7 @@ generate_keycloak_realm() {
   echo "============================================"
   echo ""
 
-  local out_dir="$PROJECT_DIR/config/keycloak/generated"
+  local out_dir="$KEYCLOAK_GEN_DIR"
   mkdir -p "$out_dir"
 
   sed \
@@ -404,9 +404,6 @@ setup_backup_cron() {
 
   BACKUP_SCRIPT="$SCRIPT_DIR/backup.sh"
 
-  # Create backups directory (target for the cron log).
-  mkdir -p "$PROJECT_DIR/backups"
-
   # Use a system crontab drop-in (/etc/cron.d) instead of `crontab -l`/`crontab -`.
   # The per-user crontab tool resolves the target user -- and that user's home /
   # spool -- from the environment (LOGNAME/USER/HOME), which is not populated
@@ -418,7 +415,7 @@ setup_backup_cron() {
 # Stargate daily backup -- managed by install.sh, do not edit by hand.
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-0 2 * * * root $BACKUP_SCRIPT >> $PROJECT_DIR/backups/cron.log 2>&1
+0 2 * * * root $BACKUP_SCRIPT >> $BACKUP_DIR/cron.log 2>&1
 EOF
   chmod 644 "$cron_file"
   # SELinux (Alma/RHEL, enforcing): apply the cron spool context so crond will
@@ -530,7 +527,7 @@ setup_dozzle() {
   # written to .env, so there is nothing to generate here -- just start the
   # "dozzle" profile (dozzle + oauth2-proxy).
   echo "Starting Dozzle (behind oauth2-proxy -> Keycloak)..."
-  docker compose --profile dozzle up -d
+  compose --profile dozzle up -d
   echo "Dozzle started."
   echo ""
   echo "  Dozzle (logs): $DOZZLE_PUBLIC_URL"
@@ -596,9 +593,9 @@ check_dependencies
 # Load and validate customer configuration
 load_customer_config
 
-# Create directories
-mkdir -p "$SECRETS_DIR"
-mkdir -p "$PROJECT_DIR/backups"
+# Create the /var/data layout (secrets/, tls/, keycloak/, apisix/, backups/,
+# and the per-service data dirs) before anything writes into it.
+init_data_layout
 
 # Generate .env file from customer config
 generate_env_file
@@ -613,21 +610,21 @@ generate_keycloak_realm
 # application services can use the token).
 echo ""
 echo "Starting infrastructure services..."
-docker compose up -d postgres vault vault-data-fixer seaweedfs seaweedfs-init
+compose up -d postgres vault seaweedfs seaweedfs-init
 
 echo ""
 echo "Waiting for Vault initialization..."
-docker compose up -d vault-init
+compose up -d vault-init
 
 # Wait for vault-init to complete.
 # `docker wait` blocks until the named container exits and prints its exit
 # code on stdout. The previous implementation polled
-# `docker compose ps vault-init | grep -q "running"`, but `docker compose ps`
+# `compose ps vault-init | grep -q "running"`, but `compose ps`
 # without `-a` hides exited containers and uses "Up ..." (not "running") for
 # active ones, so the loop matched nothing and exited immediately — the
 # script then raced past the freshly-written vault-keys.json and failed.
 echo "Waiting for vault-init container to finish..."
-docker compose logs -f vault-init 2>/dev/null &
+compose logs -f vault-init 2>/dev/null &
 LOG_PID=$!
 
 VAULT_INIT_EXIT=$(docker wait stargate-vault-init 2>/dev/null) || VAULT_INIT_EXIT=1
@@ -638,7 +635,7 @@ wait $LOG_PID 2>/dev/null || true
 if [ "$VAULT_INIT_EXIT" != "0" ]; then
   echo ""
   echo "ERROR: vault-init exited with code $VAULT_INIT_EXIT"
-  echo "Check logs: docker compose logs vault-init"
+  echo "Check logs: compose logs vault-init"
   exit 1
 fi
 
@@ -664,7 +661,7 @@ if [ -f "$KEYS_FILE" ]; then
   # Now start all services - VAULT_TOKEN is set in .env so application
   # services will have the correct token from the start.
   echo "Starting all services..."
-  docker compose up -d
+  compose up -d
   echo "All services started."
 
   # Wait for services to be ready
@@ -678,7 +675,7 @@ if [ -f "$KEYS_FILE" ]; then
   echo "Waiting for Stalwart provisioning to complete..."
   docker wait stargate-stalwart-provision >/dev/null 2>&1 || true
   echo "Restarting Stalwart so provisioned listeners bind..."
-  docker compose restart stalwart
+  compose restart stalwart
 
   # Onboarding (domains, S/MIME CSR, irisagent peer config) is now performed
   # via the dashboard at /installation, /onboarding, and /mail.
@@ -700,7 +697,7 @@ if [ -f "$KEYS_FILE" ]; then
 
 else
   echo "ERROR: Vault keys file not found."
-  echo "Check vault-init logs: docker compose logs vault-init"
+  echo "Check vault-init logs: compose logs vault-init"
   exit 1
 fi
 
@@ -711,7 +708,7 @@ echo "============================================"
 echo ""
 
 sleep 3
-docker compose ps
+compose ps
 
 echo ""
 echo "============================================"
@@ -760,7 +757,7 @@ echo ""
 echo "  Backups:"
 echo "  --------"
 echo "  Daily backups scheduled at 2:00 AM"
-echo "  Backup location: $PROJECT_DIR/backups/"
+echo "  Backup location: $BACKUP_DIR/"
 echo ""
 echo "  Configuration:"
 echo "  --------------"
@@ -779,7 +776,7 @@ echo "  Browsers will show a warning that can be bypassed via Advanced ->"
 echo "  Accept the Risk (Firefox) or Proceed anyway (Chrome)."
 echo "  To silence the warning permanently, import the certificate:"
 echo ""
-echo "    $PROJECT_DIR/config/caddy/ssl/server.crt"
+echo "    $TLS_DIR/server.crt"
 echo ""
 echo "  Import it into your OS/browser trust store (Keychain on macOS,"
 echo "  Certificate Manager on Windows, update-ca-certificates on Debian/Ubuntu,"
