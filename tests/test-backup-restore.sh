@@ -16,6 +16,7 @@
 # =============================================================================
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPTS_DIR="$(cd "$here/../docker-compose/scripts" && pwd)"
 root=/tmp/sg-br-test; rm -rf "$root"
 export STARGATE_DATA_DIR="$root"
 
@@ -33,7 +34,7 @@ if docker ps -a --format '{{.Names}}' | grep -qx "$PG_CONTAINER"; then
   exit 1
 fi
 
-bash "$here/init-data-layout.sh"
+bash "$SCRIPTS_DIR/init-data-layout.sh"
 printf 'VAULT_TOKEN="t"\nPOSTGRES_PASSWORD="p"\nWG_PRIVATE_KEY="k"\n' > "$root/vereign/customer-config.sh"
 printf 'POSTGRES_USER=postgres\nPOSTGRES_PASSWORD=p\n' > "$root/vereign/.env"
 echo dummy > "$root/vereign/secrets/vault-keys.json"
@@ -56,7 +57,7 @@ done
 [ "$pg_ready" = true ] || { echo "postgres never became ready"; exit 1; }
 
 # backup.sh must place its archive under $root/backups (not under docker-compose/)
-bash "$here/backup.sh" >/dev/null 2>&1 || { echo "backup failed"; exit 1; }
+bash "$SCRIPTS_DIR/backup.sh" >/dev/null 2>&1 || { echo "backup failed"; exit 1; }
 
 ARCHIVE=$(ls "$root"/backups/*.tar.gz 2>/dev/null | head -1) || true
 [ -n "$ARCHIVE" ] || { echo "no backup archive under \$STARGATE_DATA_DIR/backups"; exit 1; }
@@ -64,7 +65,7 @@ ARCHIVE=$(ls "$root"/backups/*.tar.gz 2>/dev/null | head -1) || true
 # Also fail if backup.sh regressed to writing under docker-compose/ in addition
 # to (or instead of) $STARGATE_DATA_DIR/backups (a pre-existing empty backups/
 # dir under the compose tree is fine -- only new archive content is a bug).
-if ls "$here"/../backups/*.tar.gz >/dev/null 2>&1 || ls "$here"/backups/*.tar.gz >/dev/null 2>&1; then
+if ls "$SCRIPTS_DIR"/../backups/*.tar.gz >/dev/null 2>&1 || ls "$SCRIPTS_DIR"/backups/*.tar.gz >/dev/null 2>&1; then
   echo "found a backup archive under docker-compose/ -- archive must only land under \$STARGATE_DATA_DIR/backups"
   exit 1
 fi

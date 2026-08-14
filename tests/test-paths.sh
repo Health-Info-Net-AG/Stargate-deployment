@@ -1,10 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPTS_DIR="$(cd "$here/../docker-compose/scripts" && pwd)"
 PROJECT_DIR=/opt/fake/docker-compose
 SCRIPT_DIR="$PROJECT_DIR/scripts"
 STARGATE_DATA_DIR=/tmp/sg-paths-test
-. "$here/paths.sh"
+. "$SCRIPTS_DIR/lib/paths.sh"
 [ "$DATA_DIR" = /tmp/sg-paths-test ] || { echo "DATA_DIR wrong: $DATA_DIR"; exit 1; }
 [ "$ENV_FILE" = /tmp/sg-paths-test/vereign/.env ] || { echo "ENV_FILE wrong: $ENV_FILE"; exit 1; }
 [ "$CONFIG_FILE" = /tmp/sg-paths-test/vereign/customer-config.sh ] || { echo "CONFIG_FILE wrong"; exit 1; }

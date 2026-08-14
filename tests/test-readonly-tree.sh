@@ -9,7 +9,7 @@
 # docker-daemon-free smoke test for that guarantee.
 # =============================================================================
 set -euo pipefail
-repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 marker=/tmp/sg-ro-marker; touch "$marker"; sleep 1
 export STARGATE_DATA_DIR=/tmp/sg-ro-data; rm -rf "$STARGATE_DATA_DIR"
 # Simulate the write-producing steps that don't need a live docker daemon:
