@@ -29,10 +29,9 @@ set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-ENV_FILE="$PROJECT_DIR/.env"
-LOG_FILE="$PROJECT_DIR/update.log"
+. "$SCRIPT_DIR/lib/paths.sh"
 
-# Mirror this run's stdout+stderr into $LOG_FILE (in addition to the
+# Mirror this run's stdout+stderr into $UPDATE_LOG (in addition to the
 # terminal), so a failed update is diagnosable from the log file alone --
 # picked up by send-logs-to-support.sh -- without needing to have been
 # watched live. Guarded so this is a no-op on the internal re-exec that
@@ -41,7 +40,7 @@ LOG_FILE="$PROJECT_DIR/update.log"
 # attaching a second tee on top.
 if [ -z "${STARGATE_UPDATE_LOG_ACTIVE:-}" ]; then
   export STARGATE_UPDATE_LOG_ACTIVE=1
-  exec > >(tee -a "$LOG_FILE") 2>&1
+  exec > >(tee -a "$UPDATE_LOG") 2>&1
 fi
 
 echo "$(date -Iseconds) update.sh invoked: $0 $*"
@@ -267,11 +266,11 @@ fi
 # the visibility that was missing when diagnosing past update issues -- a
 # silent multi-minute block here reads as a hang.
 echo "=== Pulling images ==="
-docker compose pull
+compose pull
 
 echo ""
 echo "=== Recreating services ==="
-docker compose up -d --remove-orphans
+compose up -d --remove-orphans
 
 # Handle Dozzle enable/disable and credential updates
 update_dozzle() {
@@ -279,13 +278,13 @@ update_dozzle() {
   dozzle_enabled=$(read_env_var DOZZLE_ENABLED "$CONFIG_FILE")
 
   local dozzle_running
-  dozzle_running=$(docker compose --profile dozzle ps --format '{{.Name}}' 2>/dev/null | grep -q stargate-dozzle && echo "true" || echo "false")
+  dozzle_running=$(compose --profile dozzle ps --format '{{.Name}}' 2>/dev/null | grep -q stargate-dozzle && echo "true" || echo "false")
 
   if [ "$dozzle_enabled" != "true" ]; then
     if [ "$dozzle_running" = "true" ]; then
       echo ""
       echo "Dozzle disabled in config - stopping..."
-      docker compose --profile dozzle down
+      compose --profile dozzle down
     fi
     return 0
   fi
@@ -294,7 +293,7 @@ update_dozzle() {
   # (no local users.yml). Just (re)start the "dozzle" profile.
   echo ""
   echo "Starting Dozzle (behind oauth2-proxy -> Keycloak)..."
-  docker compose --profile dozzle up -d
+  compose --profile dozzle up -d
 }
 
 update_dozzle
@@ -318,5 +317,5 @@ if [ -n "${STARGATE_UPDATE_RELEASE:-}" ]; then
 fi
 echo ""
 echo "  Verify with: docker compose ps"
-echo "  Full log:    $LOG_FILE"
+echo "  Full log:    $UPDATE_LOG"
 echo ""
