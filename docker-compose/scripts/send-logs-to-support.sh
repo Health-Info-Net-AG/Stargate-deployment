@@ -9,7 +9,9 @@ set -euo pipefail
 # Please refer to https://docs.docker.com/reference/cli/docker/container/logs/#options
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC2034 # required by lib/paths.sh's calling convention, unused directly here
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+. "$SCRIPT_DIR/lib/paths.sh"
 
 if [[ " $* " == *" --all "* ]]; then
     args=()   # no tail/since/until restrictions
@@ -73,8 +75,8 @@ echo -e "\n######\n" >> "$TEMP_FILE"
 echo -e "\n# UPDATE STATUS\n" >> "$TEMP_FILE"
 systemctl status stargate-update.scope >> "$TEMP_FILE" 2>&1 || true
 echo -e "\n# update.log\n" >> "$TEMP_FILE"
-if [ -f "$PROJECT_DIR/update.log" ]; then
-  cat "$PROJECT_DIR/update.log" >> "$TEMP_FILE"
+if [ -f "$UPDATE_LOG" ]; then
+  cat "$UPDATE_LOG" >> "$TEMP_FILE"
 else
   echo "(no update.log -- no update has been run yet)" >> "$TEMP_FILE"
 fi

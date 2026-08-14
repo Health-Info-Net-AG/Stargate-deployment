@@ -3,7 +3,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-SECRETS_DIR="$PROJECT_DIR/secrets"
+. "$SCRIPT_DIR/lib/paths.sh"
 
 cd "$PROJECT_DIR"
 
@@ -33,7 +33,7 @@ if [ "$confirmation" = "DELETE ALL DATA" ]; then
   # which is profile-gated) and from older compose definitions that may have
   # been switched away from.
   # --rmi local removes images built by this compose project (e.g. stalwart-provision)
-  docker compose down -v --remove-orphans --rmi local
+  compose down -v --remove-orphans --rmi local
 
   # Belt-and-suspenders: if anything stargate-* survived (e.g. started
   # outside this compose project, or under a different project name),
@@ -60,7 +60,16 @@ if [ "$confirmation" = "DELETE ALL DATA" ]; then
   # If we leave it in place, a reinstall after the server IP changes keeps the
   # stale SAN and browsers reject the cert (NET::ERR_CERT_COMMON_NAME_INVALID).
   # Removing it forces a fresh cert matching the current IP on next install.
-  rm -rf "$PROJECT_DIR/config/caddy/ssl"
+  rm -rf "$TLS_DIR"
+
+  echo ""
+  echo "Removing relocated /var/data state (vereign config + service data)..."
+  # Mirrors init_data_layout() in install.sh: VEREIGN_DIR holds .env,
+  # customer-config.sh, secrets/, tls/, keycloak/, apisix/, update.log; the
+  # per-service data dirs live directly under DATA_DIR alongside it. Listed
+  # explicitly (not "rm -rf $DATA_DIR") so a Data Disk root holding anything
+  # else (e.g. an unrelated mount) survives purge.
+  rm -rf "$VEREIGN_DIR" "$DATA_DIR"/{postgres,vault,seaweedfs,stalwart,clamav,loki,alloy,textfile_collector,dashboard_cache}
 
   echo ""
   echo "Removing backup cron job..."
