@@ -296,3 +296,90 @@ To resolve this, the following manual configuration must be completed in the *Ke
 7. Click Save
 
  <br> ![keycloak-console](assets/troubleshooting/keycloak-update.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+ 
+ ## Keycloak Reset Password 
+
+# Resetting a Stargate User Password in Keycloak
+
+Follow the steps below to reset the password of a Stargate user through the Keycloak administration console.
+
+
+1. **Connect to the HIN Gateway VM**
+
+   * Open the VM console, or connect to the HIN Gateway VM via SSH.
+
+2. **Retrieve the Keycloak administrator credentials**
+
+   * Open the /root/stargate-deployment/ `.env` file
+   * Locate the following variables:
+     * `KEYCLOAK_ADMIN_USER`
+     * `KEYCLOAK_ADMIN_PASSWORD`
+   
+3. **Open the Keycloak Admin Console**
+   * In a browser, navigate to: `http://<VM-IP>:8180/admin/master/console`
+   * Replace `<VM-IP>` with the IP address of the HIN Gateway VM.
+
+4. **Sign in to Keycloak**
+   * Enter the administrator username and password retrieved from the `.env` file.
+   * keep the same administrator password if you change it you must store it securely 
+
+5. **Select the Stargate realm**
+   * From the realm selector in the Keycloak Admin Console, select **Stargate**.
+
+6. **Find the user**
+   * Navigate to **Users**.
+   * Search for and select the Stargate user whose password needs to be reset.
+
+7. **Reset the user's password**
+   * Select the option to reset the user's password.
+   * Enter the new password and confirm the change.
+   
+**Do not change or reset the Keycloak administrator password as part of this procedure.**
+Any changes of admin password can lead to potention lockdown of keyclaok without anyone be able to access it!
+ 
+ ## Email authentication (DKIM, ARC DMARC)
+
+ This section describes how to use and configure DKIM, ARC and DMARC. 
+
+ #### DKIM 
+ DKIM is related to outgoing messages and here available options
+
+ * Enable/Disable button 
+ * Generate DKIM key - it will generate PEM key 
+ * Verification options - `Optional` , `Required` `Disable` 
+ * Selector - ??
+
+#### ARC
+Usually is related to Inbound messages where there is internal more advanced email flow via multiple relays 
+
+* Verification type 
+* Enable / Disable ARC signing 
+* Reuse DKIM key - if enabled , it will be use the same key which is configured for DKIM , else different key must be inserted
+
+#### SPF
+It can be configured verification options 
+
+#### DMARK 
+
+
+
+ Here's exactly what each does at the inbound hop (UI label → wire value → behavior):
+
+| UI label | Wire value | Behavior |
+|---|---|---|
+| **Disabled** | `disable` | Not checked at all. Mechanism doesn't run, nothing added to `Authentication-Results`. |
+| **Optional** | `relaxed` | Verified and **reported** in `Authentication-Results`. Message is **always accepted**, pass or fail. |
+| **Required** | `strict` | Verified and reported, **and the message is rejected** (`550 mailauth: <mechanism> verification failed`) if it hard-fails. Otherwise accepted. |
+
+So yes — Disabled = don't check; Optional and Required both check and stamp the result. The only difference between the two is enforcement: **Optional never rejects**, **Required rejects on a hard failure**.
+
+What counts as a "hard failure" for Required (per mechanism):
+- **DKIM** — the message carries signatures and *all* of them fail. No signature at all = `none`, not a failure → not rejected.
+- **SPF** — a hard `-all` fail. SoftFail/neutral/none/temp-error are reported but don't reject.
+- **DMARC** — neither DKIM nor SPF aligns *and* there's an actual fail verdict. No DMARC record published = `none` → not rejected.
+- **ARC** — the ARC chain fails validation. No chain = `none` → not rejected.
+
+Two important notes:
+- **DKIM always runs internally** because DMARC needs it. The DKIM setting only controls whether a `dkim=` result is stamped and whether DKIM failure can reject — it never changes the DMARC verdict.
+- Each mechanism is independent, so you can e.g. run **DMARC = Required** while **DKIM/SPF = Optional**: bad mail gets rejected on the DMARC verdict, and you still get individual `dkim=`/`spf=` lines in the header for visibility.
