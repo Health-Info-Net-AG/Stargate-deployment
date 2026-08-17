@@ -24,6 +24,11 @@ upstreams:
       "irisagent:8080": 1
     type: roundrobin
 
+  - id: "ops-agent"
+    nodes:
+      "ops-agent:8080": 1
+    type: roundrobin
+
 plugin_configs:
   - id: "oidc-bearer"
     plugins:
@@ -76,6 +81,13 @@ routes:
     plugins:
       proxy-rewrite:
         regex_uri: ["^/irisagent/(.*)", "/$1"]
+
+  - id: "ops-agent-liveness"
+    uri: "/ops-agent/liveness"
+    upstream_id: "ops-agent"
+    plugins:
+      proxy-rewrite:
+        regex_uri: ["^/ops-agent/(.*)", "/$1"]
 
   # ==================
   # Internal routes — IP-restricted, no auth
@@ -158,5 +170,13 @@ routes:
     plugins:
       proxy-rewrite:
         regex_uri: ["^/irisagent/(.*)", "/$1"]
+
+  - id: "ops-agent-route"
+    uri: "/ops-agent/*"
+    upstream_id: "ops-agent"
+    plugin_config_id: "oidc-bearer"
+    plugins:
+      proxy-rewrite:
+        regex_uri: ["^/ops-agent/(.*)", "/$1"]
 
 #END
