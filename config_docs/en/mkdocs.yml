@@ -173,6 +173,7 @@ nav:
           - Install with Docker: Docker-deploy.md
           - Docker Advanced configuration: Docker-advanced.md
           - Helm deployment: helm-deploy.md
+          - Migrating to a bootc appliance: Migration-to-bootc.md
       - VM deployment:
           - Azure: vm/Azure-image-install.md
           - VMware: vm/VMware-image-install.md

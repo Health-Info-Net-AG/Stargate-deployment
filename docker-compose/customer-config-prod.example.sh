@@ -74,57 +74,6 @@ S3_SECRET_KEY=""
 S3_BUCKET_NAME="stargate-bucket"
 
 # ==============================================================================
-# OPTIONAL: Application Versions
-# ==============================================================================
-# Use "dev" for the latest development builds,
-# or specify exact versions like "v0.0.3"
-
-SMIMEKEYS_VERSION="v0.0.25"
-POLICY_VERSION="v0.0.11"
-IRISAGENT_VERSION="v0.0.10"
-MXENGINE_VERSION="v0.0.51"
-POLICY_SYNC_VERSION="v0.0.11"
-DASHBOARD_VERSION="v0.0.72"
-MTACONF_VERSION="v0.0.7"
-OPS_AGENT_VERSION="v0.0.5"
-
-# renovate: datasource=docker depName=clamav/clamav
-CLAMAV_VERSION="1.5.3"
-
-# ==============================================================================
-# OPTIONAL: Infrastructure Versions
-# ==============================================================================
-# Image tags for the supporting infrastructure services. Defaults match the
-# versions shipped with this release; override only to pin a specific tag.
-# NOTE: Stateful services (postgres, vault, keycloak) should be changed
-# deliberately - bumping them recreates the container against existing data.
-
-# renovate: datasource=docker depName=postgres
-POSTGRES_VERSION="18-alpine"
-# renovate: datasource=docker depName=quay.io/keycloak/keycloak
-KEYCLOAK_VERSION="26.7.0"
-# renovate: datasource=docker depName=hashicorp/vault
-VAULT_VERSION="1.21.4"
-# renovate: datasource=docker depName=apache/apisix
-APISIX_VERSION="3.17.0-debian"
-# renovate: datasource=docker depName=nats
-NATS_VERSION="2.14-alpine"
-# renovate: datasource=docker depName=chrislusf/seaweedfs
-SEAWEEDFS_VERSION="4.40"
-# renovate: datasource=docker depName=caddy
-CADDY_VERSION="2-alpine"
-# renovate: datasource=docker depName=grafana/loki
-LOKI_VERSION="3.7.4"
-# renovate: datasource=docker depName=grafana/alloy
-ALLOY_VERSION="v1.18.0"
-# renovate: datasource=docker depName=prom/node-exporter
-NODE_EXPORTER_VERSION="v1.12.1"
-# renovate: datasource=docker depName=stalwartlabs/stalwart
-STALWART_VERSION="v0.16"
-# renovate: datasource=docker depName=quay.io/oauth2-proxy/oauth2-proxy
-OAUTH2_PROXY_VERSION="v7.15.3"
-
-# ==============================================================================
 # OPTIONAL: Advanced Mail Configuration
 # ==============================================================================
 
@@ -216,7 +165,6 @@ MTACONF_SVC_PASSWORD=""  # Auto-generated if empty
 # Set to "true" to enable, "false" to disable.
 
 DOZZLE_ENABLED="true"
-DOZZLE_VERSION="v10.5.0"
 
 # ==============================================================================
 # REQUIRED: WireGuard Configuration

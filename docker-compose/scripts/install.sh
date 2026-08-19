@@ -2,15 +2,15 @@
 set -eo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-SECRETS_DIR="$PROJECT_DIR/secrets"
-KEYS_FILE="$SECRETS_DIR/vault-keys.json"
-ENV_FILE="$PROJECT_DIR/.env"
-CONFIG_FILE="$PROJECT_DIR/customer-config.sh"
 
 # Shared helpers (use SCRIPT_DIR/PROJECT_DIR defined above).
 . "$SCRIPT_DIR/lib/systemd.sh"
 . "$SCRIPT_DIR/lib/docker.sh"
 . "$SCRIPT_DIR/lib/env.sh"
+. "$SCRIPT_DIR/lib/paths.sh"
+. "$SCRIPT_DIR/init-data-layout.sh"   # defines init_data_layout (does not auto-run when sourced)
+
+KEYS_FILE="$SECRETS_DIR/vault-keys.json"
 
 # install_docker() is provided by lib/docker.sh (sourced above).
 # NOTE: the installer's prologue (distro detection, banner, already-installed
@@ -125,17 +125,11 @@ load_customer_config() {
   POSTGRES_PASSWORD="$(resolve_secret "$POSTGRES_PASSWORD" POSTGRES_PASSWORD)"
   # S3 credentials: support legacy MINIO_ROOT_USER/PASSWORD for existing customer-configs
   S3_ACCESS_KEY="${S3_ACCESS_KEY:-${MINIO_ROOT_USER:-minioadmin}}"
-  S3_SECRET_KEY="$(resolve_secret "${S3_SECRET_KEY:-$MINIO_ROOT_PASSWORD}" S3_SECRET_KEY)"
+  S3_SECRET_KEY="$(resolve_secret "${S3_SECRET_KEY:-${MINIO_ROOT_PASSWORD:-}}" S3_SECRET_KEY)"
   S3_BUCKET_NAME="${S3_BUCKET_NAME:-stargate-bucket}"
 
-  SMIMEKEYS_VERSION="${SMIMEKEYS_VERSION:-dev}"
-  POLICY_VERSION="${POLICY_VERSION:-dev}"
-  IRISAGENT_VERSION="${IRISAGENT_VERSION:-dev}"
-  MXENGINE_VERSION="${MXENGINE_VERSION:-dev}"
-  DASHBOARD_VERSION="${DASHBOARD_VERSION:-dev}"
-  CLAMAV_VERSION="${CLAMAV_VERSION:-1.4}"
-  DOZZLE_VERSION="${DOZZLE_VERSION:-v10.5.0}"
-  OPS_AGENT_VERSION="${OPS_AGENT_VERSION:-dev}"
+  # Image versions are pinned directly in docker-compose.yml (not env-driven) so
+  # a deployment's versions travel with its git tag. See docker-compose.yml.
 
   # Derive WG_LOCAL_IP and MXENGINE_PUBLIC_ADDRESS from SERVER_STATIC_IP
   SERVER_STATIC_IP="${SERVER_STATIC_IP:-}"
@@ -184,7 +178,6 @@ load_customer_config() {
 
   OUTBOUND_SMTP_HOST="${OUTBOUND_SMTP_HOST:-stalwart}"
   OUTBOUND_SMTP_PORT="${OUTBOUND_SMTP_PORT:-10026}"
-  MTACONF_VERSION="${MTACONF_VERSION:-dev}"
 
   # Stalwart MTA. The mtaconf-svc user, its home domain, and the
   # initial hostname are all hardcoded synthetic values inside
@@ -269,31 +262,6 @@ S3_ACCESS_KEY="$S3_ACCESS_KEY"
 S3_SECRET_KEY="$S3_SECRET_KEY"
 S3_BUCKET_NAME="$S3_BUCKET_NAME"
 
-# Application Versions
-SMIMEKEYS_VERSION="$SMIMEKEYS_VERSION"
-POLICY_VERSION="$POLICY_VERSION"
-IRISAGENT_VERSION="$IRISAGENT_VERSION"
-MXENGINE_VERSION="$MXENGINE_VERSION"
-DASHBOARD_VERSION="$DASHBOARD_VERSION"
-MTACONF_VERSION="$MTACONF_VERSION"
-CLAMAV_VERSION="$CLAMAV_VERSION"
-DOZZLE_VERSION="$DOZZLE_VERSION"
-OPS_AGENT_VERSION="$OPS_AGENT_VERSION"
-
-# Infrastructure Versions (image tags; \${VAR:-default} in compose falls back if empty)
-POSTGRES_VERSION="$POSTGRES_VERSION"
-KEYCLOAK_VERSION="$KEYCLOAK_VERSION"
-VAULT_VERSION="$VAULT_VERSION"
-APISIX_VERSION="$APISIX_VERSION"
-NATS_VERSION="$NATS_VERSION"
-SEAWEEDFS_VERSION="$SEAWEEDFS_VERSION"
-CADDY_VERSION="$CADDY_VERSION"
-LOKI_VERSION="$LOKI_VERSION"
-ALLOY_VERSION="$ALLOY_VERSION"
-NODE_EXPORTER_VERSION="$NODE_EXPORTER_VERSION"
-STALWART_VERSION="$STALWART_VERSION"
-OAUTH2_PROXY_VERSION="$OAUTH2_PROXY_VERSION"
-
 # Stalwart MTA
 STALWART_ADMIN_PASSWORD="$STALWART_ADMIN_PASSWORD"
 MTACONF_SVC_PASSWORD="$MTACONF_SVC_PASSWORD"
@@ -312,7 +280,6 @@ ALLOY_HOSTNAME="$DEPLOYMENT_NAME"
 
 # Policy Sync (optional - syncs policies from Git repo)
 # To enable: docker compose --profile policy-sync up -d
-POLICY_SYNC_VERSION="${POLICY_SYNC_VERSION:-dev}"
 POLICY_SYNC_REPO_URL="${POLICY_SYNC_REPO_URL:-https://github.com/Health-Info-Net-AG/Stargate-policies.git}"
 POLICY_SYNC_REPO_USER="${POLICY_SYNC_REPO_USER:-}"
 POLICY_SYNC_REPO_PASS="${POLICY_SYNC_REPO_PASS:-}"
@@ -369,7 +336,7 @@ generate_tls_cert() {
   echo "============================================"
   echo ""
 
-  local ssl_dir="$PROJECT_DIR/config/caddy/ssl"
+  local ssl_dir="$TLS_DIR"
   mkdir -p "$ssl_dir"
 
   if [ -f "$ssl_dir/server.crt" ] && [ -f "$ssl_dir/server.key" ]; then
@@ -412,7 +379,7 @@ generate_keycloak_realm() {
   echo "============================================"
   echo ""
 
-  local out_dir="$PROJECT_DIR/config/keycloak/generated"
+  local out_dir="$KEYCLOAK_GEN_DIR"
   mkdir -p "$out_dir"
 
   sed \
@@ -437,9 +404,6 @@ setup_backup_cron() {
 
   BACKUP_SCRIPT="$SCRIPT_DIR/backup.sh"
 
-  # Create backups directory (target for the cron log).
-  mkdir -p "$PROJECT_DIR/backups"
-
   # Use a system crontab drop-in (/etc/cron.d) instead of `crontab -l`/`crontab -`.
   # The per-user crontab tool resolves the target user -- and that user's home /
   # spool -- from the environment (LOGNAME/USER/HOME), which is not populated
@@ -451,7 +415,7 @@ setup_backup_cron() {
 # Stargate daily backup -- managed by install.sh, do not edit by hand.
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-0 2 * * * root $BACKUP_SCRIPT >> $PROJECT_DIR/backups/cron.log 2>&1
+0 2 * * * root $BACKUP_SCRIPT >> $BACKUP_DIR/cron.log 2>&1
 EOF
   chmod 644 "$cron_file"
   # SELinux (Alma/RHEL, enforcing): apply the cron spool context so crond will
@@ -563,7 +527,7 @@ setup_dozzle() {
   # written to .env, so there is nothing to generate here -- just start the
   # "dozzle" profile (dozzle + oauth2-proxy).
   echo "Starting Dozzle (behind oauth2-proxy -> Keycloak)..."
-  docker compose --profile dozzle up -d
+  compose --profile dozzle up -d
   echo "Dozzle started."
   echo ""
   echo "  Dozzle (logs): $DOZZLE_PUBLIC_URL"
@@ -629,9 +593,9 @@ check_dependencies
 # Load and validate customer configuration
 load_customer_config
 
-# Create directories
-mkdir -p "$SECRETS_DIR"
-mkdir -p "$PROJECT_DIR/backups"
+# Create the /var/data layout (secrets/, tls/, keycloak/, apisix/, backups/,
+# and the per-service data dirs) before anything writes into it.
+init_data_layout
 
 # Generate .env file from customer config
 generate_env_file
@@ -646,21 +610,21 @@ generate_keycloak_realm
 # application services can use the token).
 echo ""
 echo "Starting infrastructure services..."
-docker compose up -d postgres vault vault-data-fixer seaweedfs seaweedfs-init
+compose up -d postgres vault seaweedfs seaweedfs-init
 
 echo ""
 echo "Waiting for Vault initialization..."
-docker compose up -d vault-init
+compose up -d vault-init
 
 # Wait for vault-init to complete.
 # `docker wait` blocks until the named container exits and prints its exit
 # code on stdout. The previous implementation polled
-# `docker compose ps vault-init | grep -q "running"`, but `docker compose ps`
+# `compose ps vault-init | grep -q "running"`, but `compose ps`
 # without `-a` hides exited containers and uses "Up ..." (not "running") for
 # active ones, so the loop matched nothing and exited immediately — the
 # script then raced past the freshly-written vault-keys.json and failed.
 echo "Waiting for vault-init container to finish..."
-docker compose logs -f vault-init 2>/dev/null &
+compose logs -f vault-init 2>/dev/null &
 LOG_PID=$!
 
 VAULT_INIT_EXIT=$(docker wait stargate-vault-init 2>/dev/null) || VAULT_INIT_EXIT=1
@@ -697,7 +661,7 @@ if [ -f "$KEYS_FILE" ]; then
   # Now start all services - VAULT_TOKEN is set in .env so application
   # services will have the correct token from the start.
   echo "Starting all services..."
-  docker compose up -d
+  compose up -d
   echo "All services started."
 
   # Wait for services to be ready
@@ -711,7 +675,7 @@ if [ -f "$KEYS_FILE" ]; then
   echo "Waiting for Stalwart provisioning to complete..."
   docker wait stargate-stalwart-provision >/dev/null 2>&1 || true
   echo "Restarting Stalwart so provisioned listeners bind..."
-  docker compose restart stalwart
+  compose restart stalwart
 
   # Onboarding (domains, S/MIME CSR, irisagent peer config) is now performed
   # via the dashboard at /installation, /onboarding, and /mail.
@@ -744,7 +708,7 @@ echo "============================================"
 echo ""
 
 sleep 3
-docker compose ps
+compose ps
 
 echo ""
 echo "============================================"
@@ -793,7 +757,7 @@ echo ""
 echo "  Backups:"
 echo "  --------"
 echo "  Daily backups scheduled at 2:00 AM"
-echo "  Backup location: $PROJECT_DIR/backups/"
+echo "  Backup location: $BACKUP_DIR/"
 echo ""
 echo "  Configuration:"
 echo "  --------------"
@@ -812,7 +776,7 @@ echo "  Browsers will show a warning that can be bypassed via Advanced ->"
 echo "  Accept the Risk (Firefox) or Proceed anyway (Chrome)."
 echo "  To silence the warning permanently, import the certificate:"
 echo ""
-echo "    $PROJECT_DIR/config/caddy/ssl/server.crt"
+echo "    $TLS_DIR/server.crt"
 echo ""
 echo "  Import it into your OS/browser trust store (Keychain on macOS,"
 echo "  Certificate Manager on Windows, update-ca-certificates on Debian/Ubuntu,"

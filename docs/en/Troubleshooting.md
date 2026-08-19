@@ -11,6 +11,9 @@ A structured guide to diagnosing a Stargate appliance from the command line: wha
     cd /root/stargate-deployment/docker-compose   # adjust to your install path
     ```
 
+!!! info "Where the writable state is"
+    The `docker-compose/` tree above (scripts, `docker-compose.yml`, config templates) is **read-only at runtime**. All writable state - `.env`, `customer-config.sh`, `secrets/`, generated TLS/Keycloak/APISIX config, backups, and every service's own data - lives under **`/var/data`** instead (`STARGATE_DATA_DIR` overrides this root for testing). In particular: config/secrets are under `/var/data/vereign/`, backups under `/var/data/backups/`, and the update log at `/var/data/vereign/update.log`. See [Data Layout](Docker-advanced.md#data-layout) for the full breakdown. Prefer the wrapper scripts (`./scripts/start.sh`, `./scripts/update.sh`, ...) over a bare `docker compose up -d`, which won't pick up `/var/data/vereign/.env` on its own.
+
 ---
 
 ## 1. Start here: the health check
@@ -41,7 +44,7 @@ It reports pass/fail for: **containers** (running/healthy), **liveness** endpoin
 | Layer | Command | What it shows |
 |-------|---------|---------------|
 | Boot / first-install / auto-start | `sudo journalctl -u stargate -n 200 --no-pager` | The systemd service that runs `start.sh` on boot and the first-boot install |
-| Update runs | `cat /root/stargate-deployment/update.log` | Output of the last dashboard/host-triggered `update.sh` |
+| Update runs | `cat /var/data/vereign/update.log` | Output of the last dashboard/host-triggered `update.sh` |
 | A single service | `docker logs stargate-<service> --tail 100` | e.g. `stargate-dashboard`, `stargate-mxengine`, `stargate-keycloak` |
 | Follow one service live | `docker logs -f stargate-mxengine` | Real-time |
 | All containers live | `docker ps -a --format '{{.Names}}' \| xargs -I{} sh -c 'docker logs --timestamps -f {} 2>&1 \| sed "s/^/[{}] /"'` | Merged, prefixed by container |
@@ -117,10 +120,10 @@ docker compose exec vault vault status        # look for "Sealed: false"
 docker logs stargate-vault-init
 ```
 
-- Vault must be **unsealed** for smimekeys/mxengine/policy to work. Keys live in `secrets/vault-keys.json`.
+- Vault must be **unsealed** for smimekeys/mxengine/policy to work. Keys live in `/var/data/vereign/secrets/vault-keys.json`.
 - If `vault-init` exited non-zero, the keys file may be missing/corrupt - check its logs; re-running `/root/stargate-deployment/docker-compose/scripts/init-vault.sh` re-attempts unseal.
 
-!!! danger "Do not delete `secrets/vault-keys.json`"
+!!! danger "Do not delete `/var/data/vereign/secrets/vault-keys.json`"
     Losing it means losing access to all stored secrets. Keep a backup.
 
 ### PostgreSQL / database connectivity
@@ -151,21 +154,20 @@ docker logs stargate-postgres --tail 50
 
 ```bash
 docker logs stargate-ops-agent --tail 40      # the update orchestrator
-cat /root/stargate-deployment/update.log      # the update script output
+cat /var/data/vereign/update.log              # the update script output
 ```
 
-- The ops-agent pulls the release manifest, writes versions to `customer-config.sh`, then runs `update.sh` on the host.
+- The ops-agent checks out the target release tag (whose `docker-compose.yml` pins the image versions), then runs `update.sh` on the host.
 - After it finishes, confirm versions applied: `/root/stargate-deployment/docker-compose/scripts/gather-app-versions.sh` (or check `docker compose ps` image tags).
 - If a service is stuck after an update, `docker compose up -d <service>` to recreate it.
 
-**Update starts but nothing happens (updating from an older version).** If the ops-agent log stops at `pulling deployment repo ...` and the update never proceeds, the repository on the VM most likely has **local edits to a tracked file** (commonly a hand-patched `docker-compose.yml`). That makes the ops-agent's `git checkout` refuse to run, so the update stalls. Force-reset the repository to the latest revision, then re-run the update. Git is the single source of truth; this discards local edits to **tracked** files only - `customer-config.sh`, `.env`, and `secrets/` are gitignored and preserved:
+**Update starts but nothing happens (updating from an older version).** If the ops-agent log stops at `pulling deployment repo ...` and the update never proceeds, the repository on the VM most likely has **local edits to a tracked file** (commonly a hand-patched `docker-compose.yml`). That makes the ops-agent's `git checkout` refuse to run, so the update stalls. Force-reset the repository to the latest revision, then re-run the update. Git is the single source of truth; this discards local edits to **tracked** files only - `customer-config.sh`, `.env`, and `secrets/` live under `/var/data/vereign/`, outside the repository checkout, and are always preserved:
 
 ```bash
 cd /root/stargate-deployment
 git fetch origin
 git checkout -f main
 git reset --hard origin/main
-sed -i 's/^OPS_AGENT_VERSION=.*/OPS_AGENT_VERSION="v0.0.3"/' docker-compose/customer-config.sh   # v0.0.3 or newer
 cd docker-compose
 /root/stargate-deployment/docker-compose/scripts/update.sh
 ```
@@ -205,7 +207,7 @@ If the server IP was wrong or unset at first boot, reset cleanly and reinstall:
 
 ```bash
 /root/stargate-deployment/docker-compose/scripts/purge.sh                 # destroys ALL data - see warning below
-nano customer-config.sh            # set SERVER_STATIC_IP=<NEW IP>
+nano /var/data/vereign/customer-config.sh    # set SERVER_STATIC_IP=<NEW IP>
 /root/stargate-deployment/docker-compose/scripts/install.sh
 ```
 
@@ -317,7 +319,7 @@ To resolve this, the following manual configuration must be completed in the *Ke
 
 1. Open Keycloak in your browser at `https://<VM IP address>:8180/admin/master/console/`
     - The **`:8180` port is required** - Keycloak is served on port 8180. Opening the IP with no port reaches the dashboard (`:443`) instead, which redirects you to the **stargate**-realm login where the admin user does not exist (this is the usual cause of "invalid username or password" / "wrong realm" here).
-    - Log in against the **master** realm (the `/admin/master/console/` path selects it) with username `admin` (the `KEYCLOAK_ADMIN_USER` value - lowercase) and the `KEYCLOAK_ADMIN_PASSWORD` value from the machine's `.env` (read it from the Linux console).
+    - Log in against the **master** realm (the `/admin/master/console/` path selects it) with username `admin` (the `KEYCLOAK_ADMIN_USER` value - lowercase) and the `KEYCLOAK_ADMIN_PASSWORD` value from the machine's `/var/data/vereign/.env` (read it from the Linux console).
 
 2. In the admin console, switch the realm selector (top-left) from **master** to **stargate**:
 3. Go to Clients → dashboard

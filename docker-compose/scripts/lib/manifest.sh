@@ -3,7 +3,6 @@
 # Shared library: fetch, validate, and apply a release manifest.
 #
 # Sourced by update.sh -- NOT meant to be executed directly.
-# Requires read_env_var() from lib/env.sh to already be sourced.
 #
 # A release manifest (manifests/<tag>.json in the deployment repo) pins the
 # tested combination of *_VERSION values shipped for that release. It is
@@ -14,14 +13,6 @@
 # content).
 # =============================================================================
 
-# Same image-tag pattern the ops-agent enforces server-side before writing a
-# dashboard-driven update's versions (stargate-ops internal/ops/executor.go).
-# Applied here too because manifest values are about to be written into
-# customer-config.sh, which is later `source`d -- a value containing shell
-# metacharacters must be rejected, not written.
-MANIFEST_IMAGE_TAG_REGEX='^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$'
-# Every version key in every manifest observed so far follows this shape.
-MANIFEST_KEY_REGEX='^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*_VERSION$'
 # Bounds how long a single git network operation (fetch/checkout) can run.
 MANIFEST_GIT_TIMEOUT="${MANIFEST_GIT_TIMEOUT:-300}"
 
@@ -77,61 +68,12 @@ manifest_exists() {
   git cat-file -e "origin/main:manifests/${tag}.json" 2>/dev/null
 }
 
-# manifest_apply_images MANIFEST_JSON CONFIG_FILE -> writes each KEY=value in
-# MANIFEST_JSON's .images to CONFIG_FILE (sed-replace if the key exists,
-# newline-guarded append if not -- mirrors the persist_secret fix, so a value
-# can never merge onto the config's previous line). Prints a "KEY: old ->
-# new" line for every value that actually changes; skips unchanged keys.
-# Aborts (non-zero) on the first key/value that fails validation, before
-# writing anything for that entry.
-manifest_apply_images() {
-  local manifest_json="$1" config="$2"
-  local changed=0
-
-  while IFS=$'\t' read -r key value; do
-    [ -n "$key" ] || continue
-
-    if ! [[ "$key" =~ $MANIFEST_KEY_REGEX ]]; then
-      echo "ERROR: manifest key '${key}' doesn't look like a *_VERSION key -- refusing to apply." >&2
-      return 1
-    fi
-    if ! [[ "$value" =~ $MANIFEST_IMAGE_TAG_REGEX ]]; then
-      echo "ERROR: manifest value '${value}' for key '${key}' is not a valid image tag -- refusing to apply." >&2
-      return 1
-    fi
-
-    local old
-    old="$(read_env_var "$key" "$config")"
-
-    if [ "$old" = "$value" ]; then
-      continue
-    fi
-
-    if grep -q "^${key}=" "$config"; then
-      sed -i "s|^${key}=.*|${key}=\"${value}\"|" "$config"
-    else
-      # Ensure a trailing newline before appending, so the new assignment
-      # can't merge onto the config's last existing line (the bug that broke
-      # a customer's update when NODE_EXPORTER_VERSION merged with a
-      # subsequently-appended secret).
-      if [ -s "$config" ] && [ "$(tail -c1 "$config")" != "" ]; then
-        printf '\n' >> "$config"
-      fi
-      printf '%s="%s"\n' "$key" "$value" >> "$config"
-    fi
-
-    if [ -n "$old" ]; then
-      echo "  ${key}: ${old} -> ${value}"
-    else
-      echo "  ${key}: (new) -> ${value}"
-    fi
-    changed=$((changed + 1))
-  done < <(printf '%s' "$manifest_json" | jq -r '.images | to_entries[] | "\(.key)\t\(.value)"')
-
-  if [ "$changed" -eq 0 ]; then
-    echo "  No version changes -- already on this release's versions."
-  else
-    echo ""
-    echo "  ${changed} version(s) updated."
-  fi
+# manifest_show_images MANIFEST_JSON -> prints each "KEY: value" from the
+# manifest's .images, purely informational. Image versions are pinned in the
+# release tag's own docker-compose.yml and delivered by the `git checkout` in
+# update.sh, so the manifest is no longer applied to any config file -- it only
+# records (and lets an operator preview) the exact tags a release ships.
+manifest_show_images() {
+  local manifest_json="$1"
+  printf '%s' "$manifest_json" | jq -r '.images | to_entries[] | "  \(.key): \(.value)"'
 }
