@@ -697,7 +697,9 @@ services:
     volumes:
       - ${STARGATE_DATA_DIR:-/var/data}/idagent:/data/keri
     ports:
-      - "8085:8080"
+      # Bind to loopback only: POST /v1/hook is unauthenticated (Stalwart reaches it
+      # over the docker network); localhost keeps health-check.sh working.
+      - "127.0.0.1:8085:8080"
     networks:
       - stargate-network
     labels:
@@ -714,10 +716,11 @@ services:
         max-size: "100m"
         max-file: "5"
     depends_on:
+      # NOT dashboard: the per-domain config fetch is async + non-fatal (falls back to
+      # POST /config), so waiting on dashboard:service_healthy (-> keycloak -> apisix)
+      # only widens the window where the fail-closed hook 451s inbound mail.
       vault-init:
         condition: service_completed_successfully
-      dashboard:
-        condition: service_healthy
     environment:
       MAILAUTH_BIND_ADDR: "0.0.0.0:8080"
       MAILAUTH_MAX_BODY_MB: "50"
@@ -739,7 +742,8 @@ services:
 
       RUST_LOG: "info"
     ports:
-      - "8086:8080"
+      # Loopback only: POST /v1/hook is unauthenticated; localhost keeps health-check.sh working.
+      - "127.0.0.1:8086:8080"
     networks:
       - stargate-network
     labels:
@@ -981,6 +985,8 @@ services:
       - policy
       - irisagent
       - mxengine
+      - idagent
+      - mailauth
     volumes:
       - ./scripts/gather-app-versions.sh:/scripts/gather-app-versions.sh:ro
       - ${STARGATE_DATA_DIR:-/var/data}/textfile_collector:/textfile_collector
@@ -1087,6 +1093,10 @@ services:
       stalwart:
         condition: service_healthy
       clamav:
+        condition: service_started
+      # mailauth must exist before we register the fail-closed DATA hook, or inbound
+      # mail on :25 gets 451'd until it comes up.
+      mailauth:
         condition: service_started
     environment:
       STALWART_URL: "http://stalwart:8080"
