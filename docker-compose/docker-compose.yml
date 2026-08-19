@@ -211,6 +211,9 @@ services:
       KC_METRICS_ENABLED: "true"
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      # Disable Liquibase's analytics phone-home to config.liquibase.com / config-endpoint.liquibase.com
+      LIQUIBASE_ANALYTICS_ENABLED: "false"
+      JAVA_OPTS_APPEND: "-Dliquibase.analytics.enabled=false"
     command:
       - start
       - --import-realm
@@ -311,8 +314,7 @@ services:
       options:
         max-size: "100m"
         max-file: "5"
-    # Version 1.2.0
-    image: willfarrell/autoheal@sha256:a2e5e76d239b127081f8f96041a21f9747015b23af439c23ee60de0350c06880
+    image: willfarrell/autoheal:1.2.0
     network_mode: none
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
