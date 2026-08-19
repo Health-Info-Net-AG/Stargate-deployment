@@ -39,6 +39,8 @@ EXPECTED_RUNNING=(
   stargate-policy
   stargate-irisagent
   stargate-mxengine
+  stargate-idagent
+  stargate-mailauth
   stargate-stalwart
   stargate-mtaconf
   stargate-alloy
@@ -69,6 +71,15 @@ elif [ -n "$ps_status" ]; then
   warn "stargate-policy-sync status: $ps_status (optional service)"
 fi
 
+# watcher is optional (compose profile keri-watcher; only run when this
+# deployment verifies external anchors)
+watcher_status=$(docker inspect -f '{{.State.Status}}' stargate-watcher 2>/dev/null)
+if [ "$watcher_status" = "running" ]; then
+  pass "stargate-watcher"
+elif [ -n "$watcher_status" ]; then
+  warn "stargate-watcher status: $watcher_status (optional service)"
+fi
+
 echo ""
 
 # ------------------------------------------------------------------
@@ -81,6 +92,8 @@ declare -A LIVENESS_ENDPOINTS=(
   [policy]=8082
   [irisagent]=8083
   [mxengine]=8084
+  [idagent]=8085
+  [mailauth]=8086
 )
 
 for svc in "${!LIVENESS_ENDPOINTS[@]}"; do
@@ -128,7 +141,7 @@ else
   fail "PostgreSQL not ready"
 fi
 
-for db in smimekeys_client policy irisagent mxengine; do
+for db in smimekeys_client policy irisagent mxengine idagent idagent_keri; do
   count=$(docker exec stargate-postgres psql -U postgres -d "$db" -tAc "SELECT 1" 2>/dev/null)
   if [ "$count" = "1" ]; then
     pass "Database: $db"

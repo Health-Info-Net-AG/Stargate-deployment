@@ -1,0 +1,42 @@
+# Per-deployment KERI watcher configuration.
+#
+# COPY this file to /var/data/vereign/keri/watcher.yml and fill in the real values
+# before enabling the `keri-watcher` compose profile (it lives under /var/data, not
+# the read-only compose tree, so it works on the bootc appliance too):
+#     mkdir -p /var/data/vereign/keri
+#     cp config/keri/watcher.yml.example /var/data/vereign/keri/watcher.yml
+#     docker compose --profile keri-watcher up -d watcher
+#
+# The watcher is ONLY needed when this deployment verifies OTHER orgs' anchored
+# keys (idagent's POST /v1/anchor/verify against a foreign AID). A deployment that
+# only verifies its own anchors needs no watcher - leave the profile disabled and
+# idagent's KERI_WATCHER_OOBI empty.
+#
+# PREREQUISITES:
+#   - The shared witness pool must already be running and reachable; put its real
+#     witness OOBIs in `initial_oobis` below (they must match idagent's
+#     KERI_WITNESSES).
+#   - `seed` is this watcher's FIXED identity. It deterministically derives the
+#     watcher's AID, which is the `eid` you then put in idagent's
+#     KERI_WATCHER_OOBI. Keep it secret and STABLE - a new seed on restart changes
+#     the AID and breaks every controller that designated this watcher. Generate
+#     one with the dkms tooling. (This file is gitignored precisely because it
+#     holds that secret.)
+#   - `public_url` is the URL idagent uses to reach this watcher. The watcher is a
+#     LOCAL sidecar (its port is NOT published to the host); idagent talks to it
+#     over the internal docker network, so this stays the internal service name:
+#     http://watcher:3235/ . (Unlike a witness, the watcher is not consumed by
+#     other parties, so it does not need an externally reachable URL.)
+
+seed: "REPLACE_ME_fixed_CESR_ed25519_seed_for_this_watcher"
+db_path: /db/watcher
+tel_storage_path: /db/tel
+http_port: 3235
+public_url: "http://watcher:3235/"
+
+# The shared witness pool this watcher resolves at startup. One entry per witness;
+# must match idagent's KERI_WITNESSES.
+initial_oobis:
+  - eid: "REPLACE_ME_witness_1_eid"
+    scheme: http
+    url: "http://REPLACE_ME_witness_1_host:3232/"

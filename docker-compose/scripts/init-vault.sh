@@ -101,18 +101,7 @@ else
   
   # Login with root token
   export VAULT_TOKEN="$ROOT_TOKEN"
-  
-  # Create KV-v2 mounts for each service
-  echo "Creating Vault KV-v2 mounts..."
-  
-  vault secrets enable -address=http://vault:8200 -path=secret-smimekeys-client kv-v2 || echo "secret-smimekeys-client already exists"
-  vault secrets enable -address=http://vault:8200 -path=secret-policy kv-v2 || echo "secret-policy already exists"
-  vault secrets enable -address=http://vault:8200 -path=secret-irisagent kv-v2 || echo "secret-irisagent already exists"
-  vault secrets enable -address=http://vault:8200 -path=secret-mxengine kv-v2 || echo "secret-mxengine already exists"
-  vault secrets enable -address=http://vault:8200 -path=secret-mtaconf kv-v2 || echo "secret-mtaconf already exists"
-  
-  echo "Vault mounts created!"
-  
+
   # Write WireGuard private key to Vault if provided
   if [ -n "$WG_PRIVATE_KEY" ]; then
     echo "Writing pre-configured WireGuard private key to Vault..."
@@ -132,6 +121,17 @@ else
   
   # Also update the .env file token placeholder
   touch "$INIT_FILE"
+fi
+
+# Ensure KV-v2 mounts exist. Hoisted OUT of the first-init branch above so an UPGRADE of an
+# already-initialized Vault (a box that predates a newly added service) still gets the new mounts --
+# otherwise idagent/mailauth come up with no secret-idagent/secret-mailauth. All idempotent: `enable`
+# on an existing path just logs "already exists".
+if [ -n "${VAULT_TOKEN:-}" ]; then
+  echo "Ensuring Vault KV-v2 mounts..."
+  for m in secret-smimekeys-client secret-policy secret-irisagent secret-mxengine secret-mtaconf secret-idagent secret-mailauth; do
+    vault secrets enable -address=http://vault:8200 -path="$m" kv-v2 2>/dev/null || echo "  $m already exists"
+  done
 fi
 
 # Output current Vault status

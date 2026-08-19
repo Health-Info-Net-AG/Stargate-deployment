@@ -21,7 +21,8 @@ init_data_layout() {
     "$SECRETS_DIR" "$TLS_DIR" "$KEYCLOAK_GEN_DIR" "$APISIX_GEN_DIR" "$BACKUP_DIR" \
     "$DATA_DIR/postgres" "$DATA_DIR/vault" "$DATA_DIR/seaweedfs" "$DATA_DIR/stalwart" \
     "$DATA_DIR/clamav" "$DATA_DIR/loki" "$DATA_DIR/alloy" "$DATA_DIR/textfile_collector" \
-    "$DATA_DIR/dashboard_cache" "$DATA_DIR/restore"
+    "$DATA_DIR/dashboard_cache" "$DATA_DIR/restore" \
+    "$DATA_DIR/idagent" "$DATA_DIR/watcher"
 
   # secrets/ holds Vault keys, WG/private material: keep it tight.
   chmod 700 "$SECRETS_DIR" 2>/dev/null || true
@@ -37,7 +38,8 @@ init_data_layout() {
   chown 100:101    "$DATA_DIR/clamav"          # clamav/clamav (clamav)
   chown 10001:10001 "$DATA_DIR/loki"           # grafana/loki (10001)
   chown 1001:65533 "$DATA_DIR/dashboard_cache" # dashboard (nextjs)
-  # postgres self-chowns (entrypoint runs as root); seaweedfs/alloy/textfile run as root.
+  chown 1001:1001  "$DATA_DIR/idagent"         # idagent KERI redb cache at /data/keri (uid 1001)
+  # postgres self-chowns (entrypoint runs as root); seaweedfs/alloy/textfile/watcher run as root.
 }
 
 # Allow both `source init-data-layout.sh` (defines init_data_layout) and direct
