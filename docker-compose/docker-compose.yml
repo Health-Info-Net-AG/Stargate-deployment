@@ -572,6 +572,7 @@ services:
       INBOUND_SMTP_TLS: "false"
       INBOUND_SMTP_AUTH: "false"
       INBOUND_SMTP_FORWARD_ENCRYPTED_ON_FAILURE: "false"
+      INBOUND_PRESERVE_HEADERS_ON_DECRYPT: "Authentication-Results"
       REMOTE_CONFIG_URL: "http://dashboard:3000/api/internal/installation-config?service=mxengine"
 
       # Database
@@ -641,6 +642,144 @@ services:
       - "2116:2112"
     tmpfs:
       - /tmp:size=100M,mode=1777,uid=1001,gid=1001
+    networks:
+      - stargate-network
+    labels:
+      - autoheal=true
+
+  idagent:
+    # TODO(rollout): pin a published version tag once the idagent image is released.
+    # Versions are pinned directly here now (no *_VERSION env indirection).
+    image: registry.vereign.io/svdh/idagent:dev
+    container_name: stargate-idagent
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      vault-init:
+        condition: service_completed_successfully
+    environment:
+      LOG_LEVEL: "info"
+      HTTP_HOST: ""
+      HTTP_PORT: "8080"
+      HTTP_IDLE_TIMEOUT: "180s"
+      HTTP_READ_TIMEOUT: "60s"
+      HTTP_WRITE_TIMEOUT: "60s"
+
+      # Databases: identity (DB_URI) + KERI Key Event Log (KERI_DB_URL)
+      DB_URI: "postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/idagent"
+      KERI_DB_URL: "postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/idagent_keri"
+      KERI_DB_PATH: "/data/keri"
+
+      # Vault (Ed25519 seed storage)
+      VAULT_ADDRESS: "http://vault:8200"
+      VAULT_TOKEN: "${VAULT_TOKEN}"
+      VAULT_MOUNT_PATH: "secret-idagent"
+      VAULT_KV2_MAX_VERSIONS: "2"
+      VAULT_KV2_CAS_REQUIRED: "false"
+      VAULT_KV2_DELETE_VERSION_AFTER: "0s"
+
+      # KERI topology (configurable; local-only by default). Set KERI_WITNESSES to
+      # the shared witness pool's OOBIs (JSON array) + KERI_WITNESS_THRESHOLD
+      # (<= number of witnesses) once the pool is reachable. IMPORTANT: with a
+      # non-zero threshold the pool MUST be up before idagent's first start, or
+      # inception fails without receipts. KERI_WATCHER_OOBI points at this
+      # deployment's watcher (compose profile keri-watcher) and is only needed to
+      # verify OTHER orgs' anchors; leave empty for self-verification only.
+      KERI_WITNESSES: "${KERI_WITNESSES:-[]}"
+      KERI_WITNESS_THRESHOLD: "${KERI_WITNESS_THRESHOLD:-0}"
+      KERI_WATCHER_OOBI: "${KERI_WATCHER_OOBI:-}"
+    volumes:
+      - ${STARGATE_DATA_DIR:-/var/data}/idagent:/data/keri
+    ports:
+      - "8085:8080"
+    networks:
+      - stargate-network
+    labels:
+      - autoheal=true
+
+  mailauth:
+    # TODO(rollout): pin a published version tag once the mailauth image is released.
+    image: registry.vereign.io/svdh/mailauth:dev
+    container_name: stargate-mailauth
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+    depends_on:
+      vault-init:
+        condition: service_completed_successfully
+      dashboard:
+        condition: service_healthy
+    environment:
+      MAILAUTH_BIND_ADDR: "0.0.0.0:8080"
+      MAILAUTH_MAX_BODY_MB: "50"
+
+      # Vault (reads DKIM/ARC private keys per request)
+      MAILAUTH_VAULT_ADDRESS: "http://vault:8200"
+      MAILAUTH_VAULT_TOKEN: "${VAULT_TOKEN}"
+      MAILAUTH_VAULT_MOUNT_PATH: "secret-mailauth"
+
+      # Per-domain config from the dashboard (falls back to POST /config)
+      MAILAUTH_DASHBOARD_CONFIG_URL: "http://dashboard:3000/api/internal/installation-config?service=mailauth"
+
+      # Fail closed: temp-reject (451) if a configured domain cannot be signed
+      MAILAUTH_ALLOW_UNSIGNED: "false"
+
+      # Egress leg = the reinject listener port: sign/seal there, verify on ingress.
+      # (authserv-id is NOT set here — it comes from the dashboard config hostname.)
+      MAILAUTH_REINJECT_PORT: "10026"
+
+      RUST_LOG: "info"
+    ports:
+      - "8086:8080"
+    networks:
+      - stargate-network
+    labels:
+      - autoheal=true
+
+  # KERI watcher (per-deployment). A LOCAL, non-exposed sidecar: it fetches +
+  # validates external AIDs' KELs from the shared witness pool on behalf of
+  # idagent (POST /v1/anchor/verify against a foreign AID). idagent reaches it
+  # over the internal network at http://watcher:3235/; the watcher only makes
+  # OUTBOUND calls to the witnesses, so its port is NOT published to the host.
+  # OPT-IN: only needed when this deployment verifies OTHER orgs' anchors -
+  # enable with `docker compose --profile keri-watcher up -d`.
+  # PREREQUISITES before enabling: (1) the shared witness pool must be running and
+  # reachable; (2) copy config/keri/watcher.yml.example -> /var/data/vereign/keri/watcher.yml
+  # and fill in this watcher's fixed seed + the pool's initial_oobis;
+  # (3) set idagent's KERI_WATCHER_OOBI to this watcher's OOBI. Image built from a
+  # pinned keriox commit (see the keriox-tools repo).
+  watcher:
+    # TODO(rollout): pin a published keriox-watcher version tag (opt-in profile).
+    image: healthinfonetag/keriox-watcher:dev
+    container_name: stargate-watcher
+    profiles: ["keri-watcher"]
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+    volumes:
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/keri/watcher.yml:/config/watcher.yml:ro
+      - ${STARGATE_DATA_DIR:-/var/data}/watcher:/db
+    command:
+      - /bin/sh
+      - -c
+      - mkdir -p /db/watcher /db/tel && exec /usr/local/bin/watcher --config-file=/config/watcher.yml
+    healthcheck:
+      test: ["CMD", "bash", "-c", ":> /dev/tcp/127.0.0.1/3235"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
     networks:
       - stargate-network
     labels:
@@ -734,7 +873,11 @@ services:
 
       VAULT_ADDRESS: "http://vault:8200"
       VAULT_TOKEN: "${VAULT_TOKEN}"
+      # TLS private keys (mtaconf reads these back)
       VAULT_MOUNT_PATH: "secret-mtaconf"
+      # DKIM/ARC private keys the dashboard writes for mailauth to read back;
+      # must equal the mailauth service's MAILAUTH_VAULT_MOUNT_PATH
+      MAILAUTH_VAULT_MOUNT_PATH: "secret-mailauth"
 
       #monitoring
       LOKI_URL: "http://loki:3100"

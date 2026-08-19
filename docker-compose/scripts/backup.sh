@@ -102,7 +102,7 @@ fi
 # Also create individual dumps for easier partial restore if needed
 echo ""
 echo "Creating individual database dumps..."
-DATABASES=("smimekeys_client" "policy" "irisagent" "mxengine" "dashboard" "keycloak" "stalwart")
+DATABASES=("smimekeys_client" "policy" "irisagent" "mxengine" "idagent" "idagent_keri" "dashboard" "keycloak" "stalwart")
 for DB in "${DATABASES[@]}"; do
   echo "  Backing up: $DB..."
   docker exec stargate-postgres pg_dump -U "$POSTGRES_USER" "$DB" > "$BACKUP_SUBDIR/database/${DB}.sql" 2>/dev/null || true
@@ -230,7 +230,7 @@ else
     VAULT_SECRETS_COUNT=0
     
     # List of KV mounts to backup
-    VAULT_MOUNTS=("secret-smimekeys-client" "secret-irisagent" "secret-policy" "secret-mxengine" "secret-mtaconf")
+    VAULT_MOUNTS=("secret-smimekeys-client" "secret-irisagent" "secret-policy" "secret-mxengine" "secret-mtaconf" "secret-idagent" "secret-mailauth")
     
     for mount in "${VAULT_MOUNTS[@]}"; do
       echo "  Backing up: $mount..."

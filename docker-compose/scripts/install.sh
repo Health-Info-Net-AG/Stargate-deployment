@@ -131,6 +131,11 @@ load_customer_config() {
   # Image versions are pinned directly in docker-compose.yml (not env-driven) so
   # a deployment's versions travel with its git tag. See docker-compose.yml.
 
+  # KERI topology for idagent (runtime config, not a version).
+  KERI_WITNESSES="${KERI_WITNESSES:-[]}"
+  KERI_WITNESS_THRESHOLD="${KERI_WITNESS_THRESHOLD:-0}"
+  KERI_WATCHER_OOBI="${KERI_WATCHER_OOBI:-}"
+
   # Derive WG_LOCAL_IP and MXENGINE_PUBLIC_ADDRESS from SERVER_STATIC_IP
   SERVER_STATIC_IP="${SERVER_STATIC_IP:-}"
   if [ -z "$SERVER_STATIC_IP" ] && [ -n "$WG_LOCAL_IP" ] && [ "$WG_LOCAL_IP" != "10.0.0.1" ]; then
@@ -261,6 +266,11 @@ VAULT_TOKEN=
 S3_ACCESS_KEY="$S3_ACCESS_KEY"
 S3_SECRET_KEY="$S3_SECRET_KEY"
 S3_BUCKET_NAME="$S3_BUCKET_NAME"
+
+# KERI topology for idagent (runtime config; JSON single-quoted so embedded quotes survive in .env).
+KERI_WITNESSES='$KERI_WITNESSES'
+KERI_WITNESS_THRESHOLD="$KERI_WITNESS_THRESHOLD"
+KERI_WATCHER_OOBI='$KERI_WATCHER_OOBI'
 
 # Stalwart MTA
 STALWART_ADMIN_PASSWORD="$STALWART_ADMIN_PASSWORD"
