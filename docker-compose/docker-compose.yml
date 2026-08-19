@@ -1012,7 +1012,7 @@ services:
 
   clamav:
     # renovate: datasource=docker depName=clamav/clamav
-    image: clamav/clamav:1.5.3
+    image: clamav/clamav:1.5.4
     container_name: stargate-clamav
     restart: unless-stopped
     logging:
