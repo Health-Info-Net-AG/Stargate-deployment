@@ -709,7 +709,7 @@ services:
 
   mailauth:
     # TODO(rollout): pin a published version tag once the mailauth image is released.
-    image: registry.vereign.io/svdh/mailauth:dev
+    image: registry.vereign.io/svdh/mailauth:v0.0.5
     container_name: stargate-mailauth
     restart: unless-stopped
     logging:
