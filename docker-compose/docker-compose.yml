@@ -652,7 +652,7 @@ services:
   idagent:
     # TODO(rollout): pin a published version tag once the idagent image is released.
     # Versions are pinned directly here now (no *_VERSION env indirection).
-    image: registry.vereign.io/svdh/idagent:dev
+    image: registry.vereign.io/svdh/idagent:v0.0.1
     container_name: stargate-idagent
     restart: unless-stopped
     logging:
@@ -709,7 +709,7 @@ services:
 
   mailauth:
     # TODO(rollout): pin a published version tag once the mailauth image is released.
-    image: registry.vereign.io/svdh/mailauth:dev
+    image: registry.vereign.io/svdh/mailauth:v0.0.5
     container_name: stargate-mailauth
     restart: unless-stopped
     logging:
@@ -765,7 +765,8 @@ services:
   # pinned keriox commit (see the keriox-tools repo).
   watcher:
     # TODO(rollout): pin a published keriox-watcher version tag (opt-in profile).
-    image: healthinfonetag/keriox-watcher:dev
+    # image: healthinfonetag/keriox-watcher:dev
+    image: registry.vereign.io/svdh/keriox-watcher:dev
     container_name: stargate-watcher
     profiles: ["keri-watcher"]
     restart: unless-stopped
