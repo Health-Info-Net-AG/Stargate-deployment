@@ -652,7 +652,7 @@ services:
   idagent:
     # TODO(rollout): pin a published version tag once the idagent image is released.
     # Versions are pinned directly here now (no *_VERSION env indirection).
-    image: registry.vereign.io/svdh/idagent:dev
+    image: registry.vereign.io/svdh/idagent:v0.0.1
     container_name: stargate-idagent
     restart: unless-stopped
     logging:
