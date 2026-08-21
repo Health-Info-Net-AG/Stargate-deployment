@@ -24,7 +24,7 @@ services:
     # No host port mapping: postgres is reachable only from inside the
     # docker network at postgres:5432. Do not re-expose it on the host.
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -h 127.0.0.1"]
       interval: 5s
       timeout: 5s
       retries: 10
