@@ -341,7 +341,7 @@ services:
 
   smimekeys-client:
     # renovate: datasource=docker depName=healthinfonetag/smimekeys
-    image: healthinfonetag/smimekeys:v0.0.25
+    image: healthinfonetag/smimekeys:v0.0.27
     container_name: stargate-smimekeys-client
     restart: unless-stopped
     logging:
@@ -455,7 +455,7 @@ services:
 
   irisagent:
     # renovate: datasource=docker depName=healthinfonetag/irisagent
-    image: healthinfonetag/irisagent:v0.0.10
+    image: healthinfonetag/irisagent:v0.0.11
     container_name: stargate-irisagent
     restart: unless-stopped
     logging:
@@ -535,7 +535,7 @@ services:
 
   mxengine:
     # renovate: datasource=docker depName=healthinfonetag/mxengine
-    image: healthinfonetag/mxengine:v0.0.51
+    image: healthinfonetag/mxengine:v0.0.52
     container_name: stargate-mxengine
     restart: unless-stopped
     logging:
@@ -767,7 +767,7 @@ services:
   watcher:
     # TODO(rollout): pin a published keriox-watcher version tag (opt-in profile).
     # image: healthinfonetag/keriox-watcher:dev
-    image: registry.vereign.io/svdh/keriox-watcher:dev
+    image: registry.vereign.io/svdh/keriox-watcher:v0.0.1
     container_name: stargate-watcher
     profiles: ["keri-watcher"]
     restart: unless-stopped
@@ -832,7 +832,7 @@ services:
 
   dashboard:
     # renovate: datasource=docker depName=healthinfonetag/dashboard
-    image: healthinfonetag/dashboard:v0.0.72
+    image: healthinfonetag/dashboard:v0.0.105
     container_name: stargate-dashboard
     restart: unless-stopped
     logging:
@@ -889,7 +889,7 @@ services:
 
       #monitoring
       LOKI_URL: "http://loki:3100"
-      LOG_LEVEL: "info"
+      LOG_LEVEL: "debug"
 
     networks:
       - stargate-network
@@ -1242,7 +1242,7 @@ services:
   # Ops Agent - executes infrastructure commands (updates, restarts) from dashboard via NATS
   ops-agent:
     # renovate: datasource=docker depName=healthinfonetag/stargate-ops
-    image: healthinfonetag/stargate-ops:v0.0.5
+    image: healthinfonetag/stargate-ops:v0.0.6
     container_name: stargate-ops-agent
     restart: unless-stopped
     logging:
