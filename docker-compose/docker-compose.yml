@@ -214,6 +214,7 @@ services:
       # Disable Liquibase's analytics phone-home to config.liquibase.com / config-endpoint.liquibase.com
       LIQUIBASE_ANALYTICS_ENABLED: "false"
       JAVA_OPTS_APPEND: "-Dliquibase.analytics.enabled=false"
+    mem_limit: 1024m
     command:
       - start
       - --import-realm
@@ -1024,11 +1025,12 @@ services:
     environment:
       # Start clamav-milter (disabled by default in this image).
       CLAMAV_NO_MILTERD: "false"
+      CLAMD_CONF_ConcurrentDatabaseReload: "no"
     volumes:
       # Persist the virus signature DB so it is not re-downloaded on every restart (freshclam keeps it current in the background).
       - ${STARGATE_DATA_DIR:-/var/data}/clamav:/var/lib/clamav
       - ./config/clamav/clamav-milter.conf:/etc/clamav/clamav-milter.conf:ro
-    mem_limit: 1536m
+    mem_limit: 2g
     healthcheck:
       # clamdcheck.sh pings clamd; only healthy once the signature DB is loaded.
       test: ["CMD", "clamdcheck.sh"]
