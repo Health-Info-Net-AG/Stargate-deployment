@@ -5,6 +5,13 @@ set -euo pipefail
 
 TAG="${1:?usage: generate-release-notes.sh <tag>}"
 
+# Image versions moved out of customer-config and into docker-compose.yml, so the
+# release manifest built by the `generate_manifest` CI job is now the source for
+# this table. It is present in the release job's workspace as an artifact; the
+# manifest for a *previous* tag is read from origin/main:manifests/<tag>.json.
+# PROD_FILE remains the fallback for tags cut before that move, whose
+# customer-config-prod.example.sh still carries the *_VERSION pins.
+MANIFEST_FILE="${MANIFEST_FILE:-manifest.json}"
 PROD_FILE="docker-compose/customer-config-prod.example.sh"
 
 SEMVER_RE='^v[0-9]+\.[0-9]+\.[0-9]+$'              # v1.0.0 (manual milestones)
@@ -72,11 +79,35 @@ parse_versions() {
   '
 }
 
+# parse_manifest: stdin = release manifest JSON -> "NAME<TAB>VERSION" lines,
+# matching parse_versions' output so both sources are interchangeable.
+parse_manifest() {
+  jq -r '.images | to_entries[] | "\(.key | sub("_VERSION$"; ""))\t\(.value)"'
+}
+
+# versions_for_ref REF -> "NAME<TAB>VERSION" for a tag other than the one being
+# released: its merged manifest if there is one, else its customer-config pins.
+versions_for_ref() {
+  local ref="$1"
+  if git cat-file -e "origin/main:manifests/${ref}.json" 2>/dev/null &&
+     git show "origin/main:manifests/${ref}.json" | parse_manifest 2>/dev/null; then
+    return 0
+  fi
+  git show "${ref}:${PROD_FILE}" 2>/dev/null | parse_versions || true
+}
+
 TMP_PROD="$(mktemp)"
 TMP_PREV=""
 trap 'rm -f "$TMP_PROD" "$TMP_PREV"' EXIT
 
-git show "${REF}:${PROD_FILE}" 2>/dev/null | parse_versions > "$TMP_PROD" || true
+# The tag being released: its manifest is not on main yet (CI opens an MR for it
+# after the release), so use the artifact from the generate_manifest job.
+if [ -f "$MANIFEST_FILE" ]; then
+  parse_manifest < "$MANIFEST_FILE" > "$TMP_PROD" || true
+fi
+if [ ! -s "$TMP_PROD" ]; then
+  versions_for_ref "$REF" > "$TMP_PROD" || true
+fi
 
 echo "## ${HEADER}"
 echo
@@ -98,7 +129,7 @@ echo
 
 if [ -n "$PREV_TAG" ]; then
   TMP_PREV="$(mktemp)"
-  git show "${PREV_TAG}:${PROD_FILE}" 2>/dev/null | parse_versions > "$TMP_PREV" || true
+  versions_for_ref "$PREV_TAG" > "$TMP_PREV" || true
   echo "### Service releases changed since ${PREV_TAG}"
   echo
   seen=""
