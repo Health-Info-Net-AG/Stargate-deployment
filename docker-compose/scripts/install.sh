@@ -100,17 +100,25 @@ load_customer_config() {
   echo "============================================"
   echo ""
 
-  # Bootstrap customer-config.sh if it doesn't exist yet, so a fresh install
-  # works with zero manual setup. VM images bake their config at build time, so
-  # this only fires for manual installs -- default to the prod template.
-  # Generated values (vault token, IP, etc.) get written back here as
-  # install progresses.
+  # Config precedence: read-only baked defaults first, then the writable
+  # /var/data override wins. BASE_CONFIG is the template baked into the image
+  # ($PROJECT_DIR is the read-only /usr/share/stargate-deployment/docker-compose
+  # tree on the appliance); it supplies the defaults. The operator edits
+  # $CONFIG_FILE (/var/data/vereign/customer-config.sh) to override them -- either
+  # a full config or just the handful of values they change; anything omitted
+  # falls back to the baked default. Bootstrap a full copy on first run so there's
+  # a ready-to-edit template; existing installs keep their file untouched.
+  BASE_CONFIG="$PROJECT_DIR/customer-config-prod.example.sh"
   if [ ! -f "$CONFIG_FILE" ]; then
     echo "customer-config.sh not found, bootstrapping from customer-config-prod.example.sh..."
-    cp "$PROJECT_DIR/customer-config-prod.example.sh" "$CONFIG_FILE"
+    cp "$BASE_CONFIG" "$CONFIG_FILE"
   fi
 
-  # Source the config file
+  # Source baked defaults first, then the /var/data override (later assignment
+  # wins, so an edited /var/data value overrides the read-only baked one).
+  # shellcheck disable=SC1090
+  if [ -f "$BASE_CONFIG" ]; then source "$BASE_CONFIG"; fi
+  # shellcheck disable=SC1090
   source "$CONFIG_FILE"
   chmod 600 "$CONFIG_FILE"  # holds VAULT_TOKEN, WG private key, passwords
 
