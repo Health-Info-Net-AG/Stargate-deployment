@@ -4,7 +4,7 @@
 # =============================================================================
 # Idempotently provisions Stalwart for the Stargate deployment:
 #   1. Creates network listeners (SMTP, reinject, management HTTP)
-#   2. Enables a Stdout tracer so logs land on docker stdout
+#   2. Enables a Stdout tracer (docker stdout) + disables the built-in file tracer
 #   3. Ensures the service domain exists
 #   4. Sets SystemSettings (defaultHostname + defaultDomainId)
 #   5. Creates the mtaconf service account
@@ -166,12 +166,22 @@ create_listener "reinject" "0.0.0.0:10026" "smtp" "false"
 create_listener "mgmt" "0.0.0.0:8080" "http" "false"
 
 # =============================================================================
-# 2b. Stdout tracer - emit Stalwart's own logs to docker stdout
+# 2b. Logging tracers: Stdout ON, built-in file tracer OFF
 # =============================================================================
-# v0.16 stores tracer config in the settings backend; when the backend is
-# empty (fresh Postgres) no tracer is enabled and `docker logs stalwart` is
-# silent even though the server is healthy. Stalwart calls the Stdout/Console
-# tracer's variant `Stdout` (Console is the display label).
+# v0.16 stores tracer config in the settings backend. A fresh backend is seeded
+# with exactly one built-in tracer of `@type=Log` (a rotating FILE tracer) -- not
+# a Stdout one -- which is why `docker logs stalwart` is silent on a fresh install
+# even though the server is healthy, and why the box logs "Failed to create log
+# file /var/log/stalwart/stalwart.log.<date>: No such file or directory": that Log
+# tracer's default path is /var/log/stalwart, a directory the image doesn't ship.
+#
+# Fix, in two steps below:
+#   1. ensure a Stdout tracer exists  -> logs go to docker's json-file (rotated) and
+#      on to Loki via alloy. Stalwart names the Stdout/Console variant `Stdout`
+#      (Console is the display label).
+#   2. disable every built-in Log (file) tracer -> once Stdout carries the logs the
+#      file tracer is pure redundancy, so we turn it off rather than mount a log dir
+#      just to feed it. No file writes => the "No such file or directory" WARN stops.
 if ! cli query Tracer 2>/dev/null | grep -Fq "Stdout"; then
   log "creating stdout tracer"
   cli create Tracer \
@@ -183,6 +193,25 @@ if ! cli query Tracer 2>/dev/null | grep -Fq "Stdout"; then
     --field "buffered=false" \
     --field "lossy=false"
 fi
+
+# Disable the built-in Log (file) tracer(s). `query Tracer --json` prints one object
+# per row ({...,"@type":"Log","id":"..."}); we disable each whose @type is Log,
+# leaving the Stdout tracer above untouched. Reconciled on every run (a fresh DB
+# re-seeds the Log tracer) and non-fatal like the throttle/spam reconciliation below:
+# a failure here just leaves it retrying the missing /var/log/stalwart, it must not
+# abort this one-shot (mtaconf gates on it completing).
+tracers=$(cli query Tracer --json 2>/dev/null) || true
+printf '%s\n' "$tracers" | while IFS= read -r row; do
+  case "$row" in
+    *'"@type":"Log"'*)
+      tid=$(printf '%s' "$row" | sed -n 's/.*"id":"\([^"]*\)".*/\1/p')
+      [ -n "$tid" ] || continue
+      log "disabling built-in Log (file) tracer ${tid} (redundant with Stdout; wrote /var/log/stalwart)"
+      cli update Tracer "$tid" --json '{"enable":false}' \
+        || log "WARNING: failed to disable Log tracer ${tid}; it may keep trying to write /var/log/stalwart"
+      ;;
+  esac
+done
 
 # =============================================================================
 # 2c. Content filtering: anti-virus (ClamAV milter)
