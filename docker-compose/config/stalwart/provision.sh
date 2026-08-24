@@ -194,24 +194,34 @@ if ! cli query Tracer 2>/dev/null | grep -Fq "Stdout"; then
     --field "lossy=false"
 fi
 
-# Disable the built-in Log (file) tracer(s). `query Tracer --json` prints one object
-# per row ({...,"@type":"Log","id":"..."}); we disable each whose @type is Log,
-# leaving the Stdout tracer above untouched. Reconciled on every run (a fresh DB
-# re-seeds the Log tracer) and non-fatal like the throttle/spam reconciliation below:
-# a failure here just leaves it retrying the missing /var/log/stalwart, it must not
-# abort this one-shot (mtaconf gates on it completing).
-tracers=$(cli query Tracer --json 2>/dev/null) || true
-printf '%s\n' "$tracers" | while IFS= read -r row; do
+# Disable the built-in Log (file) tracer(s), keeping the Stdout tracer above. Query id AND @type
+# together with --fields: exactly like the throttle block below (see disable_throttles), that
+# yields one compact object per row ({"@type":"...","id":"..."}). A bare `query Tracer --json` is
+# NOT guaranteed one-per-line -- if it pretty-printed, @type and id would land on different lines,
+# the per-row match/sed would find no id, and the loop would silently no-op (leaving the Log tracer
+# enabled and /var/log/stalwart failing, with no trace). Fed via a here-doc rather than a pipe so
+# $disabled survives into the count log. Reconciled every run (a fresh DB re-seeds the Log tracer)
+# and non-fatal like the throttle/spam reconciliation below -- a failure must not abort this
+# one-shot (mtaconf gates on it). The trailing count makes a no-op distinguishable from success.
+disabled=0
+tracers=$(cli query Tracer --fields id,@type --json 2>/dev/null) || true
+while IFS= read -r row; do
   case "$row" in
     *'"@type":"Log"'*)
       tid=$(printf '%s' "$row" | sed -n 's/.*"id":"\([^"]*\)".*/\1/p')
       [ -n "$tid" ] || continue
       log "disabling built-in Log (file) tracer ${tid} (redundant with Stdout; wrote /var/log/stalwart)"
-      cli update Tracer "$tid" --json '{"enable":false}' \
-        || log "WARNING: failed to disable Log tracer ${tid}; it may keep trying to write /var/log/stalwart"
+      if cli update Tracer "$tid" --json '{"enable":false}'; then
+        disabled=$((disabled + 1))
+      else
+        log "WARNING: failed to disable Log tracer ${tid}; it may keep trying to write /var/log/stalwart"
+      fi
       ;;
   esac
-done
+done <<EOF
+$tracers
+EOF
+log "built-in Log (file) tracers disabled: ${disabled}"
 
 # =============================================================================
 # 2c. Content filtering: anti-virus (ClamAV milter)

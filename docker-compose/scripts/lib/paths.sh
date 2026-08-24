@@ -29,17 +29,33 @@ BACKUP_DIR="$DATA_DIR/backups"
 # manual installs); --env-file points at the relocated .env so bare `docker
 # compose` no longer needs a .env next to the compose file.
 #
-# DEV/TEST override: if a writable $VEREIGN_DIR/docker-compose.override.yml exists,
-# layer it on top of the read-only baked docker-compose.yml so its keys deep-merge
-# over the base (`docker compose -f base -f override` semantics). This is meant for
-# development and testing only: it is NOT covered by the offline image bake (an
-# override that changes/adds an image needs a runtime pull) and it persists across
-# bootc rollback. When the file is absent, behaviour is identical to before.
-# Relative paths inside the override resolve against --project-directory
-# ($PROJECT_DIR), so reference any host files by absolute path.
+# DEV/TEST override: if a writable docker-compose.override.yml (or .yaml) exists under
+# $VEREIGN_DIR, layer it on top of the read-only baked docker-compose.yml so its keys deep-merge
+# over the base (`docker compose -f base -f override` semantics). This is meant for development
+# and testing only: it is NOT covered by the offline image bake (an override that changes/adds an
+# image needs a runtime pull) and it persists across bootc rollback. When no such file exists,
+# behaviour is identical to before. Relative paths inside the override resolve against
+# --project-directory ($PROJECT_DIR), so reference any host files by absolute path.
+#
+# Because it silently changes the compose graph for every command below (install/update/start/
+# stop/purge/backup), compose() prints a one-time stderr notice while an override is active.
+# Also note: /var/data is in backup scope, so an override created on a test box travels inside a
+# backup archive; on restore it applies on the target -- the switch/rollback guard retires it only
+# when restored onto a DIFFERENT image (stamp mismatch), not onto the same image version.
 compose() {
-  local override="$VEREIGN_DIR/docker-compose.override.yml"
-  if [ -f "$override" ]; then
+  # Accept either extension -- docker compose treats .yml and .yaml as equivalent, and a wrong
+  # guess should not silently no-op. .yml wins if both exist (matches the base docker-compose.yml).
+  local override="" f
+  for f in "$VEREIGN_DIR/docker-compose.override.yml" "$VEREIGN_DIR/docker-compose.override.yaml"; do
+    [ -f "$f" ] && { override="$f"; break; }
+  done
+  if [ -n "$override" ]; then
+    # Announce once per process (global flag, not per compose() call -- this runs many times
+    # per script) so an active dev/test override is never silently in effect.
+    if [ -z "${_COMPOSE_OVERRIDE_ANNOUNCED:-}" ]; then
+      echo "compose: using dev/test override $override (layered over the baked docker-compose.yml)" >&2
+      _COMPOSE_OVERRIDE_ANNOUNCED=1
+    fi
     docker compose --project-directory "$PROJECT_DIR" --env-file "$ENV_FILE" \
       -f "$PROJECT_DIR/docker-compose.yml" -f "$override" "$@"
   else
