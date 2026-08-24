@@ -17,6 +17,20 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 . "$SCRIPT_DIR/lib/paths.sh"
 
 init_data_layout() {
+  # DATA_DIR (/var/data) is normally a dedicated Data Disk (VEREIGN-DATA) mounted by
+  # the appliance's var-data.mount (ADR-0004). If that disk is absent -- an older/
+  # single-disk VM, or a manual install.sh after purge.sh on hardware with no second
+  # drive -- /var/data is just a directory on the root filesystem. That's supported:
+  # we create it and carry on, but warn loudly, because all writable state (config,
+  # secrets, databases, mail, object store) then shares the root disk instead of a
+  # separate, independently sized/backed-up volume. Skipped when STARGATE_DATA_DIR
+  # overrides the root (local testing), where "not a mount" is expected and fine.
+  if [ -z "${STARGATE_DATA_DIR:-}" ] && ! mountpoint -q "$DATA_DIR" 2>/dev/null; then
+    echo "WARNING: no dedicated data disk mounted at $DATA_DIR -- falling back to the root filesystem." >&2
+    echo "         All Stargate state will live on the root disk. This is fine for single-disk VMs;" >&2
+    echo "         attach a VEREIGN-DATA disk to keep state on a separate, independently sized volume." >&2
+  fi
+
   mkdir -p \
     "$SECRETS_DIR" "$TLS_DIR" "$KEYCLOAK_GEN_DIR" "$APISIX_GEN_DIR" "$BACKUP_DIR" \
     "$DATA_DIR/postgres" "$DATA_DIR/vault" "$DATA_DIR/seaweedfs" "$DATA_DIR/stalwart" \
