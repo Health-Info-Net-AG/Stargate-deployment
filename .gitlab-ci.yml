@@ -184,8 +184,11 @@ release_milestone:
         --data "url=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/manifest/${CI_COMMIT_TAG}/manifest.json" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"
 
+# needs: [] — builds from $CI_COMMIT_TAG alone, so it starts at pipeline creation and runs
+# alongside execute_script instead of after it. A failed execute_script no longer blocks it.
 trigger_bootc_pipeline:
   stage: trigger
+  needs: []
   allow_failure: true
   rules:
     - if: $CI_COMMIT_TAG
