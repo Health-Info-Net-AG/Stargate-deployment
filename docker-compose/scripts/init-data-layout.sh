@@ -20,14 +20,26 @@ init_data_layout() {
   # DATA_DIR (/var/data) is normally a dedicated Data Disk (VEREIGN-DATA) mounted by
   # the appliance's var-data.mount (ADR-0004). If that disk is absent -- an older/
   # single-disk VM, or a manual install.sh after purge.sh on hardware with no second
-  # drive -- /var/data is just a directory on the root filesystem. That's supported:
-  # we create it and carry on, but warn loudly, because all writable state (config,
-  # secrets, databases, mail, object store) then shares the root disk instead of a
-  # separate, independently sized/backed-up volume. Skipped when STARGATE_DATA_DIR
-  # overrides the root (local testing), where "not a mount" is expected and fine.
+  # drive -- /var/data is just a directory on the boot disk. That single-disk fallback
+  # is intended ONLY for a MANUAL install.sh run. On the automated first-boot path the
+  # units already Require=var-data.mount (verimesh-install / verimesh-data-layout), so
+  # they never reach here without a disk; and should init-data-layout ever be invoked
+  # automatically with no disk, we REFUSE rather than silently scatter all writable
+  # state (config, secrets, databases, mail, object store) onto the boot disk. Skipped
+  # entirely when STARGATE_DATA_DIR overrides the root (local testing).
   if [ -z "${STARGATE_DATA_DIR:-}" ] && ! mountpoint -q "$DATA_DIR" 2>/dev/null; then
-    echo "WARNING: no dedicated data disk mounted at $DATA_DIR -- falling back to the root filesystem." >&2
-    echo "         All Stargate state will live on the root disk. This is fine for single-disk VMs;" >&2
+    # Automated iff running under a systemd service (cgroup .../system.slice/<name>.service);
+    # a manual run lives in an interactive user-session .scope. /proc/self/cgroup is always
+    # readable; if it somehow isn't, we fall through to the manual warning below (the automated
+    # boot path is separately gated by the units' Requires=var-data.mount, so it can't reach here
+    # without a disk anyway).
+    if grep -qE '/system\.slice/[^/]*\.service' /proc/self/cgroup 2>/dev/null; then
+      echo "ERROR: no data disk mounted at $DATA_DIR on an automated run -- refusing to fall back to" >&2
+      echo "       the boot disk. Attach a VEREIGN-DATA disk. (Single-disk fallback is manual-install only.)" >&2
+      return 1
+    fi
+    echo "WARNING: no dedicated data disk mounted at $DATA_DIR -- falling back to the filesystem in boot disk." >&2
+    echo "         All Stargate state will live on the boot disk. This is fine for single-disk VMs;" >&2
     echo "         attach a VEREIGN-DATA disk to keep state on a separate, independently sized volume." >&2
   fi
 

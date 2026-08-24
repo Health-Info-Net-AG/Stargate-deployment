@@ -116,9 +116,7 @@ load_customer_config() {
 
   # Source baked defaults first, then the /var/data override (later assignment
   # wins, so an edited /var/data value overrides the read-only baked one).
-  # shellcheck disable=SC1090
   if [ -f "$BASE_CONFIG" ]; then source "$BASE_CONFIG"; fi
-  # shellcheck disable=SC1090
   source "$CONFIG_FILE"
   chmod 600 "$CONFIG_FILE"  # holds VAULT_TOKEN, WG private key, passwords
 
