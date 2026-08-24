@@ -362,8 +362,6 @@ It can be configured verification options
 
 #### DMARK 
 
-
-
  Here's exactly what each does at the inbound hop (UI label → wire value → behavior):
 
 | UI label | Wire value | Behavior |
