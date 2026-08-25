@@ -15,6 +15,10 @@ stages:
 
 execute_script:
   stage: build
+  # almaimage.sh works in fixed paths under /data/vmimagebuilder — one shared stargate-deployment clone it
+  # `git checkout --force`s, and one stargate-images/ it `rm -rf`s. Two concurrent runs would therefore bake
+  # one tag's content into another tag's artifacts, so they must never overlap.
+  resource_group: vm_image_build
   tags:
     - linux
   rules:
