@@ -54,7 +54,8 @@ theme:
     text: Roboto
     code: Roboto Mono
   favicon: assets/hin_logo.png
-  #icon:
+  icon:
+    alternate: material/web
   #  logo: logo
 
 # Plugins
