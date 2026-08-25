@@ -90,6 +90,80 @@ persist_secret() {
   fi
 }
 
+# Write KEY=value into a config file: in place if the key exists, appended
+# otherwise. Unlike persist_secret() this always overwrites, because a preset
+# is meant to replace the prod template's value. Shares persist_secret()'s
+# trailing-newline guard for the append -- see the comment there.
+# Usage: set_config_value KEY VALUE FILE
+set_config_value() {
+  local key="$1" value="$2" file="$3"
+  if grep -q "^${key}=" "$file"; then
+    sed -i "s|^${key}=.*|${key}=${value}|" "$file"
+  else
+    if [ -s "$file" ] && [ "$(tail -c1 "$file")" != "" ]; then
+      echo "" >> "$file"
+    fi
+    echo "${key}=${value}" >> "$file"
+  fi
+}
+
+# Apply an environment preset over a freshly seeded customer-config.sh.
+#
+# Called ONLY at bootstrap. After that the file belongs to the operator, and
+# re-applying on every update.sh would silently revert their edits and fight
+# sync_customer_config(), which appends new template keys and never overwrites.
+#
+# The environment is resolved from STARGATE_ENV (an explicit override, e.g. a
+# manual install) and then from /usr/lib/stargate/environment, which the bootc
+# image writes at build time from its STARGATE_ENV build arg. With neither, it
+# is prod -- so a manual install, or an image built before this existed,
+# behaves exactly as it did before.
+#
+# prod is the absence of a preset, not a preset file: customer-config-prod.example.sh
+# already holds the prod values, so there is nothing to overlay.
+apply_env_preset() {
+  local config="$1" env preset line key value
+
+  env="${STARGATE_ENV:-}"
+  if [ -z "$env" ] && [ -r /usr/lib/stargate/environment ]; then
+    env="$(tr -d "[:space:]" < /usr/lib/stargate/environment)"
+  fi
+  env="${env:-prod}"
+
+  if [ "$env" = "prod" ]; then
+    echo "Environment: prod (no preset applied)"
+    return 0
+  fi
+
+  preset="$PROJECT_DIR/config/environments/${env}.sh"
+  if [ ! -f "$preset" ]; then
+    echo "ERROR: STARGATE_ENV=$env, but $preset does not exist." >&2
+    echo "       Add the preset, or build the image with STARGATE_ENV=prod." >&2
+    exit 1
+  fi
+
+  echo "Environment: $env -- applying config/environments/${env}.sh"
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in ""|\#*) continue ;; esac
+    key="${line%%=*}"
+    value="${line#*=}"
+    # A preset is committed config, not input, but a malformed line would turn
+    # the sed below into an arbitrary edit of customer-config.sh. Fail instead.
+    case "$key" in
+      ""|*[!A-Za-z0-9_]*)
+        echo "ERROR: invalid key \"$key\" in $preset" >&2
+        exit 1
+        ;;
+    esac
+    set_config_value "$key" "$value" "$config"
+    echo "  $key"
+  done < "$preset"
+
+  # Recorded so update.sh, support bundles and an operator reading the file can
+  # all tell which preset the machine was seeded with.
+  set_config_value STARGATE_ENV "\"$env\"" "$config"
+}
+
 # ==============================================================================
 # Customer Configuration Loading
 # ==============================================================================
@@ -101,13 +175,14 @@ load_customer_config() {
   echo ""
 
   # Bootstrap customer-config.sh if it doesn't exist yet, so a fresh install
-  # works with zero manual setup. VM images bake their config at build time, so
-  # this only fires for manual installs -- default to the prod template.
+  # works with zero manual setup. This fires on the first boot of every bootc
+  # appliance (the Data Disk starts blank) as well as on a manual install.
   # Generated values (vault token, IP, etc.) get written back here as
   # install progresses.
   if [ ! -f "$CONFIG_FILE" ]; then
     echo "customer-config.sh not found, bootstrapping from customer-config-prod.example.sh..."
     cp "$PROJECT_DIR/customer-config-prod.example.sh" "$CONFIG_FILE"
+    apply_env_preset "$CONFIG_FILE"
   fi
 
   # Source the config file
