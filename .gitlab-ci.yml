@@ -4,25 +4,29 @@ workflow:
     - if: '$CI_COMMIT_TAG =~ /^v\d{4}\.\d{2}\.\d{2}-\d{4}$/'
       when: never
     - if: $CI_COMMIT_TAG
-    # Run pipeline (CI/CD > Pipelines > Run pipeline) on any branch, for QA test images. Every job below is gated on
-    # $CI_COMMIT_TAG, so such a run starts build_test_image and nothing else -- no VM image build, no manifest MR, no
-    # GitLab Release. Branch pushes still create no pipeline.
+    # Run pipeline on a branch, for QA test images. Every other job is gated on $CI_COMMIT_TAG, so such a run starts
+    # build_test_image and nothing else. Branch pushes still create no pipeline.
     - if: $CI_PIPELINE_SOURCE == "web"
     - when: never
 
-# Prefilled inputs for the Run pipeline form. Both are forwarded to the almalinux-bootc pipeline: trigger:forward's
-# yaml_variables defaults to true, so a trigger job's own variables: block reaches the downstream pipeline, while a
-# value typed into this form (a "pipeline variable") would not on its own -- which is why build_test_image restates
-# them. The defaults reproduce a release exactly, and the release trigger pins them anyway.
+# Prefilled inputs for the Run pipeline form. A value typed into the form is a pipeline variable, which
+# trigger:forward does not pass downstream by default -- hence build_test_image restating both in its variables:.
 variables:
   STARGATE_ENV:
     value: "prod"
     options: ["prod", "dev", "dev2"]
     description: "Config preset the test image seeds on first boot. `prod` is HIN and applies nothing. `dev`/`dev2` need a matching `docker-compose/config/environments/<env>.sh` on the branch you run this from."
-  IMAGE_TARGET:
+  IMAGE_TARGETS:
     value: "hetzner"
-    options: ["hetzner", "hetzner+proxmox", "hetzner+vmware", "all"]
-    description: "Where the test image will be booted. Every target ships the Hetzner `.raw.gz` -- the only artifact the infra import reads. `all` is the full customer set and takes roughly 15 minutes longer."
+    description: |
+      Where the test image will be booted, space- or comma-separated. Only what is listed is built.
+      `all` is the full customer set, ~15 min longer.
+
+      - `hetzner` — the only artifact cluster-management-infra can import
+      - `proxmox` — Proxmox or libvirt
+      - `azure` — fixed-size VHD
+      - `hyperv` — VHDX
+      - `vmware` — OVA
 
 stages:
   - build
@@ -32,6 +36,11 @@ stages:
 
 execute_script:
   stage: build
+  # almaimage.sh is untracked and lives only on the runner, so what it reads from its environment cannot be reviewed
+  # here. This file had no default variables before, so opting out removes nothing that ever reached this job.
+  # inherit:variables covers default (YAML) variables only -- project variables and the predefined CI_* still arrive.
+  inherit:
+    variables: false
   # almaimage.sh works in fixed paths under /data/vmimagebuilder — one shared stargate-deployment clone it
   # `git checkout --force`s, and one stargate-images/ it `rm -rf`s. Two concurrent runs would therefore bake
   # one tag's content into another tag's artifacts, so they must never overlap.
@@ -215,22 +224,18 @@ trigger_bootc_pipeline:
     - if: $CI_COMMIT_TAG
   variables:
     STARGATE_REF: $CI_COMMIT_TAG
-    # Pinned rather than inherited: a Run pipeline on a tag ref would otherwise carry the form's values into a
-    # release. A release is always the prod config and the full customer artifact set.
+    # Pinned, not inherited: a Run pipeline on a tag ref would otherwise carry form values into a release.
     STARGATE_ENV: prod
-    IMAGE_TARGET: all
+    IMAGE_TARGETS: all
   trigger:
     project: svdh/almalinux-bootc
     branch: main
     strategy: depend
 
 
-# QA test images. Builds the bootc image from the branch this pipeline was run on -- the Containerfile clones with
-# `git clone --branch`, so a branch works there exactly like a tag, and no throwaway tag is needed.
-#
-# Deliberately not on `push`: a full test image is ~11-25 minutes of one build host, so it is opt-in per run rather
-# than automatic on every commit. strategy: depend makes this job reflect the downstream build's status, so the
-# branch pipeline is the one place to watch.
+# QA test images, built from the branch this pipeline ran on -- the Containerfile clones with `git clone --branch`,
+# so no throwaway tag is needed. Not on `push`: a build is ~11-25 min of one host, so it is opt-in per run.
+# strategy: depend makes this job reflect the downstream build's status.
 build_test_image:
   stage: trigger
   needs: []
@@ -241,7 +246,7 @@ build_test_image:
   variables:
     STARGATE_REF: $CI_COMMIT_REF_NAME
     STARGATE_ENV: $STARGATE_ENV
-    IMAGE_TARGET: $IMAGE_TARGET
+    IMAGE_TARGETS: $IMAGE_TARGETS
   trigger:
     project: svdh/almalinux-bootc
     branch: main

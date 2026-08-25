@@ -90,16 +90,18 @@ persist_secret() {
   fi
 }
 
-# Write KEY=value into a config file: in place if the key exists, appended
-# otherwise. Unlike persist_secret() this always overwrites, because a preset
-# is meant to replace the prod template's value. Shares persist_secret()'s
-# trailing-newline guard for the append -- see the comment there.
+# Write KEY=value into a config file: in place if the key exists, appended otherwise.
+# Unlike persist_secret() this always overwrites -- a preset replaces the template's value.
 # Usage: set_config_value KEY VALUE FILE
 set_config_value() {
-  local key="$1" value="$2" file="$3"
+  local key="$1" value="$2" file="$3" esc
   if grep -q "^${key}=" "$file"; then
-    sed -i "s|^${key}=.*|${key}=${value}|" "$file"
+    # & and \ are special in a sed replacement and | is the delimiter. Without escaping them, a
+    # value such as a URL with a query string would rewrite the line into something else entirely.
+    esc=$(printf '%s' "$value" | sed 's/[&|\\]/\\&/g')
+    sed -i "s|^${key}=.*|${key}=${esc}|" "$file"
   else
+    # Trailing-newline guard before appending -- see persist_secret().
     if [ -s "$file" ] && [ "$(tail -c1 "$file")" != "" ]; then
       echo "" >> "$file"
     fi
@@ -107,20 +109,12 @@ set_config_value() {
   fi
 }
 
-# Apply an environment preset over a freshly seeded customer-config.sh.
-#
-# Called ONLY at bootstrap. After that the file belongs to the operator, and
-# re-applying on every update.sh would silently revert their edits and fight
-# sync_customer_config(), which appends new template keys and never overwrites.
-#
-# The environment is resolved from STARGATE_ENV (an explicit override, e.g. a
-# manual install) and then from /usr/lib/stargate/environment, which the bootc
-# image writes at build time from its STARGATE_ENV build arg. With neither, it
-# is prod -- so a manual install, or an image built before this existed,
-# behaves exactly as it did before.
-#
-# prod is the absence of a preset, not a preset file: customer-config-prod.example.sh
-# already holds the prod values, so there is nothing to overlay.
+# Apply an environment preset over a freshly seeded customer-config.sh. Called ONLY at bootstrap:
+# after that the file is the operator's, and re-applying on every update.sh would revert their edits
+# and fight sync_customer_config(). Environment resolution is STARGATE_ENV, then
+# /usr/lib/stargate/environment (written by the bootc image from its build arg), then prod -- so a
+# manual install, or an image built before this existed, behaves as it always did. prod is the
+# absence of a preset: customer-config-prod.example.sh already holds those values.
 apply_env_preset() {
   local config="$1" env preset line key value
 
@@ -147,20 +141,13 @@ apply_env_preset() {
     case "$line" in ""|\#*) continue ;; esac
     key="${line%%=*}"
     value="${line#*=}"
-    # A preset is committed config, not input, but a malformed line would turn
-    # the sed below into an arbitrary edit of customer-config.sh. Fail instead.
-    case "$key" in
-      ""|*[!A-Za-z0-9_]*)
-        echo "ERROR: invalid key \"$key\" in $preset" >&2
-        exit 1
-        ;;
-    esac
+    # A malformed key would turn set_config_value's sed into an arbitrary edit of customer-config.sh.
+    case "$key" in ""|*[!A-Za-z0-9_]*) echo "ERROR: invalid key \"$key\" in $preset" >&2; exit 1 ;; esac
     set_config_value "$key" "$value" "$config"
     echo "  $key"
   done < "$preset"
 
-  # Recorded so update.sh, support bundles and an operator reading the file can
-  # all tell which preset the machine was seeded with.
+  # Recorded so update.sh, support bundles and an operator can tell which preset seeded the machine.
   set_config_value STARGATE_ENV "\"$env\"" "$config"
 }
 
