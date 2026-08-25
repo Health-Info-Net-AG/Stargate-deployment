@@ -13,7 +13,7 @@ workflow:
 # trigger:forward does not pass downstream by default -- hence build_test_image restating both in its variables:.
 variables:
   STARGATE_ENV:
-    value: "prod"
+    value: "dev"
     options: ["prod", "dev", "dev2"]
     description: "Config preset the test image seeds on first boot. `prod` is HIN and applies nothing. `dev`/`dev2` need a matching `docker-compose/config/environments/<env>.sh` on the branch you run this from."
   IMAGE_TARGETS:
