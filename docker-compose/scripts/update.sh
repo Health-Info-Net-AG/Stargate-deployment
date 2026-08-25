@@ -8,11 +8,11 @@ set -eo pipefail
 # Can also jump the deployment repo itself to a specific tested release.
 #
 # Use cases:
-#   - Bump image versions (change *_VERSION in customer-config.sh, then run this)
 #   - Update mail domains, WireGuard config, or any other customer settings
 #   - Change passwords or credentials (except VAULT_TOKEN, which is preserved)
 #   - Jump straight to a released version, including installs several
-#     versions behind: --release <tag>
+#     versions behind: --release <tag> (image versions are pinned in that
+#     release's docker-compose.yml, not in this config)
 #
 # Usage:
 #   ./scripts/update.sh                    # regenerate .env and restart
@@ -20,19 +20,18 @@ set -eo pipefail
 #   ./scripts/update.sh --list-releases    # show available release tags
 #   ./scripts/update.sh --release <tag> [--skip-backup]
 #                                          # update the deployment repo to
-#                                          # <tag>, apply that release's
-#                                          # tested app versions (a backup is
-#                                          # taken first unless --skip-backup
-#                                          # is given), then run the normal
-#                                          # update flow below
+#                                          # <tag> (whose docker-compose.yml
+#                                          # carries the pinned image versions;
+#                                          # a backup is taken first unless
+#                                          # --skip-backup is given), then run
+#                                          # the normal update flow below
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-ENV_FILE="$PROJECT_DIR/.env"
-LOG_FILE="$PROJECT_DIR/update.log"
+. "$SCRIPT_DIR/lib/paths.sh"
 
-# Mirror this run's stdout+stderr into $LOG_FILE (in addition to the
+# Mirror this run's stdout+stderr into $UPDATE_LOG (in addition to the
 # terminal), so a failed update is diagnosable from the log file alone --
 # picked up by send-logs-to-support.sh -- without needing to have been
 # watched live. Guarded so this is a no-op on the internal re-exec that
@@ -41,7 +40,7 @@ LOG_FILE="$PROJECT_DIR/update.log"
 # attaching a second tee on top.
 if [ -z "${STARGATE_UPDATE_LOG_ACTIVE:-}" ]; then
   export STARGATE_UPDATE_LOG_ACTIVE=1
-  exec > >(tee -a "$LOG_FILE") 2>&1
+  exec > >(tee -a "$UPDATE_LOG") 2>&1
 fi
 
 echo "$(date -Iseconds) update.sh invoked: $0 $*"
@@ -155,8 +154,8 @@ if [ -n "$RELEASE_TAG" ]; then
   fi
   echo ""
 
-  echo "=== Applying versions from $RELEASE_TAG ==="
-  manifest_apply_images "$MANIFEST_JSON" "$CONFIG_FILE"
+  echo "=== Versions shipped by $RELEASE_TAG (pinned in that tag's docker-compose.yml) ==="
+  manifest_show_images "$MANIFEST_JSON"
   echo ""
 
   echo "=== Updating deployment repo to $RELEASE_TAG ==="
@@ -169,9 +168,9 @@ if [ -n "$RELEASE_TAG" ]; then
        GIT_SSH_COMMAND='ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10' \
        timeout "$MANIFEST_GIT_TIMEOUT" git checkout -f "$RELEASE_TAG" </dev/null; then
     echo "ERROR: git checkout of $RELEASE_TAG failed or timed out."
-    echo "Nothing else has been touched -- customer-config.sh now has $RELEASE_TAG's"
-    echo "versions applied, but the deployment repo itself is still on its previous"
-    echo "revision. Re-running '$0 --release $RELEASE_TAG' is safe and will retry."
+    echo "Nothing has been changed -- the deployment repo is still on its previous"
+    echo "revision (image versions live in the tag's docker-compose.yml, delivered by"
+    echo "this checkout). Re-running '$0 --release $RELEASE_TAG' is safe and will retry."
     exit 1
   fi
   echo ""
@@ -184,11 +183,11 @@ if [ -n "$RELEASE_TAG" ]; then
   # bash script cannot safely keep executing inline once its own source file
   # has changed underneath it (the same reasoning behind the ops-agent
   # splitting GitPull from a separately-launched RunUpdateScript, rather than
-  # continuing in-process after the checkout). customer-config.sh already has
-  # the target versions (applied above, a data-file edit, safe at any time),
-  # so the freshly re-exec'd plain `update.sh` does exactly the right thing
-  # with its own -- possibly different -- code, whether $RELEASE_TAG is newer
-  # or older than what was running a moment ago. STARGATE_UPDATE_RELEASE is
+  # continuing in-process after the checkout). The checkout above already brought
+  # $RELEASE_TAG's docker-compose.yml (with its pinned image versions), so the
+  # freshly re-exec'd plain `update.sh` does exactly the right thing with its own
+  # -- possibly different -- code, whether $RELEASE_TAG is newer or older than
+  # what was running a moment ago. STARGATE_UPDATE_RELEASE is
   # passed through only so the continued run's banner below can still name
   # the release; it has no effect on control flow, so this remains correct
   # even against a $RELEASE_TAG whose update.sh predates this flag entirely.
@@ -214,8 +213,8 @@ if [ -f "$ENV_FILE" ]; then
   EXISTING_VAULT_TOKEN=$(read_env_var VAULT_TOKEN "$ENV_FILE")
 fi
 
-# Fall back to vault-keys.json if .env has no token
-KEYS_FILE="$PROJECT_DIR/secrets/vault-keys.json"
+# Fall back to vault-keys.json if .env has no token. KEYS_FILE is already set
+# (from the sourced install.sh) to "$SECRETS_DIR/vault-keys.json".
 if [ -z "$EXISTING_VAULT_TOKEN" ] && [ -f "$KEYS_FILE" ]; then
   EXISTING_VAULT_TOKEN=$(jq -r '.root_token' "$KEYS_FILE" 2>/dev/null || true)
   if [ -n "$EXISTING_VAULT_TOKEN" ]; then
@@ -267,11 +266,11 @@ fi
 # the visibility that was missing when diagnosing past update issues -- a
 # silent multi-minute block here reads as a hang.
 echo "=== Pulling images ==="
-docker compose pull
+compose pull
 
 echo ""
 echo "=== Recreating services ==="
-docker compose up -d --remove-orphans
+compose up -d --remove-orphans
 
 # Handle Dozzle enable/disable and credential updates
 update_dozzle() {
@@ -279,13 +278,13 @@ update_dozzle() {
   dozzle_enabled=$(read_env_var DOZZLE_ENABLED "$CONFIG_FILE")
 
   local dozzle_running
-  dozzle_running=$(docker compose --profile dozzle ps --format '{{.Name}}' 2>/dev/null | grep -q stargate-dozzle && echo "true" || echo "false")
+  dozzle_running=$(compose --profile dozzle ps --format '{{.Name}}' 2>/dev/null | grep -q stargate-dozzle && echo "true" || echo "false")
 
   if [ "$dozzle_enabled" != "true" ]; then
     if [ "$dozzle_running" = "true" ]; then
       echo ""
       echo "Dozzle disabled in config - stopping..."
-      docker compose --profile dozzle down
+      compose --profile dozzle down
     fi
     return 0
   fi
@@ -294,7 +293,7 @@ update_dozzle() {
   # (no local users.yml). Just (re)start the "dozzle" profile.
   echo ""
   echo "Starting Dozzle (behind oauth2-proxy -> Keycloak)..."
-  docker compose --profile dozzle up -d
+  compose --profile dozzle up -d
 }
 
 update_dozzle
@@ -318,5 +317,5 @@ if [ -n "${STARGATE_UPDATE_RELEASE:-}" ]; then
 fi
 echo ""
 echo "  Verify with: docker compose ps"
-echo "  Full log:    $LOG_FILE"
+echo "  Full log:    $UPDATE_LOG"
 echo ""

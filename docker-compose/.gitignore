@@ -14,6 +14,10 @@ customer-config.gamma
 # Keep the directory (.gitkeep) but not the generated file.
 config/apisix/generated/apisix.yaml
 
+# Per-deployment KERI watcher config (operator copies from watcher.yml.example).
+# Holds the watcher's fixed secret seed -- must never be committed.
+config/keri/watcher.yml
+
 # update.sh's log (also written by the ops-agent's dashboard-triggered
 # update.sh runs). May contain customer-specific details from the update.
 update.log

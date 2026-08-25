@@ -1,4 +1,4 @@
-site_name: HIN Mail "Stargate" Einrichtung
+site_name: HIN Gateway - Software und Dokumentation
 site_url: https://Health-Info-Net-AG.github.io/stargate-deployment/
 site_author: HIN AG
 site_description: >-
@@ -54,7 +54,8 @@ theme:
     text: Roboto
     code: Roboto Mono
   favicon: assets/hin_logo.png
-  #icon:
+  icon:
+    alternate: material/web
   #  logo: logo
 
 # Plugins
@@ -182,5 +183,6 @@ nav:
           - Windows 11 Pro: vm/Windows11pro-image-install.md
           - Cloudscale: vm/Cloudscale-image-install.md
   - VM-Images Katalog: vm/VM-Catalog.md
+  - Fehlerbehebung: Troubleshooting.md
   - Release Notes: Release-notes.md
   - Support / Kontaktieren Sie uns: Support.md

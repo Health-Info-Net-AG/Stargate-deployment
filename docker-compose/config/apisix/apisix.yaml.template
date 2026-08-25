@@ -24,6 +24,14 @@ upstreams:
       "irisagent:8080": 1
     type: roundrobin
 
+  - id: "ops-agent"
+    nodes:
+      "ops-agent:8080": 1
+  - id: "mailauth"
+    nodes:
+      "mailauth:8080": 1
+    type: roundrobin
+
 plugin_configs:
   - id: "oidc-bearer"
     plugins:
@@ -76,6 +84,19 @@ routes:
     plugins:
       proxy-rewrite:
         regex_uri: ["^/irisagent/(.*)", "/$1"]
+
+  - id: "ops-agent-liveness"
+    uri: "/ops-agent/liveness"
+    upstream_id: "ops-agent"
+    plugins:
+      proxy-rewrite:
+        regex_uri: ["^/ops-agent/(.*)", "/$1"]
+  - id: "mailauth-liveness"
+    uri: "/mailauth/liveness"
+    upstream_id: "mailauth"
+    plugins:
+      proxy-rewrite:
+        regex_uri: ["^/mailauth/(.*)", "/$1"]
 
   # ==================
   # Internal routes — IP-restricted, no auth
@@ -158,5 +179,20 @@ routes:
     plugins:
       proxy-rewrite:
         regex_uri: ["^/irisagent/(.*)", "/$1"]
+
+  - id: "ops-agent-route"
+    uri: "/ops-agent/*"
+    upstream_id: "ops-agent"
+    plugin_config_id: "oidc-bearer"
+    plugins:
+      proxy-rewrite:
+        regex_uri: ["^/ops-agent/(.*)", "/$1"]
+  - id: "mailauth-config"
+    uri: "/mailauth/v1/config"
+    upstream_id: "mailauth"
+    plugin_config_id: "oidc-bearer"
+    plugins:
+      proxy-rewrite:
+        regex_uri: ["^/mailauth/(.*)", "/$1"]
 
 #END

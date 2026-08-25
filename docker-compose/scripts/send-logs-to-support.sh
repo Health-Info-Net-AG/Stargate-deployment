@@ -9,7 +9,9 @@ set -euo pipefail
 # Please refer to https://docs.docker.com/reference/cli/docker/container/logs/#options
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC2034 # required by lib/paths.sh's calling convention, unused directly here
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+. "$SCRIPT_DIR/lib/paths.sh"
 
 if [[ " $* " == *" --all "* ]]; then
     args=()   # no tail/since/until restrictions
@@ -73,8 +75,8 @@ echo -e "\n######\n" >> "$TEMP_FILE"
 echo -e "\n# UPDATE STATUS\n" >> "$TEMP_FILE"
 systemctl status stargate-update.scope >> "$TEMP_FILE" 2>&1 || true
 echo -e "\n# update.log\n" >> "$TEMP_FILE"
-if [ -f "$PROJECT_DIR/update.log" ]; then
-  cat "$PROJECT_DIR/update.log" >> "$TEMP_FILE"
+if [ -f "$UPDATE_LOG" ]; then
+  cat "$UPDATE_LOG" >> "$TEMP_FILE"
 else
   echo "(no update.log -- no update has been run yet)" >> "$TEMP_FILE"
 fi
@@ -89,16 +91,26 @@ FILE_SIZE=$(stat -c%s "$TEMP_FILE" 2>/dev/null || stat -f%z "$TEMP_FILE")
 
 if [ "$FILE_SIZE" -lt "$LIMIT_BYTES" ]; then
 
-    curl --retry 3 --retry-delay 5 "https://pastebin.hin-infra.ch/" --data-binary "@$TEMP_FILE"
-
-    echo -e "\nPlease provide this URL to support, all logs are saved here."
+    # -k skips certificate verification. Customer networks commonly run a
+    # TLS-inspecting proxy whose private CA is not in the host trust store, so
+    # curl failed with "unable to get local issuer certificate" (exit 60) and
+    # -- under set -e -- aborted the script before the cleanup below, leaving
+    # the operator with no URL and no hint that the logs were already on disk.
+    # The upload is still encrypted; we just don't authenticate the endpoint.
+    # Note --retry never retries TLS/certificate errors, only transient ones.
+    if curl -fsSk --retry 3 --retry-delay 5 "https://pastebin.hin-infra.ch/" \
+        --data-binary "@$TEMP_FILE"; then
+        echo -e "\nPlease provide this URL to support, all logs are saved here."
+        rm -f "$TEMP_FILE"
+    else
+        echo -e "\nUpload failed. The logs are saved at $TEMP_FILE --" \
+                "please attach that file to your support email." >&2
+        exit 1
+    fi
 
 else
     echo -e "Log file is too big to be uploaded, please try to reduce it by adding additional arguments like\n '--since 1h' all logs since 1 hour, or\n '--tail 500' last 500 lines of logs for each container"
     exit 1
 fi
-
-# Cleanup after execution
-rm "$TEMP_FILE"
 
 exit 0

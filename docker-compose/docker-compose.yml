@@ -5,7 +5,8 @@ services:
   # ===================
 
   postgres:
-    image: postgres:${POSTGRES_VERSION:-18-alpine}
+    # renovate: datasource=docker depName=postgres
+    image: postgres:18-alpine
     container_name: stargate-postgres
     restart: unless-stopped
     logging:
@@ -18,38 +19,24 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       PGDATA: /var/lib/postgresql/data
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ${STARGATE_DATA_DIR:-/var/data}/postgres:/var/lib/postgresql/data
       - ./init/postgres:/docker-entrypoint-initdb.d:ro
     # No host port mapping: postgres is reachable only from inside the
     # docker network at postgres:5432. Do not re-expose it on the host.
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -h 127.0.0.1"]
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 180s
     networks:
       - stargate-network
     labels:
       - autoheal=true
 
-  # Fix vault data volume permissions
-  vault-data-fixer:
-    image: hashicorp/vault:${VAULT_VERSION:-1.19.0}
-    container_name: stargate-vault-data-fixer
-    user: root
-    logging:
-      driver: json-file
-      options:
-        max-size: "100m"
-        max-file: "5"
-    entrypoint: /bin/sh -c "chown -R vault:vault /vault/data && echo 'Vault data permissions fixed'"
-    volumes:
-      - vault_data:/vault/data
-    networks:
-      - stargate-network
-
   vault:
-    image: hashicorp/vault:${VAULT_VERSION:-1.19.0}
+    # renovate: datasource=docker depName=hashicorp/vault
+    image: hashicorp/vault:1.21.4
     container_name: stargate-vault
     restart: unless-stopped
     logging:
@@ -57,16 +44,13 @@ services:
       options:
         max-size: "100m"
         max-file: "5"
-    depends_on:
-      vault-data-fixer:
-        condition: service_completed_successfully
     cap_add:
       - IPC_LOCK
     environment:
       VAULT_ADDR: "http://127.0.0.1:8200"
       VAULT_API_ADDR: "http://0.0.0.0:8200"
     volumes:
-      - vault_data:/vault/data
+      - ${STARGATE_DATA_DIR:-/var/data}/vault:/vault/data
       - ./config/vault:/vault/config:ro
     # ports:
     #   - "8200:8200"
@@ -87,7 +71,8 @@ services:
       - autoheal=true
 
   seaweedfs:
-    image: chrislusf/seaweedfs:${SEAWEEDFS_VERSION:-4.34}
+    # renovate: datasource=docker depName=chrislusf/seaweedfs
+    image: chrislusf/seaweedfs:4.43
     container_name: stargate-seaweedfs
     restart: unless-stopped
     logging:
@@ -131,7 +116,7 @@ services:
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-minioadmin}
       S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
     volumes:
-      - seaweedfs_data:/data
+      - ${STARGATE_DATA_DIR:-/var/data}/seaweedfs:/data
     ports:
       - "8333:8333"
     healthcheck:
@@ -177,7 +162,8 @@ services:
 
   # Vault initialization container
   vault-init:
-    image: hashicorp/vault:${VAULT_VERSION:-1.19.0}
+    # renovate: datasource=docker depName=hashicorp/vault
+    image: hashicorp/vault:1.21.4
     container_name: stargate-vault-init
     user: root
     logging:
@@ -194,13 +180,14 @@ services:
       WG_PRIVATE_KEY: ${WG_PRIVATE_KEY:-}
     volumes:
       - ./scripts:/scripts:ro
-      - ./secrets:/secrets
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/secrets:/secrets
     entrypoint: /bin/sh -c "apk add --no-cache jq && /scripts/init-vault.sh"
     networks:
       - stargate-network
 
   keycloak:
-    image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION:-26.5.3}
+    # renovate: datasource=docker depName=quay.io/keycloak/keycloak
+    image: quay.io/keycloak/keycloak:26.7.2
     container_name: stargate-keycloak
     restart: unless-stopped
     logging:
@@ -225,11 +212,15 @@ services:
       KC_METRICS_ENABLED: "true"
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      # Disable Liquibase's analytics phone-home to config.liquibase.com / config-endpoint.liquibase.com
+      LIQUIBASE_ANALYTICS_ENABLED: "false"
+      JAVA_OPTS_APPEND: "-Dliquibase.analytics.enabled=false"
+    mem_limit: 1024m
     command:
       - start
       - --import-realm
     volumes:
-      - ./config/keycloak/generated:/opt/keycloak/data/import:ro
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/keycloak:/opt/keycloak/data/import:ro
     ports:
       - "8181:8080" # Direct HTTP for in-network OIDC discovery via host.docker.internal
     healthcheck:
@@ -278,7 +269,7 @@ services:
         max-file: "5"
     volumes:
       - ./config/apisix/apisix.yaml.template:/templates/apisix.yaml.template:ro
-      - ./config/apisix/generated:/output
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/apisix:/output
     environment:
       KEYCLOAK_APISIX_CLIENT_SECRET: ${KEYCLOAK_APISIX_CLIENT_SECRET:-changeme}
     command: >
@@ -291,7 +282,8 @@ services:
       - autoheal=true
 
   nats:
-    image: nats:${NATS_VERSION:-2.14-alpine}
+    # renovate: datasource=docker depName=nats
+    image: nats:2.14-alpine
     container_name: stargate-nats
     restart: unless-stopped
     logging:
@@ -324,8 +316,7 @@ services:
       options:
         max-size: "100m"
         max-file: "5"
-    # Version 1.2.0
-    image: willfarrell/autoheal@sha256:a2e5e76d239b127081f8f96041a21f9747015b23af439c23ee60de0350c06880
+    image: willfarrell/autoheal:1.2.0
     network_mode: none
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -350,7 +341,8 @@ services:
   # ===================
 
   smimekeys-client:
-    image: healthinfonetag/smimekeys:${SMIMEKEYS_VERSION:-dev}
+    # renovate: datasource=docker depName=healthinfonetag/smimekeys
+    image: healthinfonetag/smimekeys:v0.0.27
     container_name: stargate-smimekeys-client
     restart: unless-stopped
     logging:
@@ -418,7 +410,8 @@ services:
       - autoheal=true
 
   policy:
-    image: healthinfonetag/policy:${POLICY_VERSION:-dev}
+    # renovate: datasource=docker depName=healthinfonetag/policy
+    image: healthinfonetag/policy:v0.0.11
     container_name: stargate-policy
     restart: unless-stopped
     logging:
@@ -462,7 +455,8 @@ services:
       - autoheal=true
 
   irisagent:
-    image: healthinfonetag/irisagent:${IRISAGENT_VERSION:-dev}
+    # renovate: datasource=docker depName=healthinfonetag/irisagent
+    image: healthinfonetag/irisagent:v0.0.11
     container_name: stargate-irisagent
     restart: unless-stopped
     logging:
@@ -541,7 +535,8 @@ services:
       - autoheal=true
 
   mxengine:
-    image: healthinfonetag/mxengine:${MXENGINE_VERSION:-dev}
+    # renovate: datasource=docker depName=healthinfonetag/mxengine
+    image: healthinfonetag/mxengine:ee61353e
     container_name: stargate-mxengine
     restart: unless-stopped
     logging:
@@ -581,6 +576,7 @@ services:
       INBOUND_SMTP_TLS: "false"
       INBOUND_SMTP_AUTH: "false"
       INBOUND_SMTP_FORWARD_ENCRYPTED_ON_FAILURE: "false"
+      INBOUND_PRESERVE_HEADERS_ON_DECRYPT: "Authentication-Results"
       REMOTE_CONFIG_URL: "http://dashboard:3000/api/internal/installation-config?service=mxengine"
 
       # Database
@@ -655,8 +651,152 @@ services:
     labels:
       - autoheal=true
 
+  idagent:
+    # TODO(rollout): pin a published version tag once the idagent image is released.
+    # Versions are pinned directly here now (no *_VERSION env indirection).
+    image: registry.vereign.io/svdh/idagent:v0.0.1
+    container_name: stargate-idagent
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      vault-init:
+        condition: service_completed_successfully
+    environment:
+      LOG_LEVEL: "info"
+      HTTP_HOST: ""
+      HTTP_PORT: "8080"
+      HTTP_IDLE_TIMEOUT: "180s"
+      HTTP_READ_TIMEOUT: "60s"
+      HTTP_WRITE_TIMEOUT: "60s"
+
+      # Databases: identity (DB_URI) + KERI Key Event Log (KERI_DB_URL)
+      DB_URI: "postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/idagent"
+      KERI_DB_URL: "postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/idagent_keri"
+      KERI_DB_PATH: "/data/keri"
+
+      # Vault (Ed25519 seed storage)
+      VAULT_ADDRESS: "http://vault:8200"
+      VAULT_TOKEN: "${VAULT_TOKEN}"
+      VAULT_MOUNT_PATH: "secret-idagent"
+      VAULT_KV2_MAX_VERSIONS: "2"
+      VAULT_KV2_CAS_REQUIRED: "false"
+      VAULT_KV2_DELETE_VERSION_AFTER: "0s"
+
+      # KERI topology (configurable; local-only by default). Set KERI_WITNESSES to
+      # the shared witness pool's OOBIs (JSON array) + KERI_WITNESS_THRESHOLD
+      # (<= number of witnesses) once the pool is reachable. IMPORTANT: with a
+      # non-zero threshold the pool MUST be up before idagent's first start, or
+      # inception fails without receipts. KERI_WATCHER_OOBI points at this
+      # deployment's watcher (compose profile keri-watcher) and is only needed to
+      # verify OTHER orgs' anchors; leave empty for self-verification only.
+      KERI_WITNESSES: "${KERI_WITNESSES:-[]}"
+      KERI_WITNESS_THRESHOLD: "${KERI_WITNESS_THRESHOLD:-0}"
+      KERI_WATCHER_OOBI: "${KERI_WATCHER_OOBI:-}"
+    volumes:
+      - ${STARGATE_DATA_DIR:-/var/data}/idagent:/data/keri
+    ports:
+      # Bind to loopback only: POST /v1/hook is unauthenticated (Stalwart reaches it
+      # over the docker network); localhost keeps health-check.sh working.
+      - "127.0.0.1:8085:8080"
+    networks:
+      - stargate-network
+    labels:
+      - autoheal=true
+
+  mailauth:
+    # TODO(rollout): pin a published version tag once the mailauth image is released.
+    image: registry.vereign.io/svdh/mailauth:v0.0.5
+    container_name: stargate-mailauth
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+    depends_on:
+      # NOT dashboard: the per-domain config fetch is async + non-fatal (falls back to
+      # POST /config), so waiting on dashboard:service_healthy (-> keycloak -> apisix)
+      # only widens the window where the fail-closed hook 451s inbound mail.
+      vault-init:
+        condition: service_completed_successfully
+    environment:
+      MAILAUTH_BIND_ADDR: "0.0.0.0:8080"
+      MAILAUTH_MAX_BODY_MB: "50"
+
+      # Vault (reads DKIM/ARC private keys per request)
+      MAILAUTH_VAULT_ADDRESS: "http://vault:8200"
+      MAILAUTH_VAULT_TOKEN: "${VAULT_TOKEN}"
+      MAILAUTH_VAULT_MOUNT_PATH: "secret-mailauth"
+
+      # Per-domain config from the dashboard (falls back to POST /config)
+      MAILAUTH_DASHBOARD_CONFIG_URL: "http://dashboard:3000/api/internal/installation-config?service=mailauth"
+
+      # Fail closed: temp-reject (451) if a configured domain cannot be signed
+      MAILAUTH_ALLOW_UNSIGNED: "false"
+
+      # Egress leg = the reinject listener port: sign/seal there, verify on ingress.
+      # (authserv-id is NOT set here — it comes from the dashboard config hostname.)
+      MAILAUTH_REINJECT_PORT: "10026"
+
+      RUST_LOG: "info"
+    ports:
+      # Loopback only: POST /v1/hook is unauthenticated; localhost keeps health-check.sh working.
+      - "127.0.0.1:8086:8080"
+    networks:
+      - stargate-network
+    labels:
+      - autoheal=true
+
+  # KERI watcher (per-deployment). A LOCAL, non-exposed sidecar: it fetches +
+  # validates external AIDs' KELs from the shared witness pool on behalf of
+  # idagent (POST /v1/anchor/verify against a foreign AID). idagent reaches it
+  # over the internal network at http://watcher:3235/; the watcher only makes
+  # OUTBOUND calls to the witnesses, so its port is NOT published to the host.
+  # OPT-IN: only needed when this deployment verifies OTHER orgs' anchors -
+  # enable with `docker compose --profile keri-watcher up -d`.
+  # PREREQUISITES before enabling: (1) the shared witness pool must be running and
+  # reachable; (2) copy config/keri/watcher.yml.example -> /var/data/vereign/keri/watcher.yml
+  # and fill in this watcher's fixed seed + the pool's initial_oobis;
+  # (3) set idagent's KERI_WATCHER_OOBI to this watcher's OOBI. Image built from a
+  # pinned keriox commit (see the keriox-tools repo).
+  watcher:
+    # TODO(rollout): pin a published keriox-watcher version tag (opt-in profile).
+    # image: healthinfonetag/keriox-watcher:dev
+    image: registry.vereign.io/svdh/keriox-watcher:v0.0.1
+    container_name: stargate-watcher
+    profiles: ["keri-watcher"]
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+    volumes:
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/keri/watcher.yml:/config/watcher.yml:ro
+      - ${STARGATE_DATA_DIR:-/var/data}/watcher:/db
+    command:
+      - /bin/sh
+      - -c
+      - mkdir -p /db/watcher /db/tel && exec /usr/local/bin/watcher --config-file=/config/watcher.yml
+    healthcheck:
+      test: ["CMD", "bash", "-c", ":> /dev/tcp/127.0.0.1/3235"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    networks:
+      - stargate-network
+    labels:
+      - autoheal=true
+
   apisix:
-    image: apache/apisix:${APISIX_VERSION:-3.15.0-debian}
+    # renovate: datasource=docker depName=apache/apisix
+    image: apache/apisix:3.17.0-debian
     container_name: stargate-apisix
     restart: unless-stopped
     logging:
@@ -673,7 +813,7 @@ services:
       APISIX_ADMIN_KEY: ${APISIX_ADMIN_KEY:-changeme}
     volumes:
       - ./config/apisix/config.yaml:/usr/local/apisix/conf/config.yaml:ro
-      - ./config/apisix/generated/apisix.yaml:/usr/local/apisix/conf/apisix.yaml
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/apisix/apisix.yaml:/usr/local/apisix/conf/apisix.yaml
     ports:
       - "9080:9080" # Gateway — main entry point for API traffic
       - "9180:9180" # Admin API (read-only in standalone mode)
@@ -692,7 +832,8 @@ services:
       - autoheal=true
 
   dashboard:
-    image: healthinfonetag/dashboard:${DASHBOARD_VERSION:-dev}
+    # renovate: datasource=docker depName=healthinfonetag/dashboard
+    image: healthinfonetag/dashboard:v0.0.105
     container_name: stargate-dashboard
     restart: unless-stopped
     logging:
@@ -741,11 +882,15 @@ services:
 
       VAULT_ADDRESS: "http://vault:8200"
       VAULT_TOKEN: "${VAULT_TOKEN}"
+      # TLS private keys (mtaconf reads these back)
       VAULT_MOUNT_PATH: "secret-mtaconf"
+      # DKIM/ARC private keys the dashboard writes for mailauth to read back;
+      # must equal the mailauth service's MAILAUTH_VAULT_MOUNT_PATH
+      MAILAUTH_VAULT_MOUNT_PATH: "secret-mailauth"
 
       #monitoring
       LOKI_URL: "http://loki:3100"
-      LOG_LEVEL: "info"
+      LOG_LEVEL: "debug"
 
     networks:
       - stargate-network
@@ -753,7 +898,7 @@ services:
     tmpfs:
       - /tmp:size=50M,noexec
     volumes:
-      - dashboard_cache:/app/.next/cache
+      - ${STARGATE_DATA_DIR:-/var/data}/dashboard_cache:/app/.next/cache
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -771,7 +916,8 @@ services:
   # Caddy reverse proxy — terminates TLS for Keycloak (:8180) and the
   # dashboard (:443), and redirects plain HTTP (:80) to HTTPS.
   caddy:
-    image: caddy:${CADDY_VERSION:-2-alpine}
+    # renovate: datasource=docker depName=caddy
+    image: caddy:2-alpine
     container_name: stargate-caddy
     restart: unless-stopped
     logging:
@@ -786,7 +932,7 @@ services:
         condition: service_healthy
     volumes:
       - ./config/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./config/caddy/ssl:/etc/caddy/ssl:ro
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/tls:/etc/caddy/ssl:ro
     ports:
       - "80:80"
       - "443:443"
@@ -802,7 +948,8 @@ services:
   # ===================
 
   node-exporter:
-    image: prom/node-exporter:${NODE_EXPORTER_VERSION:-v1.11.1}
+    # renovate: datasource=docker depName=prom/node-exporter
+    image: prom/node-exporter:v1.12.1
     container_name: stargate-node-exporter
     restart: unless-stopped
     logging:
@@ -814,7 +961,7 @@ services:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/rootfs:ro
-      - textfile_collector:/textfile_collector:ro
+      - ${STARGATE_DATA_DIR:-/var/data}/textfile_collector:/textfile_collector:ro
     command:
       - "--path.procfs=/host/proc"
       - "--path.sysfs=/host/sys"
@@ -843,9 +990,11 @@ services:
       - policy
       - irisagent
       - mxengine
+      - idagent
+      - mailauth
     volumes:
       - ./scripts/gather-app-versions.sh:/scripts/gather-app-versions.sh:ro
-      - textfile_collector:/textfile_collector
+      - ${STARGATE_DATA_DIR:-/var/data}/textfile_collector:/textfile_collector
     entrypoint: /bin/sh
     command:
       - -c
@@ -865,7 +1014,8 @@ services:
   # ===================
 
   clamav:
-    image: clamav/clamav:${CLAMAV_VERSION:-1.4}
+    # renovate: datasource=docker depName=clamav/clamav
+    image: clamav/clamav:1.5.4
     container_name: stargate-clamav
     restart: unless-stopped
     logging:
@@ -876,11 +1026,12 @@ services:
     environment:
       # Start clamav-milter (disabled by default in this image).
       CLAMAV_NO_MILTERD: "false"
+      CLAMD_CONF_ConcurrentDatabaseReload: "no"
     volumes:
       # Persist the virus signature DB so it is not re-downloaded on every restart (freshclam keeps it current in the background).
-      - clamav_data:/var/lib/clamav
+      - ${STARGATE_DATA_DIR:-/var/data}/clamav:/var/lib/clamav
       - ./config/clamav/clamav-milter.conf:/etc/clamav/clamav-milter.conf:ro
-    mem_limit: 1536m
+    mem_limit: 2g
     healthcheck:
       # clamdcheck.sh pings clamd; only healthy once the signature DB is loaded.
       test: ["CMD", "clamdcheck.sh"]
@@ -895,7 +1046,8 @@ services:
       - autoheal=true
 
   stalwart:
-    image: stalwartlabs/stalwart:${STALWART_VERSION:-v0.16}
+    # renovate: datasource=docker depName=stalwartlabs/stalwart
+    image: stalwartlabs/stalwart:v0.16
     container_name: stargate-stalwart
     restart: unless-stopped
     logging:
@@ -911,7 +1063,7 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-postgres}"
     volumes:
       - ./config/stalwart/config.json:/etc/stalwart/config.json:ro
-      - stalwart_data:/var/lib/stalwart
+      - ${STARGATE_DATA_DIR:-/var/data}/stalwart:/var/lib/stalwart
     ports:
       # :25 is the public MX listener (external SMTP traffic arrives here).
       # :10026 is the internal reinject port — mxengine reaches it via the
@@ -948,6 +1100,10 @@ services:
         condition: service_healthy
       clamav:
         condition: service_started
+      # mailauth must exist before we register the fail-closed DATA hook, or inbound
+      # mail on :25 gets 451'd until it comes up.
+      mailauth:
+        condition: service_started
     environment:
       STALWART_URL: "http://stalwart:8080"
       STALWART_RECOVERY_ADMIN: "admin:${STALWART_ADMIN_PASSWORD}"
@@ -958,7 +1114,8 @@ services:
       - stargate-network
 
   mtaconf:
-    image: healthinfonetag/mtaconf:${MTACONF_VERSION:-dev}
+    # renovate: datasource=docker depName=healthinfonetag/mtaconf
+    image: healthinfonetag/mtaconf:v0.0.7
     container_name: stargate-mtaconf
     restart: unless-stopped
     logging:
@@ -994,7 +1151,8 @@ services:
       - autoheal=true
 
   loki:
-    image: grafana/loki:${LOKI_VERSION:-3.7.3}
+    # renovate: datasource=docker depName=grafana/loki
+    image: grafana/loki:3.7.6
     container_name: stargate-loki
     restart: unless-stopped
     logging:
@@ -1005,7 +1163,7 @@ services:
     command: -config.file=/etc/loki/loki.yaml
     volumes:
       - ./config/loki/loki.yaml:/etc/loki/loki.yaml:ro
-      - loki_data:/loki
+      - ${STARGATE_DATA_DIR:-/var/data}/loki:/loki
     deploy:
       resources:
         limits:
@@ -1020,7 +1178,8 @@ services:
       - stargate-network
 
   alloy:
-    image: grafana/alloy:${ALLOY_VERSION:-v1.16.1}
+    # renovate: datasource=docker depName=grafana/alloy
+    image: grafana/alloy:v1.18.1
     container_name: stargate-alloy
     restart: unless-stopped
     logging:
@@ -1039,7 +1198,7 @@ services:
     volumes:
       - ./config/alloy/config.alloy:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - alloy_data:/var/lib/alloy/data
+      - ${STARGATE_DATA_DIR:-/var/data}/alloy:/var/lib/alloy/data
     environment:
       LOKI_URL: "${LOKI_URL:-http://loki:3100}"
       LOCAL_LOKI_URL: "http://loki:3100"
@@ -1052,7 +1211,8 @@ services:
   # Policy sync service - syncs policies from Git repository to database
   # Automatically syncs policies when POLICY_SYNC_REPO_URL is configured
   policy-sync:
-    image: healthinfonetag/policy-sync:${POLICY_SYNC_VERSION:-dev}
+    # renovate: datasource=docker depName=healthinfonetag/policy-sync
+    image: healthinfonetag/policy-sync:v0.0.11
     container_name: stargate-policy-sync
     restart: unless-stopped
     logging:
@@ -1082,7 +1242,8 @@ services:
 
   # Ops Agent - executes infrastructure commands (updates, restarts) from dashboard via NATS
   ops-agent:
-    image: healthinfonetag/stargate-ops:${OPS_AGENT_VERSION:-dev}
+    # renovate: datasource=docker depName=healthinfonetag/stargate-ops
+    image: healthinfonetag/stargate-ops:v0.0.6
     container_name: stargate-ops-agent
     restart: unless-stopped
     logging:
@@ -1124,7 +1285,8 @@ services:
   # Dozzle - Real-time log viewer for all containers
   # Access at: http://localhost:8090
   dozzle:
-    image: amir20/dozzle:${DOZZLE_VERSION:-v10.5.0}
+    # renovate: datasource=docker depName=amir20/dozzle
+    image: amir20/dozzle:v10.5.0
     container_name: stargate-dozzle
     restart: unless-stopped
     profiles: [dozzle]
@@ -1164,7 +1326,8 @@ services:
   # identity headers. Caddy terminates TLS in front of it on :8190.
   # Any authenticated realm user is allowed (no email-domain restriction).
   oauth2-proxy:
-    image: quay.io/oauth2-proxy/oauth2-proxy:${OAUTH2_PROXY_VERSION:-v7.13.0}
+    # renovate: datasource=docker depName=quay.io/oauth2-proxy/oauth2-proxy
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.3
     container_name: stargate-oauth2-proxy
     restart: unless-stopped
     profiles: [dozzle]
@@ -1205,17 +1368,6 @@ services:
       - stargate-network
     labels:
       - autoheal=true
-
-volumes:
-  postgres_data:
-  vault_data:
-  seaweedfs_data:
-  stalwart_data:
-  clamav_data:
-  loki_data:
-  alloy_data:
-  textfile_collector:
-  dashboard_cache:
 
 networks:
   stargate-network:

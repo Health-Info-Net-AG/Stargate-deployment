@@ -4,8 +4,29 @@ workflow:
     - if: '$CI_COMMIT_TAG =~ /^v\d{4}\.\d{2}\.\d{2}-\d{4}$/'
       when: never
     - if: $CI_COMMIT_TAG
+    # Run pipeline on a branch, for QA test images. Every other job is gated on $CI_COMMIT_TAG, so such a run starts
+    # build_test_image and nothing else. Branch pushes still create no pipeline.
+    - if: $CI_PIPELINE_SOURCE == "web"
     - when: never
 
+# Prefilled inputs for the Run pipeline form. A value typed into the form is a pipeline variable, which
+# trigger:forward does not pass downstream by default -- hence build_test_image restating both in its variables:.
+variables:
+  STARGATE_ENV:
+    value: "dev"
+    options: ["prod", "dev", "dev2"]
+    description: "Config preset the test image seeds on first boot. `prod` is HIN and applies nothing. `dev`/`dev2` need a matching `docker-compose/config/environments/<env>.sh` on the branch you run this from."
+  IMAGE_TARGETS:
+    value: "hetzner"
+    description: |
+      Where the test image will be booted, space- or comma-separated. Only what is listed is built.
+      `all` is the full customer set, ~15 min longer.
+
+      - `hetzner` — the only artifact cluster-management-infra can import
+      - `proxmox` — Proxmox or libvirt
+      - `azure` — fixed-size VHD
+      - `hyperv` — VHDX
+      - `vmware` — OVA
 
 stages:
   - build
@@ -15,6 +36,15 @@ stages:
 
 execute_script:
   stage: build
+  # almaimage.sh is untracked and lives only on the runner, so what it reads from its environment cannot be reviewed
+  # here. This file had no default variables before, so opting out removes nothing that ever reached this job.
+  # inherit:variables covers default (YAML) variables only -- project variables and the predefined CI_* still arrive.
+  inherit:
+    variables: false
+  # almaimage.sh works in fixed paths under /data/vmimagebuilder — one shared stargate-deployment clone it
+  # `git checkout --force`s, and one stargate-images/ it `rm -rf`s. Two concurrent runs would therefore bake
+  # one tag's content into another tag's artifacts, so they must never overlap.
+  resource_group: vm_image_build
   tags:
     - linux
   rules:
@@ -44,15 +74,47 @@ generate_manifest:
     - if: $CI_COMMIT_TAG
   script:
     - |
-      CONFIG="docker-compose/customer-config-prod.example.sh"
-      KEYS="SMIMEKEYS_VERSION POLICY_VERSION IRISAGENT_VERSION MXENGINE_VERSION POLICY_SYNC_VERSION DASHBOARD_VERSION MTACONF_VERSION OPS_AGENT_VERSION DOZZLE_VERSION CLAMAV_VERSION POSTGRES_VERSION KEYCLOAK_VERSION VAULT_VERSION APISIX_VERSION NATS_VERSION SEAWEEDFS_VERSION CADDY_VERSION LOKI_VERSION ALLOY_VERSION NODE_EXPORTER_VERSION STALWART_VERSION OAUTH2_PROXY_VERSION"
+      # Image versions now live in docker-compose.yml (pinned per git tag), not in
+      # customer-config. This reads the tags back OUT of the compose image: lines so
+      # the release manifest still records the exact versions a release shipped
+      # (same manifest schema the dashboard/ops-agent consume). MAP is
+      # "<MANIFEST_KEY> <image repo path in compose>"; keep it in sync with the
+      # image: lines in docker-compose.yml.
+      COMPOSE="docker-compose/docker-compose.yml"
+      MAP="SMIMEKEYS_VERSION healthinfonetag/smimekeys
+      POLICY_VERSION healthinfonetag/policy
+      IRISAGENT_VERSION healthinfonetag/irisagent
+      MXENGINE_VERSION healthinfonetag/mxengine
+      POLICY_SYNC_VERSION healthinfonetag/policy-sync
+      DASHBOARD_VERSION healthinfonetag/dashboard
+      MTACONF_VERSION healthinfonetag/mtaconf
+      OPS_AGENT_VERSION healthinfonetag/stargate-ops
+      IDAGENT_VERSION registry.vereign.io/svdh/idagent
+      MAILAUTH_VERSION registry.vereign.io/svdh/mailauth
+      KERIOX_WATCHER_VERSION registry.vereign.io/svdh/keriox-watcher
+      DOZZLE_VERSION amir20/dozzle
+      CLAMAV_VERSION clamav/clamav
+      POSTGRES_VERSION postgres
+      KEYCLOAK_VERSION quay.io/keycloak/keycloak
+      VAULT_VERSION hashicorp/vault
+      APISIX_VERSION apache/apisix
+      NATS_VERSION nats
+      SEAWEEDFS_VERSION chrislusf/seaweedfs
+      CADDY_VERSION caddy
+      LOKI_VERSION grafana/loki
+      ALLOY_VERSION grafana/alloy
+      NODE_EXPORTER_VERSION prom/node-exporter
+      STALWART_VERSION stalwartlabs/stalwart
+      OAUTH2_PROXY_VERSION quay.io/oauth2-proxy/oauth2-proxy"
       echo "{" > manifest.json
       echo "  \"version\": \"${CI_COMMIT_TAG}\"," >> manifest.json
       echo "  \"deployment_tag\": \"${CI_COMMIT_TAG}\"," >> manifest.json
       echo "  \"images\": {" >> manifest.json
       FIRST=true
-      for KEY in $KEYS; do
-        VALUE=$(grep "^${KEY}=" "$CONFIG" | tail -1 | cut -d'"' -f2)
+      echo "$MAP" | while read -r KEY REPO; do
+        [ -n "$KEY" ] || continue
+        # tag = substring after the last ':' on the matching image: line
+        VALUE=$(grep -E "^[[:space:]]*image:[[:space:]]*${REPO}:" "$COMPOSE" | head -1 | sed 's/.*://' | tr -d '[:space:]')
         if [ -n "$VALUE" ]; then
           if [ "$FIRST" = true ]; then FIRST=false; else echo "," >> manifest.json; fi
           printf "    \"%s\": \"%s\"" "$KEY" "$VALUE" >> manifest.json
@@ -152,13 +214,39 @@ release_milestone:
         --data "url=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/manifest/${CI_COMMIT_TAG}/manifest.json" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"
 
+# needs: [] — builds from $CI_COMMIT_TAG alone, so it starts at pipeline creation and runs
+# alongside execute_script instead of after it. A failed execute_script no longer blocks it.
 trigger_bootc_pipeline:
   stage: trigger
+  needs: []
   allow_failure: true
   rules:
     - if: $CI_COMMIT_TAG
   variables:
     STARGATE_REF: $CI_COMMIT_TAG
+    # Pinned, not inherited: a Run pipeline on a tag ref would otherwise carry form values into a release.
+    STARGATE_ENV: prod
+    IMAGE_TARGETS: all
+  trigger:
+    project: svdh/almalinux-bootc
+    branch: main
+    strategy: depend
+
+
+# QA test images, built from the branch this pipeline ran on -- the Containerfile clones with `git clone --branch`,
+# so no throwaway tag is needed. Not on `push`: a build is ~11-25 min of one host, so it is opt-in per run.
+# strategy: depend makes this job reflect the downstream build's status.
+build_test_image:
+  stage: trigger
+  needs: []
+  rules:
+    # $CI_COMMIT_TAG == null keeps this off a Run pipeline started on a tag ref, where trigger_bootc_pipeline
+    # already fires and the two would race to push the same image tag.
+    - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_TAG == null'
+  variables:
+    STARGATE_REF: $CI_COMMIT_REF_NAME
+    STARGATE_ENV: $STARGATE_ENV
+    IMAGE_TARGETS: $IMAGE_TARGETS
   trigger:
     project: svdh/almalinux-bootc
     branch: main

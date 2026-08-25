@@ -3,35 +3,56 @@ set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+. "$SCRIPT_DIR/lib/paths.sh"
 INVOCATION_DIR="$PWD"  # caller's working directory, captured before the cd below
-SECRETS_DIR="$PROJECT_DIR/secrets"
-ENV_FILE="$PROJECT_DIR/.env"
-CONFIG_FILE="$PROJECT_DIR/customer-config.sh"
 
 # Shared helpers (use SCRIPT_DIR/PROJECT_DIR defined above).
 . "$SCRIPT_DIR/lib/systemd.sh"
 . "$SCRIPT_DIR/lib/docker.sh"
 . "$SCRIPT_DIR/lib/env.sh"
+. "$SCRIPT_DIR/init-data-layout.sh"   # defines init_data_layout (does not auto-run when sourced)
 
 # Detect distribution / package manager (sets DIST_ID, PKGMGR).
 detect_distro
 
 cd "$PROJECT_DIR"
 
+# Create the /var/data layout (secrets/, tls/, keycloak/, apisix/, backups/,
+# and the per-service data dirs) before anything writes into it or any
+# `compose up` auto-creates them as root. Idempotent -- safe to run before the
+# archive's config/secrets are copied in.
+init_data_layout
+
+# Wipe the service-state dirs that restore re-populates from the archive so a
+# restore onto an ALREADY-INSTALLED machine (e.g. a bootc appliance that
+# fresh-installed on first boot) re-initializes them cleanly instead of
+# colliding. Validated failures without this: Vault cannot be unsealed with the
+# backup's keys against install-generated storage (HTTP 400); pg_dumpall over
+# existing databases/roles errors "already exists" and leaves stale data. No-op
+# on a truly fresh machine. Runs as root; init_data_layout re-creates+re-owns.
+reset_stateful_storage() {
+  echo "  Resetting stateful storage (vault, postgres, seaweedfs) for a clean re-import..."
+  rm -rf "$DATA_DIR/vault" "$DATA_DIR/postgres" "$DATA_DIR/seaweedfs"
+  init_data_layout
+}
+
 # ==============================================================================
 # Usage
 # ==============================================================================
 usage() {
-  echo "Usage: $0 <backup-file.tar.gz>"
+  echo "Usage: $0 [--yes|-y] <backup-file.tar.gz>"
   echo ""
   echo "Restore Stargate from a backup archive."
   echo ""
   echo "Arguments:"
   echo "  backup-file.tar.gz  Path to the backup archive (absolute or relative)"
   echo ""
+  echo "Options:"
+  echo "  --yes, -y            Skip the confirmation prompt (non-interactive use)"
+  echo ""
   echo "Examples:"
   echo "  $0 backups/20260130_143022.tar.gz"
-  echo "  $0 /root/stargate-backup.tar.gz"
+  echo "  $0 --yes /root/stargate-backup.tar.gz"
   echo ""
   echo "This script will:"
   echo "  1. Stop any running services"
@@ -43,15 +64,23 @@ usage() {
   echo "  7. Restore Vault keys and unseal"
   echo "  8. Start application services (via the 'stargate' systemd unit)"
   echo ""
+  echo "WARNING: this REPLACES all data on this machine (Vault, PostgreSQL and"
+  echo "         object storage are reset before the backup is re-imported)."
+  echo ""
   exit 1
 }
 
 # Check arguments
-if [ $# -ne 1 ]; then
-  usage
-fi
-
-BACKUP_FILE="$1"
+ASSUME_YES=0
+BACKUP_FILE=""
+for arg in "$@"; do
+  case "$arg" in
+    --yes|-y) ASSUME_YES=1 ;;
+    -h|--help) usage; exit 0 ;;
+    *) BACKUP_FILE="$arg" ;;
+  esac
+done
+if [ -z "$BACKUP_FILE" ]; then usage; exit 1; fi
 
 # Resolve the backup path. An absolute path is used as-is; otherwise try, in
 # order: relative to the directory the command was run from, relative to the
@@ -63,13 +92,13 @@ elif [ -f "$INVOCATION_DIR/$BACKUP_FILE" ]; then
   BACKUP_FILE="$INVOCATION_DIR/$BACKUP_FILE"
 elif [ -f "$PROJECT_DIR/$BACKUP_FILE" ]; then
   BACKUP_FILE="$PROJECT_DIR/$BACKUP_FILE"
-elif [ -f "$PROJECT_DIR/backups/$(basename "$BACKUP_FILE")" ]; then
-  BACKUP_FILE="$PROJECT_DIR/backups/$(basename "$BACKUP_FILE")"
+elif [ -f "$BACKUP_DIR/$(basename "$BACKUP_FILE")" ]; then
+  BACKUP_FILE="$BACKUP_DIR/$(basename "$BACKUP_FILE")"
 fi
 
 if [ ! -f "$BACKUP_FILE" ]; then
-  echo "ERROR: Backup file not found: $1"
-  echo "  Searched: $INVOCATION_DIR/, $PROJECT_DIR/, and $PROJECT_DIR/backups/"
+  echo "ERROR: Backup file not found: $BACKUP_FILE"
+  echo "  Searched: $INVOCATION_DIR/, $PROJECT_DIR/, and $BACKUP_DIR/"
   exit 1
 fi
 
@@ -79,6 +108,19 @@ echo "============================================"
 echo ""
 echo "Backup file: $BACKUP_FILE"
 echo ""
+
+if [ "$ASSUME_YES" -ne 1 ]; then
+  if [ ! -t 0 ]; then
+    echo "ERROR: restore replaces ALL data on this machine and needs confirmation."
+    echo "       Re-run with --yes for non-interactive use (e.g. dashboard/automation)."
+    exit 1
+  fi
+  echo "WARNING: this REPLACES all data on this machine with the backup"
+  echo "         (Vault, PostgreSQL and object storage are reset and re-imported)."
+  printf "Type 'yes' to continue: "
+  read -r reply
+  [ "$reply" = "yes" ] || { echo "Aborted."; exit 1; }
+fi
 
 # install_docker() and setup_systemd_service() are provided by lib/ (sourced above).
 
@@ -92,9 +134,9 @@ echo "  1. Stopping Running Services"
 echo "============================================"
 echo ""
 
-if docker compose ps -q 2>/dev/null | grep -q .; then
+if compose ps -q 2>/dev/null | grep -q .; then
   echo "Stopping existing services..."
-  docker compose down --remove-orphans 2>/dev/null || true
+  compose down --remove-orphans 2>/dev/null || true
   echo "  ✓ Services stopped"
 else
   echo "  - No running services found"
@@ -149,6 +191,13 @@ if [ -f "$BACKUP_CONTENT/manifest.json" ]; then
   BACKUP_VERSION=$(jq -r '.backup_version // "1.0"' "$BACKUP_CONTENT/manifest.json" 2>/dev/null || echo "1.0")
   if [ "$BACKUP_VERSION" != "2.0" ]; then
     echo "WARNING: Backup version $BACKUP_VERSION may not be fully compatible"
+  fi
+
+  SOURCE_VER=$(jq -r '.source_app_version // "unknown"' "$BACKUP_CONTENT/manifest.json" 2>/dev/null || echo "unknown")
+  CURRENT_VER=$(detect_app_version "$PROJECT_DIR")
+  if [ "$SOURCE_VER" != "unknown" ] && [ "$SOURCE_VER" != "$CURRENT_VER" ]; then
+    echo "  NOTE: backup was taken on $SOURCE_VER; this appliance is $CURRENT_VER."
+    echo "        Services will run their own schema migrations on first start after restore."
   fi
 else
   echo "  - No manifest found (older backup format)"
@@ -236,7 +285,6 @@ done
 
 # Restore TLS certificates (Caddy)
 if [ -d "$BACKUP_CONTENT/config/caddy-ssl" ] && [ "$(ls -A "$BACKUP_CONTENT/config/caddy-ssl" 2>/dev/null)" ]; then
-  TLS_DIR="$PROJECT_DIR/config/caddy/ssl"
   mkdir -p "$TLS_DIR"
   cp "$BACKUP_CONTENT/config/caddy-ssl"/* "$TLS_DIR/"
   chmod 600 "$TLS_DIR"/*.key 2>/dev/null || true
@@ -262,13 +310,8 @@ S3_ACCESS_KEY="${S3_ACCESS_KEY:-minioadmin}"
 S3_SECRET_KEY="${S3_SECRET_KEY:-minioadmin}"
 S3_BUCKET_NAME="${S3_BUCKET_NAME:-stargate-bucket}"
 
-SMIMEKEYS_VERSION="${SMIMEKEYS_VERSION:-dev}"
-POLICY_VERSION="${POLICY_VERSION:-dev}"
-IRISAGENT_VERSION="${IRISAGENT_VERSION:-dev}"
-MXENGINE_VERSION="${MXENGINE_VERSION:-dev}"
-MTACONF_VERSION="${MTACONF_VERSION:-dev}"
-DASHBOARD_VERSION="${DASHBOARD_VERSION:-dev}"
-DOZZLE_VERSION="${DOZZLE_VERSION:-v10.5.0}"
+# Image versions are pinned in docker-compose.yml (not env-driven), so the
+# restored .env carries no *_VERSION entries.
 
 LOKI_URL="${LOKI_URL:-}"
 
@@ -347,16 +390,6 @@ S3_ACCESS_KEY=$S3_ACCESS_KEY
 S3_SECRET_KEY=$S3_SECRET_KEY
 S3_BUCKET_NAME=$S3_BUCKET_NAME
 
-# Application Versions
-SMIMEKEYS_VERSION=$SMIMEKEYS_VERSION
-POLICY_VERSION=$POLICY_VERSION
-IRISAGENT_VERSION=$IRISAGENT_VERSION
-MXENGINE_VERSION=$MXENGINE_VERSION
-MTACONF_VERSION=$MTACONF_VERSION
-DASHBOARD_VERSION=$DASHBOARD_VERSION
-DOZZLE_VERSION=$DOZZLE_VERSION
-CLAMAV_VERSION=${CLAMAV_VERSION:-1.4}
-
 # Deployment
 CUSTOMER_NAME=$CUSTOMER_NAME
 DEPLOYMENT_NAME=$DEPLOYMENT_NAME
@@ -390,7 +423,6 @@ DASHBOARD_ROOT_URL=$DASHBOARD_ROOT_URL
 DASHBOARD_ROOT_DOMAIN=$DASHBOARD_ROOT_DOMAIN
 
 # Policy Sync
-POLICY_SYNC_VERSION=${POLICY_SYNC_VERSION:-dev}
 POLICY_SYNC_REPO_URL=${POLICY_SYNC_REPO_URL:-}
 POLICY_SYNC_REPO_USER=${POLICY_SYNC_REPO_USER:-}
 POLICY_SYNC_REPO_PASS=${POLICY_SYNC_REPO_PASS:-}
@@ -409,6 +441,9 @@ chmod 600 "$ENV_FILE"  # holds all secrets
 echo "  ✓ Environment file generated"
 echo ""
 
+reset_stateful_storage
+echo ""
+
 # ==============================================================================
 # 7. Start Infrastructure Services
 # ==============================================================================
@@ -418,7 +453,7 @@ echo "============================================"
 echo ""
 
 echo "Starting PostgreSQL, Vault, SeaweedFS..."
-docker compose up -d postgres vault seaweedfs
+compose up -d postgres vault seaweedfs
 
 echo "Waiting for PostgreSQL to be ready..."
 # Probe over TCP (-h 127.0.0.1), NOT the Unix socket. On a fresh data volume the
@@ -510,7 +545,7 @@ echo ""
 # Detached + `docker wait` captures the init container's exit code; compose's
 # `depends_on: vault (service_healthy)` makes vault-init wait for Vault first.
 echo "Initializing / unsealing Vault via vault-init..."
-docker compose up -d vault-init
+compose up -d vault-init
 
 VAULT_INIT_EXIT=$(docker wait stargate-vault-init 2>/dev/null) || VAULT_INIT_EXIT=1
 if [ "$VAULT_INIT_EXIT" != "0" ]; then
@@ -638,7 +673,7 @@ echo "  11. Verifying Services"
 echo "============================================"
 echo ""
 
-docker compose ps
+compose ps
 
 echo ""
 
@@ -703,3 +738,17 @@ echo ""
 echo "  If services show errors, wait a minute and check:"
 echo "    docker compose logs -f <service-name>"
 echo ""
+
+# Move a consumed archive out of the drop zone so a re-run or a future
+# first-boot check won't re-trigger on it. Best-effort: this cleanup must
+# never flip an already-successful restore's exit code to non-zero (dashboard
+# / bootc first-boot automation reads restore.sh's exit status).
+if [ "${BACKUP_FILE#"$DATA_DIR/restore/"}" != "$BACKUP_FILE" ]; then
+  if mkdir -p "$DATA_DIR/restore/restored" 2>/dev/null \
+     && mv -f "$BACKUP_FILE" "$DATA_DIR/restore/restored/" 2>/dev/null; then
+    echo "  Archive moved to $DATA_DIR/restore/restored/ (won't re-trigger)."
+  else
+    echo "  NOTE: could not move consumed archive out of the drop zone (restore still succeeded)."
+  fi
+fi
+exit 0

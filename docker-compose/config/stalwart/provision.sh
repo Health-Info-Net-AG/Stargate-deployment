@@ -114,6 +114,47 @@ create_milter() {
     --field "tempFailOnError=true"
 }
 
+# mailauth MTA hook (HTTP, DATA stage). Runs on BOTH SMTP listeners ('smtp'
+# :25 and 'reinject' :10026) — same scope as the ClamAV milter — because it
+# does different work on each leg: on ingress (:25) it verifies with the real
+# client IP and stamps Authentication-Results; on egress (:10026, after
+# mxengine) it DKIM-signs outbound and ARC-seals inbound over the final body.
+# mailauth branches internally on context.server.port + domain role, so it must
+# see both legs (scoping to smtp-only would drop all signing and sealing).
+# NOTE: a MtaHook must be created WITHOUT an enable expression and then scoped via
+# a follow-up `update` (the validated path); creating with enable inline fails
+# validation. This differs from MtaMilter, which accepts enable at create time.
+MAILAUTH_HOOK_URL="${MAILAUTH_HOOK_URL:-http://mailauth:8080/v1/hook}"
+MAILAUTH_HOOK_SCOPE="{\"match\":{\"0\":{\"if\":\"listener == 'smtp' || listener == 'reinject'\",\"then\":\"true\"}},\"else\":\"false\"}"
+
+create_mta_hook() {
+  local url="$1" hid
+
+  # Identify our hook by the mailauth host, not the full URL, so a path/version
+  # change reconciles the existing hook in place instead of orphaning it.
+  # Non-fatal throughout (like disable_throttles): this one-shot is gated by mtaconf via
+  # service_completed_successfully, so a transient Stalwart-API failure here must warn, not abort.
+  hid=$(cli query MtaHook 2>/dev/null | awk 'NR>1 && /mailauth:/ {print $1; exit}') || true
+  if [ -z "$hid" ]; then
+    log "creating MTA hook: ${url} (DATA stage, smtp + reinject listeners)"
+    cli create MtaHook \
+      --field "url=${url}" \
+      --field 'stages={"data":true}' \
+      --field "tempFailOnError=true" \
+      || { log "WARN: could not create MTA hook for ${url}; skipping"; return 0; }
+    hid=$(cli query MtaHook 2>/dev/null | awk 'NR>1 && /mailauth:/ {print $1; exit}') || true
+  else
+    log "MTA hook exists (id=${hid}); updating url to ${url}"
+    cli update MtaHook "$hid" --field "url=${url}" \
+      || { log "WARN: could not update MTA hook ${hid}; skipping"; return 0; }
+  fi
+  [ -n "$hid" ] || { log "WARN: could not resolve MtaHook id for ${url}; skipping"; return 0; }
+
+  log "scoping mailauth hook ${hid} to smtp + reinject listeners"
+  cli update MtaHook "$hid" --json "{\"enable\":${MAILAUTH_HOOK_SCOPE}}" \
+    || log "WARN: could not scope MTA hook ${hid}"
+}
+
 # SMTP inbound (port 25) - receives external mail
 create_listener "smtp" "0.0.0.0:25" "smtp" "false"
 
@@ -148,6 +189,14 @@ fi
 # =============================================================================
 # Anti-virus: ClamAV rejects infected mail at SMTP (OnInfected Reject in clamav-milter.conf); tempFailOnError defers mail if ClamAV is down instead of passing it unscanned (fail-closed).
 create_milter "clamav" "${CLAMAV_MILTER_HOST:-clamav}" "${CLAMAV_MILTER_PORT:-7357}"
+
+# mailauth owns inbound email authentication, so turn off Stalwart's own
+# verification entirely (SPF/DKIM/DMARC/ARC + Reverse-IP). Otherwise Stalwart
+# stamps its own Authentication-Results (e.g. iprev=pass) under the same
+# authserv-id as mailauth, colliding with the header mailauth carries forward.
+# Each field is an Expression; an empty match + else "disable" clears it.
+log "disabling Stalwart inbound SPF/DKIM/DMARC/ARC/IPRev verification (mailauth owns these)"
+cli update SenderAuth singleton --json '{"dkimVerify":{"match":{},"else":"disable"},"arcVerify":{"match":{},"else":"disable"},"spfEhloVerify":{"match":{},"else":"disable"},"spfFromVerify":{"match":{},"else":"disable"},"dmarcVerify":{"match":{},"else":"disable"},"reverseIpVerify":{"match":{},"else":"disable"}}'
 
 # Anti-spam: disabled. Stalwart's built-in spam filter is explicitly turned off
 # here (rather than left unconfigured) so that re-running provision reconciles a
@@ -197,6 +246,12 @@ disable_throttles() {
 
 disable_throttles MtaInboundThrottle
 disable_throttles MtaOutboundThrottle
+
+# Email authentication (mailauth MTA hook): SPF/DKIM/DMARC/ARC verify + seal inbound, DKIM-sign on
+# the reinject/egress leg. Fail-closed (tempFailOnError=true). Registered LAST + non-fatally so a
+# hook failure can't abort this one-shot (mtaconf gates on it) or leave the spam filter + throttles
+# reconciled-off while the box is otherwise half-provisioned.
+create_mta_hook "$MAILAUTH_HOOK_URL"
 
 # =============================================================================
 # 2e. Data retention: hourly cleanup

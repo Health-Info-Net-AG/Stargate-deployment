@@ -74,55 +74,25 @@ S3_SECRET_KEY=""
 S3_BUCKET_NAME="stargate-bucket"
 
 # ==============================================================================
-# OPTIONAL: Application Versions
+# OPTIONAL: KERI topology (idagent)
 # ==============================================================================
-# Use "dev" for the latest development builds,
-# or specify exact versions like "v0.0.3"
-
-SMIMEKEYS_VERSION="7fa809e0"
-POLICY_VERSION="v0.0.8"
-IRISAGENT_VERSION="v0.0.8"
-MXENGINE_VERSION="5684f633"
-POLICY_SYNC_VERSION="v0.0.8"
-DASHBOARD_VERSION="v0.0.115-test"
-MTACONF_VERSION="v0.0.9-test"
-OPS_AGENT_VERSION="v0.0.5"
-
-# renovate: datasource=docker depName=clamav/clamav
-CLAMAV_VERSION="1.5.3"
-
-# ==============================================================================
-# OPTIONAL: Infrastructure Versions
-# ==============================================================================
-# Image tags for the supporting infrastructure services. Defaults match the
-# versions shipped with this release; override only to pin a specific tag.
-# NOTE: Stateful services (postgres, vault, keycloak) should be changed
-# deliberately - bumping them recreates the container against existing data.
-
-# renovate: datasource=docker depName=postgres
-POSTGRES_VERSION="18-alpine"
-# renovate: datasource=docker depName=quay.io/keycloak/keycloak
-KEYCLOAK_VERSION="26.7.0"
-# renovate: datasource=docker depName=hashicorp/vault
-VAULT_VERSION="1.21.4"
-# renovate: datasource=docker depName=apache/apisix
-APISIX_VERSION="3.17.0-debian"
-# renovate: datasource=docker depName=nats
-NATS_VERSION="2.14-alpine"
-# renovate: datasource=docker depName=chrislusf/seaweedfs
-SEAWEEDFS_VERSION="4.39"
-# renovate: datasource=docker depName=caddy
-CADDY_VERSION="2-alpine"
-# renovate: datasource=docker depName=grafana/loki
-LOKI_VERSION="3.7.3"
-# renovate: datasource=docker depName=grafana/alloy
-ALLOY_VERSION="v1.17.1"
-# renovate: datasource=docker depName=prom/node-exporter
-NODE_EXPORTER_VERSION="v1.12.1"
-# renovate: datasource=docker depName=stalwartlabs/stalwart
-STALWART_VERSION="v0.16"
-# renovate: datasource=docker depName=quay.io/oauth2-proxy/oauth2-proxy
-OAUTH2_PROXY_VERSION="v7.15.3"
+# Local-only by default (empty witnesses / threshold 0 = today's behavior).
+#
+# KERI_WITNESSES: a JSON ARRAY of the shared witness pool's OOBI objects,
+# SINGLE-quoted so the inner double-quotes survive in .env. Each element is a
+# FULL OOBI object {eid, scheme, url} - not a bare URL. Example:
+#   KERI_WITNESSES='[{"eid":"BJq7...","scheme":"http","url":"http://witness-1-host:3232/"}]'
+# KERI_WITNESS_THRESHOLD: receipts required at inception; must be <= the number
+# of witnesses. IMPORTANT: with threshold > 0 the pool MUST be reachable before
+# idagent's FIRST start, or inception fails without receipts.
+KERI_WITNESSES='[]'
+KERI_WITNESS_THRESHOLD="0"
+#
+# KERI_WATCHER_OOBI: a SINGLE watcher OOBI object (one {eid, scheme, url}, NOT an
+# array), SINGLE-quoted. Only needed to verify OTHER orgs' anchors - enable the
+# per-deployment watcher via `--profile keri-watcher`; leave empty otherwise.
+# Example: KERI_WATCHER_OOBI='{"eid":"BF2t...","scheme":"http","url":"http://watcher-host:3235/"}'
+KERI_WATCHER_OOBI=''
 
 # ==============================================================================
 # OPTIONAL: Advanced Mail Configuration
@@ -216,7 +186,6 @@ MTACONF_SVC_PASSWORD=""  # Auto-generated if empty
 # Set to "true" to enable, "false" to disable.
 
 DOZZLE_ENABLED="true"
-DOZZLE_VERSION="v10.5.0"
 
 # ==============================================================================
 # REQUIRED: WireGuard Configuration

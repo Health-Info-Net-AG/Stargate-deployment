@@ -192,7 +192,7 @@ Erstellen Sie ein Backup der bestehenden MGW-Appliance und stellen Sie sicher, d
 Fahren Sie die bestehende MGW-VM herunter.
 
 !!! warning
-    Dieser Schritt unterbricht den E-Mail-Verkehr. Während der Unterbrechung werden E-Mails auf dem Mailserver in die Warteschlange gestellt und erst nach Abschluss der Installation zugestellt (siehe „[Schritt 18 - Mailserver konfigurieren](#schritt-18-mailserver-konfigurieren)“).
+    Dieser Schritt unterbricht den E-Mail-Verkehr. Während der Unterbrechung werden E-Mails auf dem Mailserver in die Warteschlange gestellt und erst nach Abschluss der Installation zugestellt (siehe „[Schritt 18 - Mailserver und HIN Gateway konfigurieren](#schritt-18-mailserver-und-hin-gateway-konfigurieren)“).
 
 ### Schritt 2 - WireGuard
 
@@ -256,23 +256,34 @@ Stellen Sie sicher, dass die VM über eine Netzwerkverbindung verfügt und ihr e
     sudo systemctl restart NetworkManager
     ```
 
-??? warning "Netzwerk muss vor dem ersten Start konfiguriert sein"
-    Das VM-Image führt beim ersten Start eine automatische Installation durch. Wenn das Netzwerk zu diesem Zeitpunkt nicht konfiguriert ist, schlägt die Installation fehl, da die IP-Adresse des Servers nicht ermittelt werden kann.
+??? tip "Cloud-init überschreibt VM-Netzwerkeinstellungen nach einem Neustart"
+    Es kann vorkommen, dass Cloud-init die Netzwerkeinstellungen der VM nach einem Neustart überschreibt. Dies ist problematisch, wenn kein DHCP konfiguriert ist und die VM ohne IP- und Routen-Konfiguration gestartet wird. Um dieses Verhalten zu deaktivieren, führen Sie bitte die folgenden Schritte aus:
 
-    Wenn Sie Option C verwendet und das Netzwerk manuell konfiguriert haben, müssen Sie die folgenden Befehle ausführen:
-
+    1. Cloud-init daran hindern, die Netzwerkkonfiguration bei jedem Start neu zu erzeugen:
     ```bash
-    cd /root/stargate-deployment/docker-compose
-    ./scripts/purge.sh
-    # Update configuration with a new ip, by editing it with nano
-    # SERVER_STATIC_IP=<NEW IP>
-    nano customer-config.sh
-    # OR use sed
-    # sed -i 's/old IP/new IP/g' customer-config.sh
-    ./scripts/install.sh
+    printf 'network: {config: disabled}\n' | sudo tee /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
     ```
-
-    Das Installationsskript ermittelt die IP-Adresse des Servers automatisch anhand der Standardroute. Eine beliebige erreichbare IP-Adresse, egal ob öffentlich oder privat, ist ausreichend. Der eigentliche öffentliche Endpunkt wird später über das Dashboard konfiguriert.
+    2. Das Cloud-init/DHCP-Profil entfernen, damit es keine automatische Verbindung mehr herstellen kann:
+    ```bash
+    # Namen des Cloud-init-Interfaces ermitteln
+    nmcli connection show
+    # Den exakten NAME aus `nmcli connection show` verwenden
+    nmcli con delete "cloud-init <iface>
+    ```
+    3. Das manuelle Profil als bevorzugtes Autoconnect-Profil festlegen:
+    ```bash
+    nmcli con mod "<manual-profile>" ipv4.method manual ipv4.addresses <IP>/<PREFIX> \
+    ipv4.gateway <GW> ipv4.dns "<DNS>" connection.autoconnect yes connection.autoconnect-priority 100
+    nmcli con up "<manual-profile>"
+    ```
+    4. Überprüfen, dass die Konfiguration erhalten bleibt. VM neu starten:
+    ```bash
+    sudo reboot
+    ```
+    anschließend die aktuelle Netzwerkkonfiguration überprüfen:
+    ```bash
+    nmcli device status; ip -4 addr
+    ```
 
 !!! tip
     Wenn Sie Option C verwendet und das Netzwerk manuell konfiguriert haben, müssen Sie die folgenden Befehle ausführen:
@@ -450,6 +461,36 @@ Im Abschnitt "Erweitert" können Sie optional Folgendes konfigurieren:
 | **Inhaltsfilter** | Der interne Endpunkt des Inhaltsfilters (Standard: mxengine:1587). |
 | **Vertrauenswürdige Netzwerke** | Zusätzliche Netzwerke, denen die Weiterleitung über dieses Gateway gestattet ist. |
 
+??? tip "Wie testet man eine TLS-Verbindung?"
+    Sie können jederzeit testen, ob das konfigurierte TLS-Zertifikat auf Ihre Verbindung zum HIN Gateway angewendet wurde. Führen Sie den folgenden Befehl direkt im Terminal des HIN Gateways aus:
+
+    ```bash
+    openssl s_client -connect 127.0.0.1:25 -starttls smtp -servername mail.<YOUR_DOMAIN>
+    ```
+
+    Oder direkt auf Ihrem lokalen Rechner:
+
+    ```bash
+    openssl s_client -connect <HIN Gateway IP>:25 -starttls smtp -servername mail.<YOUR_DOMAIN>
+    ```
+
+    In der Ausgabe sehen Sie alle Daten zu Ihrer TLS-Verbindung und zum verwendeten Zertifikat.
+
+??? question "Wie konvertiert man ein `pfx`- in ein `pem`-TLS-Zertifikat?"
+    Verwenden Sie den folgenden openssl-Befehl:
+
+    ```bash
+    openssl pkcs12 -in <Certificate>.pfx -out <Certificate>.pem -nodes
+    ```
+
+    Z. B.:
+
+    ```bash
+    openssl pkcs12 -in certificate.pfx -out keyStore.pem -nodes
+    # Manchmal müssen Sie bei Systemen mit älteren Zertifikatsgeneratoren das Argument -legacy hinzufügen
+    openssl pkcs12 -in certificate.pfx -out keyStore.pem -nodes -legacy
+    ```
+
 Weitere Aktionen:
 
 - Fügen Sie bei Bedarf weitere Domains hinzu, indem Sie auf "Add domain" klicken.
@@ -491,20 +532,49 @@ Stellen Sie sicher, dass Ihre Domain ihr richtlinienbasiertes Peer-Zertifikat un
 !!! question
     Wenden Sie sich bei Problemen per E-Mail oder Telefon an den HIN Support (support@hin.ch / 0848 830 740).
 
-### Schritt 18 - Mailserver konfigurieren
+### Schritt 18 - Mailserver und HIN Gateway konfigurieren
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
 
-Wenn Sie die empfohlene Vorgehensweise befolgt haben, d.h. den privaten Schlüssel exportiert, in das HIN Gateway importiert und dieselbe IP-Adresse wie beim bestehenden MGW beibehalten haben, sind keine Änderungen am E-Mail-Server erforderlich.
+Wenn Sie die empfohlene Vorgehensweise befolgt haben, d. h. den privaten Schlüssel exportiert, ihn in das HIN Gateway importiert und dieselbe IP-Adresse wie beim bestehenden MGW beibehalten haben, sind auf dem E-Mail-Server keine Änderungen erforderlich.
 
-Andernfalls konfigurieren Sie Ihren Mailserver oder die zugehörigen Komponenten so, dass der Datenverkehr über das neue HIN Gateway geleitet wird. Überprüfen und aktualisieren Sie bei Bedarf die folgenden Einstellungen:
+Andernfalls konfigurieren Sie Ihren Mailserver oder die zugehörigen Komponenten so, dass der Datenverkehr über das neue HIN Gateway geleitet wird. Überprüfen Sie die folgenden Einstellungen und passen Sie diese gegebenenfalls an:
+
+#### E-Mail-Server
 
 - SMTP-Relay / Smart Host
 - Konnektoren
 - Transportregeln
-- Routing-Domains
+- Routing-Domänen
 
-Ausführliche Anweisungen finden Sie unter [Exchange-Integration](Exchange-integration.md).
+Siehe [Exchange-Integration](Exchange-integration.md) für detaillierte Anweisungen.
+
+#### Konfiguration HIN Gateway
+
+- Gehen Sie zur Seite `Settings` und fügen Sie für jede Domain einen **Relay-Host** hinzu, wobei Sie den Wert verwenden, den Sie vom MGW unter `Forwarding server` in "Schritt 1.2 - Sichern des bestehenden MGW" notiert haben.
+  <br> ![domain-relay-host](assets/installation-guide/step18-add-domain-relay.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+- Legen Sie auf derselben Seite `Settings` den **Standard-Relay-Host** fest.
+- Wenn Sie Microsoft 365 / Exchange Online verwenden, fügen Sie die veröffentlichten ausgehenden IP-Adressbereiche unter **`Settings` → `Trusted networks`** hinzu, damit das HIN Gateway E-Mails aus Exchange Online als vertrauenswürdig einstuft und weiterleitet:
+
+    ```text
+    40.92.0.0/15
+    40.107.0.0/16
+    51.4.72.0/24
+    51.4.80.0/27
+    51.5.72.0/24
+    51.5.80.0/27
+    52.100.0.0/14
+    104.47.0.0/17
+    2a01:111:f400::/48
+    2a01:111:f403::/48
+    2a01:4180:4050:400::/64
+    2a01:4180:4050:800::/64
+    2a01:4180:4051:400::/64
+    2a01:4180:4051:800::/64
+    ```
+
+  <br> ![domain-relay-host](assets/installation-guide/step18-add-default-relay-and-network.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ### Schritt 19 - Test vor der Umstellung
 

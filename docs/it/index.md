@@ -1,5 +1,22 @@
 # Istruzioni di deployment Stargate
 
+**(DE) Hinweis zu Übersetzungen**
+Für verlässliche Informationen nutzen Sie bitte die offiziellen Übersetzungen über den Sprachschalter ![web-icon](assets/web-icon.png){ width="16" } . Automatische Browser-Übersetzungen können Inhalte verfälschen.
+{: style="font-size: 0.85em;" }
+
+**(FR) Remarque concernant les traductions**
+Pour obtenir des informations fiables, veuillez utiliser les traductions officielles accessibles via le sélecteur de langue ![web-icon](assets/web-icon.png){ width="16" } . Les traductions automatiques du navigateur peuvent déformer le contenu.
+{: style="font-size: 0.85em;" }
+
+**(IT) Avvertenza sulle traduzioni**
+Per informazioni affidabili, utilizzare le traduzioni ufficiali accessibili tramite il selettore della lingua ![web-icon](assets/web-icon.png){ width="16" } . Le traduzioni automatiche del browser possono alterare i contenuti.
+{: style="font-size: 0.85em;" }
+
+**(EN) Translation notice**
+For reliable information, please use the official translations available via the language selector ![web-icon](assets/web-icon.png){ width="16" } . Automatic browser translations may distort the content.
+{: style="font-size: 0.85em;" }
+
+
 ![Logo](assets/stargate_visual.png)
 
 [Cos'è Stargate?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }

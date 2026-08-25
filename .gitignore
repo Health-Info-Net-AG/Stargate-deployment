@@ -18,3 +18,7 @@ docker-compose/customer-config-alpha-new
 manifest.json
 
 site/
+
+# Claude Code / superpowers development artifacts
+.superpowers/
+docs/superpowers/

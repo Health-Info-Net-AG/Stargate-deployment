@@ -3,10 +3,8 @@ set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-SECRETS_DIR="$PROJECT_DIR/secrets"
+. "$SCRIPT_DIR/lib/paths.sh"
 KEYS_FILE="$SECRETS_DIR/vault-keys.json"
-ENV_FILE="$PROJECT_DIR/.env"
-CONFIG_FILE="$PROJECT_DIR/customer-config.sh"
 
 . "$SCRIPT_DIR/lib/env.sh"
 
@@ -54,7 +52,7 @@ fi
 
 # Start infrastructure first
 echo "Starting infrastructure services..."
-docker compose up -d postgres vault seaweedfs
+compose up -d postgres vault seaweedfs
 
 # Wait for Vault to be ready and unseal it
 echo "Waiting for Vault to start..."
@@ -109,14 +107,14 @@ fi
 
 # Start application services
 echo "Starting application services..."
-docker compose up -d
+compose up -d
 
 # Start Dozzle if enabled
 if [ -f "$CONFIG_FILE" ]; then
   DOZZLE_ENABLED_VALUE=$(read_env_var DOZZLE_ENABLED "$CONFIG_FILE")
   if [ "$DOZZLE_ENABLED_VALUE" = "true" ]; then
     echo "Starting Dozzle log viewer..."
-    docker compose --profile dozzle up -d
+    compose --profile dozzle up -d
   fi
 fi
 
@@ -127,7 +125,7 @@ echo "============================================"
 echo ""
 
 sleep 3
-docker compose ps --format "table {{.Name}}\t{{.Status}}"
+compose ps --format "table {{.Name}}\t{{.Status}}"
 
 echo ""
 echo "  Service URLs:"

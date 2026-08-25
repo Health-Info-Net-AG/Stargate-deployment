@@ -1,11 +1,35 @@
 # Stargate Docker advanced configuration
 
+## Data Layout
+
+All writable state - generated config, secrets, backups, logs, and every service's own data - lives under **`/var/data`**, not inside the `docker-compose/` checkout:
+
+| Path | Contents |
+|------|----------|
+| `/var/data/vereign/.env` | Generated environment file (do not edit by hand) |
+| `/var/data/vereign/customer-config.sh` | Your install-time settings (copied from `customer-config-prod.example.sh`) |
+| `/var/data/vereign/secrets/` | Vault unseal keys, WireGuard private key, S/MIME CSR |
+| `/var/data/vereign/tls/` | Generated TLS certificate/key served by Caddy |
+| `/var/data/vereign/keycloak/` | Generated Keycloak realm/config |
+| `/var/data/vereign/apisix/` | Generated APISIX config |
+| `/var/data/vereign/update.log` | Output of the last `update.sh` run |
+| `/var/data/backups/` | Backup archives (`.tar.gz`) |
+| `/var/data/<service>/` | Per-service data volumes: `postgres`, `vault`, `seaweedfs`, `stalwart`, `clamav`, `loki`, `alloy`, `textfile_collector`, `dashboard_cache` |
+
+The `docker-compose/` tree (scripts, `docker-compose.yml`, config templates) is **read-only at runtime** - a bootc image layer on VM appliances - and nothing under it is ever written to. `docker-compose/scripts/init-data-layout.sh` creates the `/var/data` tree and sets per-service ownership; it runs automatically during `install.sh` and is safe to re-run.
+
+!!! note "Testing with a different root"
+    Set the `STARGATE_DATA_DIR` environment variable to point at a different root instead of `/var/data` - useful for local testing without touching the real path. Every script and `docker-compose.yml` itself resolve their data paths from it.
+
+!!! warning "Prefer the wrapper scripts for anything that (re)creates containers"
+    Because `.env` no longer lives next to `docker-compose.yml`, a bare `docker compose up -d` run from inside `docker-compose/` falls back to default credentials instead of your real ones. Use `./scripts/start.sh`, `./scripts/update.sh`, `./scripts/stop.sh`, etc. - they already pass `--env-file /var/data/vereign/.env` - or add `--env-file /var/data/vereign/.env` yourself to a manual `docker compose` command. Read-only commands (`docker compose ps`, `logs`, `exec`) are unaffected either way.
+
 ## Backups
 
 ### Automatic Backups
 
 * Daily backups run at 2:00 AM via cron (set up during install)
-* Backups stored in `./backups/` as timestamped `.tar.gz` files
+* Backups stored in `/var/data/backups/` as timestamped `.tar.gz` files
 * Old backups (>7 days) are automatically cleaned up
 
 ### What's Included in Backups
@@ -23,14 +47,14 @@
 ./scripts/backup.sh
 ```
 
-Creates a compressed archive in `./backups/YYYYMMDD_HHMMSS.tar.gz`.
+Creates a compressed archive in `/var/data/backups/YYYYMMDD_HHMMSS.tar.gz`.
 
 ### Restore from Backup
 
 To restore on a **new machine** or after a **purge**. Copy the backup archive to the new machine and execute:
 
 ```bash
-./scripts/restore.sh backups/20260130_143022.tar.gz
+./scripts/restore.sh /var/data/backups/20260130_143022.tar.gz
 ```
 
 The restore script will:
@@ -51,7 +75,7 @@ If you only need to restore one database:
 #### Extract backup
 
 ```bash
-tar -xzf backups/20260130_143022.tar.gz -C /tmp/
+tar -xzf /var/data/backups/20260130_143022.tar.gz -C /tmp/
 ```
 
 #### Restore a specific database
@@ -89,17 +113,17 @@ git reset --hard origin/main
 ```
 
 !!! note
-    Your `customer-config.sh`, `.env`, and `secrets/` directory are in `.gitignore`, so this does **not** touch them - your configuration and credentials are preserved. Always put customisation in `customer-config.sh`, never by editing tracked files such as `docker-compose.yml`: a hard reset - and the automatic updates triggered from the dashboard - will revert any tracked-file edits. This is intentional; keeping every deployment identical to the repository is what lets updates apply reliably and without manual conflict resolution.
+    Your `customer-config.sh`, `.env`, and `secrets/` directory live under `/var/data/vereign/`, outside this repository checkout entirely, so a `git reset --hard` never touches them - your configuration and credentials are preserved. Always put customisation in `customer-config.sh`, never by editing tracked files such as `docker-compose.yml`: a hard reset - and the automatic updates triggered from the dashboard - will revert any tracked-file edits. This is intentional; keeping every deployment identical to the repository is what lets updates apply reliably and without manual conflict resolution.
 
 If the update includes changes to the config template, compare it with your existing config to see if new variables were added:
 
 ```bash
-diff customer-config.sh customer-config-prod.example.sh
+diff /var/data/vereign/customer-config.sh docker-compose/customer-config-prod.example.sh
 ```
 
 ### Update Service Images
 
-Application versions are managed **exclusively through the dashboard**. Each release is a versioned *manifest* that pins a known-good, tested combination of all service versions together; the dashboard's update page lists the available releases, and applying one pulls the matching images and recreates the affected services for you.
+Application image versions are pinned directly in the tracked `docker-compose.yml` and travel with the deployment's release tag - each release is a known-good, tested combination of all service versions. Updates are driven from the dashboard's update page (or the CLI equivalent, `./scripts/update.sh --release <tag>`): applying a release checks out that tag - whose `docker-compose.yml` carries the matching image versions - and recreates the affected services for you.
 
 To update:
 
@@ -108,7 +132,7 @@ To update:
 3. Confirm - the dashboard applies the release manifest and recreates the changed services.
 
 !!! warning "Do not manually change versions"
-    Do not edit individual `*_VERSION` values in `customer-config.sh` or `.env` to update applications. Versions are released and tested together as a set - hand-picking one produces an untested combination, and the change would be reverted by the next dashboard update anyway. Always update from the dashboard.
+    Image versions live in `docker-compose.yml` (a repository-tracked file), not in `customer-config.sh` or `.env` - those no longer hold `*_VERSION` values. Do not hand-edit an image tag: versions are released and tested together as a set, hand-picking one produces an untested combination, and any edit to a tracked file is reverted by the next update anyway. Always move between releases from the dashboard's update page (or `./scripts/update.sh --release <tag>`).
 
 #### Cleanup Old Images
 
@@ -124,7 +148,7 @@ To roll back, select an earlier release on the dashboard's update page and apply
 
 ## Configuration
 
-The `.env` file is generated by `install.sh` from `customer-config.sh`. Domain, certificate, and WireGuard settings are managed at runtime by the dashboard (`/installation`, `/onboarding`, `/mail`) — they are not held in `.env`. To customize the install-time settings, edit `customer-config.sh` and re-run `install.sh`.
+The `.env` file (`/var/data/vereign/.env`) is generated by `install.sh` from `customer-config.sh` (`/var/data/vereign/customer-config.sh`). Domain, certificate, and WireGuard settings are managed at runtime by the dashboard (`/installation`, `/onboarding`, `/mail`) — they are not held in `.env`. To customize the install-time settings, edit `customer-config.sh` and re-run `install.sh`.
 
 Key sections in the generated `.env`:
 
@@ -139,13 +163,6 @@ VAULT_TOKEN=<auto-generated>
 ## S3 Object Storage (SeaweedFS)
 S3_ACCESS_KEY=minioadmin
 S3_SECRET_KEY=<auto-generated>
-
-## Application Versions
-SMIMEKEYS_VERSION=v0.0.5
-POLICY_VERSION=v0.0.5
-IRISAGENT_VERSION=v0.0.6-branch
-MXENGINE_VERSION=v0.0.35
-MTACONF_VERSION=dev
 
 ## Mail Outbound Path
 MXENGINE_PUBLIC_ADDRESS=http://203.0.113.50:8084
@@ -843,51 +860,74 @@ docker compose logs <service-name>
 
 ## Files Structure
 
+The deployment is split across two trees: the **read-only** repository checkout (`docker-compose/`) and the **writable** data root (`/var/data`, overridable via `STARGATE_DATA_DIR` - see [Data Layout](#data-layout) above). Nothing is ever written under `docker-compose/`.
+
+### `docker-compose/` (read-only)
+
 ```plain
-stargate/
-├── backups/                      # Full backups (gitignored)
-│   └── *.tar.gz
+docker-compose/
 ├── config
-│   ├── apisix
-│   │   ├── apisix.yaml.template
-│   │   ├── config.yaml
-│   │   └── generated
-│   │       └── apisix.yaml
-│   ├── keycloak
-│   │   ├── generated
-│   │   └── realm-stargate.json
-│   ├── nats
-│   │   └── nats.conf
-│   ├── nginx
-│   │   ├── dashboard.conf
-│   │   └── keycloak.conf
-│   ├── alloy
-│   │   └── config.alloy          # Alloy log shipping config
-│   └── vault
-│       └── vault.hcl             # Vault configuration
-├── customer-config-prod.example.sh     # Config template (copy to customer-config.sh)
-├── customer-config.sh            # Customer-specific settings (copied from the template)
-├── docker-compose.yml            # Main compose file
-├── .env                          # Environment variables (generated by install.sh)
+│   ├── apisix
+│   │   ├── apisix.yaml.template
+│   │   └── config.yaml
+│   ├── keycloak
+│   │   └── realm-stargate.json
+│   ├── nats
+│   │   └── nats.conf
+│   ├── nginx
+│   │   ├── dashboard.conf
+│   │   └── keycloak.conf
+│   ├── alloy
+│   │   └── config.alloy          # Alloy log shipping config
+│   └── vault
+│       └── vault.hcl             # Vault configuration
+├── customer-config-prod.example.sh     # Config template (copied to /var/data/vereign/customer-config.sh)
+├── docker-compose.yml             # Main compose file
 ├── init
-│   └── postgres
-│       └── 01-create-databases.sql
-├── scripts
-│   ├── backup.sh                 # Full backup (DB, Vault, config, certs)
-│   ├── gather-app-versions.sh    # Collects app versions for node-exporter metrics
-│   ├── health-check.sh           # Comprehensive health check of all services
-│   ├── init-keycloak.sh
-│   ├── init-vault.sh             # Vault initialization (used by vault-init container)
-│   ├── install.sh                # First-time installation (Docker, Vault). Domain/cert/peer setup happens in the dashboard afterwards.
-│   ├── purge.sh                  # Delete all data (destructive!)
-│   ├── restore.sh                # Restore from backup archive
-│   ├── send-logs-to-support.sh   # Paste logs online and get a link that you will provide to support
-│   ├── start.sh                  # Start services + unseal Vault
-│   ├── stop.sh                   # Stop containers (preserves data)
-│   └── update.sh
-└── secrets/                      # Created on first run (gitignored)
-    ├── vault-keys.json           # Vault unseal keys (BACK THIS UP!)
-    └── signing-key.csr           # S/MIME certificate signing request
+│   └── postgres
+│       └── 01-create-databases.sql
+└── scripts
+    ├── backup.sh                  # Full backup (DB, Vault, config, certs) -> /var/data/backups
+    ├── gather-app-versions.sh     # Collects app versions for node-exporter metrics
+    ├── health-check.sh            # Comprehensive health check of all services
+    ├── init-data-layout.sh        # Creates the /var/data tree and sets per-service ownership
+    ├── init-keycloak.sh
+    ├── init-vault.sh              # Vault initialization (used by vault-init container)
+    ├── install.sh                 # First-time installation (Docker, Vault). Domain/cert/peer setup happens in the dashboard afterwards.
+    ├── purge.sh                   # Delete all data (destructive!)
+    ├── restore.sh                 # Restore from backup archive
+    ├── send-logs-to-support.sh    # Paste logs online and get a link that you will provide to support
+    ├── start.sh                   # Start services + unseal Vault
+    ├── stop.sh                    # Stop containers (preserves data)
+    ├── test-readonly-tree.sh      # Asserts nothing above ever gets written to
+    └── update.sh
+```
+
+### `/var/data` (writable)
+
+```plain
+/var/data/
+├── vereign
+│   ├── .env                       # Environment variables (generated by install.sh)
+│   ├── customer-config.sh         # Customer-specific settings (copied from the template)
+│   ├── secrets/                   # Created on first run
+│   │   ├── vault-keys.json        # Vault unseal keys (BACK THIS UP!)
+│   │   └── signing-key.csr        # S/MIME certificate signing request
+│   ├── tls/                       # Generated TLS cert/key served by Caddy
+│   ├── keycloak/                  # Generated Keycloak config
+│   ├── apisix/                    # Generated APISIX config
+│   └── update.log                 # Output of the last update.sh run
+├── backups/                       # Full backups
+│   └── *.tar.gz
+├── postgres/
+├── vault/
+├── seaweedfs/
+├── stalwart/
+├── clamav/
+├── loki/
+├── alloy/
+├── textfile_collector/
+└── dashboard_cache/
 ```
 
 ## Quick Health & Log Checks
