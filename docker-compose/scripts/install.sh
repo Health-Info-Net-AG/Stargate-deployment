@@ -663,13 +663,12 @@ echo ""
 # Check dependencies first
 check_dependencies
 
-
-# Load and validate customer configuration
-load_customer_config
-
 # Create the /var/data layout (secrets/, tls/, keycloak/, apisix/, backups/,
 # and the per-service data dirs) before anything writes into it.
 init_data_layout
+
+# Load and validate customer configuration _after_ /var/data exists
+load_customer_config
 
 # Generate .env file from customer config
 generate_env_file
