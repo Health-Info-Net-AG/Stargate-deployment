@@ -245,8 +245,10 @@ declare -A METRICS_ENDPOINTS=(
 
 for svc in "${!METRICS_ENDPOINTS[@]}"; do
   port=${METRICS_ENDPOINTS[$svc]}
-  resp=$(curl -sf --max-time 5 "http://localhost:${port}/metrics" 2>/dev/null | head -1)
-  if [ $? -eq 0 ] || [ -n "$resp" ]; then
+  # Test curl directly, not `$?` after a pipeline: piping through `head` made
+  # `$?` report head's status (always 0), so every endpoint reported OK even
+  # when it was down.
+  if curl -sf --max-time 5 "http://localhost:${port}/metrics" >/dev/null 2>&1; then
     pass "$svc :${port}/metrics"
   else
     fail "$svc :${port}/metrics"
@@ -266,17 +268,30 @@ if [ -n "$volumes_size" ]; then
   echo "  [INFO] Docker volumes size: $volumes_size"
 fi
 
-# Host disk usage
-disk_pct=$(df -h / 2>/dev/null | awk 'NR==2{print $5}' | tr -d '%')
-if [ -n "$disk_pct" ]; then
+# Host disk usage. Check the WRITABLE filesystems, not "/": on a bootc
+# appliance / is a read-only composefs mount that is 100% used by construction,
+# so the old `df /` check reported FAIL on every healthy appliance and made the
+# script's exit status useless. /var backs the ostree root and docker's image
+# store; /var/data is the Data Disk -- a separate mount on an appliance, the
+# same filesystem as /var on a plain Docker install (deduped by source below).
+# df -P keeps each entry on one line; -h can wrap a long device name and shift
+# the awk field.
+seen_fs=""
+for mnt in /var /var/data; do
+  [ -d "$mnt" ] || continue
+  read -r fs_src disk_pct <<<"$(df -P "$mnt" 2>/dev/null | awk 'NR==2{gsub(/%/,"",$5); print $1, $5}')"
+  [ -n "$disk_pct" ] || continue
+  case " $seen_fs " in *" $fs_src "*) continue ;; esac
+  seen_fs="$seen_fs $fs_src"
+
   if [ "$disk_pct" -ge 90 ]; then
-    fail "Root disk ${disk_pct}% full"
+    fail "Disk $mnt ${disk_pct}% full"
   elif [ "$disk_pct" -ge 80 ]; then
-    warn "Root disk ${disk_pct}% full"
+    warn "Disk $mnt ${disk_pct}% full"
   else
-    pass "Root disk ${disk_pct}% used"
+    pass "Disk $mnt ${disk_pct}% used"
   fi
-fi
+done
 
 # Memory
 mem_info=$(free -h 2>/dev/null | awk 'NR==2{printf "%s used / %s total (%s available)", $3, $2, $7}')

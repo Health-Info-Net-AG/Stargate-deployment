@@ -322,12 +322,6 @@ Das `start.sh`-Skript (und der Systemd-Dienst) entsiegeln Vault automatisch mit 
     ./scripts/purge.sh
     ```
 
-    Oder Volumes manuell entfernen. Die Option -v entfernt Volumes
-
-    ```bash
-    docker compose down -v
-    ```
-
 ## Skriptübersicht
 
 | Skript | Zweck |

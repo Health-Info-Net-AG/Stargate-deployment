@@ -5,7 +5,14 @@
 set -e
 
 OUTPUT_DIR="/textfile_collector"
-TEMP_FILE=$(mktemp)
+# Stage inside OUTPUT_DIR so the final `mv` is a same-filesystem rename, which
+# is what makes it atomic. A default mktemp lands in /tmp: a different mount,
+# so the mv degrades to copy+unlink and node-exporter can read a partial file.
+TEMP_FILE=$(mktemp "${OUTPUT_DIR}/.app_versions.XXXXXX")
+# OUTPUT_DIR is a persistent volume, so an aborted run would leave the staging
+# file behind on every retry. (node-exporter only reads *.prom, so a stray
+# dotfile is inert -- this just stops it accumulating.) No-op after the mv.
+trap 'rm -f "$TEMP_FILE"' EXIT
 
 # Write header first (Prometheus format requires HELP/TYPE before metrics)
 echo "# HELP app_build_info Application build information with version label" >> "$TEMP_FILE"

@@ -319,12 +319,6 @@ Lo script `start.sh` (e il servizio systemd) scongelano automaticamente Vault ut
     ./scripts/purge.sh
     ```
 
-    O rimuovere manualmente i volumi. Il flag -v rimuove i volumi
-
-    ```bash
-    docker compose down -v
-    ```
-
 ## Riferimento script
 
 | Script | Scopo |
