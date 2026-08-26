@@ -274,10 +274,11 @@ Add an IP address on Linux:
     # get name of cloud-init interface
     nmcli connection show
     # use the exact NAME from `nmcli connection show`
-    nmcli con delete "cloud-init <iface>
+    nmcli con delete "cloud-init <iface>"
     ```
-    3. Pin the manual profile as the autoconnect winner:
+    3. Create a fresh connection and pin it as the autoconnect winner. `nmcli con mod` only works on a connection that already exists, so it must be created first - the one just deleted in step 2 no longer counts:
     ```bash
+    nmcli con add type ethernet ifname <iface> con-name "<manual-profile>"
     nmcli con mod "<manual-profile>" ipv4.method manual ipv4.addresses <IP>/<PREFIX> \
     ipv4.gateway <GW> ipv4.dns "<DNS>" connection.autoconnect yes connection.autoconnect-priority 100
     nmcli con up "<manual-profile>"
@@ -297,15 +298,13 @@ Add an IP address on Linux:
     ```bash
     cd /root/stargate-deployment/docker-compose
     ./scripts/purge.sh
-    # Update configuration with a new ip, by editing it with nano
-    # SERVER_STATIC_IP=<NEW IP>
-    nano customer-config.sh
-    # OR use sed
-    # sed -i 's/old IP/new IP/g' customer-config.sh
     ./scripts/install.sh
     ```
 
-    The installation script will automatically detect the server’s IP address from the default route. Any reachable IP address, whether public or private, is sufficient. The actual public endpoint is configured later through the dashboard.
+    The installation script automatically detects the server's IP address from the default route on every run - no manual edit of `customer-config.sh` is needed. Any reachable IP address, whether public or private, is sufficient. The actual public endpoint is configured later through the dashboard.
+
+    !!! note "Behind NAT or a floating IP?"
+        If your server is reached on a *different* public or floating IP than its own network interface (common with NAT), set `SERVER_STATIC_IP` to that reachable IP in `customer-config.sh` before running `install.sh`. Otherwise leave it empty so it auto-detects.
     
     After the scripts have completed successfully, proceed to "Step 6 – Access via the browser"
     
