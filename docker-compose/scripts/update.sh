@@ -290,10 +290,12 @@ update_dozzle() {
   fi
 
   # Dozzle is enabled - authentication is handled by oauth2-proxy -> Keycloak
-  # (no local users.yml). Just (re)start the "dozzle" profile.
+  # (no local users.yml). --force-recreate: see the rationale in start.sh.
   echo ""
   echo "Starting Dozzle (behind oauth2-proxy -> Keycloak)..."
-  compose --profile dozzle up -d
+  if ! compose --profile dozzle up -d --force-recreate dozzle oauth2-proxy; then
+    echo "WARNING: Dozzle failed to start; continuing without it." >&2
+  fi
 }
 
 update_dozzle

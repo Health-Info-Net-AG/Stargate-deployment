@@ -29,9 +29,9 @@ if [ "$confirmation" = "DELETE ALL DATA" ]; then
   
   echo ""
   echo "Stopping and removing all containers, volumes, and locally-built images..."
-  # --remove-orphans removes containers from inactive profiles (e.g. dozzle,
-  # which is profile-gated) and from older compose definitions that may have
-  # been switched away from.
+  # --remove-orphans removes containers from older compose definitions that
+  # were switched away from. It does NOT remove inactive-profile containers
+  # (e.g. dozzle) -- the stargate-* sweep below is what clears those.
   # --rmi local removes images built by this compose project (e.g. stalwart-provision)
   compose down -v --remove-orphans --rmi local
 

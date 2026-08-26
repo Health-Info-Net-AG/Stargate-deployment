@@ -599,7 +599,7 @@ setup_dozzle() {
   # written to .env, so there is nothing to generate here -- just start the
   # "dozzle" profile (dozzle + oauth2-proxy).
   echo "Starting Dozzle (behind oauth2-proxy -> Keycloak)..."
-  compose --profile dozzle up -d
+  compose --profile dozzle up -d --force-recreate dozzle oauth2-proxy
   echo "Dozzle started."
   echo ""
   echo "  Dozzle (logs): $DOZZLE_PUBLIC_URL"
