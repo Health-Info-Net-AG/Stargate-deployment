@@ -42,6 +42,7 @@ discovery.docker "stargate" {
       "stargate-mtaconf",
       "stargate-stalwart",
       "stargate-idagent",
+      "stargate-watcher",
       "stargate-mailauth",
     ]
   }
@@ -52,7 +53,7 @@ discovery.relabel "stargate" {
 
   rule {
     source_labels = ["__meta_docker_container_name"]
-    regex         = "/stargate-(apisix|keycloak|dashboard|smimekeys-client|policy|policy-sync|irisagent|mxengine|mtaconf|stalwart|idagent|mailauth)"
+    regex         = "/stargate-(apisix|keycloak|dashboard|smimekeys-client|policy|policy-sync|irisagent|mxengine|mtaconf|stalwart|idagent|watcher|mailauth)"
     action        = "keep"
   }
 
