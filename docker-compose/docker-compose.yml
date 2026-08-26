@@ -833,7 +833,7 @@ services:
 
   dashboard:
     # renovate: datasource=docker depName=healthinfonetag/dashboard
-    image: healthinfonetag/dashboard:v0.0.105
+    image: healthinfonetag/dashboard:v0.0.109
     container_name: stargate-dashboard
     restart: unless-stopped
     logging:
