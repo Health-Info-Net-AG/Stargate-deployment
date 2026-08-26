@@ -163,6 +163,11 @@ echo "============================================"
 echo ""
 
 RESTORE_DIR=$(mktemp -d)
+# The extracted archive holds the unseal keys, root token, WG private key and
+# every KV secret in clear text. Clean it up on ANY exit, not only the three
+# explicit paths below: a failure anywhere in the ~500 lines that follow would
+# otherwise leave it all on disk indefinitely.
+trap 'rm -rf "$RESTORE_DIR"' EXIT
 echo "Extracting to: $RESTORE_DIR"
 
 tar -xzf "$BACKUP_FILE" -C "$RESTORE_DIR"
@@ -492,16 +497,18 @@ echo "Restoring full database dump..."
 # OOM) is reported here instead of as cryptic "database is starting up" errors
 # in the verify step below. No ON_ERROR_STOP: pg_dumpall's CREATE DATABASE lines
 # harmlessly conflict with the init-script databases ("already exists").
+# Log inside RESTORE_DIR (mode 700, removed by the EXIT trap) rather than a
+# fixed /tmp path any local user could pre-create as a symlink for root to
+# write through.
+PSQL_LOG="$RESTORE_DIR/psql-restore.log"
 if docker exec -i stargate-postgres psql -U "$POSTGRES_USER" -d postgres \
-     < "$BACKUP_CONTENT/database/full_dump.sql" > /tmp/stargate-restore.log 2>&1; then
-  grep -vE 'already exists|^CREATE' /tmp/stargate-restore.log | head -20 || true
+     < "$BACKUP_CONTENT/database/full_dump.sql" > "$PSQL_LOG" 2>&1; then
+  grep -vE 'already exists|^CREATE' "$PSQL_LOG" | head -20 || true
   echo "  ✓ Database restore completed"
-  rm -f /tmp/stargate-restore.log
 else
   echo "  ✗ ERROR: PostgreSQL restore failed -- the server likely restarted or"
   echo "    ran out of memory mid-restore. Last lines of output:"
-  tail -20 /tmp/stargate-restore.log
-  rm -f /tmp/stargate-restore.log
+  tail -20 "$PSQL_LOG"
   exit 1
 fi
 echo ""

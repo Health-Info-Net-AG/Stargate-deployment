@@ -320,12 +320,6 @@ The `start.sh` script (and the systemd service) automatically unseal Vault using
     ./scripts/purge.sh
     ```
 
-    Or manually remove volumes. The -v flag removes volumes
-
-    ```bash
-    docker compose down -v
-    ```
-
 ## Scripts Reference
 
 | Script | Purpose |

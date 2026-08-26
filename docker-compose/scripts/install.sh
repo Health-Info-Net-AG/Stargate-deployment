@@ -519,8 +519,6 @@ save_vault_token_to_config() {
     fi
     echo "Vault token saved to customer-config.sh"
     echo ""
-    echo "  Token: ${token:0:15}...${token: -10}"
-    echo ""
     echo "  IMPORTANT: Back up customer-config.sh before recreating the VM!"
     echo "  The same token will be used on restore."
   else
@@ -571,7 +569,6 @@ save_wireguard_key_to_config() {
     fi
     echo "WireGuard private key saved to customer-config.sh"
     echo ""
-    echo "  Private Key: ${WG_KEY:0:10}...${WG_KEY: -10}"
     echo "  Public Key:  $WG_PUBKEY"
     echo ""
     echo "  IMPORTANT: Back up customer-config.sh before recreating the VM!"
@@ -599,7 +596,7 @@ setup_dozzle() {
   # written to .env, so there is nothing to generate here -- just start the
   # "dozzle" profile (dozzle + oauth2-proxy).
   echo "Starting Dozzle (behind oauth2-proxy -> Keycloak)..."
-  compose --profile dozzle up -d
+  compose --profile dozzle up -d --force-recreate dozzle oauth2-proxy
   echo "Dozzle started."
   echo ""
   echo "  Dozzle (logs): $DOZZLE_PUBLIC_URL"
@@ -721,8 +718,9 @@ if [ -f "$KEYS_FILE" ]; then
   echo "  Vault initialized successfully!"
   echo "============================================"
   echo ""
-  echo "Root Token: $ROOT_TOKEN"
-  echo ""
+  # The root token is NOT printed: install.sh's stdout is captured by the
+  # journal (persistent) and by the boot unit's log, so echoing it there
+  # leaves a permanent clear-text copy. It is in $KEYS_FILE (mode 600).
   echo "Keys saved to: $KEYS_FILE"
   echo "IMPORTANT: Back up this file securely!"
   echo ""

@@ -109,12 +109,17 @@ fi
 echo "Starting application services..."
 compose up -d
 
-# Start Dozzle if enabled
+# Start Dozzle if enabled. --force-recreate because `docker compose down`
+# leaves inactive-profile containers holding the removed network's id, and a
+# plain `up` would start them -> "network <id> not found". Optional component,
+# so a failure here must not fail the unit and turn the boot greenboot-RED.
 if [ -f "$CONFIG_FILE" ]; then
   DOZZLE_ENABLED_VALUE=$(read_env_var DOZZLE_ENABLED "$CONFIG_FILE")
   if [ "$DOZZLE_ENABLED_VALUE" = "true" ]; then
     echo "Starting Dozzle log viewer..."
-    compose --profile dozzle up -d
+    if ! compose --profile dozzle up -d --force-recreate dozzle oauth2-proxy; then
+      echo "WARNING: Dozzle failed to start; continuing without it." >&2
+    fi
   fi
 fi
 

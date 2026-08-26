@@ -74,7 +74,11 @@ if ! docker ps --format '{{.Names}}' | grep -q "stargate-postgres"; then
   exit 1
 fi
 
-# Create backup directory structure
+# Create backup directory structure. umask 077 first: $BACKUP_DIR is
+# world-readable, and the staging tree holds the Vault unseal keys, root token,
+# WG private key and KV secrets in clear text until the archive is rolled up
+# below. Without this they sit at 0644 for the duration of the backup.
+umask 077
 mkdir -p "$BACKUP_SUBDIR/secrets"
 mkdir -p "$BACKUP_SUBDIR/config"
 mkdir -p "$BACKUP_SUBDIR/database"

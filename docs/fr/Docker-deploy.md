@@ -319,12 +319,6 @@ Le script `start.sh` (et le service systemd) descellent automatiquement Vault en
     ./scripts/purge.sh
     ```
 
-    Ou supprimer manuellement les volumes. Le drapeau -v supprime les volumes
-
-    ```bash
-    docker compose down -v
-    ```
-
 ## Référence des scripts
 
 | Script | Objectif |

@@ -111,11 +111,13 @@ else
     echo "No WG_PRIVATE_KEY provided - irisagent will generate a new key on first start."
   fi
   
-  # Save root token to .env file hint
+  # The root token is deliberately NOT echoed. This runs in a container, so
+  # anything printed here lands in `docker logs stargate-vault-init`, which
+  # send-logs-to-support.sh collects and uploads. install.sh/restore.sh read
+  # the token from vault-keys.json and write it to .env themselves.
   echo ""
   echo "=========================================="
-  echo "Add this to your .env file:"
-  echo "VAULT_TOKEN=$ROOT_TOKEN"
+  echo "Root token stored in $KEYS_FILE (mode 600)."
   echo "=========================================="
   echo ""
   
