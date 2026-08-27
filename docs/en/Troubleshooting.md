@@ -336,3 +336,44 @@ To resolve this, the following manual configuration must be completed in the *Ke
 7. Click Save
 
  <br> ![keycloak-console](assets/troubleshooting/keycloak-update.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+ 
+ ## Keycloak Reset Password 
+
+# Resetting a Stargate User Password in Keycloak
+
+Follow the steps below to reset the password of a Stargate user through the Keycloak administration console.
+
+
+1. **Connect to the HIN Gateway VM**
+
+   * Open the VM console, or connect to the HIN Gateway VM via SSH.
+
+2. **Retrieve the Keycloak administrator credentials**
+
+   * Open the /root/stargate-deployment/ `.env` file
+   * Locate the following variables:
+     * `KEYCLOAK_ADMIN_USER`
+     * `KEYCLOAK_ADMIN_PASSWORD`
+   
+3. **Open the Keycloak Admin Console**
+   * In a browser, navigate to: `http://<VM-IP>:8180/admin/master/console`
+   * Replace `<VM-IP>` with the IP address of the HIN Gateway VM.
+
+4. **Sign in to Keycloak**
+   * Enter the administrator username and password retrieved from the `.env` file.
+   * keep the same administrator password if you change it you must store it securely 
+
+5. **Select the Stargate realm**
+   * From the realm selector in the Keycloak Admin Console, select **Stargate**.
+
+6. **Find the user**
+   * Navigate to **Users**.
+   * Search for and select the Stargate user whose password needs to be reset.
+
+7. **Reset the user's password**
+   * Select the option to reset the user's password.
+   * Enter the new password and confirm the change.
+   
+**Do not change or reset the Keycloak administrator password as part of this procedure.**
+Any changes of admin password can lead to potention lockdown of keyclaok without anyone be able to access it!

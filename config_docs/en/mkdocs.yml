@@ -161,8 +161,9 @@ not_in_nav: |
 nav:
   - Home: index.md
   - Installation Guides:
-      - Single domain, M365: Installation-guide.md
+      - HIN Gateway installation guide: Installation-guide.md
   #      - New Customers: New-customers.md
+      - Multi-domain scenarios and recommendations: Multi-domain-migration-scenarios.md
   - Technical configuration and Integration:
       - Applications overview: Applications.md
       - Monitoring and Logs: Monitoring.md
