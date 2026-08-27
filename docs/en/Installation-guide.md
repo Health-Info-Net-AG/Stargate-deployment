@@ -28,58 +28,60 @@ The structured, step-by-step procedure described in this document covers both ne
 5. Testing, transition to production and post-deployment validation
 6. For migrations: retirement of the existing MGW after successful validation
 
-!!! info "Why WireGuard?"
-HIN's objective is to ensure a secure, smooth and fully validated deployment with minimal disruption to operations and uninterrupted continuity of email services.
+!!! info "Migration"
+ HIN's objective is to ensure a secure, smooth and fully validated deployment with minimal disruption to operations and uninterrupted continuity of email services.
  In migration scenarios, the existing MGW should remain available as a fallback option until the HIN Gateway has been successfully validated in production. It should only be decommissioned once the migration has been completed and stable operation has been confirmed.
 
 
 ## Frequently asked questions
 
-!!! question "Can I perform the installation and migration on my own?"
-    Yes, the installation and migration can be completed entirely by the customer, **except for "Step 1.3 - Export private key(s)"**.
+!!! question "Can I perform the installation or migration on my own?"
+    Yes, the installation or migration can be completed entirely by the customer. 
+    For migration scenario the only exceptions is **"Step 1.3 - Export private key(s)"**. For security reasons and to keep your private key safe, you must contact HIN Support or join the planned migration call to receive the code required to export the private key from the currently operating Mail Gateway.
 
-    For security reasons and to keep your private key safe, you must contact HIN Support or join the planned migration call to receive the code required to export the private key from the currently operating Mail Gateway.
+    If the installation or migration cannot be completed successfully, please join the planned support call with our engineers.
 
-    If the installation and migration cannot be completed successfully, please join the planned support call with our engineers.
+!!! question "Will there be any outage in email delivery during the setup process?"
+    **Migration:** Between **"Step 1.5 - Shutdown existing MGW VM"** and **"Step 18 - Configure mail server"**, all emails will be queued on the mail server. Once "Step 18 - Configure mail server" has been completed, the queued emails will be sent out or delivered to the mailbox. 
+    **New instalation** While you are configuring the email flow rules, all emails will be queued on the mail server. Once "Step 18 - Configure mail server" has been completed, the queued emails will be sent out or delivered to the mailbox. 
 
-!!! question "Will there be any outage in email delivery during the migration?"
-    Between **"Step 1.5 - Shutdown existing MGW VM"** and **"Step 18 - Configure mail server"**, all emails will be queued on the mail server. Once "Step 18 - Configure mail server" has been completed, the queued emails will be sent out or delivered to the mailbox.
+
 
 !!! question "Will any emails be lost during the installation and migration?"
-    No, no emails will be lost during the installation and migration.
+    No, no emails will be lost during the installation and migration. Some emails might be delaied. 
 
 ## Overview of the installation steps
 
-| Step | Topic | Responsibility |
-| :--: | :---- | :------------: |
-| 0 | Check prerequisites | Customer |
-| 1.1 | Smoke test | Customer |
-| 1.2 | Backing up the existing MGW | Customer |
-| 1.3 | Export private key(s) | Customer / HIN |
-| 1.4 | Contingency plan / fallback scenario | Customer |
-| 1.5 | Shutdown existing MGW VM | Customer |
-| 2 | WireGuard | Customer |
-| 3 | Select target VM | Customer |
-| 4 | Load VM image | Customer |
-| 5 | Network connection to the VM | Customer |
-| 6 | Access via the browser | Customer |
-| 7 | Enter activation code | Customer |
-| 8 | Mesh network setup | Customer |
-| 9 | Establishing secure mesh network | Customer |
-| 10 | Login to Keycloak | Customer |
-| 11 | Update password | Customer |
-| 12 | Update account information | Customer |
-| 13 | Initial configuration and domain setup | Customer |
-| 14 | Configure mail transport | Customer |
-| 15 | Configure whitelist headers | Customer |
-| 16 | Peer certificates | HIN |
-| 17 | Validate peer certificates | Customer |
-| 18 | Configure mail server | Customer |
-| 19 | Test prior to switchover | Customer |
-| 20 | Validation after switchover | Customer |
-| 21 | Take existing MGW out of service | Customer |
-| 22 | Change the password of the VM | Customer |
-| Annex 1 | Backing up and restoring the appliance settings | Customer |
+| Step | Topic | Responsibility | Migration | New installation |
+| :--: | :---- | :------------: | :--: | :---- |
+| 0 | Check prerequisites | Customer | Yes | Yes |
+| 1.1 | Smoke test | Customer | Yes | N/A |
+| 1.2 | Backing up the existing MGW | Customer | Yes | N/A |
+| 1.3 | Export private key(s) | Customer / HIN | Yes | N/A |
+| 1.4 | Contingency plan / fallback scenario | Customer | Yes | N/A |
+| 1.5 | Shutdown existing MGW VM | Customer | Yes | N/A |
+| 2 | WireGuard | Customer | Yes | Yes |
+| 3 | Select target VM | Customer | Yes | Yes |
+| 4 | Load VM image | Customer | Yes | Yes |
+| 5 | Network connection to the VM | Customer | Yes | Yes |
+| 6 | Access via the browser | Customer | Yes | Yes |
+| 7 | Enter activation code | Customer | Yes | Yes |
+| 8 | Mesh network setup | Customer | Yes | Yes |
+| 9 | Establishing secure mesh network | Customer | Yes | Yes |
+| 10 | Login to Keycloak | Customer | Yes | Yes |
+| 11 | Update password | Customer | Yes | Yes |
+| 12 | Update account information | Customer | Yes | Yes |
+| 13 | Initial configuration and domain setup | Customer | Yes | Yes |
+| 14 | Configure mail transport | Customer | Yes | Yes |
+| 15 | Configure whitelist headers | Customer | Yes | Yes |
+| 16 | Peer certificates | HIN | Yes | Yes |
+| 17 | Validate peer certificates | Customer | Yes | Yes |
+| 18 | Configure mail server | Customer | Yes | Yes |
+| 19 | Test prior to switchover | Customer | Yes | N/A |
+| 20 | Validation after switchover | Customer | Yes | Yes |
+| 21 | Take existing MGW out of service | Customer | Yes | N/A |
+| 22 | Change the password of the VM | Customer | Yes | Yes |
+| Annex 1 | Backing up and restoring the appliance settings | Customer | Yes | Yes |
 
 ## Detailed steps
 
@@ -96,7 +98,7 @@ The following items must be available or confirmed before the installation:
     - Keycloak credential
     - Activation code
 
-- **Export of private key**
+- **Export of private key** Note: Applicable only for migration case
     - If you are working on a Windows machine that has access to the Mail Gateway VM via port 22, we can support you during the call in enabling the private key export from the MGW.
     - If you do not have access to such a machine, please contact HIN Support by email or phone (<support@hin.ch> / 0848 830 740) to help you establish a support connection via System Administration → Support Connection → Connect.
 - **Download latest** version of [VM image](vm/VM-Catalog.md)
@@ -117,8 +119,8 @@ The following items must be available or confirmed before the installation:
             - Dozzle port `8190`
                 - Incoming and outgoing traffic
 - **DHCP access** should be available for "[Step 5 - Network connection to the VM](#step-5-network-connection-to-the-vm)" (recommended).
-- **Backup requirements** - see "Annex 1 - Backing up and restoring the appliance settings".
-- Confirmation that the existing MGW will **not** be deleted until acceptance has been completed.
+- **Backup requirements** - Note: Applicable only for migration case - see "Annex 1 - Backing up and restoring the appliance settings".
+- Note: Applicable only for migration case - Confirmation that the existing MGW will **not** be deleted until acceptance has been completed.
 - Access to DNS, mail server connectors, transport rules, and relay settings.
 
 !!! info "Why WireGuard?"
@@ -127,7 +129,7 @@ The following items must be available or confirmed before the installation:
     1. The HIN Gateway uses this port to obtain peer certificates from the HIN CA.
     2. It uses this port to establish a secure tunnel to other HIN Gateways, through which secure data exchange (e.g. email traffic) takes place.
 
-!!! tip "Private key export"
+!!! tip "Private key export" - Applicable only for migration case
     If you are working on a Windows machine that has access to the Mail Gateway VM via port 22, we can support you during the call in enabling the private key export from the MGW.
 
     If you do not have access to such a machine, please contact HIN Support by email or phone (**support@hin.ch** / **0848 830 740**) to help you establish a support connection via **System Administration → Support Connection → Connect**.
@@ -135,6 +137,9 @@ The following items must be available or confirmed before the installation:
 ### Step 1.1 - Smoke test
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+
+!!! info Applicable for migration case
+    This step applies only for single and multi domain migrations
 
 Send a test email to the following recipients, where you have access to the mailbox to check correct receipt:
 
@@ -146,6 +151,9 @@ Verify that both emails are delivered successfully, including subject, content a
 ### Step 1.2 - Backing up the existing MGW
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+
+!!! info Applicable for migration case
+    This step applies only for single and multi domain migrations
 
 Create a backup of the existing MGW appliance and ensure that the VM is retained until the migration has been successfully completed and formally accepted. For more information, see "Annex 1 - Backing up and restoring the appliance settings".
 
@@ -164,6 +172,9 @@ Create a backup of the existing MGW appliance and ensure that the VM is retained
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 :heavy_plus_sign:
 ![Responsibility HIN](https://img.shields.io/badge/Responsibility-HIN-orange)
+
+!!! info Applicable for migration case
+    This step applies only for single and multi domain migrations
 
 !!! warning "HIN assistance required"
     An unlock code is required for this step. The code is provided by a HIN Support Engineer.
@@ -188,6 +199,9 @@ If you would like to continue the installation on your own, please contact HIN S
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
+!!! info Applicable for migration case
+    This step applies only for single and multi domain migrations
+
 **Rollback scenario** - if a rollback is required:
 
 1. Stop the new HIN Gateway.
@@ -197,6 +211,9 @@ If you would like to continue the installation on your own, please contact HIN S
 ### Step 1.5 - Shutdown existing MGW VM
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+
+!!! info Applicable for migration case
+    This step applies only for single and multi domain migrations
 
 Shut down the existing MGW VM.
 

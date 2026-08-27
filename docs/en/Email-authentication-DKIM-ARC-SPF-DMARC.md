@@ -5,7 +5,6 @@
 
 ---
 
-
 The **Email authentication** section controls how to proves the authenticity of mail, and how strictly it validates authenticity on mail - DKIM/ARC/SPF/DMARC verification. It also generates the DNS TXT records that must be published so external mail servers can verify your domain's mail.
 
 The section is reached via:
@@ -131,27 +130,13 @@ Use the copy icon in the top-right corner of each record box to copy its exact v
 
 ---
 
-## 8. Saving changes
+## Saving changes
 
 None of the settings above take effect until you click the orange **Save** button at the bottom of the page. Save applies all changes across DKIM, ARC, SPF, and DMARC together — there is no per-section save.
 
 ---
 
-## 9. Recommended configuration checklist
-
-- [ ] Generate or import a DKIM private key
-- [ ] Confirm the selector name doesn't collide with an existing one for this domain
-- [ ] Publish the DKIM TXT record and verify it resolves (`dig TXT s1._domainkey.<domain>`)
-- [ ] Enable DKIM signing
-- [ ] Enable ARC signing with **Reuse DKIM key** on, if this domain's mail may be forwarded/relayed
-- [ ] Publish the DMARC TXT record with policy `none` and monitor reports
-- [ ] Confirm your DNS provider already has a correct SPF record for any external relay in use (e.g. Microsoft 365)
-- [ ] After a monitoring period with no failures, progress DMARC policy to `quarantine`, then `reject`
-- [ ] Save after every change
-
----
-
-## 10. Troubleshooting
+##  Troubleshooting
 
 | Symptom | Likely cause |
 |---|---|
@@ -159,49 +144,3 @@ None of the settings above take effect until you click the orange **Save** butto
 | ARC seal missing on forwarded mail | **Enable ARC signing** is off, or **Reuse DKIM key** is off with no separate ARC key configured. |
 | Can't see the DKIM private key to copy it elsewhere | By design — once saved, the key is masked (`<hidden>`) and cannot be re-displayed. Use **Replace key** to issue a new one if you need to move it to a system that doesn't already have a copy. |
 | Legitimate mail starts getting quarantined/rejected after a DMARC policy change | Some legitimate sending source isn't DKIM/SPF-aligned yet. Roll the policy back to `none`, identify the failing source, fix alignment, then re-tighten. |
-
-
-
-## Email authentication (DKIM, ARC DMARC)
-
- This section describes how to use and configure DKIM, ARC and DMARC. 
-
- #### DKIM 
- DKIM is related to outgoing messages and here available options
-
- * Enable/Disable button 
- * Generate DKIM key - it will generate PEM key 
- * Verification options - `Optional` , `Required` `Disable` 
- * Selector - ??
-
-#### ARC
-Usually is related to Inbound messages where there is internal more advanced email flow via multiple relays 
-
-* Verification type 
-* Enable / Disable ARC signing 
-* Reuse DKIM key - if enabled , it will be use the same key which is configured for DKIM , else different key must be inserted
-
-#### SPF
-It can be configured verification options 
-
-#### DMARK 
-
- Here's exactly what each does at the inbound hop (UI label → wire value → behavior):
-
-| UI label | Wire value | Behavior |
-|---|---|---|
-| **Disabled** | `disable` | Not checked at all. Mechanism doesn't run, nothing added to `Authentication-Results`. |
-| **Optional** | `relaxed` | Verified and **reported** in `Authentication-Results`. Message is **always accepted**, pass or fail. |
-| **Required** | `strict` | Verified and reported, **and the message is rejected** (`550 mailauth: <mechanism> verification failed`) if it hard-fails. Otherwise accepted. |
-
-So yes — Disabled = don't check; Optional and Required both check and stamp the result. The only difference between the two is enforcement: **Optional never rejects**, **Required rejects on a hard failure**.
-
-What counts as a "hard failure" for Required (per mechanism):
-- **DKIM** — the message carries signatures and *all* of them fail. No signature at all = `none`, not a failure → not rejected.
-- **SPF** — a hard `-all` fail. SoftFail/neutral/none/temp-error are reported but don't reject.
-- **DMARC** — neither DKIM nor SPF aligns *and* there's an actual fail verdict. No DMARC record published = `none` → not rejected.
-- **ARC** — the ARC chain fails validation. No chain = `none` → not rejected.
-
-Two important notes:
-- **DKIM always runs internally** because DMARC needs it. The DKIM setting only controls whether a `dkim=` result is stamped and whether DKIM failure can reject — it never changes the DMARC verdict.
-- Each mechanism is independent, so you can e.g. run **DMARC = Required** while **DKIM/SPF = Optional**: bad mail gets rejected on the DMARC verdict, and you still get individual `dkim=`/`spf=` lines in the header for visibility.
