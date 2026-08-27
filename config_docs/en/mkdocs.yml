@@ -170,6 +170,7 @@ nav:
       - Exchange Integration: Exchange-integration.md
       - Mail relay setup: Mail-relay-setup.md
       - DNS Setup: DNS-setup.md
+      - Email authentication (DKIM ARC SPF DMARC): Email-authentication-DKIM-ARC-SPF-DMARC.md
   - Server install:
       - Container:
           - Install with Docker: Docker-deploy.md
