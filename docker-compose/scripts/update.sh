@@ -257,7 +257,7 @@ fi
 if [ "$ENV_ONLY" = true ]; then
   echo "Done. .env updated (--env-only, services not restarted)."
   echo ""
-  echo "To apply changes: docker compose down && docker compose up -d"
+  echo "To apply changes: ./scripts/start.sh (or: systemctl restart stargate)"
   exit 0
 fi
 
