@@ -1116,7 +1116,7 @@ services:
 
   mtaconf:
     # renovate: datasource=docker depName=healthinfonetag/mtaconf
-    image: healthinfonetag/mtaconf:v0.0.7
+    image: healthinfonetag/mtaconf:v0.0.8
     container_name: stargate-mtaconf
     restart: unless-stopped
     logging:
