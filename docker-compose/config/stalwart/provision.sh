@@ -4,7 +4,7 @@
 # =============================================================================
 # Idempotently provisions Stalwart for the Stargate deployment:
 #   1. Creates network listeners (SMTP, reinject, management HTTP)
-#   2. Enables a Stdout tracer so logs land on docker stdout
+#   2. Enables a Stdout tracer (docker stdout) + disables the built-in file tracer
 #   3. Ensures the service domain exists
 #   4. Sets SystemSettings (defaultHostname + defaultDomainId)
 #   5. Creates the mtaconf service account
@@ -166,12 +166,22 @@ create_listener "reinject" "0.0.0.0:10026" "smtp" "false"
 create_listener "mgmt" "0.0.0.0:8080" "http" "false"
 
 # =============================================================================
-# 2b. Stdout tracer - emit Stalwart's own logs to docker stdout
+# 2b. Logging tracers: Stdout ON, built-in file tracer OFF
 # =============================================================================
-# v0.16 stores tracer config in the settings backend; when the backend is
-# empty (fresh Postgres) no tracer is enabled and `docker logs stalwart` is
-# silent even though the server is healthy. Stalwart calls the Stdout/Console
-# tracer's variant `Stdout` (Console is the display label).
+# v0.16 stores tracer config in the settings backend. A fresh backend is seeded
+# with exactly one built-in tracer of `@type=Log` (a rotating FILE tracer) -- not
+# a Stdout one -- which is why `docker logs stalwart` is silent on a fresh install
+# even though the server is healthy, and why the box logs "Failed to create log
+# file /var/log/stalwart/stalwart.log.<date>: No such file or directory": that Log
+# tracer's default path is /var/log/stalwart, a directory the image doesn't ship.
+#
+# Fix, in two steps below:
+#   1. ensure a Stdout tracer exists  -> logs go to docker's json-file (rotated) and
+#      on to Loki via alloy. Stalwart names the Stdout/Console variant `Stdout`
+#      (Console is the display label).
+#   2. disable every built-in Log (file) tracer -> once Stdout carries the logs the
+#      file tracer is pure redundancy, so we turn it off rather than mount a log dir
+#      just to feed it. No file writes => the "No such file or directory" WARN stops.
 if ! cli query Tracer 2>/dev/null | grep -Fq "Stdout"; then
   log "creating stdout tracer"
   cli create Tracer \
@@ -183,6 +193,35 @@ if ! cli query Tracer 2>/dev/null | grep -Fq "Stdout"; then
     --field "buffered=false" \
     --field "lossy=false"
 fi
+
+# Disable the built-in Log (file) tracer(s), keeping the Stdout tracer above. Query id AND @type
+# together with --fields: exactly like the throttle block below (see disable_throttles), that
+# yields one compact object per row ({"@type":"...","id":"..."}). A bare `query Tracer --json` is
+# NOT guaranteed one-per-line -- if it pretty-printed, @type and id would land on different lines,
+# the per-row match/sed would find no id, and the loop would silently no-op (leaving the Log tracer
+# enabled and /var/log/stalwart failing, with no trace). Fed via a here-doc rather than a pipe so
+# $disabled survives into the count log. Reconciled every run (a fresh DB re-seeds the Log tracer)
+# and non-fatal like the throttle/spam reconciliation below -- a failure must not abort this
+# one-shot (mtaconf gates on it). The trailing count makes a no-op distinguishable from success.
+disabled=0
+tracers=$(cli query Tracer --fields id,@type --json 2>/dev/null) || true
+while IFS= read -r row; do
+  case "$row" in
+    *'"@type":"Log"'*)
+      tid=$(printf '%s' "$row" | sed -n 's/.*"id":"\([^"]*\)".*/\1/p')
+      [ -n "$tid" ] || continue
+      log "disabling built-in Log (file) tracer ${tid} (redundant with Stdout; wrote /var/log/stalwart)"
+      if cli update Tracer "$tid" --json '{"enable":false}'; then
+        disabled=$((disabled + 1))
+      else
+        log "WARNING: failed to disable Log tracer ${tid}; it may keep trying to write /var/log/stalwart"
+      fi
+      ;;
+  esac
+done <<EOF
+$tracers
+EOF
+log "built-in Log (file) tracers disabled: ${disabled}"
 
 # =============================================================================
 # 2c. Content filtering: anti-virus (ClamAV milter)
