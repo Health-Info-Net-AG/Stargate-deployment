@@ -1,7 +1,11 @@
 # Secrets directory (contains Vault keys)
 secrets/
 
-# Environment file with sensitive data
+# .env here is a TRACKED symlink to /var/data/vereign/.env, where the real file
+# lives -- without it a bare `docker compose` run from this directory loads no
+# env file and falls back to the defaults in docker-compose.yml. Being tracked,
+# it is exempt from this entry: if it is ever replaced by a real file, git
+# reports a modification. Do not commit that -- it holds credentials.
 .env
 
 # Customer-specific config files (contain secrets like Vault tokens and WG keys)
