@@ -8,6 +8,7 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 . "$SCRIPT_DIR/lib/docker.sh"
 . "$SCRIPT_DIR/lib/env.sh"
 . "$SCRIPT_DIR/lib/paths.sh"
+. "$SCRIPT_DIR/lib/config-sync.sh"    # defines sync_customer_config / detect_example_file
 . "$SCRIPT_DIR/init-data-layout.sh"   # defines init_data_layout (does not auto-run when sourced)
 
 KEYS_FILE="$SECRETS_DIR/vault-keys.json"
@@ -161,18 +162,22 @@ load_customer_config() {
   echo "============================================"
   echo ""
 
-  # Bootstrap customer-config.sh if it doesn't exist yet, so a fresh install
-  # works with zero manual setup. This fires on the first boot of every bootc
-  # appliance (the Data Disk starts blank) as well as on a manual install.
-  # Generated values (vault token, IP, etc.) get written back here as
-  # install progresses.
+  # $CONFIG_FILE (/var/data/vereign/customer-config.sh) is the single source of truth and the
+  # operator's to edit; it lives on the writable Data Disk and overrides the read-only baked
+  # template. First run bootstraps it from the baked prod template and applies the STARGATE_ENV
+  # preset (prod = no-op). On every run, sync_customer_config fills in only the keys the current
+  # template has but $CONFIG_FILE lacks -- new knobs from an image bump -- writing each visibly
+  # with its default and never overwriting an existing value. The template is never sourced at
+  # runtime, so a changed default cannot silently retro-apply to an existing install, and every
+  # effective value stays visible in the file.
+  BASE_CONFIG="$PROJECT_DIR/customer-config-prod.example.sh"
   if [ ! -f "$CONFIG_FILE" ]; then
     echo "customer-config.sh not found, bootstrapping from customer-config-prod.example.sh..."
-    cp "$PROJECT_DIR/customer-config-prod.example.sh" "$CONFIG_FILE"
+    cp "$BASE_CONFIG" "$CONFIG_FILE"
     apply_env_preset "$CONFIG_FILE"
   fi
 
-  # Source the config file
+  sync_customer_config "$BASE_CONFIG" "$CONFIG_FILE"
   source "$CONFIG_FILE"
   chmod 600 "$CONFIG_FILE"  # holds VAULT_TOKEN, WG private key, passwords
 
@@ -658,13 +663,12 @@ echo ""
 # Check dependencies first
 check_dependencies
 
-
-# Load and validate customer configuration
-load_customer_config
-
 # Create the /var/data layout (secrets/, tls/, keycloak/, apisix/, backups/,
 # and the per-service data dirs) before anything writes into it.
 init_data_layout
+
+# Load and validate customer configuration _after_ /var/data exists
+load_customer_config
 
 # Generate .env file from customer config
 generate_env_file
