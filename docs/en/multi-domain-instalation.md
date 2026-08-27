@@ -1,37 +1,47 @@
-# HIN Mail Gateway - Technical Installation Process
+# HIN Mail Gateway - Multi-Domain Technical Installation Process
 
 !!! tip
-    Technical Installation Process
+    Technical Installation Process for Multi-Domain and Single domain architecture
 
 ## Introduction
 
-This document provides a comprehensive guide to the technical installation of, and migration to, the new HIN Gateway (“Stargate Appliance”).  
+This document provides a comprehensive guide to the technical installation and migration process to the new [HIN Gateway](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm) ("Stargate Appliance"). It applies to Microsoft 365 mail and on-premase email architecture that operate **single and multiple trusted domains** , and covers both migrating all domains at once and migrating them gradually, in stages, one domain (or a small group of domains) at a time.
 
-The guide is intended for HIN customers, IT administrators, and system engineers who are responsible for deploying and configuring the new HIN Gateway and, where applicable, migrating from the existing Mail Gateway (MGW) to the new solution.
+The guide is intended for HIN customers, IT administrators and system engineers who are responsible for deploying and configuring the new HIN Gateway, and for migrating from the existing Mail Gateway (MGW) to the new solution.
 
-The HIN Gateway is a secure email gateway solution that enables trusted, encrypted, and policy-driven communication within the HIN Trust Circle. It acts as a central intermediary between internal email infrastructures and external communication partners, ensuring that email traffic is transmitted securely, complies with the organisation’s policies, and meets HIN’s security standards.
+The HIN Gateway is a secure email gateway solution that enables trusted, encrypted and policy-driven communication within the HIN Trust Circle. It acts as a central intermediary between internal email infrastructures and external communication partners, ensuring that all email traffic is transmitted securely, complies with the organisation's policies and meets HIN's security standards.
 
 ## Overview of the mail flow
+
+**Migration process**. <br> ![Migration process overview](assets/installation-guide/multi-domain-migration-scenario.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 - **Incoming emails** are routed via the HIN Gateway, where they are validated, decrypted (if necessary) and checked against trust and security policies before being forwarded to the internal mail server.
 - **Outgoing emails** are sent from internal systems to the HIN Gateway, where encryption, routing and policy enforcement are applied before they are transmitted to external recipients.
 - **Communication between HIN gateways** is secured by peer certificates and WireGuard tunnels, ensuring trusted communication between domains.
+- **During a staged migration**, the existing MGW and the new HIN Gateway operate in parallel for a period of time: the MGW keeps serving the domains that have not yet been migrated on its existing public IP address (Public IP A), while the HIN Gateway serves the already migrated domains on a separate public IP address (Public IP B). A Microsoft 365 mail-flow rule routes each domain to the correct gateway based on the domain name until the migration is complete.
 
 ## Installation and migration process
 
-The structured, step-by-step procedure described in this document covers both new HIN Gateway installations and migrations from an existing HIN Mail Gateway (MGW). Depending on the deployment scenario, individual steps may apply only to migrations.
+The structured, step-by-step procedure described in this document covers the following points:
 
-1. Preparation and deployment planning, including fallback planning where applicable
+1. Preparation and fallback planning
 2. Installation and configuration of the HIN Gateway
 3. Domain activation and certificate validation
-4. Integration into the existing mail environment and routing configuration
-5. Testing, transition to production and post-deployment validation
-6. For migrations: retirement of the existing MGW after successful validation
+4. Mail server integration and routing configuration
+5. Testing, transition to production and post-migration validation
+6. Decommissioning of the existing MGW
 
-!!! info "Why WireGuard?"
-HIN's objective is to ensure a secure, smooth and fully validated deployment with minimal disruption to operations and uninterrupted continuity of email services.
- In migration scenarios, the existing MGW should remain available as a fallback option until the HIN Gateway has been successfully validated in production. It should only be decommissioned once the migration has been completed and stable operation has been confirmed.
+### Choosing a migration strategy
 
+Before starting, decide how the trusted domains will be moved to the HIN Gateway:
+
+- **Recommended - all domains at once.** All trusted domains are switched over in a single maintenance window. No additional public IP address is required, no temporary connectors or mail-flow rules need to be created on Microsoft 365, and the rollback is simple: power off the HIN Gateway and power the existing MGW back on. This is the shortest cutover window and carries the lowest risk of configuration drift.
+- **Alternative - staged, domain-by-domain migration.** Domains are migrated gradually, one (or a small group) at a time, while the remaining domains keep using the existing MGW. This reduces the blast radius of each step, but requires a second public IP address, temporary Microsoft 365 connectors and a domain-based mail-flow rule, careful handling of customer-specific headers, and a rollback that replays the exact change sequence in reverse.
+
+!!! tip "Which scenario applies to you?"
+    Choose **all domains at once** whenever your maintenance window and operational constraints allow it. Choose staged migration only when domains must be moved gradually, for example due to compliance windows, third-party dependencies or organisational constraints. The steps below apply to both scenarios; where a step depends on the chosen scenario, both variants are described.
+
+HIN's objective in this process is to ensure a secure, smooth and fully validated migration that causes minimal disruption to operations and guarantees the uninterrupted continuity of email services.
 
 ## Frequently asked questions
 
@@ -43,43 +53,46 @@ HIN's objective is to ensure a secure, smooth and fully validated deployment wit
     If the installation and migration cannot be completed successfully, please join the planned support call with our engineers.
 
 !!! question "Will there be any outage in email delivery during the migration?"
-    Between **"Step 1.5 - Shutdown existing MGW VM"** and **"Step 18 - Configure mail server"**, all emails will be queued on the mail server. Once "Step 18 - Configure mail server" has been completed, the queued emails will be sent out or delivered to the mailbox.
+    This depends on the migration scenario you chose:
+
+    - **All domains at once:** between **"Step 1.5 - Shutdown existing MGW VM"** and **"Step 18 - Configure mail server"**, all emails will be queued on the mail server. Once "Step 18 - Configure mail server" has been completed, the queued emails will be sent out or delivered to the mailbox.
+    - **Staged migration:** the existing MGW stays online and keeps serving all domains that have not yet been migrated, so there is no queuing for those domains. For a domain being migrated in the current wave, emails are queued only for the short period between updating that domain's Microsoft 365 mail-flow rule and completing "Step 18 - Configure mail server" for it.
 
 !!! question "Will any emails be lost during the installation and migration?"
-    No, no emails will be lost during the installation and migration.
+    No, no emails will be lost during the installation and migration, in either scenario.
 
 ## Overview of the installation steps
 
-| Step | Topic | Responsibility |
-| :--: | :---- | :------------: |
-| 0 | Check prerequisites | Customer |
-| 1.1 | Smoke test | Customer |
-| 1.2 | Backing up the existing MGW | Customer |
-| 1.3 | Export private key(s) | Customer / HIN |
-| 1.4 | Contingency plan / fallback scenario | Customer |
-| 1.5 | Shutdown existing MGW VM | Customer |
-| 2 | WireGuard | Customer |
-| 3 | Select target VM | Customer |
-| 4 | Load VM image | Customer |
-| 5 | Network connection to the VM | Customer |
-| 6 | Access via the browser | Customer |
-| 7 | Enter activation code | Customer |
-| 8 | Mesh network setup | Customer |
-| 9 | Establishing secure mesh network | Customer |
-| 10 | Login to Keycloak | Customer |
-| 11 | Update password | Customer |
-| 12 | Update account information | Customer |
-| 13 | Initial configuration and domain setup | Customer |
-| 14 | Configure mail transport | Customer |
-| 15 | Configure whitelist headers | Customer |
-| 16 | Peer certificates | HIN |
-| 17 | Validate peer certificates | Customer |
-| 18 | Configure mail server | Customer |
-| 19 | Test prior to switchover | Customer |
-| 20 | Validation after switchover | Customer |
-| 21 | Take existing MGW out of service | Customer |
-| 22 | Change the password of the VM | Customer |
-| Annex 1 | Backing up and restoring the appliance settings | Customer |
+| Step | Topic | Responsibility | Scenario |
+| :--: | :---- | :------------: | :------- |
+| 0 | Check prerequisites | Customer | |
+| 1.1 | Smoke test | Customer | |
+| 1.2 | Backing up the existing MGW | Customer | |
+| 1.3 | Export private key(s) | Customer / HIN | |
+| 1.4 | Contingency plan / fallback scenario | Customer | All at once / Staged |
+| 1.5 | Shutdown existing MGW VM | Customer | All at once / Staged |
+| 2 | WireGuard | Customer | |
+| 3 | Select target VM | Customer | |
+| 4 | Load VM image | Customer | |
+| 5 | Network connection to the VM | Customer | All at once / Staged |
+| 6 | Access via the browser | Customer | |
+| 7 | Enter activation code | Customer | |
+| 8 | Mesh network setup | Customer | All at once / Staged |
+| 9 | Establishing secure mesh network | Customer | |
+| 10 | Login to Keycloak | Customer | |
+| 11 | Update password | Customer | |
+| 12 | Update account information | Customer | |
+| 13 | Initial configuration and domain setup | Customer | |
+| 14 | Configure mail transport | Customer | |
+| 15 | Configure whitelist headers | Customer | |
+| 16 | Peer certificates | HIN | |
+| 17 | Validate peer certificates | Customer | |
+| 18 | Configure mail server | Customer | All at once / Staged |
+| 19 | Test prior to switchover | Customer | |
+| 20 | Validation after switchover | Customer | |
+| 21 | Take existing MGW out of service | Customer | All at once / Staged |
+| 22 | Change the password of the VM | Customer | |
+| Annex 1 | Backing up and restoring the appliance settings | Customer | |
 
 ## Detailed steps
 
@@ -120,6 +133,20 @@ The following items must be available or confirmed before the installation:
 - **Backup requirements** - see "Annex 1 - Backing up and restoring the appliance settings".
 - Confirmation that the existing MGW will **not** be deleted until acceptance has been completed.
 - Access to DNS, mail server connectors, transport rules, and relay settings.
+- **Domain inventory** - for every trusted domain that will be migrated, record the following information:
+
+    | Item | Description |
+    |------|-------------|
+    | Domain name and owner | The domain and the person or team responsible for it |
+    | Sec-prefix status | Whether the `sec.<domain>` security prefix is configured |
+    | Forwarding / outgoing server | The current relay configuration on the MGW |
+    | Header check | Any customer-specific header check configured on the MGW |
+    | Certificate file | The existing S/MIME certificate (`.p12`/`.pfx`) for the domain |
+    | Test mailbox | A mailbox in the domain that can be used for the smoke test |
+    | Migration wave | The wave the domain belongs to (staged migration only) |
+
+- **Microsoft 365 configuration** - record the existing connectors, transport rules, routing rules, DNS records and firewall/NAT settings that apply to every domain.
+- **Staged migration only** - reserve a second public IP address (**Public IP B**) for the HIN Gateway and plan its firewall/NAT path. The existing MGW keeps using its current public IP address (**Public IP A**) until all domains have been migrated.
 
 !!! info "Why WireGuard?"
     The WireGuard port fulfils two important functions:
@@ -143,6 +170,8 @@ Send a test email to the following recipients, where you have access to the mail
 
 Verify that both emails are delivered successfully, including subject, content and attachment (if sent).
 
+Repeat this test for a mailbox in **every trusted domain** that will be migrated, and record the HIN Community and external delivery results per domain before making any changes.
+
 ### Step 1.2 - Backing up the existing MGW
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
@@ -158,6 +187,9 @@ Create a backup of the existing MGW appliance and ensure that the VM is retained
 
 !!! tip "MGW header check"
     If you use the `Header check` option in the MGW, note down the configured value as well. You can set up the same header check later in the HIN Gateway.
+
+!!! tip "Staged migration - change protocol"
+    If you are migrating in stages, keep a change protocol that records, for every change you make: the previous value, the new value, the test result and the rollback action. This log is essential to reverse a wave correctly if a rollback is required.
 
 ### Step 1.3 - Export private key(s)
 
@@ -184,24 +216,41 @@ If you would like to continue the installation on your own, please contact HIN S
 10. Scroll down to the **"PKCS12 download"** category (you may optionally enter a password to encrypt the key). Press **"Download PKCS12"** and save the `*.p12` file on the computer. <br> ![PKCS12 download](assets/installation-guide/step1.3-10-pkcs12-download.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 11. Return to the `HIN_Migration-Tool_v*.exe` application and disable the **Export** button. <br> ![Disable export](assets/installation-guide/step1.3-11-disable-export.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
+!!! tip "Multiple domains"
+    Repeat steps 8-10 above for **every trusted domain** that uses its own private key, selecting the correct domain and fingerprint each time. Save each exported `*.p12` file with a name that clearly identifies the domain it belongs to, so that it can be imported into the correct domain later (see "Step 13 - Initial configuration and domain setup"). Only disable the **Export** button (step 11) once all required files have been downloaded.
+
 ### Step 1.4 - Contingency plan / fallback scenario
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-**Rollback scenario** - if a rollback is required:
+**All domains at once** - if a rollback is required:
 
 1. Stop the new HIN Gateway.
 2. Power on the existing MGW.
-3. Verify that inbound and outbound email traffic is functioning correctly via the existing MGW.
+3. Verify that inbound and outbound email traffic is functioning correctly via the existing MGW, for all domains.
+
+**Staged migration** - if a rollback is required for a domain in the current wave:
+
+1. Keep the existing MGW running - do not stop it.
+2. Point the affected domain's Microsoft 365 mail-flow rule back to the MGW.
+3. Reverse the connector, transport-rule and header-rule changes made for that domain, in the opposite order in which they were made (see the change protocol from "Step 1.2 - Backing up the existing MGW").
+4. Route the affected domain back to the MGW and verify that inbound and outbound traffic for that domain is functioning correctly.
+5. Retest both the rolled-back domain and any domains already migrated in earlier waves, to confirm they are unaffected.
 
 ### Step 1.5 - Shutdown existing MGW VM
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
+**All domains at once:**
+
 Shut down the existing MGW VM.
 
 !!! warning
     This step will interrupt the mail flow. During the interruption, emails will be queued on the mail server and delivered after the installation has been completed (see "Step 18 - Configure mail server").
+
+**Staged migration:**
+
+Do **not** shut down the existing MGW VM. It must remain online, on its existing public IP address (Public IP A), to keep serving all domains that have not yet been migrated. Shut down the MGW only once the final migration wave has passed acceptance (see "Step 21 - Take existing MGW out of service").
 
 ### Step 2 - WireGuard
 
@@ -211,6 +260,9 @@ Ensure you have configured the WireGuard port `19818` (TCP/UDP) in your firewall
 
 - Incoming and outgoing traffic
 - Allow traffic: any-to-HIN Gateway and HIN Gateway-to-any
+
+!!! tip "Staged migration"
+    Apply these firewall rules to the HIN Gateway's public IP address (Public IP B). The existing MGW path on its own public IP address (Public IP A) remains active and unaffected while both gateways run in parallel.
 
 ### Step 3 - Select target VM
 
@@ -239,6 +291,10 @@ Upload the selected VM image to your hypervisor.
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
+**All domains at once:** the HIN Gateway can reuse the existing production IP address, but only once the MGW has been stopped (see "Step 1.5 - Shutdown existing MGW VM").
+
+**Staged migration:** configure a separate address for the HIN Gateway VM, together with the firewall/NAT mapping for Public IP B, while the MGW continues to use Public IP A. Follow the same static-IP configuration described below.
+
 Ensure that the VM has a network connection and that a static IP address has been assigned to it.
 
 **Option A:** Configure the IP address of the virtual machine directly in the hypervisor you are using.
@@ -265,34 +321,23 @@ Add an IP address on Linux:
     sudo systemctl restart NetworkManager
     ```
 
-??? tip "Cloud-init overrides VM network settings after reboot"
-    It is possible sometimes that Cloud-init overrides VM network settings after reboot. This is harmful when no DHCP configured and VM will be booted without any IP and Route configuration. To disable this behavior please perform following actions:
+??? warning "Network must be configured before first boot"
+    The VM image runs an automatic installation on first boot. If the network is not yet configured (no IP address assigned via DHCP or static config), the installation will fail because the server IP cannot be detected.
 
-    1. Stop cloud-init regenerating network config each boot:
+    If this happens, configure the network manually, then run:
+
     ```bash
-    printf 'network: {config: disabled}\n' | sudo tee /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+    cd /root/stargate-deployment/docker-compose
+    ./scripts/purge.sh
+    # Update configuration with a new ip, by editing it with nano
+    # SERVER_STATIC_IP=<NEW IP>
+    nano customer-config.sh
+    # OR use sed
+    # sed -i 's/old IP/new IP/g' customer-config.sh
+    ./scripts/install.sh
     ```
-    2. Remove the cloud-init/DHCP profile so it can't autoconnect anymore:
-    ```bash
-    # get name of cloud-init interface
-    nmcli connection show
-    # use the exact NAME from `nmcli connection show`
-    nmcli con delete "cloud-init <iface>
-    ```
-    3. Pin the manual profile as the autoconnect winner:
-    ```bash
-    nmcli con mod "<manual-profile>" ipv4.method manual ipv4.addresses <IP>/<PREFIX> \
-    ipv4.gateway <GW> ipv4.dns "<DNS>" connection.autoconnect yes connection.autoconnect-priority 100
-    nmcli con up "<manual-profile>"
-    ```
-    4. Prove it survives. Reboot VM:
-    ```bash
-    sudo reboot
-    ```
-    then check current network configuration:
-    ```bash
-    nmcli device status; ip -4 addr
-    ```
+
+    The install script will auto-detect the server's IP from the default route. Any reachable IP (public or private) is sufficient - the actual public endpoint is configured later through the dashboard.
 
 !!! tip
     If you used Option C and configured the network manually, you must run the following commands:
@@ -354,6 +399,9 @@ Verify the mesh network configuration:
     This is an IP address that Machine will use to be accessible via internet.
     This is **not** internal Machine IP address after Firewall or NAT, e.g. `10.0.0.0/8`, `172.16.0.0/12` or `192.168.0.0/16`.
 
+!!! tip "Verify the endpoint matches your scenario"
+    Confirm that the detected public IP address matches the migration scenario you chose: the reused production endpoint for an all-at-once migration, or **Public IP B** for a staged migration.
+
 Confirm that the values are correct and click "Next".
 
 ![Mesh network setup screen](assets/installation-guide/step8-mesh-network.png)
@@ -410,14 +458,14 @@ Complete your account profile by entering your first name and last name. The ema
 
 ![Update account information screen](assets/installation-guide/step12-account-info.png)
 
-### Step 13 - Initial configuration and domain setup
+### Step 13 - Initial configuration and domain/s setup
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-On this screen, configure your initial settings:
+On this screen, configure your initial settings for **every trusted domain**:
 
 - Verify that all your current trusted domain(s) within the HIN Community are displayed correctly.
-- Select which trusted domain(s) should be **Enabled** to obtain peer certificates from the HIN Certification Authority (HIN CA).
+- Select which trusted domain(s) should be **Enabled** to obtain peer certificates from the HIN Certification Authority (HIN CA), if not -to import already existing certificates.
 - Indicate for which domain(s) the `sec.<domain>` prefix is already configured ("Use sec-prefix").
 
 ??? tip "How to check if my domain is set up with a Security Prefix?"
@@ -428,7 +476,7 @@ On this screen, configure your initial settings:
     Then your domain is set up with a Security Prefix, and you have to enable the **Use sec-prefix** option.
 
 - Verify that the organization name and domain owners are correct. <br> ![Screenshot](assets/step_13_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" } <br> ![Screenshot](assets/step_13_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-- Import the existing S/MIME certificate file (`.p12`/`.pfx`) from the existing MGW:
+- Import the existing S/MIME certificate file (`.p12`/`.pfx`) from the existing MGW, for each domain that has its own certificate:
     1. Expand the domain and select the **P12/PFX File** option.
     2. If no password has been set for the certificate file, leave the password field empty.
     3. Click **"Import Certificate"**.
@@ -443,6 +491,10 @@ On this screen, configure your initial settings:
 
 !!! danger "Import your existing private key"
     If you do **not** import the private key from your existing MGW, a new key will be issued. This may result in messages not being decryptable for up to **6 hours**, which could lead to **data loss**.
+
+!!! tip "All at once or staged?"
+    - **All domains at once:** prepare and enable all domains together for the planned maintenance window.
+    - **Staged migration:** enable only the domains that belong to the **current migration wave**. Keep a record of which domains were enabled in each wave.
 
 ![Setup screen](assets/installation-guide/step13-initial-setup2.png)
 
@@ -489,43 +541,12 @@ Under the **Domains** menu, for each available domain you can configure specific
 | **ARC** | Recommended to keep it as is |
 | **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate|
 
-??? tip "How to test TLS connection?"
-    You can always test if configured TLS Certificate was applied on your connection to HIN Gateway or not. Execute following command directly from HIN Gateway Terminal:
-
-    ```bash
-    openssl s_client -connect 127.0.0.1:25 -starttls smtp -servername mail.<YOUR_DOMAIN>
-    ```
-
-    Or, directly from your local machine:
-
-    ```bash
-    openssl s_client -connect <HIN Gateway IP>:25 -starttls smtp -servername mail.<YOUR_DOMAIN>
-    ```
-
-    In output you will see all data related to your TLS connection and used Certificate.
-
-??? question "How to convert `pfx` to `pem` TLS Certificate?"
-    Use openssl command:
-
-    ```bash
-    openssl pkcs12 -in <Certificate>.pfx -out <Certificate>.pem -nodes
-    ```
-
-    E.g.:
-
-    ```bash
-    openssl pkcs12 -in certificate.pfx -out keyStore.pem -nodes
-    # Sometimes you need to add -legacy argument to system with older Certificates generators
-    openssl pkcs12 -in certificate.pfx -out keyStore.pem -nodes -legacy
-    ```
-
-Additional actions:
-
-- Add additional domains by clicking "Add domain", if required.
-- Expand the Advanced section to fine-tune mail transport parameters.
 
 !!! note
     Ensure that all relay host and domain configurations are correct before proceeding.
+
+!!! tip "Staged migration"
+    Configure only the domains that the HIN Gateway is intended to process in the active wave, unless otherwise instructed by HIN. Domains scheduled for a later wave keep using the MGW and do not need a HIN Gateway transport configuration yet.
 
 Once the configuration has been reviewed and completed, click "Save" to continue.
 
@@ -535,9 +556,12 @@ Once the configuration has been reviewed and completed, click "Save" to continue
 
 Click **"Domains"**, then select **"Whitelist headers"**.
 
-Enter the key exactly as configured in the mail server.
+Enter the key exactly as configured in the mail server, repeating this for every domain that uses a customer-specific header check.
 
 ![Screenshot](assets/step_15_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+!!! tip "Staged migration"
+    While the MGW and the HIN Gateway run in parallel, verify that header-based rules behave correctly on **both** appliances before moving the next domain to the HIN Gateway.
 
 ### Step 16 - Peer certificates
 
@@ -545,7 +569,7 @@ Enter the key exactly as configured in the mail server.
 
 Peer certificates are issued by the HIN Certification Authority (HIN CA) for enabled domains.
 
-Once the onboarding is complete, navigate to the **Peer certificates** section in the dashboard and click the **"Sync certificates"** button to synchronise your peer certificates from the HIN CA.
+Once the onboarding is complete, navigate to the **Peer certificates** section in the dashboard and click the **"Sync certificates"** button to synchronise your peer certificates from the HIN CA. In a staged migration, repeat this synchronisation each time a new wave of domains is enabled.
 
 ![Peer certificates screen](assets/installation-guide/step15-peer-certificates.png)
 
@@ -557,6 +581,8 @@ Ensure that your domain has received its policy-based peer certificate under **"
 
 ![Screenshot](assets/step_17_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
+In a staged migration, validate the status for every domain in the current wave and record the result before redirecting that domain's mail flow to the HIN Gateway.
+
 !!! question
     Contact HIN Support by email or phone (**<support@hin.ch>** / **0848 830 740**) if you encounter any issues.
 
@@ -564,16 +590,28 @@ Ensure that your domain has received its policy-based peer certificate under **"
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-If you followed the recommended approach by exporting the private key, importing it into the HIN Gateway, and keeping the **same IP address** as the existing MGW, no changes are required on the email server.
+**All domains at once:**
+
+If you followed the recommended approach by exporting the private key, importing it into the HIN Gateway, and keeping the **same IP address** as the existing MGW, no changes are required on the email server, and no temporary Microsoft 365 connectors or split rules are needed.
 
 Otherwise, configure your mail server or the associated components so that traffic is routed via the new HIN Gateway. Check and update the following settings, if required:
-
-#### Email server
 
 - SMTP relay / smart host
 - Connectors
 - Transport rules
 - Routing domains
+
+**Staged migration:**
+
+Keep the MGW running on its existing public IP address (Public IP A). Route the HIN Gateway through the reserved public IP address (Public IP B), then:
+
+1. Create two connectors in Exchange Online - one **Inbound** and one **Outbound** - pointing to the HIN Gateway.
+2. Add a Microsoft 365 mail-flow rule that routes by domain: the domain(s) in the current wave go to the HIN Gateway, all remaining domains stay on the MGW.
+3. Record the rule priority and all header-related changes in your change protocol (see "Step 1.2 - Backing up the existing MGW").
+4. Repeat gradually - move one additional domain (or wave) at a time until every domain is on the HIN Gateway.
+
+!!! warning "Customer-specific headers"
+    Some domains rely on custom X-headers (routing, anti-spam allow-lists, compliance tags). Confirm that the HIN Gateway's connectors preserve or replicate these headers before cutting a domain over - missing headers can cause mis-routing or rejected mail.
 
 See [Exchange Integration](Exchange-integration.md) for detailed instructions.
 
@@ -608,7 +646,7 @@ See [Exchange Integration](Exchange-integration.md) for detailed instructions.
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Repeat the "Step 1.1 - Smoke test". In addition to the smoke test, please test and confirm the following:
+Repeat the "Step 1.1 - Smoke test" for every domain in the current migration wave. In addition to the smoke test, please test and confirm the following, for each domain:
 
 **Outgoing:**
 
@@ -623,28 +661,34 @@ Repeat the "Step 1.1 - Smoke test". In addition to the smoke test, please test a
 - Verify that replies from senders outside the HIN Community to an initial secure email (HIN Mail-SEAL) can reach the HIN Gateway.
 - Verify that plain-text emails can be received from external senders outside the HIN Community.
 
+**Staged migration only:**
+
+Also test at least one domain that has **not** been migrated in the current wave, and confirm that it is still routed through the MGW.
+
 ### Step 20 - Validation after switchover
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Confirm:
+Confirm, for every domain in the current migration wave:
 
 - Emails delivered
 - Encryption applied
 - No delays or bounces
 - Logging successful
 
-Complete the [**Acceptance Report**](https://www.hin.ch/files/pdf1/gateway-acceptance-en.pdf) and return it to your HIN representative.
+**Staged migration:** also verify the routing split on both appliances after each wave - domains in the current wave use the HIN Gateway, remaining domains still use the MGW. Complete the [**Acceptance Report**](https://www.hin.ch/files/pdf1/gateway-acceptance-en.pdf) only once **every domain has been migrated and validated**, and return it to your HIN representative.
+
+**All domains at once:** complete the [**Acceptance Report**](https://www.hin.ch/files/pdf1/gateway-acceptance-en.pdf) once all domains have been validated, and return it to your HIN representative.
 
 ### Step 21 - Take existing MGW out of service
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
 !!! warning
-    Do not delete the existing MGW VM immediately - keep it safe until everything is up and running.
+    Do not delete or decommission the existing MGW VM while **any domain** still uses it. In a staged migration, wait until the final wave has passed acceptance (see "Step 20 - Validation after switchover") before proceeding with this step.
 
 1. **Ensure there is no active traffic** - check:
-    - No domains are pointing to the MGW (DNS, SMTP, connectors).
+    - No domains are pointing to the MGW (DNS, SMTP, connectors, transport rules, header rules).
     - No emails are being forwarded via the old appliance.
 2. **Archive logs** - export and save:
     - Email logs
@@ -660,6 +704,8 @@ Complete the [**Acceptance Report**](https://www.hin.ch/files/pdf1/gateway-accep
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
 Please make sure that the VM credentials which were provided to you initially are changed to your own defined password, and keep them in a secured and safe place.
+
+Keep the retained MGW credentials available until final acceptance, in case a rollback is still required.
 
 ## Annex 1 - Backing up and restoring the appliance settings
 
@@ -705,3 +751,6 @@ This command downloads the file `backup.tgz` from the MGW to the current local d
 
 !!! note
     If you enter a new public key, the existing key will be replaced.
+
+!!! note "Staged migration"
+    A staged migration also relies on the external change protocol described in "Step 1.2 - Backing up the existing MGW", and on backups or exports of the Microsoft 365 connectors, transport rules and header rules, as well as the MGW configuration. These items are **not** included in the HIN Gateway appliance backup described above.
