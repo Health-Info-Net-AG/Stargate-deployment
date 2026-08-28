@@ -455,7 +455,7 @@ On this screen, configure your initial settings:
 
     Then your domain is set up with a Security Prefix, and you have to enable the **Use sec-prefix** option.
 
-- Verify that the organization name and domain owners are correct. <br> ![Screenshot](assets/step_13_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" } <br> ![Screenshot](assets/step_13_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+- Verify that the organization name and domain owners are correct. <br> ![Screenshot](assets/installation-guide/step13-1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" } <br> ![Screenshot](assets/step_13_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 - Import the existing S/MIME certificate file (`.p12`/`.pfx`) from the existing MGW:
     1. Expand the domain and select the **P12/PFX File** option.
     2. If no password has been set for the certificate file, leave the password field empty.
@@ -488,21 +488,9 @@ On this screen, configure your initial settings:
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-##### Settings page
+You will be logged at the HIN gateway dashboard at `Domains` page
 
-On this page under `Settings` menu, configure your global mail transport settings for the secure mail relay setup which are common for the whole instance. Detailed configuration for each domain can be performed under `Domains` -> `$domain`
-
-![Mail transport configuration screen](assets/installation-guide/step14-mail-transport2.png)
-
-The following settings are available `Settings` menu:
-
-| Setting | Description |
-|---------|-------------|
-| **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
-| **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
-| **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
-| **Default inbound relay** | The default SMTP relay for inbound delivery |
-| **Default outbound relay** | The default SMTP relay for outbound delivery |
+ <br> ![Screenshot](assets/installation-guide/step14-dashboard-domains.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 
 ##### Domains page
@@ -561,6 +549,23 @@ Additional actions:
     Ensure that all relay host and domain configurations are correct before proceeding.
 
 Once the configuration has been reviewed and completed, click "Save" to continue.
+
+##### Settings page
+
+On this page under `Settings` menu, configure your global mail transport settings for the secure mail relay setup which are common for the whole instance. Detailed configuration for each domain can be performed under `Domains` -> `$domain`
+
+![Mail transport configuration screen](assets/installation-guide/step14-mail-transport2.png)
+
+The following settings are available `Settings` menu:
+
+| Setting | Description |
+|---------|-------------|
+| **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
+| **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
+| **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
+| **Default inbound relay** | The default SMTP relay for inbound delivery |
+| **Default outbound relay** | The default SMTP relay for outbound delivery |
+
 
 ### Step 15 - Configure whitelist headers
 
