@@ -401,7 +401,7 @@ services:
       # LDAP_USERNAME: "cn=admin,dc=seppmailserver,dc=ch"
       # LDAP_BASE_DN: "ou=publicHINKeys,dc=seppmailserver,dc=ch"
 
-      LOG_LEVEL: "debug"
+      LOG_LEVEL: "info"
     ports:
       - "8081:8080"
       - "2113:2112"
@@ -525,7 +525,7 @@ services:
       # message size limit
       HTTP_MAX_REQUEST_BODY_SIZE: "31457280"
 
-      LOG_LEVEL: "debug"
+      LOG_LEVEL: "info"
     ports:
       - "8083:8080"
       - "2114:2112"
@@ -653,9 +653,8 @@ services:
       - autoheal=true
 
   idagent:
-    # TODO(rollout): pin a published version tag once the idagent image is released.
-    # Versions are pinned directly here now (no *_VERSION env indirection).
-    image: registry.vereign.io/svdh/idagent:v0.0.1
+    # renovate: datasource=docker depName=healthinfonetag/idagent
+    image: healthinfonetag/idagent:v0.0.1
     container_name: stargate-idagent
     restart: unless-stopped
     logging:
@@ -689,15 +688,18 @@ services:
       VAULT_KV2_CAS_REQUIRED: "false"
       VAULT_KV2_DELETE_VERSION_AFTER: "0s"
 
-      # KERI topology (configurable; local-only by default). Set KERI_WITNESSES to
-      # the shared witness pool's OOBIs (JSON array) + KERI_WITNESS_THRESHOLD
-      # (<= number of witnesses) once the pool is reachable. IMPORTANT: with a
-      # non-zero threshold the pool MUST be up before idagent's first start, or
-      # inception fails without receipts. KERI_WATCHER_OOBI points at this
-      # deployment's watcher (compose profile keri-watcher) and is only needed to
-      # verify OTHER orgs' anchors; leave empty for self-verification only.
-      KERI_WITNESSES: "${KERI_WITNESSES:-[]}"
-      KERI_WITNESS_THRESHOLD: "${KERI_WITNESS_THRESHOLD:-0}"
+      # KERI topology. Defaults are the shared HIN witness pool (seal-prod) over
+      # its public https endpoints; baked in because the compose tree is read-only
+      # on bootc and cannot be supplied per-deployment at runtime. The scheme here
+      # must match the scheme the witness advertises in its /loc/scheme reply -
+      # idagent looks the OOBI up by (eid, scheme) from this list.
+      # IMPORTANT: with a non-zero threshold the pool MUST be reachable before
+      # idagent's first start, or inception fails without receipts.
+      # KERI_WATCHER_OOBI points at this deployment's OWN watcher (compose profile
+      # keri-watcher, per-VM seed) and is only needed to verify OTHER orgs'
+      # anchors; leave empty for self-verification only.
+      KERI_WITNESSES: '${KERI_WITNESSES:-[{"eid":"BMGbBCw5I-zLanhgJdRXQ-EU4G61P7M8jTpFrstK5ArZ","scheme":"https","url":"https://witness-1.verify-mail.hin-infra.ch/"},{"eid":"BJGVotztVGSfp5mJbr4zUgd5X0fOh3OVMrhoAWLODR4O","scheme":"https","url":"https://witness-2.verify-mail.hin-infra.ch/"},{"eid":"BEq3J1mCOXGj-Pe9FFXIga16BiTSFwU0TS4SLfCCorBZ","scheme":"https","url":"https://witness-3.verify-mail.hin-infra.ch/"}]}'
+      KERI_WITNESS_THRESHOLD: "${KERI_WITNESS_THRESHOLD:-2}"
       KERI_WATCHER_OOBI: "${KERI_WATCHER_OOBI:-}"
     volumes:
       - ${STARGATE_DATA_DIR:-/var/data}/idagent:/data/keri
@@ -711,8 +713,8 @@ services:
       - autoheal=true
 
   mailauth:
-    # TODO(rollout): pin a published version tag once the mailauth image is released.
-    image: registry.vereign.io/svdh/mailauth:v0.0.5
+    # renovate: datasource=docker depName=healthinfonetag/mailauth
+    image: healthinfonetag/mailauth:v0.0.5
     container_name: stargate-mailauth
     restart: unless-stopped
     logging:
@@ -767,9 +769,8 @@ services:
   # (3) set idagent's KERI_WATCHER_OOBI to this watcher's OOBI. Image built from a
   # pinned keriox commit (see the keriox-tools repo).
   watcher:
-    # TODO(rollout): pin a published keriox-watcher version tag (opt-in profile).
-    # image: healthinfonetag/keriox-watcher:dev
-    image: registry.vereign.io/svdh/keriox-watcher:v0.0.1
+    # renovate: datasource=docker depName=healthinfonetag/keriox-watcher
+    image: healthinfonetag/keriox-watcher:v0.0.1
     container_name: stargate-watcher
     profiles: ["keri-watcher"]
     restart: unless-stopped
@@ -892,7 +893,7 @@ services:
 
       #monitoring
       LOKI_URL: "http://loki:3100"
-      LOG_LEVEL: "debug"
+      LOG_LEVEL: "info"
 
     networks:
       - stargate-network
@@ -1252,7 +1253,7 @@ services:
   # Ops Agent - executes infrastructure commands (updates, restarts) from dashboard via NATS
   ops-agent:
     # renovate: datasource=docker depName=healthinfonetag/stargate-ops
-    image: healthinfonetag/stargate-ops:v0.0.6
+    image: healthinfonetag/stargate-ops:v0.0.7
     container_name: stargate-ops-agent
     restart: unless-stopped
     logging:
@@ -1279,7 +1280,7 @@ services:
       # rejects the update. App + infra services (overrides the Go default).
       # Stateful services (POSTGRES/VAULT/KEYCLOAK) are updatable but should be
       # bumped deliberately - a recreate runs against the existing data volume.
-      ALLOWED_VERSION_KEYS: "SMIMEKEYS_VERSION,POLICY_VERSION,IRISAGENT_VERSION,MXENGINE_VERSION,POLICY_SYNC_VERSION,DASHBOARD_VERSION,MTACONF_VERSION,OPS_AGENT_VERSION,DOZZLE_VERSION,CLAMAV_VERSION,POSTGRES_VERSION,KEYCLOAK_VERSION,VAULT_VERSION,APISIX_VERSION,NATS_VERSION,SEAWEEDFS_VERSION,CADDY_VERSION,LOKI_VERSION,ALLOY_VERSION,NODE_EXPORTER_VERSION,STALWART_VERSION,OAUTH2_PROXY_VERSION"
+      ALLOWED_VERSION_KEYS: "SMIMEKEYS_VERSION,POLICY_VERSION,IRISAGENT_VERSION,MXENGINE_VERSION,POLICY_SYNC_VERSION,DASHBOARD_VERSION,MTACONF_VERSION,OPS_AGENT_VERSION,IDAGENT_VERSION,MAILAUTH_VERSION,KERIOX_WATCHER_VERSION,DOZZLE_VERSION,CLAMAV_VERSION,POSTGRES_VERSION,KEYCLOAK_VERSION,VAULT_VERSION,APISIX_VERSION,NATS_VERSION,SEAWEEDFS_VERSION,CADDY_VERSION,LOKI_VERSION,ALLOY_VERSION,NODE_EXPORTER_VERSION,STALWART_VERSION,OAUTH2_PROXY_VERSION"
     networks:
       - stargate-network
     healthcheck:
