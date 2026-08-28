@@ -1275,6 +1275,7 @@ services:
       COMPOSE_PROJECT_NAME: "docker-compose"
       HOST_INSTALL_DIR: "${HOST_INSTALL_DIR:-/root/stargate-deployment}"
       LOG_LEVEL: "info"
+      OS_IMAGE: "docker.io/healthinfonetag/vm-bootc"
       # Version keys the dashboard update flow is allowed to change. Must list
       # every *_VERSION present in the release manifest, otherwise the ops-agent
       # rejects the update. App + infra services (overrides the Go default).
