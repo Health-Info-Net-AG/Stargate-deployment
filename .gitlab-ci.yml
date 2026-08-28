@@ -221,8 +221,9 @@ trigger_bootc_pipeline:
   needs: []
   allow_failure: true
   rules:
-    # Release shapes only. Every other tag is a QA test tag and goes to build_test_image below.
-    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\d+)?$/'
+    # Every tag except an explicit `-test` one, which goes to build_test_image below: release tag names
+    # vary, so prod is the default. An unset tag matches !~, hence the presence check.
+    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG !~ /-test/'
   variables:
     STARGATE_REF: $CI_COMMIT_TAG
     # Pinned, not inherited: a Run pipeline on a release tag would otherwise carry form values into a release.
@@ -240,8 +241,8 @@ build_test_image:
   stage: trigger
   needs: []
   rules:
-    # Any tag that is not a release shape. A tag push carries no form values, so the repo defaults apply.
-    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG !~ /^v\d+\.\d+\.\d+(-rc\d+)?$/'
+    # A QA test tag, e.g. v0.5.8-testmain. A tag push carries no form values, so the repo defaults apply.
+    - if: '$CI_COMMIT_TAG =~ /-test/'
     # A Run pipeline on a branch. Not on `push`: a build is ~11-25 min of one host, so it is opt-in per run.
     - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_TAG == null'
   variables:
