@@ -688,15 +688,18 @@ services:
       VAULT_KV2_CAS_REQUIRED: "false"
       VAULT_KV2_DELETE_VERSION_AFTER: "0s"
 
-      # KERI topology (configurable; local-only by default). Set KERI_WITNESSES to
-      # the shared witness pool's OOBIs (JSON array) + KERI_WITNESS_THRESHOLD
-      # (<= number of witnesses) once the pool is reachable. IMPORTANT: with a
-      # non-zero threshold the pool MUST be up before idagent's first start, or
-      # inception fails without receipts. KERI_WATCHER_OOBI points at this
-      # deployment's watcher (compose profile keri-watcher) and is only needed to
-      # verify OTHER orgs' anchors; leave empty for self-verification only.
-      KERI_WITNESSES: "${KERI_WITNESSES:-[]}"
-      KERI_WITNESS_THRESHOLD: "${KERI_WITNESS_THRESHOLD:-0}"
+      # KERI topology. Defaults are the shared HIN witness pool (seal-prod) over
+      # its public https endpoints; baked in because the compose tree is read-only
+      # on bootc and cannot be supplied per-deployment at runtime. The scheme here
+      # must match the scheme the witness advertises in its /loc/scheme reply -
+      # idagent looks the OOBI up by (eid, scheme) from this list.
+      # IMPORTANT: with a non-zero threshold the pool MUST be reachable before
+      # idagent's first start, or inception fails without receipts.
+      # KERI_WATCHER_OOBI points at this deployment's OWN watcher (compose profile
+      # keri-watcher, per-VM seed) and is only needed to verify OTHER orgs'
+      # anchors; leave empty for self-verification only.
+      KERI_WITNESSES: '${KERI_WITNESSES:-[{"eid":"BMGbBCw5I-zLanhgJdRXQ-EU4G61P7M8jTpFrstK5ArZ","scheme":"https","url":"https://witness-1.verify-mail.hin-infra.ch/"},{"eid":"BJGVotztVGSfp5mJbr4zUgd5X0fOh3OVMrhoAWLODR4O","scheme":"https","url":"https://witness-2.verify-mail.hin-infra.ch/"},{"eid":"BEq3J1mCOXGj-Pe9FFXIga16BiTSFwU0TS4SLfCCorBZ","scheme":"https","url":"https://witness-3.verify-mail.hin-infra.ch/"}]}'
+      KERI_WITNESS_THRESHOLD: "${KERI_WITNESS_THRESHOLD:-2}"
       KERI_WATCHER_OOBI: "${KERI_WATCHER_OOBI:-}"
     volumes:
       - ${STARGATE_DATA_DIR:-/var/data}/idagent:/data/keri

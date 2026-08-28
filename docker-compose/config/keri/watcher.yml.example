@@ -35,8 +35,15 @@ http_port: 3235
 public_url: "http://watcher:3235/"
 
 # The shared witness pool this watcher resolves at startup. One entry per witness;
-# must match idagent's KERI_WITNESSES.
+# must match idagent's KERI_WITNESSES (same eid AND same scheme - the OOBI is
+# looked up by that pair). These are the HIN production witnesses.
 initial_oobis:
-  - eid: "REPLACE_ME_witness_1_eid"
-    scheme: http
-    url: "http://REPLACE_ME_witness_1_host:3232/"
+  - eid: "BMGbBCw5I-zLanhgJdRXQ-EU4G61P7M8jTpFrstK5ArZ"
+    scheme: https
+    url: "https://witness-1.verify-mail.hin-infra.ch/"
+  - eid: "BJGVotztVGSfp5mJbr4zUgd5X0fOh3OVMrhoAWLODR4O"
+    scheme: https
+    url: "https://witness-2.verify-mail.hin-infra.ch/"
+  - eid: "BEq3J1mCOXGj-Pe9FFXIga16BiTSFwU0TS4SLfCCorBZ"
+    scheme: https
+    url: "https://witness-3.verify-mail.hin-infra.ch/"
