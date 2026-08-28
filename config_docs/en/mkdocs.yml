@@ -161,9 +161,9 @@ not_in_nav: |
 nav:
   - Home: index.md
   - Installation Guides:
-      - HIN Gateway installation guide: Installation-guide.md
+      - HIN Gateway–Technical Guide for New Installation and Migration: Installation-guide.md
   #      - New Customers: New-customers.md
-      - Multi-domain scenarios and recommendations: Multi-domain-migration-scenarios.md
+      - Multi-Domain Scenarios and Recommendation: Multi-domain-migration-scenarios.md
   - Technical configuration and Integration:
       - Applications overview: Applications.md
       - Monitoring and Logs: Monitoring.md

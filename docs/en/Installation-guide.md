@@ -1,4 +1,4 @@
-# HIN Mail Gateway - Technical Installation Process
+# HIN Gateway – Technical Guide for New Installation and Migration
 
 ## Introduction
 
