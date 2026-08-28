@@ -127,6 +127,8 @@ apply_env_preset() {
 
   if [ "$env" = "prod" ]; then
     echo "Environment: prod (no preset applied)"
+    # Recorded even though nothing is applied, so the key answers the question on every appliance.
+    set_config_value STARGATE_ENV "\"prod\"" "$config"
     return 0
   fi
 

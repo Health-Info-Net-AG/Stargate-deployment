@@ -15,7 +15,7 @@ variables:
   STARGATE_ENV:
     value: "dev"
     options: ["prod", "dev", "dev2"]
-    description: "Config preset the test image seeds on first boot. `prod` is HIN and applies nothing. `dev`/`dev2` need a matching `docker-compose/config/environments/<env>.sh` on the branch you run this from."
+    description: "Config preset the test image seeds on first boot. `prod` is HIN and applies nothing. `dev`/`dev2` need a matching `docker-compose/config/environments/<env>.sh` on the ref you run this from. Test builds only: a release tag always builds `prod`."
   IMAGE_TARGETS:
     value: "hetzner"
     description: |
@@ -221,10 +221,11 @@ trigger_bootc_pipeline:
   needs: []
   allow_failure: true
   rules:
-    - if: $CI_COMMIT_TAG
+    # Release shapes only. Every other tag is a QA test tag and goes to build_test_image below.
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\d+)?$/'
   variables:
     STARGATE_REF: $CI_COMMIT_TAG
-    # Pinned, not inherited: a Run pipeline on a tag ref would otherwise carry form values into a release.
+    # Pinned, not inherited: a Run pipeline on a release tag would otherwise carry form values into a release.
     STARGATE_ENV: prod
     IMAGE_TARGETS: all
   trigger:
@@ -233,17 +234,18 @@ trigger_bootc_pipeline:
     strategy: depend
 
 
-# QA test images, built from the branch this pipeline ran on -- the Containerfile clones with `git clone --branch`,
-# so no throwaway tag is needed. Not on `push`: a build is ~11-25 min of one host, so it is opt-in per run.
-# strategy: depend makes this job reflect the downstream build's status.
+# QA test images, built from the ref this pipeline ran on -- the Containerfile clones with `git clone --branch`,
+# which takes a tag just as well. strategy: depend makes this job reflect the downstream build's status.
 build_test_image:
   stage: trigger
   needs: []
   rules:
-    # $CI_COMMIT_TAG == null keeps this off a Run pipeline started on a tag ref, where trigger_bootc_pipeline
-    # already fires and the two would race to push the same image tag.
+    # Any tag that is not a release shape. A tag push carries no form values, so the repo defaults apply.
+    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG !~ /^v\d+\.\d+\.\d+(-rc\d+)?$/'
+    # A Run pipeline on a branch. Not on `push`: a build is ~11-25 min of one host, so it is opt-in per run.
     - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_TAG == null'
   variables:
+    # A tag pipeline sets CI_COMMIT_REF_NAME to the tag name, so this covers both rules.
     STARGATE_REF: $CI_COMMIT_REF_NAME
     STARGATE_ENV: $STARGATE_ENV
     IMAGE_TARGETS: $IMAGE_TARGETS
