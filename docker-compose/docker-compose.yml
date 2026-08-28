@@ -653,9 +653,8 @@ services:
       - autoheal=true
 
   idagent:
-    # TODO(rollout): pin a published version tag once the idagent image is released.
-    # Versions are pinned directly here now (no *_VERSION env indirection).
-    image: registry.vereign.io/svdh/idagent:v0.0.1
+    # renovate: datasource=docker depName=healthinfonetag/idagent
+    image: healthinfonetag/idagent:v0.0.1
     container_name: stargate-idagent
     restart: unless-stopped
     logging:
@@ -711,8 +710,8 @@ services:
       - autoheal=true
 
   mailauth:
-    # TODO(rollout): pin a published version tag once the mailauth image is released.
-    image: registry.vereign.io/svdh/mailauth:v0.0.5
+    # renovate: datasource=docker depName=healthinfonetag/mailauth
+    image: healthinfonetag/mailauth:v0.0.5
     container_name: stargate-mailauth
     restart: unless-stopped
     logging:
@@ -767,9 +766,8 @@ services:
   # (3) set idagent's KERI_WATCHER_OOBI to this watcher's OOBI. Image built from a
   # pinned keriox commit (see the keriox-tools repo).
   watcher:
-    # TODO(rollout): pin a published keriox-watcher version tag (opt-in profile).
-    # image: healthinfonetag/keriox-watcher:dev
-    image: registry.vereign.io/svdh/keriox-watcher:v0.0.1
+    # renovate: datasource=docker depName=healthinfonetag/keriox-watcher
+    image: healthinfonetag/keriox-watcher:v0.0.1
     container_name: stargate-watcher
     profiles: ["keri-watcher"]
     restart: unless-stopped

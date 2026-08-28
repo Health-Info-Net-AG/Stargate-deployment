@@ -89,9 +89,9 @@ generate_manifest:
       DASHBOARD_VERSION healthinfonetag/dashboard
       MTACONF_VERSION healthinfonetag/mtaconf
       OPS_AGENT_VERSION healthinfonetag/stargate-ops
-      IDAGENT_VERSION registry.vereign.io/svdh/idagent
-      MAILAUTH_VERSION registry.vereign.io/svdh/mailauth
-      KERIOX_WATCHER_VERSION registry.vereign.io/svdh/keriox-watcher
+      IDAGENT_VERSION healthinfonetag/idagent
+      MAILAUTH_VERSION healthinfonetag/mailauth
+      KERIOX_WATCHER_VERSION healthinfonetag/keriox-watcher
       DOZZLE_VERSION amir20/dozzle
       CLAMAV_VERSION clamav/clamav
       POSTGRES_VERSION postgres
