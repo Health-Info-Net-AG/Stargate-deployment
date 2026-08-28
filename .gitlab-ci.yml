@@ -22,10 +22,10 @@ variables:
     options: ["prod", "dev", "dev2"]
     description: "Config preset the test image seeds on first boot. `prod` is HIN and applies nothing. `dev`/`dev2` need a matching `docker-compose/config/environments/<env>.sh` on the ref you run this from. Test builds only: a release tag always builds `prod`."
   IMAGE_TARGETS:
-    value: "hetzner"
+    value: "hetzner proxmox"
     description: |
-      Where the test image will be booted, space- or comma-separated. Only what is listed is built.
-      `all` is the full customer set, ~15 min longer.
+      Where the test image will be booted, space- or comma-separated. Only what is listed is built and mirrored;
+      the default is what QA currently deploys to. `all` is the full customer set, ~15 min longer.
 
       - `hetzner` — the only artifact cluster-management-infra can import
       - `proxmox` — Proxmox or libvirt
@@ -232,8 +232,12 @@ trigger_bootc_pipeline:
     # Every tag except an explicit `-test` one, which goes to build_test_image below: release tag names
     # vary, so prod is the default. An unset tag matches !~, hence the presence check.
     - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG !~ /-(test|dev)/'
+    # A Run pipeline on the default branch is a production build of current main, not a QA one -- the only way
+    # to build from main at all, since a branch push creates no pipeline.
+    - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_TAG == null && $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH'
   variables:
-    STARGATE_REF: $CI_COMMIT_TAG
+    # CI_COMMIT_REF_NAME, not CI_COMMIT_TAG: it is the tag name on a tag pipeline and the branch on a web run.
+    STARGATE_REF: $CI_COMMIT_REF_NAME
     # Pinned, not inherited: a Run pipeline on a release tag would otherwise carry form values into a release.
     STARGATE_ENV: prod
     IMAGE_TARGETS: all
@@ -252,7 +256,8 @@ build_test_image:
   stage: trigger
   needs: []
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_TAG == null'
+    # Any branch except the default one -- a run on main is a production build, handled above.
+    - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_TAG == null && $CI_COMMIT_REF_NAME != $CI_DEFAULT_BRANCH'
     - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_TAG =~ /-(test|dev)/'
   variables:
     # A tag pipeline sets CI_COMMIT_REF_NAME to the tag name, so this covers both rules.
