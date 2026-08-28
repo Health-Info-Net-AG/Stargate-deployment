@@ -571,7 +571,10 @@ The following settings are available `Settings` menu:
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Click **"Domains"**, then select **"Whitelist headers"**.
+!!! info Multi-domain note
+    For multi-domain perform the operation for each active domain. 
+
+Click **"Domains"** -> "Select domain", then select **"Whitelist headers"**.
 
 Enter the key exactly as configured in the mail server.
 
