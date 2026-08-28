@@ -401,7 +401,7 @@ services:
       # LDAP_USERNAME: "cn=admin,dc=seppmailserver,dc=ch"
       # LDAP_BASE_DN: "ou=publicHINKeys,dc=seppmailserver,dc=ch"
 
-      LOG_LEVEL: "debug"
+      LOG_LEVEL: "info"
     ports:
       - "8081:8080"
       - "2113:2112"
@@ -525,7 +525,7 @@ services:
       # message size limit
       HTTP_MAX_REQUEST_BODY_SIZE: "31457280"
 
-      LOG_LEVEL: "debug"
+      LOG_LEVEL: "info"
     ports:
       - "8083:8080"
       - "2114:2112"
@@ -890,7 +890,7 @@ services:
 
       #monitoring
       LOKI_URL: "http://loki:3100"
-      LOG_LEVEL: "debug"
+      LOG_LEVEL: "info"
 
     networks:
       - stargate-network
@@ -1250,7 +1250,7 @@ services:
   # Ops Agent - executes infrastructure commands (updates, restarts) from dashboard via NATS
   ops-agent:
     # renovate: datasource=docker depName=healthinfonetag/stargate-ops
-    image: healthinfonetag/stargate-ops:v0.0.6
+    image: healthinfonetag/stargate-ops:v0.0.7
     container_name: stargate-ops-agent
     restart: unless-stopped
     logging:
@@ -1277,7 +1277,7 @@ services:
       # rejects the update. App + infra services (overrides the Go default).
       # Stateful services (POSTGRES/VAULT/KEYCLOAK) are updatable but should be
       # bumped deliberately - a recreate runs against the existing data volume.
-      ALLOWED_VERSION_KEYS: "SMIMEKEYS_VERSION,POLICY_VERSION,IRISAGENT_VERSION,MXENGINE_VERSION,POLICY_SYNC_VERSION,DASHBOARD_VERSION,MTACONF_VERSION,OPS_AGENT_VERSION,DOZZLE_VERSION,CLAMAV_VERSION,POSTGRES_VERSION,KEYCLOAK_VERSION,VAULT_VERSION,APISIX_VERSION,NATS_VERSION,SEAWEEDFS_VERSION,CADDY_VERSION,LOKI_VERSION,ALLOY_VERSION,NODE_EXPORTER_VERSION,STALWART_VERSION,OAUTH2_PROXY_VERSION"
+      ALLOWED_VERSION_KEYS: "SMIMEKEYS_VERSION,POLICY_VERSION,IRISAGENT_VERSION,MXENGINE_VERSION,POLICY_SYNC_VERSION,DASHBOARD_VERSION,MTACONF_VERSION,OPS_AGENT_VERSION,IDAGENT_VERSION,MAILAUTH_VERSION,KERIOX_WATCHER_VERSION,DOZZLE_VERSION,CLAMAV_VERSION,POSTGRES_VERSION,KEYCLOAK_VERSION,VAULT_VERSION,APISIX_VERSION,NATS_VERSION,SEAWEEDFS_VERSION,CADDY_VERSION,LOKI_VERSION,ALLOY_VERSION,NODE_EXPORTER_VERSION,STALWART_VERSION,OAUTH2_PROXY_VERSION"
     networks:
       - stargate-network
     healthcheck:
