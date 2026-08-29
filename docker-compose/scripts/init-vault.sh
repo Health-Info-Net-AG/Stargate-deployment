@@ -102,15 +102,11 @@ else
   # Login with root token
   export VAULT_TOKEN="$ROOT_TOKEN"
 
-  # Write WireGuard private key to Vault if provided
-  if [ -n "$WG_PRIVATE_KEY" ]; then
-    echo "Writing pre-configured WireGuard private key to Vault..."
-    vault kv put -address=http://vault:8200 secret-irisagent/wg_private_key wg_private_key="$WG_PRIVATE_KEY"
-    echo "WireGuard private key written to Vault!"
-  else
-    echo "No WG_PRIVATE_KEY provided - irisagent will generate a new key on first start."
-  fi
-  
+  # Defer the WireGuard-key write until AFTER the KV mounts are enabled below
+  # (secret-irisagent must exist first). This flag marks the first-time init so
+  # the write happens once, on a fresh Vault only.
+  FRESH_INIT=true
+
   # The root token is deliberately NOT echoed. This runs in a container, so
   # anything printed here lands in `docker logs stargate-vault-init`, which
   # send-logs-to-support.sh collects and uploads. install.sh/restore.sh read
@@ -134,6 +130,21 @@ if [ -n "${VAULT_TOKEN:-}" ]; then
   for m in secret-smimekeys-client secret-policy secret-irisagent secret-mxengine secret-mtaconf secret-idagent secret-mailauth; do
     vault secrets enable -address=http://vault:8200 -path="$m" kv-v2 2>/dev/null || echo "  $m already exists"
   done
+fi
+
+# Write the pre-configured WireGuard private key on first init ONLY, now that
+# secret-irisagent exists (enabled just above). Doing this inside the first-init
+# branch BEFORE the mounts were enabled failed with a 403 preflight error
+# because the mount did not exist yet -- which broke restore.sh, where the
+# restored customer-config always carries WG_PRIVATE_KEY so the write always ran.
+if [ "${FRESH_INIT:-false}" = "true" ]; then
+  if [ -n "$WG_PRIVATE_KEY" ]; then
+    echo "Writing pre-configured WireGuard private key to Vault..."
+    vault kv put -address=http://vault:8200 secret-irisagent/wg_private_key wg_private_key="$WG_PRIVATE_KEY"
+    echo "WireGuard private key written to Vault!"
+  else
+    echo "No WG_PRIVATE_KEY provided - irisagent will generate a new key on first start."
+  fi
 fi
 
 # Output current Vault status
