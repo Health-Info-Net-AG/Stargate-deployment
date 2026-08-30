@@ -798,7 +798,7 @@ services:
 
   apisix:
     # renovate: datasource=docker depName=apache/apisix
-    image: apache/apisix:3.17.0-debian
+    image: apache/apisix:3.18.0-debian
     container_name: stargate-apisix
     restart: unless-stopped
     logging:
