@@ -714,7 +714,7 @@ services:
 
   mailauth:
     # renovate: datasource=docker depName=healthinfonetag/mailauth
-    image: healthinfonetag/mailauth:v0.0.5
+    image: healthinfonetag/mailauth:v0.0.6
     container_name: stargate-mailauth
     restart: unless-stopped
     logging:
@@ -730,7 +730,7 @@ services:
         condition: service_completed_successfully
     environment:
       MAILAUTH_BIND_ADDR: "0.0.0.0:8080"
-      MAILAUTH_MAX_BODY_MB: "50"
+      MAILAUTH_MAX_BODY_MB: "30"
 
       # Vault (reads DKIM/ARC private keys per request)
       MAILAUTH_VAULT_ADDRESS: "http://vault:8200"
