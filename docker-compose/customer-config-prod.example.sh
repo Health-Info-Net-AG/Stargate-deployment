@@ -86,9 +86,19 @@ S3_BUCKET_NAME="stargate-bucket"
 # KERI_WITNESS_THRESHOLD: receipts required at inception; must be <= the number of
 # witnesses. IMPORTANT: with threshold > 0 the pool MUST be reachable before idagent's
 # FIRST start, or inception fails without receipts and the container will not come up.
-# Set both to '[]' / "0" for a local-only deployment with no witnesses.
-KERI_WITNESSES='[{"eid":"BMGbBCw5I-zLanhgJdRXQ-EU4G61P7M8jTpFrstK5ArZ","scheme":"https","url":"https://witness-1.verify-mail.hin-infra.ch/"},{"eid":"BJGVotztVGSfp5mJbr4zUgd5X0fOh3OVMrhoAWLODR4O","scheme":"https","url":"https://witness-2.verify-mail.hin-infra.ch/"},{"eid":"BEq3J1mCOXGj-Pe9FFXIga16BiTSFwU0TS4SLfCCorBZ","scheme":"https","url":"https://witness-3.verify-mail.hin-infra.ch/"}]'
-KERI_WITNESS_THRESHOLD="2"
+#
+# LEAVE BOTH EMPTY unless this site needs a topology of its own. Empty means "use the
+# default pinned in docker-compose.yml", which is the shared HIN production pool at
+# threshold 2 - so an ordinary appliance needs no entry here at all. Pinning a copy of
+# today's pool into this file would freeze it: the site would keep these witnesses for
+# good and never pick up a pool change shipped in a later image.
+#
+# Set them ONLY to depart from that default - '[]' with threshold "0" for a local-only
+# deployment with no witnesses, or an explicit array for a different pool, e.g.:
+#   KERI_WITNESSES='[{"eid":"BMGbBCw5I-zLanhgJdRXQ-EU4G61P7M8jTpFrstK5ArZ","scheme":"https","url":"https://witness-1.verify-mail.hin-infra.ch/"}]'
+#   KERI_WITNESS_THRESHOLD="1"
+KERI_WITNESSES=''
+KERI_WITNESS_THRESHOLD=""
 #
 # KERI_WATCHER_OOBI: a SINGLE watcher OOBI object (one {eid, scheme, url}, NOT an
 # array), SINGLE-quoted. Only needed to verify OTHER orgs' anchors - enable the

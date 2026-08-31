@@ -129,11 +129,36 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
 | Server di aggiornamento di Alpine, AlmaLinux, ecc. | `80` | TCP | Vari server di aggiornamento |
 | Server di posta di destinazione | `25` | TCP | Consegna posta in uscita (tramite ricerca MX) |
 | Server DNS | `53` | UDP+TCP | In uscita verso server DNS pubblici |
-| Server NTP | `123` | UDP | NTP sincronizza gli orologi di computer, server, dispositivi di rete e macchine virtuali con fonti di tempo precise |
+| `ntp.metas.ch` (server NTP predefinito) | `123` | UDP | NTP sincronizza gli orologi di computer, server, dispositivi di rete e macchine virtuali con fonti di tempo precise |
 | Peer WireGuard (rete HIN) | `19818` | UDP+TCP | WireGuard - tunnel crittografato per la comunicazione agente-agente |
 | `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | Pool di witness KERI di HIN - richiesto per la verifica delle identità degli agenti (idagent / watcher) |
 | `app.hin.ch` | `443` | TCP | Elenco membri / domini di posta HIN (mxengine) |
 | `apisix.verify-mail.hin-infra.ch` | `443` | TCP | Registrazione del gateway HIN durante l'onboarding (dashboard) |
+
+!!! note "Utilizzare un proprio server NTP"
+
+    L'appliance è preconfigurata per usare `ntp.metas.ch` (Istituto federale di metrologia).
+    Se la tua rete non consente il traffico NTP in uscita, configura un tuo server di riferimento
+    orario invece di aprire la porta `123` verso Internet: un server interno è pienamente supportato.
+
+    Per impostarli, crea sull'appliance il file seguente e ricarica. Puoi indicare quanti
+    server vuoi, uno per riga:
+
+    ```bash
+    sudo tee /var/data/vereign/chrony/ntp.sources <<'EOF'
+    pool ntp1.example.local iburst
+    pool ntp2.example.local iburst
+    EOF
+    sudo chronyc reload sources
+    chronyc sources -v
+    ```
+
+    Il file deve chiamarsi esattamente `ntp.sources`. Con questo nome il tuo elenco sostituisce
+    l'impostazione predefinita; con qualsiasi altro nome vi si aggiunge. Elimina il file e
+    ricarica per tornare a `ntp.metas.ch`.
+
+    L'orario corretto non è opzionale. Se l'orologio si scosta, la convalida dei certificati, la firma
+    dei messaggi e le sessioni di accesso iniziano a fallire in modi difficili da diagnosticare.
 
 ??? note "Avviso importante per l'esercizio su Microsoft Azure"
     **Esercizio su Microsoft Azure**

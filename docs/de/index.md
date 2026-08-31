@@ -128,11 +128,37 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
 | Update-Server von Alpine, AlmaLinux usw. | `80` | TCP | Verschiedene Update-Server |
 | Ziel-Mailserver | `25` | TCP | Zustellung ausgehender E-Mails (via MX-Lookup) |
 | DNS-Server | `53` | UDP+TCP | Ausgehend an öffentliche DNS-Server |
-| NTP-Server | `123` | UDP | NTP synchronisiert die Uhren von Computern, Servern, Netzwerkgeräten und virtuellen Maschinen mit präzisen Zeitquellen |
+| `ntp.metas.ch` (Standard-NTP-Server) | `123` | UDP | NTP synchronisiert die Uhren von Computern, Servern, Netzwerkgeräten und virtuellen Maschinen mit präzisen Zeitquellen |
 | WireGuard-Peers (HIN-Netzwerk) | `19818` | UDP+TCP | WireGuard – Verschlüsselter Tunnel für die Agent-zu-Agent-Kommunikation |
 | `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | HIN KERI-Witness-Pool - erforderlich für die Verifizierung von Agent-Identitäten (idagent / watcher) |
 | `app.hin.ch` | `443` | TCP | HIN Mitglieder- / Maildomain-Liste (mxengine) |
 | `apisix.verify-mail.hin-infra.ch` | `443` | TCP | Registrierung des HIN Gateways beim Onboarding (Dashboard) |
+
+!!! note "Eigenen NTP-Server verwenden"
+
+    Die Appliance ist standardmässig auf `ntp.metas.ch` (Eidgenössisches Institut für Metrologie)
+    eingestellt. Wenn Ihr Netzwerk ausgehendes NTP nicht zulässt, konfigurieren Sie einen eigenen
+    Zeitserver, anstatt Port `123` ins Internet zu öffnen - ein interner Server wird vollständig
+    unterstützt.
+
+    Erstellen Sie dazu auf der Appliance die folgende Datei und laden Sie die Konfiguration
+    neu. Sie können beliebig viele Server angeben, einen pro Zeile:
+
+    ```bash
+    sudo tee /var/data/vereign/chrony/ntp.sources <<'EOF'
+    pool ntp1.example.local iburst
+    pool ntp2.example.local iburst
+    EOF
+    sudo chronyc reload sources
+    chronyc sources -v
+    ```
+
+    Die Datei muss genau `ntp.sources` heissen. Unter diesem Namen ersetzt Ihre Liste die
+    Standardeinstellung; unter jedem anderen Namen wird sie stattdessen zur Standardeinstellung
+    hinzugefügt. Löschen Sie die Datei und laden Sie neu, um zu `ntp.metas.ch` zurückzukehren.
+
+    Eine korrekte Uhrzeit ist nicht optional. Weicht die Uhr ab, schlagen Zertifikatsprüfung,
+    Nachrichtensignierung und Anmeldesitzungen auf schwer diagnostizierbare Weise fehl.
 
 !!! note "Wichtiger Hinweis zum Betrieb auf Microsoft Azure"
         **Betrieb auf Microsoft Azure**
