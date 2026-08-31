@@ -620,26 +620,6 @@ See [Exchange Integration](Exchange-integration.md) for detailed instructions.
 
 #### HIN Gateway config
 
-
-#### Settings page
-
-On this page under `Settings` menu, configure your global mail transport settings for the secure mail relay setup which are common for the whole instance. Detailed configuration for each domain can be performed under `Domains` -> `$domain`
-
-![Mail transport configuration screen](assets/installation-guide/step14-mail-transport2.png)
-
-The following settings are available `Settings` menu:
-
-| Setting | Description |
-|---------|-------------|
-| **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
-| **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
-| **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
-| **Default inbound relay** | The default SMTP relay for inbound delivery |
-| **Default outbound relay** | The default SMTP relay for outbound delivery |
-
-<br> ![domain-relay-host](assets/installation-guide/step14-mail-transport2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-
-
 #### Domains page
 
 !!! info Multi-domain migration note
@@ -679,6 +659,27 @@ Under the **Domains** menu, for each available domain you can configure specific
     ```
 
   <br> ![domain-relay-host](assets/installation-guide/step14-domain-mail-transport.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+
+
+#### Settings page
+
+On this page under `Settings` menu, configure your global mail transport settings for the secure mail relay setup which are common for the whole instance. Detailed configuration for each domain can be performed under `Domains` -> `$domain`
+
+![Mail transport configuration screen](assets/installation-guide/step14-mail-transport2.png)
+
+The following settings are available `Settings` menu:
+
+| Setting | Description |
+|---------|-------------|
+| **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
+| **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
+| **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
+| **Default inbound relay** | The default SMTP relay for inbound delivery |
+| **Default outbound relay** | The default SMTP relay for outbound delivery |
+
+<br> ![domain-relay-host](assets/installation-guide/step14-mail-transport2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
 
 ### Step 19 - Test and validate
 
