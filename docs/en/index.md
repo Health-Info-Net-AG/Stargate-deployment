@@ -169,12 +169,29 @@ The following items must be available or confirmed before the installation:
 | Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
 | Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
 | `ntp.metas.ch` (default NTP server) | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
+| `witness-1.verify-mail.hin-infra.ch`, `witness-2...`, `witness-3...` | `443` | TCP | KERI witness pool. The appliance contacts these the first time it starts and will not finish starting without them |
 
 !!! note "Using your own NTP server"
 
     The appliance is preconfigured to use `ntp.metas.ch` (Swiss Federal Institute of Metrology).
     If your network does not permit outbound NTP, configure your own time server instead of
     opening port `123` to the internet - an internal server is fully supported.
+
+    To set your own, create the file below on the appliance and reload. List as many
+    servers as you need, one per line:
+
+    ```bash
+    sudo tee /var/data/vereign/chrony/ntp.sources <<'EOF'
+    pool ntp1.example.local iburst
+    pool ntp2.example.local iburst
+    EOF
+    sudo chronyc reload sources
+    chronyc sources -v
+    ```
+
+    The file must be named exactly `ntp.sources`. With that name your list replaces the
+    default; under any other name it is added to the default instead. Delete the file and
+    reload to go back to `ntp.metas.ch`.
 
     Accurate time is not optional. If the clock drifts, certificate validation, message
     signing and sign-in sessions all begin to fail in ways that are hard to diagnose.

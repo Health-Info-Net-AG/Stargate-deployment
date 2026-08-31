@@ -339,19 +339,44 @@ else
         warn "clock not synchronised to an NTP source (refid $refid, leap $leap)"
         ;;
       *)
-        pass "clock synchronised to ${refname:-$refid} (stratum $stratum, offset ${offset}s)"
-        # Anything past a second is well beyond NTP's working range and points at a
-        # source that is reachable but wrong, or one that has only just come back.
+        # One verdict per clock. Anything past a second is well beyond NTP's working
+        # range and means the source is reachable but wrong, or has only just come
+        # back -- that is a warning, not a pass with a footnote.
         if awk -v o="$offset" 'BEGIN { exit !(o < -1.0 || o > 1.0) }' 2>/dev/null; then
-          warn "system time offset is ${offset}s - larger than 1s"
+          warn "clock offset from ${refname:-$refid} is ${offset}s - beyond NTP's working range"
+        else
+          pass "clock synchronised to ${refname:-$refid} (stratum $stratum, offset ${offset}s)"
         fi
         ;;
     esac
 
     src_count=$(chronyc -c sources 2>/dev/null | grep -c . || true)
     echo "  [INFO] NTP sources configured: ${src_count:-0}"
+    # File existence alone does not mean chronyd reads it: on the manual-install
+    # distros the docs support, /etc/chrony.conf has no sourcedir at all, so the file
+    # would be reported as active while chronyd ignores it. Confirm the wiring, and
+    # say so plainly when a site has written the file but nothing consumes it.
     if [ -f "$CHRONY_SOURCES_FILE" ]; then
-      echo "  [INFO] using site NTP override: $CHRONY_SOURCES_FILE"
+      if grep -q "^sourcedir.*$CHRONY_DIR" /etc/chrony.conf 2>/dev/null; then
+        echo "  [INFO] using site NTP override: $CHRONY_SOURCES_FILE"
+      else
+        warn "$CHRONY_SOURCES_FILE exists but no sourcedir in /etc/chrony.conf reads it - chronyd is ignoring it"
+      fi
+    fi
+
+    # chrony shadows per FILENAME, so only ntp.sources replaces the shipped default.
+    # Any other *.sources name is loaded IN ADDITION to it, which silently leaves
+    # ntp.metas.ch active on a site that believes it removed it.
+    stray=""
+    for f in "$CHRONY_DIR"/*.sources; do
+      [ -e "$f" ] || continue
+      case "${f##*/}" in
+        ntp.sources) ;;
+        *) stray="$stray ${f##*/}" ;;
+      esac
+    done
+    if [ -n "$stray" ]; then
+      warn "extra source files in $CHRONY_DIR (${stray# }) add to the shipped default instead of replacing it - only ntp.sources replaces it"
     fi
   fi
 fi

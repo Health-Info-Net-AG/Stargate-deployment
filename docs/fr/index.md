@@ -132,7 +132,33 @@ For reliable information, please use the official translations available via the
 | Serveur de mise à jour d'Alpine, AlmaLinux, etc. | `80` | TCP | Divers serveurs de mise à jour |
 | Serveurs de courrier de destination | `25` | TCP | Livraison des courriels sortants (via recherche MX) |
 | Serveurs DNS | `53` | UDP+TCP | Sortant vers les serveurs DNS publics |
-| Serveurs NTP | `123` | UDP | NTP synchronise les horloges des ordinateurs, serveurs, équipements réseau et machines virtuelles avec des sources de temps précises |
+| `ntp.metas.ch` (serveur NTP par défaut) | `123` | UDP | NTP synchronise les horloges des ordinateurs, serveurs, équipements réseau et machines virtuelles avec des sources de temps précises |
+| `witness-1.verify-mail.hin-infra.ch`, `witness-2...`, `witness-3...` | `443` | TCP | Pool de témoins KERI. L'appliance les contacte au premier démarrage et ne termine pas son démarrage sans eux |
+
+!!! note "Utiliser votre propre serveur NTP"
+
+    L'appliance est préconfigurée pour utiliser `ntp.metas.ch` (Institut fédéral de métrologie).
+    Si votre réseau n'autorise pas le NTP sortant, configurez votre propre serveur de temps au lieu
+    d'ouvrir le port `123` vers Internet - un serveur interne est entièrement pris en charge.
+
+    Pour définir les vôtres, créez le fichier suivant sur l'appliance puis rechargez. Vous
+    pouvez indiquer autant de serveurs que nécessaire, un par ligne :
+
+    ```bash
+    sudo tee /var/data/vereign/chrony/ntp.sources <<'EOF'
+    pool ntp1.example.local iburst
+    pool ntp2.example.local iburst
+    EOF
+    sudo chronyc reload sources
+    chronyc sources -v
+    ```
+
+    Le fichier doit être nommé exactement `ntp.sources`. Sous ce nom, votre liste remplace la
+    valeur par défaut ; sous tout autre nom, elle s'y ajoute. Supprimez le fichier et rechargez
+    pour revenir à `ntp.metas.ch`.
+
+    L'exactitude de l'heure n'est pas optionnelle. Si l'horloge dérive, la validation des certificats,
+    la signature des messages et les sessions de connexion échouent de manière difficile à diagnostiquer.
 
 ## Contactez-nous
 
