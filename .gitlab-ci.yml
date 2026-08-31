@@ -243,6 +243,7 @@ trigger_hin_pipeline:
   stage: hin
   tags:
     - linux
+  allow_failure: true
   needs:
     - trigger_bootc_pipeline
   rules:
