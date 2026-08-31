@@ -1,3 +1,29 @@
+## v0.6.0
+
+*Released on 31 August 2026.*
+
+This release adds multi-domain migration support, domain-level email authentication and improvements to installation, recovery, security and stability.
+
+### What’s new and improved
+
+- **Multi-domain setups:** Multiple domains can now be installed or migrated to a single HIN Gateway. The updated guidance covers complete and phased migrations, including rollback scenarios.
+- **Email authentication:** DKIM and ARC signing, as well as DKIM, ARC, SPF and DMARC verification, can now be configured for each domain. The required DNS records are shown directly in the HIN Gateway.
+- **Installation and migration:** Updated guidance now covers new installations, single-domain and multi-domain migrations, Exchange integration, mail routing, networking and TLS testing.
+- **Appliance migration:** A documented process is available for moving an existing Docker Compose installation to the image-based HIN Gateway appliance.
+- **Backup and restore:** Persistent data now uses a consistent location, with safer restore handling and warnings when backup and target versions differ.
+- **Diagnostics and security:** Health checks, logging and diagnostic collection have been improved. Installation and recovery scripts now provide better protection for credentials and backup data.
+
+### Fixes
+
+- Improved first-time initialization of Vault and WireGuard settings.
+- Improved service startup on slower virtual machines.
+- Fixed edge cases affecting backup and restore operations.
+- Fixed inaccurate health-check results and configuration fallback handling.
+
+### Important information for appliance migrations
+
+When moving an existing Docker Compose installation to the image-based appliance, follow the dedicated migration guide. Restoring a backup replaces all data on the target appliance. If its public IP address changes, HIN must update the central WireGuard registration.
+
 ## v0.5.3
 
 *Released on 29 July 2026. Hotfix applied on 5 August 2026.*
