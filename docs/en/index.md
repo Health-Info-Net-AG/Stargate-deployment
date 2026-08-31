@@ -197,6 +197,35 @@ The following items must be available or confirmed before the installation:
     - HIN will support the customer in successfully migrating the first domain.
     - After the first successful migration, the customer can decide how and when to move the remaining domains to the new environment.
 
+| Port | Protocol | Purpose |
+| :--- | :------: | :------ |
+| `80` | TCP | Redirects HTTP traffic to HTTPS |
+| `443` | TCP | Used to manage the HIN Gateway through the web dashboard |
+| `8180` | TCP | Used by Keycloak to authenticate users for the HIN Gateway dashboard |
+| `8190` | TCP | Optional. Required for troubleshooting and viewing logs |
+| `22` | TCP | Optional. Required for troubleshooting and modifying configuration |
+
+#### Outbound Network Access (server must reach)
+
+| Destination | Port | Protocol | Purpose |
+| :---------- | :--: | :------: | :------ |
+| hub.docker.com | `443` | TCP | Docker image registry |
+| mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Remote sealer service |
+| smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | S/MIME CA service |
+| loki.example.com | `443` | TCP | Log shipping (Alloy → Loki, optional) |
+| Update Server of alpine, almalinux, etc. | `80` | TCP | Various Update servers |
+| Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
+| Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
+| `ntp.metas.ch` (default NTP server) | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
+
+!!! note "Using your own NTP server"
+
+    The appliance is preconfigured to use `ntp.metas.ch` (Swiss Federal Institute of Metrology).
+    If your network does not permit outbound NTP, configure your own time server instead of
+    opening port `123` to the internet - an internal server is fully supported.
+
+    Accurate time is not optional. If the clock drifts, certificate validation, message
+    signing and sign-in sessions all begin to fail in ways that are hard to diagnose.
 
 ## Contact us
 
