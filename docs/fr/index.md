@@ -129,11 +129,36 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
 | Serveur de mise à jour d'Alpine, AlmaLinux, etc. | `80` | TCP | Divers serveurs de mise à jour |
 | Serveurs de courrier de destination | `25` | TCP | Livraison des courriels sortants (via recherche MX) |
 | Serveurs DNS | `53` | UDP+TCP | Sortant vers les serveurs DNS publics |
-| Serveurs NTP | `123` | UDP | NTP synchronise les horloges des ordinateurs, serveurs, équipements réseau et machines virtuelles avec des sources de temps précises |
+| `ntp.metas.ch` (serveur NTP par défaut) | `123` | UDP | NTP synchronise les horloges des ordinateurs, serveurs, équipements réseau et machines virtuelles avec des sources de temps précises |
 | Pairs WireGuard (réseau HIN) | `19818` | UDP+TCP | WireGuard - tunnel crypté pour la communication agent-à-agent |
 | `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | Pool de témoins KERI de HIN - requis pour la vérification des identités des agents (idagent / watcher) |
 | `app.hin.ch` | `443` | TCP | Liste des membres / domaines de messagerie HIN (mxengine) |
 | `apisix.verify-mail.hin-infra.ch` | `443` | TCP | Enregistrement de la passerelle HIN lors de l'intégration (tableau de bord) |
+
+!!! note "Utiliser votre propre serveur NTP"
+
+    L'appliance est préconfigurée pour utiliser `ntp.metas.ch` (Institut fédéral de métrologie).
+    Si votre réseau n'autorise pas le NTP sortant, configurez votre propre serveur de temps au lieu
+    d'ouvrir le port `123` vers Internet - un serveur interne est entièrement pris en charge.
+
+    Pour définir les vôtres, créez le fichier suivant sur l'appliance puis rechargez. Vous
+    pouvez indiquer autant de serveurs que nécessaire, un par ligne :
+
+    ```bash
+    sudo tee /var/data/vereign/chrony/ntp.sources <<'EOF'
+    pool ntp1.example.local iburst
+    pool ntp2.example.local iburst
+    EOF
+    sudo chronyc reload sources
+    chronyc sources -v
+    ```
+
+    Le fichier doit être nommé exactement `ntp.sources`. Sous ce nom, votre liste remplace la
+    valeur par défaut ; sous tout autre nom, elle s'y ajoute. Supprimez le fichier et rechargez
+    pour revenir à `ntp.metas.ch`.
+
+    L'exactitude de l'heure n'est pas optionnelle. Si l'horloge dérive, la validation des certificats,
+    la signature des messages et les sessions de connexion échouent de manière difficile à diagnostiquer.
 
 ??? note "Remarque importante concernant l'exploitation sur Microsoft Azure"
     **Exploitation sur Microsoft Azure**

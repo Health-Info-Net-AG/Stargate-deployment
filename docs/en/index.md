@@ -141,8 +141,25 @@ The following items must be available or confirmed before the installation:
     If your network does not permit outbound NTP, configure your own time server instead of
     opening port `123` to the internet - an internal server is fully supported.
 
+    To set your own, create the file below on the appliance and reload. List as many
+    servers as you need, one per line:
+
+    ```bash
+    sudo tee /var/data/vereign/chrony/ntp.sources <<'EOF'
+    pool ntp1.example.local iburst
+    pool ntp2.example.local iburst
+    EOF
+    sudo chronyc reload sources
+    chronyc sources -v
+    ```
+
+    The file must be named exactly `ntp.sources`. With that name your list replaces the
+    default; under any other name it is added to the default instead. Delete the file and
+    reload to go back to `ntp.metas.ch`.
+
     Accurate time is not optional. If the clock drifts, certificate validation, message
     signing and sign-in sessions all begin to fail in ways that are hard to diagnose.
+
 
 !!! note "Important note regarding operation on Microsoft Azure"
         **Operation on Microsoft Azure**
