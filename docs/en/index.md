@@ -129,11 +129,20 @@ The following items must be available or confirmed before the installation:
 | Update Server of alpine, almalinux, etc. | `80` | TCP | Various Update servers |
 | Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
 | Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
-| NTP servers | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
+| `ntp.metas.ch` (default NTP server) | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
 | WireGuard peers (HIN network) | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication |
 | `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | HIN KERI witness pool - required for agent identity verification (idagent / watcher) |
 | `app.hin.ch` | `443` | TCP | HIN member / mail-domain list (mxengine) |
 | `apisix.verify-mail.hin-infra.ch` | `443` | TCP | HIN gateway registration during onboarding (dashboard) |
+
+!!! note "Using your own NTP server"
+
+    The appliance is preconfigured to use `ntp.metas.ch` (Swiss Federal Institute of Metrology).
+    If your network does not permit outbound NTP, configure your own time server instead of
+    opening port `123` to the internet - an internal server is fully supported.
+
+    Accurate time is not optional. If the clock drifts, certificate validation, message
+    signing and sign-in sessions all begin to fail in ways that are hard to diagnose.
 
 !!! note "Important note regarding operation on Microsoft Azure"
         **Operation on Microsoft Azure**

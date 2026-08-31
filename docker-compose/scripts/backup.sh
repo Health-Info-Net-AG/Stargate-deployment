@@ -165,6 +165,14 @@ if [ -f "$ENV_FILE" ]; then
   echo "  ✓ .env backed up (for reference)"
 fi
 
+# Operator NTP sources, if the site overrode the shipped default. Host-level config
+# (chronyd reads it directly), but it lives on the Data Disk precisely so it travels
+# in the backup -- nothing under /etc survives a rebuild.
+if [ -f "$CHRONY_SOURCES_FILE" ]; then
+  cp "$CHRONY_SOURCES_FILE" "$BACKUP_SUBDIR/config/"
+  echo "  ✓ ntp.sources backed up (custom NTP servers)"
+fi
+
 # ==============================================================================
 # 4. S/MIME Keys and Certificates Backup
 # ==============================================================================
