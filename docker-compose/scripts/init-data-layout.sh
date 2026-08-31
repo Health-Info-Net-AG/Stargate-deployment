@@ -41,7 +41,7 @@ init_data_layout() {
     "$DATA_DIR/postgres" "$DATA_DIR/vault" "$DATA_DIR/seaweedfs" "$DATA_DIR/stalwart" \
     "$DATA_DIR/clamav" "$DATA_DIR/loki" "$DATA_DIR/alloy" "$DATA_DIR/textfile_collector" \
     "$DATA_DIR/dashboard_cache" "$DATA_DIR/restore" \
-    "$DATA_DIR/idagent" "$DATA_DIR/watcher"
+    "$DATA_DIR/idagent" "$DATA_DIR/watcher" "$CHRONY_DIR"
 
   # secrets/ holds Vault keys, WG/private material: keep it tight.
   chmod 700 "$SECRETS_DIR" 2>/dev/null || true

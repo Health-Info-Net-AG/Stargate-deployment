@@ -168,7 +168,16 @@ The following items must be available or confirmed before the installation:
 | Update Server of alpine, almalinux, etc. | `80` | TCP | Various Update servers |
 | Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
 | Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
-| NTP servers | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
+| `ntp.metas.ch` (default NTP server) | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
+
+!!! note "Using your own NTP server"
+
+    The appliance is preconfigured to use `ntp.metas.ch` (Swiss Federal Institute of Metrology).
+    If your network does not permit outbound NTP, configure your own time server instead of
+    opening port `123` to the internet - an internal server is fully supported.
+
+    Accurate time is not optional. If the clock drifts, certificate validation, message
+    signing and sign-in sessions all begin to fail in ways that are hard to diagnose.
 
 ## Contact us
 

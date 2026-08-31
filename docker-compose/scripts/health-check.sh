@@ -5,6 +5,12 @@
 # Performs a comprehensive health check of all Stargate services.
 # Exit code: 0 = all healthy, 1 = one or more issues found.
 
+# paths.sh is the single source of truth for writable-state locations under
+# /var/data; sourced (not hardcoded) so the STARGATE_DATA_DIR test override works here too.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+. "$SCRIPT_DIR/lib/paths.sh"
+
 PASS=0
 WARN=0
 FAIL=0
@@ -297,6 +303,57 @@ done
 mem_info=$(free -h 2>/dev/null | awk 'NR==2{printf "%s used / %s total (%s available)", $3, $2, $7}')
 if [ -n "$mem_info" ]; then
   echo "  [INFO] Memory: $mem_info"
+fi
+
+echo ""
+
+# ------------------------------------------------------------------
+# 10. Time synchronisation
+# ------------------------------------------------------------------
+# Clock skew is a silent, high-blast-radius failure here: S/MIME and TLS chain
+# validation, KERI event timestamps, DKIM signature windows and Keycloak token
+# lifetimes all reject valid input once the clock drifts. Warn, never fail --
+# an unreachable site NTP server must not make health-check exit non-zero.
+echo "--- Time ---"
+
+if ! command -v chronyc >/dev/null 2>&1; then
+  echo "  [INFO] chronyc not installed - skipping time checks (not a bootc appliance?)"
+else
+  tracking=$(chronyc -c tracking 2>/dev/null || true)
+  if [ -z "$tracking" ]; then
+    warn "chronyd is not reachable - clock is unmanaged"
+  else
+    # chronyc -c tracking is a 14-field CSV:
+    # 1 refid, 2 ref name, 3 stratum, 4 ref time, 5 system time offset, ... 14 leap status.
+    refid=$(echo "$tracking" | cut -d, -f1)
+    refname=$(echo "$tracking" | cut -d, -f2)
+    stratum=$(echo "$tracking" | cut -d, -f3)
+    offset=$(echo "$tracking" | cut -d, -f5)
+    leap=$(echo "$tracking" | cut -d, -f14)
+
+    # 00000000 = never synchronised; 7F7F0101 = the local reference clock, i.e. chronyd
+    # is running but has no usable external source. Leap status alone is NOT sufficient:
+    # it still reads "Normal" while disciplined only by the local clock.
+    case "$refid" in
+      00000000|7F7F0101)
+        warn "clock not synchronised to an NTP source (refid $refid, leap $leap)"
+        ;;
+      *)
+        pass "clock synchronised to ${refname:-$refid} (stratum $stratum, offset ${offset}s)"
+        # Anything past a second is well beyond NTP's working range and points at a
+        # source that is reachable but wrong, or one that has only just come back.
+        if awk -v o="$offset" 'BEGIN { exit !(o < -1.0 || o > 1.0) }' 2>/dev/null; then
+          warn "system time offset is ${offset}s - larger than 1s"
+        fi
+        ;;
+    esac
+
+    src_count=$(chronyc -c sources 2>/dev/null | grep -c . || true)
+    echo "  [INFO] NTP sources configured: ${src_count:-0}"
+    if [ -f "$CHRONY_SOURCES_FILE" ]; then
+      echo "  [INFO] using site NTP override: $CHRONY_SOURCES_FILE"
+    fi
+  fi
 fi
 
 echo ""

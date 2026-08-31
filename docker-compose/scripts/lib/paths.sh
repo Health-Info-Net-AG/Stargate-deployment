@@ -24,6 +24,15 @@ APISIX_GEN_DIR="$VEREIGN_DIR/apisix"
 UPDATE_LOG="$VEREIGN_DIR/update.log"
 BACKUP_DIR="$DATA_DIR/backups"
 
+# Operator-supplied NTP sources, read directly by the host chronyd via a `sourcedir`
+# in /etc/chrony.conf that lists this directory FIRST and /etc/chrony/sources.d second.
+# A file here shadows the same-named file in the image directory, so writing ntp.sources
+# REPLACES the shipped default rather than adding to it. Absent = the image default
+# applies; that is why nothing seeds a copy here (a seeded copy would pin today's
+# default forever and stop a future image from changing it).
+CHRONY_DIR="$VEREIGN_DIR/chrony"
+CHRONY_SOURCES_FILE="$CHRONY_DIR/ntp.sources"
+
 # Canonical compose invocation. PROJECT_DIR is the read-only docker-compose/
 # dir the caller lives under (/usr/share/... on bootc, the git checkout on
 # manual installs); --env-file points at the relocated .env so bare `docker

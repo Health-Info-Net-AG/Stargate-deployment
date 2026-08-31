@@ -818,7 +818,6 @@ services:
       - ${STARGATE_DATA_DIR:-/var/data}/vereign/apisix/apisix.yaml:/usr/local/apisix/conf/apisix.yaml
     ports:
       - "9080:9080" # Gateway — main entry point for API traffic
-      - "9180:9180" # Admin API (read-only in standalone mode)
       - "9091:9091" # Prometheus metrics
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -1269,6 +1268,11 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./:/stargate
+      # Operator NTP sources, written by the agent's NTP endpoint and read directly by
+      # the HOST chronyd (via a sourcedir in /etc/chrony.conf listing this dir first).
+      # Just this one directory, not all of /var/data: it is the only writable host
+      # state the agent needs. Applying a change is `chronyc reload sources` over nsenter.
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/chrony:/chrony-sources
     environment:
       NATS_URL: "nats://nats:4222"
       COMPOSE_PROJECT_DIR: "/stargate"

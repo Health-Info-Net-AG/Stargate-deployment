@@ -76,17 +76,19 @@ S3_BUCKET_NAME="stargate-bucket"
 # ==============================================================================
 # OPTIONAL: KERI topology (idagent)
 # ==============================================================================
-# Local-only by default (empty witnesses / threshold 0 = today's behavior).
+# Points at the shared HIN production witness pool over its public https endpoints.
 #
-# KERI_WITNESSES: a JSON ARRAY of the shared witness pool's OOBI objects,
-# SINGLE-quoted so the inner double-quotes survive in .env. Each element is a
-# FULL OOBI object {eid, scheme, url} - not a bare URL. Example:
-#   KERI_WITNESSES='[{"eid":"BJq7...","scheme":"http","url":"http://witness-1-host:3232/"}]'
-# KERI_WITNESS_THRESHOLD: receipts required at inception; must be <= the number
-# of witnesses. IMPORTANT: with threshold > 0 the pool MUST be reachable before
-# idagent's FIRST start, or inception fails without receipts.
-KERI_WITNESSES='[]'
-KERI_WITNESS_THRESHOLD="0"
+# KERI_WITNESSES: a JSON ARRAY of the pool's OOBI objects, SINGLE-quoted so the inner
+# double-quotes survive in .env. Each element is a FULL OOBI object {eid, scheme, url}
+# - not a bare URL. `scheme` must match the scheme the witness advertises in its
+# /loc/scheme reply: idagent looks the OOBI up by the (eid, scheme) pair, so an entry
+# whose scheme differs from the witness's own resolves to "No oobi" and inception fails.
+# KERI_WITNESS_THRESHOLD: receipts required at inception; must be <= the number of
+# witnesses. IMPORTANT: with threshold > 0 the pool MUST be reachable before idagent's
+# FIRST start, or inception fails without receipts and the container will not come up.
+# Set both to '[]' / "0" for a local-only deployment with no witnesses.
+KERI_WITNESSES='[{"eid":"BMGbBCw5I-zLanhgJdRXQ-EU4G61P7M8jTpFrstK5ArZ","scheme":"https","url":"https://witness-1.verify-mail.hin-infra.ch/"},{"eid":"BJGVotztVGSfp5mJbr4zUgd5X0fOh3OVMrhoAWLODR4O","scheme":"https","url":"https://witness-2.verify-mail.hin-infra.ch/"},{"eid":"BEq3J1mCOXGj-Pe9FFXIga16BiTSFwU0TS4SLfCCorBZ","scheme":"https","url":"https://witness-3.verify-mail.hin-infra.ch/"}]'
+KERI_WITNESS_THRESHOLD="2"
 #
 # KERI_WATCHER_OOBI: a SINGLE watcher OOBI object (one {eid, scheme, url}, NOT an
 # array), SINGLE-quoted. Only needed to verify OTHER orgs' anchors - enable the
@@ -142,7 +144,10 @@ KEYCLOAK_DASHBOARD_CLIENT_SECRET="" # Auto-generated if empty
 KEYCLOAK_DOZZLE_CLIENT_SECRET=""    # Auto-generated if empty (Dozzle login via oauth2-proxy)
 OAUTH2_PROXY_COOKIE_SECRET=""       # Auto-generated if empty (oauth2-proxy session cookie)
 
-# APISIX admin API key (for the debug admin endpoint on port 9180)
+# APISIX admin key. Required because config.yaml references it, but the Admin API
+# itself is never served: APISIX runs standalone (deployment.role: data_plane,
+# config_provider: yaml), where routes come from apisix.yaml and no admin listener
+# is started. Nothing reachable is protected by this value.
 APISIX_ADMIN_KEY=""  # Auto-generated if empty
 
 # Public-facing URLs (must be reachable from the end-user's browser)
