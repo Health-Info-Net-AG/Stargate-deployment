@@ -23,6 +23,8 @@ The panel has five sub-sections:
 
 Changes are only applied after clicking **Save** button at the bottom of the page
 
+![Screenshot](assets/Email-authentication.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
 ---
 
 ### what each protocol does
