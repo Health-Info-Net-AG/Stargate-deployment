@@ -38,6 +38,7 @@ stages:
   - manifest
   - release
   - trigger
+  - hin
 
 execute_script:
   stage: build
@@ -60,15 +61,6 @@ execute_script:
     - cd /data/vmimagebuilder
     - ./almaimage.sh
     - echo "VM images were built and uploaded to https://images.vereign.io/"
-    # Trigger the downstream HIN pipeline only for stable releases (vX.Y.Z),
-    # not for release candidates / prereleases (e.g. v1.2.34-rc1).
-    - |
-      if echo "$CI_COMMIT_TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
-        echo "Stable release ${CI_COMMIT_TAG} - triggering HIN pipeline..."
-        curl -X POST "https://gitlab.hin-infra.ch/api/v4/projects/336/trigger/pipeline" -F token=$HIN_GITLAB_TRIGGER_TOKEN -F ref=main
-      else
-        echo "Tag ${CI_COMMIT_TAG} is not a stable release - skipping HIN pipeline trigger."
-      fi
 
 # Milestone release for manually pushed/UI-created semver tags (v1.0.0).
 # Rolls up changes since the previous semver tag.
@@ -245,6 +237,20 @@ trigger_bootc_pipeline:
     project: svdh/almalinux-bootc
     branch: main
     strategy: depend
+
+
+trigger_hin_pipeline:
+  stage: hin
+  tags:
+    - linux
+  allow_failure: true
+  needs:
+    - trigger_bootc_pipeline
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/'
+  script:
+    - echo "Stable release ${CI_COMMIT_TAG} - triggering HIN pipeline..."
+    - curl -X POST "https://gitlab.hin-infra.ch/api/v4/projects/336/trigger/pipeline" -F token=$HIN_GITLAB_TRIGGER_TOKEN -F ref=main
 
 
 # QA test images, built from the ref this pipeline ran on -- the Containerfile clones with `git clone --branch`,
