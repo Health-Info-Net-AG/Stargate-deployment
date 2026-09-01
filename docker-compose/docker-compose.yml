@@ -834,7 +834,7 @@ services:
 
   dashboard:
     # renovate: datasource=docker depName=healthinfonetag/dashboard
-    image: healthinfonetag/dashboard:v0.0.118
+    image: healthinfonetag/dashboard:v0.0.134-test
     container_name: stargate-dashboard
     restart: unless-stopped
     logging:
@@ -1252,7 +1252,7 @@ services:
   # Ops Agent - executes infrastructure commands (updates, restarts) from dashboard via NATS
   ops-agent:
     # renovate: datasource=docker depName=healthinfonetag/stargate-ops
-    image: healthinfonetag/stargate-ops:v0.0.7
+    image: healthinfonetag/stargate-ops:v0.0.8-test
     container_name: stargate-ops-agent
     restart: unless-stopped
     logging:
