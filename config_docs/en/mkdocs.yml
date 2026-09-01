@@ -82,10 +82,20 @@ extra:
     new: Recently added
     deprecated: Deprecated
   social:
+    - icon: fontawesome/regular/house
+      link: https://hin.ch
+    - icon: fontawesome/regular/envelope
+      link: https://www.hin.ch/de/kontakt/kontaktformular.cfm
     - icon: fontawesome/brands/github
       link: https://github.com/Health-Info-Net-AG/
     - icon: fontawesome/brands/docker
       link: https://hub.docker.com/r/healthinfonetag/
+    - icon: fontawesome/brands/linkedin
+      link: https://ch.linkedin.com/company/health-info-net-hin-ag
+    - icon: fontawesome/brands/youtube
+      link: https://www.youtube.com/channel/UCpQGpx5i2sflSfHxlWetjBQ
+    - icon: fontawesome/brands/instagram
+      link: https://www.instagram.com/healthinfonetag/
   alternate:
     - name: English
       link: /Stargate-deployment/en/
