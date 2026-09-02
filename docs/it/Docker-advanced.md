@@ -338,7 +338,7 @@ Server di posta di destinazione (tramite ricerca MX)
 
 **Scansione antivirus:** La posta in entrata viene scansionata da **ClamAV** (`stargate-clamav`), collegato a Stalwart come milter nella fase SMTP DATA sia sul listener pubblico (`:25`) che su quello di reiniezione (`:10026`). La posta infetta viene respinta a livello SMTP; se ClamAV non è raggiungibile, il messaggio viene rinviato piuttosto che consegnato non scansionato (fail-closed). Il database delle firme di ClamAV risiede nel volume `clamav_data` e viene mantenuto aggiornato da freshclam in background.
 
-**Flusso di callback di sigillatura (in entrata):** Quando un sigillatore remoto deve consegnare un messaggio sigillato, chiama `MXENGINE_PUBLIC_ADDRESS` (predefinito: `http://<SERVER_STATIC_IP>:8084`). Questo è il motivo per cui la porta 8084 deve essere aperta per il traffico in entrata. Il protocollo `http://` è corretto - TLS non è richiesto perché il payload del sigillo è già crittografato.
+**Flusso di callback di sigillatura (in entrata):** Quando un sigillatore remoto deve consegnare un messaggio sigillato, chiama `MXENGINE_PUBLIC_ADDRESS` (predefinito: `http://<SERVER_STATIC_IP>:8084`). Il protocollo `http://` è corretto - TLS non è richiesto perché il payload del sigillo è già crittografato.
 
 ### Configurazione del relay di posta
 

@@ -63,7 +63,7 @@ Referenz: [Troubleshoot outbound SMTP connectivity in Azure](https://learn.micro
 - Klicken Sie auf die neue VM.
 - Sie können die öffentliche IP-Adresse unter **"Primary NIC public IP"** sehen.
 - Scrollen Sie nach unten zu **Networking** und klicken Sie darauf.
-- Klicken Sie auf **+ Create port rule**, **Inbound port rule**, **Destination port ranges** 25, **Protocol** TCP, benennen Sie es **SMTP**. Wiederholen Sie dies für die weiteren erforderlichen eingehenden Ports — **8084** (Seal-Callback) und **19818** (WireGuard). Die vollständige Liste finden Sie unter [Server-Anforderungen → Eingehender Netzwerkzugriff](../index.md#eingehender-netzwerkzugriff-firewall-muss-erlauben).
+- Klicken Sie auf **+ Create port rule**, **Inbound port rule**, **Destination port ranges** 25, **Protocol** TCP, benennen Sie es **SMTP**. Wiederholen Sie dies für den weiteren erforderlichen eingehenden Port — **19818** (WireGuard). Die vollständige Liste finden Sie unter [Server-Anforderungen → Eingehender Netzwerkzugriff](../index.md#eingehender-netzwerkzugriff-firewall-muss-erlauben).
 
 !!! warning "Zuerst die Data Disk anhängen"
     Hängen Sie vor dem ersten Start eine zweite, leere Festplatte mit mindestens 30 GB an. Beim ersten Start formatiert die Appliance sie als Data Disk (`VEREIGN-DATA`, gemountet unter `/var/data`) und speichert dort die gesamte Konfiguration und alle Daten; ohne sie schlägt der Start fehl und wird zurückgerollt. Siehe [Installationsanleitung → Schritt 4](../Installation-guide.md#schritt-4-vm-image-laden).

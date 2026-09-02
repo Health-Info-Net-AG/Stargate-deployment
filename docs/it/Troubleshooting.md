@@ -210,7 +210,7 @@ Le metriche dell'host vengono esportate anche per Prometheus sulla porta **`:910
 Verifica rapida della raggiungibilità delle principali porte in entrata:
 
 ```bash
-for p in 25 443 8180 8190 8084 19818; do nc -zv <this-server-ip> $p; done
+for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 ```
 
 | Porta | Servizio | Direzione |
@@ -219,7 +219,6 @@ for p in 25 443 8180 8190 8084 19818; do nc -zv <this-server-ip> $p; done
 | `443` | Dashboard (HTTPS) | in entrata |
 | `8180` | Keycloak | in entrata |
 | `8190` | Dozzle (opzionale) | in entrata |
-| `8084` | mxengine seal callback | in entrata |
 | `19818` | WireGuard (UDP **e** TCP) | in entrata / in uscita |
 
 È necessario l'accesso in uscita al registro dei container, all'autorità di certificazione S/MIME (tramite il tunnel WireGuard) e a qualsiasi istanza remota di Loki configurata. Per la tabella completa delle porte, vedere la **[home page](index.md)** e la **[panoramica delle applicazioni](Applications.md)**.

@@ -62,10 +62,10 @@
     iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
     # Eingehende TCP-Verbindungen zu den offenen Ports zulassen
-    iptables -A INPUT -p tcp -m multiport --dports 25,8084,19818 -j ACCEPT
+    iptables -A INPUT -p tcp -m multiport --dports 25,19818 -j ACCEPT
 
     # Ausgehende TCP-Verbindungen zu den offenen Ports zulassen
-    iptables -A OUTPUT -p tcp -m multiport --dports 25,8084,19818 -j ACCEPT
+    iptables -A OUTPUT -p tcp -m multiport --dports 25,19818 -j ACCEPT
 
     # Eingehenden UDP-Port 19818 für WireGuard zulassen
     iptables -A INPUT -p udp --dport 19818 -j ACCEPT
@@ -91,7 +91,6 @@
 | Port | Protokoll | Zweck |
 | :--- | :-------: | :---- |
 | `25` | TCP | SMTP – Empfangen von E-Mails von externen Servern |
-| `8084` | TCP | HTTP – Seal-Callback von einem entfernten Sealer-Dienst |
 | `19818` | UDP+TCP | WireGuard – Verschlüsselter Tunnel für die Agent-zu-Agent-Kommunikation. Lesen Sie unser [Sicherheitsgutachten zu WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
 
 #### Eingehender VM-Zugriff (von Ihrem Administrationsrechner zur HIN Gateway VM)

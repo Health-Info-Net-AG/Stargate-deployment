@@ -210,7 +210,7 @@ Host-Metriken werden zudem für Prometheus unter **`:9100/metrics`** exportiert 
 Schnelle Erreichbarkeitsprüfung für die wichtigsten eingehenden Ports:
 
 ```bash
-for p in 25 443 8180 8190 8084 19818; do nc -zv <this-server-ip> $p; done
+for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 ```
 
 | Port | Dienst | Richtung |
@@ -219,7 +219,6 @@ for p in 25 443 8180 8190 8084 19818; do nc -zv <this-server-ip> $p; done
 | `443` | Dashboard (HTTPS) | eingehend |
 | `8180` | Keycloak | eingehend |
 | `8190` | Dozzle (optional) | eingehend |
-| `8084` | mxengine Seal-Callback | eingehend |
 | `19818` | WireGuard (UDP **und** TCP) | ein-/ausgehend |
 
 Ausgehender Zugriff wird benötigt auf die Container-Registry, die S/MIME-Zertifizierungsstelle (über den WireGuard-Tunnel) und jedes konfigurierte Remote-Loki. Die vollständige Port-Tabelle finden Sie auf der **[Startseite](index.md)** und in der **[Anwendungsübersicht](Applications.md)**.

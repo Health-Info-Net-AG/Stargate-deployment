@@ -210,7 +210,7 @@ Les métriques de l'hôte sont également exportées pour Prometheus sur **`:910
 Contrôle rapide de l'accessibilité des principaux ports entrants:
 
 ```bash
-for p in 25 443 8180 8190 8084 19818; do nc -zv <this-server-ip> $p; done
+for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 ```
 
 | Port | Service | Direction |
@@ -219,7 +219,6 @@ for p in 25 443 8180 8190 8084 19818; do nc -zv <this-server-ip> $p; done
 | `443` | Tableau de bord (HTTPS) | entrant |
 | `8180` | Keycloak | entrant |
 | `8190` | Dozzle (facultatif) | entrant |
-| `8084` | Callback de scellement de mxengine | entrant |
 | `19818` | WireGuard (UDP **et** TCP) | entrant/sortant |
 
 Un accès sortant est nécessaire vers le registre de conteneurs, l'autorité de certification S/MIME (via le tunnel WireGuard) et toute instance Loki distante que vous auriez configurée. Consultez le tableau complet des ports sur la **[page d'accueil](index.md)** et dans l'**[Aperçu des applications](Applications.md)**.

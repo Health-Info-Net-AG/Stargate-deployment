@@ -102,10 +102,10 @@ The following items must be available or confirmed before the installation:
     iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
     # Allow inbound TCP connections to the open ports
-    iptables -A INPUT -p tcp -m multiport --dports 25,8084,19818 -j ACCEPT
+    iptables -A INPUT -p tcp -m multiport --dports 25,19818 -j ACCEPT
 
     # Allow outbound TCP connections to the open ports
-    iptables -A OUTPUT -p tcp -m multiport --dports 25,8084,19818 -j ACCEPT
+    iptables -A OUTPUT -p tcp -m multiport --dports 25,19818 -j ACCEPT
 
     # Allow inbound UDP port 19818 for Wireguard
     iptables -A INPUT -p udp --dport 19818 -j ACCEPT
@@ -131,7 +131,6 @@ The following items must be available or confirmed before the installation:
 | Port | Protocol | Purpose |
 | :--- | :------: | :------ |
 | `25` | TCP | SMTP - receiving mail from external servers |
-| `8084` | TCP | HTTP - seal callback from remote sealer service |
 | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication. Read our [Security Assessment WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
 
 #### Inbound VM Access (your administrative machine to the HIN Gateway VM)

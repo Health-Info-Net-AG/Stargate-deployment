@@ -250,7 +250,7 @@ Host metrics are also exported for Prometheus on **`:9100/metrics`** (see [Monit
 Quick reachability check for the key inbound ports:
 
 ```bash
-for p in 25 443 8180 8190 8084 19818; do nc -zv <this-server-ip> $p; done
+for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 ```
 
 | Port | Service | Direction |
@@ -259,7 +259,6 @@ for p in 25 443 8180 8190 8084 19818; do nc -zv <this-server-ip> $p; done
 | `443` | Dashboard (HTTPS) | inbound |
 | `8180` | Keycloak | inbound |
 | `8190` | Dozzle (optional) | inbound |
-| `8084` | mxengine seal callback | inbound |
 | `19818` | WireGuard (UDP **and** TCP) | in/outbound |
 
 Outbound access is needed to the container registry, the S/MIME CA (over the WireGuard tunnel), and any remote Loki you configured. See the full port table on the **[home page](index.md)** and **[Applications overview](Applications.md)**.
