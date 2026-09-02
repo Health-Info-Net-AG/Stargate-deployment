@@ -26,9 +26,14 @@
 - In **Gestione della rete**, abilita solo **IPv4** se l'istanza Stargate deve essere accessibile via Internet (es., per Office 365).
 - In **Sicurezza di accesso**, seleziona la tua chiave SSH (utilizzabile con l'utente `almalinux`).
 - Nella sezione **Password**, imposta una password sicura a tua scelta.
+
 !!! tip "Senza una password, l'autenticazione SSH tramite password è disabilitata"
     Per il primo accesso devi comunque utilizzare la password iniziale fornita da HIN. Tuttavia, se non imposti una nuova password, cloud-init disabiliterà l'autenticazione SSH tramite password per tutti gli utenti, consentendo l'accesso SSH solo tramite chiave pubblica.
+
 - Fai clic su **Avvia**.
+
+!!! warning "Collega prima il disco dati"
+    Prima del primo avvio, collega un secondo disco vuoto di almeno 30 GB. Al primo avvio l'appliance lo formatta come disco dati (`VEREIGN-DATA`, montato su `/var/data`) e vi conserva tutta la configurazione e i dati; senza di esso l'avvio fallisce ed esegue il rollback. Vedi [Guida all'installazione → Passo 4](../Installation-guide.md#passo-4-caricamento-dellimmagine-vm).
 
 ## Accedi e inizializza l'istanza Stargate
 

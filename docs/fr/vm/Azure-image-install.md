@@ -63,7 +63,10 @@ Référence : [Résoudre les problèmes de connectivité SMTP sortant dans Azure
 - Cliquez sur la nouvelle VM.
 - Vous pouvez voir l'adresse IP publique sous "Adresse IP publique de la NIC principale"
 - Faites défiler vers le bas jusqu'à Mise en réseau et cliquez dessus
-- Cliquez sur **+ Créer une règle de port**, Règle de port entrant, Plages de ports de destination 25, Protocole TCP, nommez-la SMTP, répétez la même étape avec la plage de ports de destination 1587 et nommez-la mxengine
+- Cliquez sur **+ Créer une règle de port**, Règle de port entrant, Plages de ports de destination 25, Protocole TCP, nommez-la SMTP. Répétez pour les autres ports entrants requis — **8084** (rappel de scellement) et **19818** (WireGuard). Voir [Exigences du serveur → Accès réseau entrant](../index.md#acces-reseau-entrant-le-pare-feu-doit-autoriser) pour la liste complète.
+
+!!! warning "Attachez d'abord le disque de données"
+    Avant le premier démarrage, attachez un second disque vierge d'au moins 30 Go. Au premier démarrage, l'appliance le formate comme disque de données (`VEREIGN-DATA`, monté sur `/var/data`) et y conserve toute la configuration et les données ; sans lui, le démarrage échoue et effectue un rollback. Voir [Guide d'installation → Étape 4](../Installation-guide.md#etape-4-charger-limage-de-machine-virtuelle).
 
 ## Installer HIN Gateway
 

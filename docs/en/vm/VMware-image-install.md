@@ -22,9 +22,13 @@ Deploy Stargate on VMware
 - Click **Next**
 - Click **Finish**
 
+!!! info "Data Disk included"
+    The OVA already contains the appliance's Data Disk (`VEREIGN-DATA`, mounted at `/var/data`) — there is no extra disk to attach. See [Installation guide → Step 4](../Installation-guide.md#step-4-load-vm-image).
+
 ## Install HIN Gateway
 
 After the VM has been successfully created, proceed with the installation and onboarding steps as described in the provided [instructions](https://health-info-net-ag.github.io/Stargate-deployment/Installation-guide/)
+
 !!! tip "Support"
 
     For any questions or issues related to the deployment and operation of the Stargate appliance, please contact HIN support.

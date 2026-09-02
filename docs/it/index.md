@@ -119,6 +119,9 @@
 | Server di posta di destinazione | `25` | TCP | Consegna posta in uscita (tramite ricerca MX) |
 | Server DNS | `53` | UDP+TCP | In uscita verso server DNS pubblici |
 | Server NTP | `123` | UDP | NTP sincronizza gli orologi di computer, server, dispositivi di rete e macchine virtuali con fonti di tempo precise |
+| Peer WireGuard (rete HIN) | `19818` | UDP+TCP | WireGuard - tunnel crittografato per la comunicazione agente-agente |
+| `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | Pool di witness KERI di HIN - richiesto per la verifica delle identità degli agenti (idagent / watcher) |
+| `app.hin.ch` | `443` | TCP | Elenco membri / domini di posta HIN (mtaconf) |
 
 ## Contattaci
 

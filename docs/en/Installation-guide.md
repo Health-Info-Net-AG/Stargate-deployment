@@ -183,6 +183,7 @@ Create a backup of the existing MGW appliance and ensure that the VM is retained
 
 !!! warning "HIN assistance required"
     An unlock code is required for this step. The code is provided by a HIN Support Engineer.
+
 If you would like to continue the installation on your own, please contact HIN Support to request the unlock code. Otherwise, the unlock code will be provided during the planned migration call.
 
 <!-- !!! info
@@ -258,6 +259,13 @@ Select one of the available virtual images and provision it as described in the 
 
 Upload the selected VM image to your hypervisor.
 
+!!! warning "Second disk required — the Data Disk"
+    The appliance uses two disks: the OS disk from the image, and a separate **Data Disk** that holds all configuration, secrets, mail, and databases. Keeping them apart lets an image upgrade replace the OS without touching your data.
+
+    The **VMware OVA already includes** this disk. On every other platform (Proxmox, Hyper-V, Azure, Cloudscale) the image is a single OS disk, so **attach a second, blank disk of at least 30 GB before the first boot**.
+
+    Do not format or partition it yourself. On first boot the appliance formats the blank disk (label `VEREIGN-DATA`) and mounts it at `/var/data`. Without it, the first boot fails its health check and rolls back.
+
 ### Step 5 - Network connection to the VM
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
@@ -290,40 +298,35 @@ Add an IP address on Linux:
 
 ??? tip "Cloud-init overrides VM network settings after reboot"
     
-    It is possible sometimes that Cloud-init overrides VM network settings after reboot. This is harmful when no DHCP configured and VM will be booted without any IP and Route configuration. To disable this behavior please perform following actions:
+    **This applies to the legacy image only.** The bootc appliance - now the default - does not use cloud-init to manage networking, so it is not affected and does not ship the `cloud-init-net-*` aliases used below.
 
-    1. Stop cloud-init regenerating network config each boot:
+    On the legacy image (typically on VMware/ESXi) cloud-init has no datasource, falls back to "DHCP the first NIC", and re-renders the network config on every boot - so a static address set with `nmtui` reverts after a reboot. An alias fixes this in one step by disabling only cloud-init's network rendering, so an address you then set on the existing profile persists:
+
+    1. Stop cloud-init re-rendering the network each boot:
     ```bash
-    printf 'network: {config: disabled}\n' | sudo tee /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+    cloud-init-net-disable
     ```
-    2. Remove the cloud-init/DHCP profile so it can't autoconnect anymore:
+    2. Run `nmtui`, edit the existing **`cloud-init <iface>`** connection, and set the static IP, gateway and DNS there. Do not add a second profile for the same interface - cloud-init's carries a higher autoconnect priority and would win.
     ```bash
-    # get name of cloud-init interface
-    nmcli connection show
-    # use the exact NAME from `nmcli connection show`
-    nmcli con delete "cloud-init <iface>"
+    nmtui
     ```
-    3. Create a fresh connection and pin it as the autoconnect winner. `nmcli con mod` only works on a connection that already exists, so it must be created first - the one just deleted in step 2 no longer counts:
-    ```bash
-    nmcli con add type ethernet ifname <iface> con-name "<manual-profile>"
-    nmcli con mod "<manual-profile>" ipv4.method manual ipv4.addresses <IP>/<PREFIX> \
-    ipv4.gateway <GW> ipv4.dns "<DNS>" connection.autoconnect yes connection.autoconnect-priority 100
-    nmcli con up "<manual-profile>"
-    ```
-    4. Prove it survives. Reboot VM:
+    3. Reboot and confirm the address survives:
     ```bash
     sudo reboot
-    ```
-    then check current network configuration:
-    ```bash
+    # after the reboot:
     nmcli device status; ip -4 addr
+    ```
+
+    `cloud-init-net-enable` reverts to the default cloud-init-managed networking. Without the alias, step 1 is the same drop-in by hand:
+    ```bash
+    echo 'network: {config: disabled}' | sudo tee /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
     ```
 
 !!! tip
     If you used Option C and configured the network manually, you must run the following commands:
 
     ```bash
-    cd /root/stargate-deployment/docker-compose
+    cd /usr/share/stargate-deployment/docker-compose
     ./scripts/purge.sh
     ./scripts/install.sh
     ```

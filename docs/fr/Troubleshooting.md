@@ -3,10 +3,10 @@
 Guide structuré pour le diagnostic d'une appliance Stargate depuis la ligne de commande: éléments à vérifier, emplacement des journaux et procédures de récupération sans risque.
 
 !!! info "Où exécuter ces commandes"
-    Exécutez toutes les commandes ci-dessous à partir du **répertoire de déploiement** - le dossier contenant `docker-compose.yml` et `scripts/` (sur les images de machine virtuelle (VM), il s'agit généralement de `/root/stargate-deployment/docker-compose`, ou du répertoire dans lequel vous avez effectué l'installation). Toutes les commandes `docker compose` et `./scripts/*` supposent que vous vous trouvez dans ce répertoire de travail.
+    Exécutez toutes les commandes ci-dessous à partir du **répertoire de déploiement** - le dossier contenant `docker-compose.yml` et `scripts/` (sur les images de machine virtuelle (VM), il s'agit généralement de `/usr/share/stargate-deployment/docker-compose`, ou du répertoire dans lequel vous avez effectué l'installation). Toutes les commandes `docker compose` et `./scripts/*` supposent que vous vous trouvez dans ce répertoire de travail.
 
     ```bash
-    cd /root/stargate-deployment/docker-compose   # adjust to your install path
+    cd /usr/share/stargate-deployment/docker-compose   # adjust to your install path
     ```
 
 ---
@@ -156,7 +156,7 @@ cat ../update.log                             # the update script output
 **La mise à jour démarre, mais rien ne se passe (mise à jour depuis une version antérieure).** Si le journal de l'ops-agent s'arrête à `pulling deployment repo ...` et que la mise à jour ne progresse plus, le dépôt sur la VM contient très probablement des **modifications locales sur un fichier suivi** (le plus souvent un `docker-compose.yml` modifié manuellement). Le `git checkout` de l'ops-agent refuse alors de s'exécuter, ce qui bloque la mise à jour. Réinitialisez le dépôt de force sur la dernière révision, puis relancez la mise à jour. Git est la source unique de vérité; cette opération n'annule que les modifications locales apportées aux fichiers **suivis** - `customer-config.sh`, `.env` et `secrets/` figurent dans `.gitignore` et sont préservés:
 
 ```bash
-cd /root/stargate-deployment
+cd /usr/share/stargate-deployment
 git fetch origin
 git checkout -f main
 git reset --hard origin/main

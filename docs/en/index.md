@@ -20,11 +20,13 @@ The following items must be available or confirmed before the installation:
     - Activation code
 
 - **Export of private key**
+
 !!! info
     Export of private keys is only for customers moving from existing MGW to a new HIN Gateway
 
     - If you are working on a Windows machine that has access to the Mail Gateway VM via port 22, we can support you during the call in enabling the private key export from the MGW.
     - If you do not have access to such a machine, please contact HIN Support by email or phone (support@hin.ch / 0848 830 740) to help you establish a support connection via System Administration → Support Connection → Connect.
+
 - **Download latest** version of [VM image](vm/VM-Catalog.md)
 - **Firewall** requirements for WireGuard.
   Configure the WireGuard port 19818 (TCP/UDP) in your firewall:
@@ -33,10 +35,12 @@ The following items must be available or confirmed before the installation:
 - **DHCP access** should be available. For more information see "Installation Guidelines".
 
 - **Backup requirements** - see "Annex 1 - Backing up and restoring the appliance settings".
+
 !!! info
     Backup requirements is only for customers moving from existing MGW to a new HIN Gateway
 
 - Confirmation that the existing MGW will **not** be deleted until acceptance has been completed.
+
 !!! info
     Keeping the existing MGW available till acceptance report have been completed is only for customers moving from existing MGW to a new HIN Gateway
 
@@ -155,6 +159,9 @@ The following items must be available or confirmed before the installation:
 | Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
 | Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
 | NTP servers | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
+| WireGuard peers (HIN network) | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication |
+| `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | HIN KERI witness pool - required for agent identity verification (idagent / watcher) |
+| `app.hin.ch` | `443` | TCP | HIN member / mail-domain list (mtaconf) |
 
 ## Contact us
 

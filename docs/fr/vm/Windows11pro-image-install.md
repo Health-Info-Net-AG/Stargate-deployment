@@ -30,9 +30,13 @@ Déployez Stargate sur Windows Pro (les versions non-Pro ne prennent pas en char
 - Cliquez sur "Connecter"
 - Cliquez sur "Démarrer"
 
+!!! warning "Attachez d'abord le disque de données"
+    Avant le premier démarrage, attachez un second disque vierge d'au moins 30 Go. Au premier démarrage, l'appliance le formate comme disque de données (`VEREIGN-DATA`, monté sur `/var/data`) et y conserve toute la configuration et les données ; sans lui, le démarrage échoue et effectue un rollback. Voir [Guide d'installation → Étape 4](../Installation-guide.md#etape-4-charger-limage-de-machine-virtuelle).
+
 ## Installer HIN Gateway
 
 Après la création réussie de la VM, procédez aux étapes d'installation et d'intégration comme décrit dans les [instructions](https://health-info-net-ag.github.io/Stargate-deployment/Installation-guide/) fournies.
+
 !!! tip "Support"
 
     Pour toute question ou problème lié au déploiement et au fonctionnement de l'appliance Stargate, veuillez contacter le support HIN.
