@@ -63,7 +63,10 @@ Riferimento: [Risolvere i problemi di connettività SMTP in uscita in Azure](htt
 - Fai clic sulla nuova VM.
 - Puoi vedere l'indirizzo IP pubblico sotto "IP pubblico della scheda di rete primaria"
 - Scorri verso il basso fino a Rete e fai clic su di essa
-- Fai clic su **+ Crea regola di porta**, Regola di porta in entrata, Intervalli di porte di destinazione 25, Protocollo TCP, chiamala SMTP, ripeti lo stesso passaggio con l'intervallo di porte di destinazione 1587 e chiamala mxengine
+- Fai clic su **+ Crea regola di porta**, Regola di porta in entrata, Intervalli di porte di destinazione 25, Protocollo TCP, chiamala SMTP. Ripeti per l'altra porta in entrata richiesta — **19818** (WireGuard). Vedi [Requisiti del server → Accesso di rete in entrata](../index.md#accesso-di-rete-in-entrata-il-firewall-deve-consentire) per l'elenco completo.
+
+!!! warning "Collega prima il disco dati"
+    Prima del primo avvio, collega un secondo disco vuoto di almeno 30 GB. Al primo avvio l'appliance lo formatta come disco dati (`VEREIGN-DATA`, montato su `/var/data`) e vi conserva tutta la configurazione e i dati; senza di esso l'avvio fallisce ed esegue il rollback. Vedi [Guida all'installazione → Passo 4](../Installation-guide.md#passo-4-caricamento-dellimmagine-vm).
 
 ## Accedi e inizializza l'istanza Stargate
 

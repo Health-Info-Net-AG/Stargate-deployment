@@ -22,6 +22,9 @@ Distribuisci Stargate su VMware
 - Fai clic su **Avanti**
 - Fai clic su **Fine**
 
+!!! info "Disco dati incluso"
+    L'OVA contiene già il disco dati dell'appliance (`VEREIGN-DATA`, montato su `/var/data`) — non c'è alcun disco aggiuntivo da collegare. Vedi [Guida all'installazione → Passo 4](../Installation-guide.md#passo-4-caricamento-dellimmagine-vm).
+
 ## Accedi e inizializza l'istanza Stargate
 
 - Accedi alla console VM con l'utente `hinadmin` per configurare e installare i componenti Stargate.

@@ -63,7 +63,10 @@ Reference: [Troubleshoot outbound SMTP connectivity in Azure](https://learn.micr
 - Click on the new VM.
 - You can see the public IP address under "Primary NIC public IP"
 - Scroll down to Networking and click on it
-- Click **+ Create port rule**, Inbound port rule, Destination port ranges 25, Protocol TCP, name it SMTP, repeat the same step with Destination port range 1587 and name it mxengine
+- Click **+ Create port rule**, Inbound port rule, Destination port ranges 25, Protocol TCP, name it SMTP. Repeat for the other required inbound port — **19818** (WireGuard). See [Server Requirements → Inbound Network Access](../index.md#inbound-network-access-firewall-must-allow) for the full list.
+
+!!! warning "Attach the Data Disk first"
+    Before the first boot, attach a second, blank disk of at least 30 GB. On first boot the appliance formats it as the Data Disk (`VEREIGN-DATA`, mounted at `/var/data`) and keeps all config and data there; without it the boot fails and rolls back. See [Installation guide → Step 4](../Installation-guide.md#step-4-load-vm-image).
 
 ## Install HIN Gateway
 

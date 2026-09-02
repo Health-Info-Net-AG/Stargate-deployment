@@ -22,6 +22,9 @@ Stargate auf VMware bereitstellen
 - Klicken Sie auf **Next**
 - Klicken Sie auf **Finish**
 
+!!! info "Data Disk enthalten"
+    Die OVA enthält bereits die Data Disk der Appliance (`VEREIGN-DATA`, gemountet unter `/var/data`) — es muss keine zusätzliche Festplatte angehängt werden. Siehe [Installationsanleitung → Schritt 4](../Installation-guide.md#schritt-4-vm-image-laden).
+
 ## HIN Gateway installieren
 
 Nach erfolgreicher Erstellung der VM fahren Sie mit den Installations- und Onboarding-Schritten fort, wie in den bereitgestellten [Anweisungen](https://health-info-net-ag.github.io/Stargate-deployment/Installation-guide/) beschrieben.

@@ -32,6 +32,9 @@ Stargate auf Proxmox bereitstellen
 - Klicken Sie auf **"Next"**
 - Warten Sie, bis der VM-Erstellungsprozess abgeschlossen ist, klicken Sie dann auf die neue VM, klicken Sie auf **"Console"**, dann auf **"Start Now"**
 
+!!! warning "Zuerst die Data Disk anhängen"
+    Hängen Sie vor dem ersten Start eine zweite, leere Festplatte mit mindestens 30 GB an. Beim ersten Start formatiert die Appliance sie als Data Disk (`VEREIGN-DATA`, gemountet unter `/var/data`) und speichert dort die gesamte Konfiguration und alle Daten; ohne sie schlägt der Start fehl und wird zurückgerollt. Siehe [Installationsanleitung → Schritt 4](../Installation-guide.md#schritt-4-vm-image-laden).
+
 ## HIN Gateway installieren
 
 Nach erfolgreicher Erstellung der VM fahren Sie mit den Installations- und Onboarding-Schritten fort, wie in den bereitgestellten [Anweisungen](../Installation-guide.md) beschrieben.

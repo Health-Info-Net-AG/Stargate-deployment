@@ -355,7 +355,7 @@ Destination Mail Server (via MX lookup)
 
 **Antivirus scanning:** Inbound mail is scanned by **ClamAV** (`stargate-clamav`), wired into Stalwart as a milter at the SMTP DATA stage on both the public (`:25`) and reinject (`:10026`) listeners. Infected mail is rejected at the SMTP level; if ClamAV is unreachable the message is deferred rather than delivered unscanned (fail-closed). ClamAV's signature database lives in the `clamav_data` volume and is kept current by freshclam in the background.
 
-**Seal callback flow (inbound):** When a remote sealer needs to deliver a sealed message, it calls `MXENGINE_PUBLIC_ADDRESS` (default: `http://<SERVER_STATIC_IP>:8084`). This is why port 8084 must be open for inbound traffic. The `http://` protocol is correct - TLS is not required because the seal payload is already encrypted.
+**Seal callback flow (inbound):** When a remote sealer needs to deliver a sealed message, it calls `MXENGINE_PUBLIC_ADDRESS` (default: `http://<SERVER_STATIC_IP>:8084`). The `http://` protocol is correct - TLS is not required because the seal payload is already encrypted.
 
 ### Mail Relay Configuration
 

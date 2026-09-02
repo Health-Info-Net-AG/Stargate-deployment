@@ -225,6 +225,13 @@ Wählen Sie eines der verfügbaren virtuellen Images aus und richten Sie es gem�
 
 Laden Sie die ausgewählte VM auf Ihren Hypervisor hoch.
 
+!!! warning "Zweite Festplatte erforderlich — die Data Disk"
+    Die Appliance nutzt zwei Festplatten: die OS-Festplatte aus dem Image und eine separate **Data Disk**, die die gesamte Konfiguration, Secrets, E-Mails und Datenbanken enthält. Diese Trennung erlaubt es, das OS bei einem Image-Update zu ersetzen, ohne Ihre Daten anzurühren.
+
+    Die **VMware-OVA enthält** diese Festplatte bereits. Auf allen anderen Plattformen (Proxmox, Hyper-V, Azure, Cloudscale) ist das Image eine einzelne OS-Festplatte — **hängen Sie daher vor dem ersten Start eine zweite, leere Festplatte mit mindestens 30 GB an**.
+
+    Formatieren oder partitionieren Sie sie nicht selbst. Beim ersten Start formatiert die Appliance die leere Festplatte (Label `VEREIGN-DATA`) und mountet sie unter `/var/data`. Ohne sie schlägt der erste Start seine Health-Prüfung fehl und wird zurückgerollt.
+
 ### Schritt 5 - Netzwerkverbindung zur VM
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
@@ -257,39 +264,35 @@ Stellen Sie sicher, dass die VM über eine Netzwerkverbindung verfügt und ihr e
     ```
 
 ??? tip "Cloud-init überschreibt VM-Netzwerkeinstellungen nach einem Neustart"
-    Es kann vorkommen, dass Cloud-init die Netzwerkeinstellungen der VM nach einem Neustart überschreibt. Dies ist problematisch, wenn kein DHCP konfiguriert ist und die VM ohne IP- und Routen-Konfiguration gestartet wird. Um dieses Verhalten zu deaktivieren, führen Sie bitte die folgenden Schritte aus:
+    **Dies betrifft nur das Legacy-Image.** Die bootc-Appliance – jetzt der Standard – verwendet kein cloud-init für die Netzwerkverwaltung, ist daher nicht betroffen und enthält die unten verwendeten `cloud-init-net-*`-Aliase nicht.
 
-    1. Cloud-init daran hindern, die Netzwerkkonfiguration bei jedem Start neu zu erzeugen:
+    Auf dem Legacy-Image (typischerweise auf VMware/ESXi) hat cloud-init keine Datenquelle, fällt auf „DHCP für die erste NIC" zurück und rendert die Netzwerkkonfiguration bei jedem Boot neu – daher wird eine mit `nmtui` gesetzte statische Adresse nach einem Neustart zurückgesetzt. Ein Alias behebt dies in einem Schritt, indem er nur das Netzwerk-Rendering von cloud-init deaktiviert, sodass eine anschließend am bestehenden Profil gesetzte Adresse erhalten bleibt:
+
+    1. Cloud-init daran hindern, das Netzwerk bei jedem Boot neu zu rendern:
     ```bash
-    printf 'network: {config: disabled}\n' | sudo tee /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+    cloud-init-net-disable
     ```
-    2. Das Cloud-init/DHCP-Profil entfernen, damit es keine automatische Verbindung mehr herstellen kann:
+    2. Führen Sie `nmtui` aus, bearbeiten Sie die bestehende Verbindung **`cloud-init <iface>`** und setzen Sie dort die statische IP, das Gateway und den DNS. Fügen Sie kein zweites Profil für dieselbe Schnittstelle hinzu – das von cloud-init hat eine höhere Autoconnect-Priorität und würde gewinnen.
     ```bash
-    # Namen des Cloud-init-Interfaces ermitteln
-    nmcli connection show
-    # Den exakten NAME aus `nmcli connection show` verwenden
-    nmcli con delete "cloud-init <iface>
+    nmtui
     ```
-    3. Das manuelle Profil als bevorzugtes Autoconnect-Profil festlegen:
-    ```bash
-    nmcli con mod "<manual-profile>" ipv4.method manual ipv4.addresses <IP>/<PREFIX> \
-    ipv4.gateway <GW> ipv4.dns "<DNS>" connection.autoconnect yes connection.autoconnect-priority 100
-    nmcli con up "<manual-profile>"
-    ```
-    4. Überprüfen, dass die Konfiguration erhalten bleibt. VM neu starten:
+    3. Starten Sie neu und prüfen Sie, ob die Adresse erhalten bleibt:
     ```bash
     sudo reboot
-    ```
-    anschließend die aktuelle Netzwerkkonfiguration überprüfen:
-    ```bash
+    # nach dem Neustart:
     nmcli device status; ip -4 addr
+    ```
+
+    `cloud-init-net-enable` stellt das standardmäßige, von cloud-init verwaltete Netzwerk wieder her. Ohne den Alias ist Schritt 1 dasselbe Drop-in von Hand:
+    ```bash
+    echo 'network: {config: disabled}' | sudo tee /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
     ```
 
 !!! tip
     Wenn Sie Option C verwendet und das Netzwerk manuell konfiguriert haben, müssen Sie die folgenden Befehle ausführen:
 
     ```bash
-    cd /root/stargate-deployment/docker-compose
+    cd /usr/share/stargate-deployment/docker-compose
     ./scripts/purge.sh
     # Update configuration with a new ip, by editing it with nano
     # SERVER_STATIC_IP=<NEW IP>
