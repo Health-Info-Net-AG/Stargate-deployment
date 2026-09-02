@@ -1,17 +1,14 @@
-# HIN Gateway
-
-!!! tip
-    Technischer Installationsablauf für eine Single-Domain-Mail-Architektur mit Microsoft 365
+# HIN Gateway: Technischer Leitfaden für Neuinstallation und Migration
 
 ## Einleitung
 
-Dieses Dokument bietet eine umfassende Anleitung zum technischen Installations- und Migrationsprozess auf das neue HIN Gateway ("Stargate Appliance"). Es gilt für Microsoft 365-Mail-Architekturen, die eine einzige vertrauenswürdige Domäne verwenden.
+Dieses Dokument bietet einen umfassenden Leitfaden für die technische Installation und Migration auf das neue HIN Gateway ("Stargate Appliance").
 
-Die Anleitung richtet sich an HIN Kunden, IT-Administratoren und Systemingenieure, die für die Bereitstellung und Konfiguration des neuen HIN Gateways sowie für die Migration vom bestehenden Mail-Gateway (MGW) zur neuen Lösung verantwortlich sind.
+Die Anleitung richtet sich an HIN Kunden, IT-Administratoren und Systemingenieure, die für die Bereitstellung und Konfiguration des neuen HIN Gateways sowie, sofern zutreffend, für die Migration vom bestehenden Mail-Gateway (MGW) zur neuen Lösung verantwortlich sind.
 
 Das HIN Gateway ist eine sichere E-Mail-Gateway-Lösung, die eine vertrauenswürdige, verschlüsselte und richtliniengesteuerte Kommunikation innerhalb des HIN Trust Circle ermöglicht. Es fungiert als zentraler Vermittler zwischen internen E-Mail-Infrastrukturen und externen Kommunikationspartnern und stellt sicher, dass der gesamte E-Mail-Verkehr sicher übertragen wird, den Richtlinien der Organisation entspricht und die Sicherheitsstandards von HIN erfüllt.
 
-## Übersicht über den E-Mail-Fluss mit dem HIN Gateway
+## Übersicht über den E-Mail-Fluss
 
 - **Eingehende E-Mails** werden über das HIN Gateway geleitet, wo sie validiert, (falls erforderlich) entschlüsselt und anhand von Vertrauens- und Sicherheitsrichtlinien überprüft werden, bevor sie an den internen Mailserver weitergeleitet werden.
 - **Ausgehende E-Mails** werden von internen Systemen an das HIN Gateway gesendet, wo Verschlüsselung, Weiterleitung und die Durchsetzung der Richtlinien erfolgen, bevor sie an externe Empfänger übermittelt werden.
@@ -19,64 +16,73 @@ Das HIN Gateway ist eine sichere E-Mail-Gateway-Lösung, die eine vertrauenswür
 
 ## Installations- und Migrationsablauf
 
-Die in diesem Dokument beschriebene strukturierte Schritt-für-Schritt-Anleitung umfasst folgende Punkte:
+Die in diesem Dokument beschriebene strukturierte Schritt-für-Schritt-Anleitung deckt sowohl Neuinstallationen des HIN Gateways als auch Migrationen von einem bestehenden HIN Mail Gateway (MGW) ab. Je nach Bereitstellungsszenario gelten einzelne Schritte möglicherweise nur für Migrationen.
 
-1. Vorbereitung und Ausweichplanung
+1. Vorbereitung und Bereitstellungsplanung, einschliesslich Ausweichplanung, sofern zutreffend
 2. Installation und Konfiguration des HIN Gateways
 3. Domänenaktivierung und Zertifikatsvalidierung
-4. Integration des Mail-Servers und Konfiguration des Routings
-5. Testen, Übergang in den Produktivbetrieb und Validierung nach der Migration
-6. Ausserbetriebnahme des bestehenden MGW
+4. Integration in die bestehende Mail-Umgebung und Konfiguration des Routings
+5. Testen, Übergang in den Produktivbetrieb und Validierung nach der Bereitstellung
+6. Bei Migrationen: Ausserbetriebnahme des bestehenden MGW nach erfolgreicher Validierung
 
-Das Ziel von HIN bei diesem Prozess ist es, eine sichere, reibungslose und vollständig validierte Migration zu gewährleisten, die den Betrieb nur minimal beeinträchtigt und die unterbrechungsfreie Kontinuität der E-Mail-Dienste garantiert.
+!!! info "Migration"
+    Das Ziel von HIN ist es, eine sichere, reibungslose und vollständig validierte Bereitstellung mit minimaler Beeinträchtigung des Betriebs und unterbrechungsfreier Kontinuität der E-Mail-Dienste zu gewährleisten.
+     In Migrationsszenarien sollte das bestehende MGW als Ausweichoption verfügbar bleiben, bis das HIN Gateway im Produktivbetrieb erfolgreich validiert wurde. Es sollte erst ausser Betrieb genommen werden, nachdem die Migration abgeschlossen und der stabile Betrieb bestätigt wurde.
+
 
 ## Häufig gestellte Fragen
 
-!!! question "Kann ich die Installation und Migration selbst durchführen?"
-    Ja, die Installation und Migration können vollständig vom Kunden durchgeführt werden, mit Ausnahme von "Schritt 1.3 - Exportieren der/des privaten Schlüssel(s)".
+!!! question "Kann ich die Installation oder Migration selbst durchführen?"
+    Ja, die Installation oder Migration kann vollständig vom Kunden durchgeführt werden.
 
-    Aus Sicherheitsgründen und um Ihren privaten Schlüssel zu schützen, müssen Sie sich an den HIN Support wenden oder an der geplanten Migrationsbesprechung teilnehmen, um den Code zu erhalten, der für den Export des privaten Schlüssels aus den derzeit in Betrieb befindlichen Mail-Gateways erforderlich ist.
 
-    Sollten die Installation und die Migration nicht erfolgreich abgeschlossen werden können, nehmen Sie bitte am geplanten Support-Gespräch mit unseren Technikern teil.
+    Für das Migrationsszenario besteht die einzige Ausnahme bei **"Schritt 1.3 - Exportieren der/des privaten Schlüssel(s)"**. Aus Sicherheitsgründen und um Ihren privaten Schlüssel zu schützen, müssen Sie sich an den HIN Support wenden oder an der geplanten Migrationsbesprechung teilnehmen, um den Code zu erhalten, der für den Export des privaten Schlüssels aus dem derzeit in Betrieb befindlichen Mail-Gateway erforderlich ist.
 
-!!! question "Wird es während der Migration zu Unterbrüchen bei der E-Mail-Zustellung kommen?"
-    Zwischen "Schritt 1.5 - Bestehende MGW-VM abschalten" und "Schritt 18 - Mailserver konfigurieren" werden alle E-Mails auf dem Mailserver in die Warteschlange gestellt. Sobald "Schritt 18 - Mailserver konfigurieren" abgeschlossen ist, werden die in der Warteschlange befindlichen E-Mails versendet oder in das Postfach zugestellt.
+
+    Sollten die Installation oder die Migration nicht erfolgreich abgeschlossen werden können, nehmen Sie bitte am geplanten Support-Gespräch mit unseren Technikern teil.
+
+!!! question "Kommt es während des Einrichtungsprozesses zu einer Unterbrechung der E-Mail-Zustellung?"
+    **Migration:** Zwischen "Schritt 1.5 - Bestehende MGW-VM abschalten" und "Schritt 18 - Mailserver konfigurieren" werden alle E-Mails auf dem Mailserver in die Warteschlange gestellt. Sobald "Schritt 18 - Mailserver konfigurieren" abgeschlossen ist, werden die in der Warteschlange befindlichen E-Mails versendet oder in das Postfach zugestellt.
+
+
+    **Neuinstallation:** Während Sie die E-Mail-Flussregeln konfigurieren, werden alle E-Mails auf dem Mailserver in die Warteschlange gestellt. Sobald "Schritt 18 - Mailserver konfigurieren" abgeschlossen ist, werden die in der Warteschlange befindlichen E-Mails versendet oder in das Postfach zugestellt.
+
+
 
 !!! question "Gehen während der Installation und Migration E-Mails verloren?"
-    Nein, während der Installation und Migration gehen keine E-Mails verloren.
+    Nein, während der Installation und Migration gehen keine E-Mails verloren. Einige E-Mails können sich verzögern.
 
 ## Übersicht über die Installationsschritte
 
-| Schritt | Thema | Verantwortung |
-| :--: | :---- | :------------: |
-| 0 | Voraussetzungen prüfen | Kunde |
-| 1.1 | Smoke-Test | Kunde |
-| 1.2 | Sichern des bestehenden MGWs | Kunde |
-| 1.3 | Exportieren der/des privaten Schlüssel(s) | Kunde / HIN |
-| 1.4 | Notfallplan / Ausweichszenario | Kunde |
-| 1.5 | Bestehende MGW-VM abschalten | Kunde |
-| 2 | WireGuard | Kunde |
-| 3 | Ziel-VM auswählen | Kunde |
-| 4 | VM-Image laden | Kunde |
-| 5 | Netzwerkverbindung zur VM | Kunde |
-| 6 | Zugriff über den Browser | Kunde |
-| 7 | Aktivierungscode eingeben | Kunde |
-| 8 | Setup des Mesh-Netzwerks | Kunde |
-| 9 | Sicheres Mesh-Netzwerk einrichten | Kunde |
-| 10 | Login bei Keycloak | Kunde |
-| 11 | Passwort aktualisieren | Kunde |
-| 12 | Kontoinformationen aktualisieren | Kunde |
-| 13 | Erstkonfiguration und Einrichten der Domäne | Kunde |
-| 14 | E-Mail-Transport konfigurieren | Kunde |
-| 15 | Whitelist-Header konfigurieren | Kunde |
-| 16 | Peer-Zertifikate | HIN |
-| 17 | Peer-Zertifikate validieren | Kunde |
-| 18 | Mailserver konfigurieren | Kunde |
-| 19 | Test vor der Umstellung | Kunde |
-| 20 | Validieren nach der Umstellung | Kunde |
-| 21 | Bestehendes MGW ausser Betrieb nehmen | Kunde |
-| 22 | Passwort der VM ändern | Kunde |
-| Anhang 1| Sichern und Wiederherstellen der Appliance-Einstellungen | Kunde |
+| Schritt | Thema | Verantwortung | Migration | Neuinstallation |
+| :--: | :---- | :------------: | :--: | :---- |
+| 0 | Voraussetzungen prüfen | Kunde | Ja | Ja |
+| 1.1 | Smoke-Test | Kunde | Ja | N/A |
+| 1.2 | Sichern des bestehenden MGWs | Kunde | Ja | N/A |
+| 1.3 | Exportieren der/des privaten Schlüssel(s) | Kunde / HIN | Ja | N/A |
+| 1.4 | Notfallplan / Ausweichszenario | Kunde | Ja | N/A |
+| 1.5 | Bestehende MGW-VM abschalten | Kunde | Ja | N/A |
+| 2 | WireGuard | Kunde | Ja | Ja |
+| 3 | Ziel-VM auswählen | Kunde | Ja | Ja |
+| 4 | VM-Image laden | Kunde | Ja | Ja |
+| 5 | Netzwerkverbindung zur VM | Kunde | Ja | Ja |
+| 6 | Zugriff über den Browser | Kunde | Ja | Ja |
+| 7 | Aktivierungscode eingeben | Kunde | Ja | Ja |
+| 8 | Setup des Mesh-Netzwerks | Kunde | Ja | Ja |
+| 9 | Sicheres Mesh-Netzwerk einrichten | Kunde | Ja | Ja |
+| 10 | Login bei Keycloak | Kunde | Ja | Ja |
+| 11 | Passwort aktualisieren | Kunde | Ja | Ja |
+| 12 | Kontoinformationen aktualisieren | Kunde | Ja | Ja |
+| 13 | Erstkonfiguration und Einrichten der Domäne | Kunde | Ja | Ja |
+| 14 | E-Mail-Transport konfigurieren | Kunde | Ja | Ja |
+| 15 | Whitelist-Header konfigurieren | Kunde | Ja | Ja |
+| 16 | Peer-Zertifikate | HIN | Ja | Ja |
+| 17 | Peer-Zertifikate validieren | Kunde | Ja | Ja |
+| 18 | Mailserver konfigurieren | Kunde | Ja | Ja |
+| 19 | Test und Validierung | Kunde | Ja | Ja |
+| 20 | Passwort der VM ändern | Kunde | Ja | Ja |
+| 21 | Bestehendes MGW ausser Betrieb nehmen | Kunde | Ja | N/A |
+| Anhang 1 | Sichern und Wiederherstellen der Appliance-Einstellungen | Kunde | Ja | N/A |
 
 ## Detaillierte Schritte
 
@@ -84,23 +90,25 @@ Das Ziel von HIN bei diesem Prozess ist es, eine sichere, reibungslose und volls
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
 
-Bitte lesen Sie die "Stargate-Bereitstellungsanweisungen" durch und stellen Sie sicher, dass alle notwendigen Vorbereitungsschritte abgeschlossen sind, bevor die Migrationsarbeiten für das HIN Gateway beginnen.
+Bitte stellen Sie sicher, dass alle notwendigen Vorbereitungsschritte abgeschlossen sind, bevor die Migrationsarbeiten für das HIN Gateway beginnen.
 
-Die folgenden Punkte müssen vor der Migration verfügbar sein oder bestätigt werden:
+Die folgenden Punkte müssen vor der Installation verfügbar sein oder bestätigt werden:
 
-- **Die Zugangsdaten werden Ihnen von HIN zugestellt**:
+- **Die Zugangsdaten werden Ihnen von HIN zugestellt**
     - VM-Zugangsdaten
     - Keycloak-Zugangsdaten
     - Aktivierungscode
+
 - **Export des privaten Schlüssels**
+    **Hinweis:** Gilt nur für Migrationsfälle
     - Wenn Sie an einem Windows-Rechner arbeiten, der über Port 22 Zugriff auf die Mail-Gateway-VM hat, können wir Sie während des Gesprächs dabei unterstützen, den Export des privaten Schlüssels aus dem MGW zu aktivieren.
     - Falls Sie keinen Zugriff auf einen solchen Rechner haben, wenden Sie sich bitte per E-Mail oder Telefon (support@hin.ch / 0848 830 740) an den HIN Support, damit wir Ihnen helfen können, eine Supportverbindung über "Systemadministration" -> "Supportverbindung" -> "Verbinden" herzustellen.
-- **Lade die neueste Version** des [VM-Images](vm/VM-Catalog.md) herunter.
+- **Laden Sie die neueste Version** des [VM-Images](vm/VM-Catalog.md) herunter.
 - **Firewall**:
     - Erlauben Sie den Datenverkehr: beliebig → HIN Gateway und HIN Gateway → beliebig
-        - WireGuard: Siehe [Serveranforderungen – Eingehender Netzwerkzugriff](./index.md#eingehender-netzwerkzugriff-firewall-muss-erlauben):
-        - Konfigurieren Sie den WireGuard-Port `19818` (TCP/UDP) in Ihrer Firewall.
-        - Eingehender und ausgehender Datenverkehr
+        - WireGuard: Siehe [Serveranforderungen: Eingehender Netzwerkzugriff](./index.md#eingehender-netzwerkzugriff-firewall-muss-erlauben):
+            - Konfigurieren Sie den WireGuard-Port `19818` (TCP/UDP) in Ihrer Firewall.
+                - Eingehender und ausgehender Datenverkehr
     - Erlauben Sie den Datenverkehr: Administrationsrechner → HIN Gateway-VM
         - Anforderungen für die Installation:
             - HTTPS-Port `443`
@@ -113,30 +121,27 @@ Die folgenden Punkte müssen vor der Migration verfügbar sein oder bestätigt w
             - Dozzle-Port `8190`
                 - Eingehender und ausgehender Datenverkehr
 - Für "[Schritt 5 - Netzwerkverbindung zur VM](#schritt-5-netzwerkverbindung-zur-vm)" sollte ein **DHCP-Zugang** verfügbar sein (empfohlen).
-- Anforderungen an die **Datensicherung**, siehe "[Anhang 1 - Sichern und Wiederherstellen der Appliance-Einstellungen](#anhang-1-sichern-und-wiederherstellen-der-appliance-einstellungen)".
-- Bestätigung, dass das bestehende MGW erst nach Abschluss der Abnahme gelöscht wird.
+- Anforderungen an die **Datensicherung**, siehe "[Anhang 1 - Sichern und Wiederherstellen der Appliance-Einstellungen](#anhang-1-sichern-und-wiederherstellen-der-appliance-einstellungen)". **Hinweis:** Gilt nur für Migrationsfälle
+- Hinweis: gilt nur für Migrationsfälle. Bestätigung, dass das bestehende MGW erst nach Abschluss der Abnahme gelöscht wird.
 - Zugriff auf DNS, Mailserver-Konnektoren, Transportregeln und Relay-Einstellungen.
 
 !!! info "Warum WireGuard?"
     Der WireGuard-Port erfüllt zwei wichtige Funktionen:
+
     1. Das HIN Gateway nutzt diesen Port, um Peer-Zertifikate von der HIN CA zu beziehen.
     2. Es nutzt diesen Port, um einen sicheren Tunnel zu anderen HIN Gateways aufzubauen, über den der sichere Datenaustausch (z.B. E-Mail-Verkehr) stattfindet.
 
-    Weitere Informationen: [Security Assessment WireGuard EN](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf)
-
-!!! tip "Export des privaten Schlüssels"
+!!! tip "Export des privaten Schlüssels" - Gilt nur für Migrationsfälle
     Falls Sie an einem Windows-Rechner arbeiten, der über Port 22 Zugriff auf die Mail Gateway-VM hat, können wir Sie während des Anrufs unterstützen, um den Export des privaten Schlüssels vom MGW zu aktivieren.
 
-    Falls Sie keinen Zugriff auf einen solchen Rechner haben, wenden Sie sich bitte an den HIN [Support](./Support.md) per E-Mail oder Telefon (support@hin.ch / 0848 830 740), um eine Support-Verbindung über Systemverwaltung --> Support-Verbindung --> Verbinden herzustellen.
-
-- Für "Schritt 5 - Netzwerkverbindung zur VM" sollte ein DHCP-Zugang verfügbar sein (empfohlen).
-- Anforderungen an die Datensicherung, siehe "[Anhang 1 - Sichern und Wiederherstellen der Appliance-Einstellungen](#anhang-1-sichern-und-wiederherstellen-der-appliance-einstellungen)".
-- Bestätigung, dass das bestehende MGW erst nach Abschluss der Abnahme gelöscht wird.
-- Zugriff auf DNS, Mailserver-Konnektoren, Transportregeln und Relay-Einstellungen.
+    Falls Sie keinen Zugriff auf einen solchen Rechner haben, wenden Sie sich bitte an den HIN Support per E-Mail oder Telefon (**support@hin.ch** / **0848 830 740**), um eine Support-Verbindung über **Systemverwaltung → Support-Verbindung → Verbinden** herzustellen.
 
 ### Schritt 1.1 - Smoke-Test
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
+
+!!! info Gilt nur für Migrationsfälle
+    Dieser Schritt gilt nur für Einzel- und Multi-Domain-Migrationen
 
 Senden Sie Test-E-Mails an die folgenden Empfänger und verwenden Sie dabei Postfächer, auf die Sie Zugriff haben, damit die erfolgreiche Zustellung überprüft werden kann:
 
@@ -156,7 +161,20 @@ Testen Sie den E-Mail-Fluss in beide Richtungen:
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
 
-Erstellen Sie ein Backup der bestehenden MGW-Appliance und stellen Sie sicher, dass die VM so lange bestehen bleibt, bis die Migration erfolgreich abgeschlossen und formell abgenommen wurde. Weitere Informationen finden Sie unter "[Anhang 1 - Sichern und Wiederherstellen der Appliance-Einstellungen](#anhang-1-sichern-und-wiederherstellen-der-appliance-einstellungen)".
+!!! info Gilt nur für Migrationsfälle
+    Dieser Schritt gilt nur für Einzel- und Multi-Domain-Migrationen
+
+Erstellen Sie ein Backup der bestehenden MGW-Appliance und stellen Sie sicher, dass die VM so lange bestehen bleibt, bis die Migration erfolgreich abgeschlossen und formell abgenommen wurde. Weitere Informationen finden Sie unter "Anhang 1 - Sichern und Wiederherstellen der Appliance-Einstellungen".
+
+!!! info "Aktuelle MGW-Routing-Konfiguration prüfen"
+    Bevor Sie das bestehende MGW abschalten, überprüfen Sie die folgenden Konfigurationswerte und notieren Sie sie. Sie werden diese wahrscheinlich später bei der Konfiguration des HIN Gateways benötigen:
+
+    1. Melden Sie sich beim MGW an und gehen Sie zu **"Mail System → Outgoing server"** und prüfen Sie, ob dort etwas konfiguriert ist.
+    2. Gehen Sie für jede auf dem MGW gehostete Domäne zu `Mail System → <Domäne> → Forwarding server` und `Mail System → <Domäne> → Send ALL outgoing mails from this domain to the following SMTP server` und notieren Sie die aktuellen Werte.
+    <br> ![domain-relay-host](assets/installation-guide/step1.2-domain-relay-host.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+!!! tip "MGW-Header-Prüfung"
+    Wenn Sie im MGW die Option `Header check` verwenden, notieren Sie sich auch den konfigurierten Wert. Sie können dieselbe Header-Prüfung später im HIN Gateway einrichten.
 
 ### Schritt 1.3 - Exportieren der/des privaten Schlüssel(s)
 
@@ -164,8 +182,16 @@ Erstellen Sie ein Backup der bestehenden MGW-Appliance und stellen Sie sicher, d
 :heavy_plus_sign:
 ![Verantwortlichkeit HIN](https://img.shields.io/badge/Verantwortlichkeit-HIN-orange)
 
+!!! info Gilt nur für Migrationsfälle
+    Dieser Schritt gilt nur für Einzel- und Multi-Domain-Migrationen
+
+    Führen Sie den Vorgang bei einer Multi-Domain-Migration für jede Domäne durch
+
+
 !!! warning "Unterstützung durch HIN erforderlich"
-    Für diesen Schritt ist ein Freischaltcode erforderlich. Der Code wird von einem HIN Support Engineer bereitgestellt. Wenn Sie die Installation selbstständig fortsetzen möchten, kontaktieren Sie bitte den HIN Support, um den Freischaltcode anzufordern. Andernfalls wird Ihnen der Freischaltcode während des geplanten Migrationstermins zur Verfügung gestellt.
+    Für diesen Schritt ist ein Freischaltcode erforderlich. Der Code wird von einem HIN Support Engineer bereitgestellt.
+
+Wenn Sie die Installation selbstständig fortsetzen möchten, kontaktieren Sie bitte den HIN Support, um den Freischaltcode anzufordern. Andernfalls wird Ihnen der Freischaltcode während des geplanten Migrationstermins zur Verfügung gestellt.
 
 <!-- !!! info
     Bitte laden Sie das Tool `HIN_Migration-Tool_v*.exe` unter folgendem Link herunter: [link](https://link) -->
@@ -186,15 +212,22 @@ Erstellen Sie ein Backup der bestehenden MGW-Appliance und stellen Sie sicher, d
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
 
+!!! info Gilt nur für Migrationsfälle
+    Dieser Schritt gilt nur für Einzel- und Multi-Domain-Migrationen
+
 **Rollback-Szenario** - Falls ein Rollback erforderlich ist:
 
 1. Das neue HIN Gateway anhalten.
 2. Schalten Sie das bestehende MGW ein.
 3. Überprüfen Sie, ob der eingehende und ausgehende E-Mail-Verkehr über das bestehende MGW korrekt funktioniert.
+    * Führen Sie die Überprüfung bei einer Multi-Domain-Migration für jede Domäne durch
 
 ### Schritt 1.5 - Bestehende MGW-VM abschalten
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
+
+!!! info Gilt nur für Migrationsfälle
+    Dieser Schritt gilt nur für Einzel- und Multi-Domain-Migrationen
 
 Fahren Sie die bestehende MGW-VM herunter.
 
@@ -224,6 +257,7 @@ Wählen Sie eines der verfügbaren virtuellen Images aus und richten Sie es gem�
     - [Windows 11 Pro (Hyper-V)-Image](vm/Windows11pro-image-install.md)
     - [VMware-Image](vm/VMware-image-install.md)
     - [Proxmox-Image](vm/Proxmox-image-install.md)
+    - [Cloudscale](vm/Cloudscale-image-install.md)
 - [Konfiguration von Microsoft Exchange](Exchange-integration.md)
 
 ### Schritt 4 - VM-Image laden
@@ -232,10 +266,10 @@ Wählen Sie eines der verfügbaren virtuellen Images aus und richten Sie es gem�
 
 Laden Sie die ausgewählte VM auf Ihren Hypervisor hoch.
 
-!!! warning "Zweite Festplatte erforderlich — die Data Disk"
+!!! warning "Zweite Festplatte erforderlich: die Data Disk"
     Die Appliance nutzt zwei Festplatten: die OS-Festplatte aus dem Image und eine separate **Data Disk**, die die gesamte Konfiguration, Secrets, E-Mails und Datenbanken enthält. Diese Trennung erlaubt es, das OS bei einem Image-Update zu ersetzen, ohne Ihre Daten anzurühren.
 
-    Die **VMware-OVA enthält** diese Festplatte bereits. Auf allen anderen Plattformen (Proxmox, Hyper-V, Azure, Cloudscale) ist das Image eine einzelne OS-Festplatte — **hängen Sie daher vor dem ersten Start eine zweite, leere Festplatte mit mindestens 30 GB an**.
+    Die **VMware-OVA enthält** diese Festplatte bereits. Auf allen anderen Plattformen (Proxmox, Hyper-V, Azure, Cloudscale) ist das Image eine einzelne OS-Festplatte. Hängen Sie daher vor dem ersten Start eine zweite, leere Festplatte mit mindestens 30 GB an.
 
     Formatieren oder partitionieren Sie sie nicht selbst. Beim ersten Start formatiert die Appliance die leere Festplatte (Label `VEREIGN-DATA`) und mountet sie unter `/var/data`. Ohne sie schlägt der erste Start seine Health-Prüfung fehl und wird zurückgerollt.
 
@@ -271,15 +305,15 @@ Stellen Sie sicher, dass die VM über eine Netzwerkverbindung verfügt und ihr e
     ```
 
 ??? tip "Cloud-init überschreibt VM-Netzwerkeinstellungen nach einem Neustart"
-    **Dies betrifft nur das Legacy-Image.** Die bootc-Appliance – jetzt der Standard – verwendet kein cloud-init für die Netzwerkverwaltung, ist daher nicht betroffen und enthält die unten verwendeten `cloud-init-net-*`-Aliase nicht.
+    **Dies betrifft nur das Legacy-Image.** Die bootc-Appliance, jetzt der Standard, verwendet kein cloud-init für die Netzwerkverwaltung, ist daher nicht betroffen und enthält die unten verwendeten `cloud-init-net-*`-Aliase nicht.
 
-    Auf dem Legacy-Image (typischerweise auf VMware/ESXi) hat cloud-init keine Datenquelle, fällt auf „DHCP für die erste NIC" zurück und rendert die Netzwerkkonfiguration bei jedem Boot neu – daher wird eine mit `nmtui` gesetzte statische Adresse nach einem Neustart zurückgesetzt. Ein Alias behebt dies in einem Schritt, indem er nur das Netzwerk-Rendering von cloud-init deaktiviert, sodass eine anschließend am bestehenden Profil gesetzte Adresse erhalten bleibt:
+    Auf dem Legacy-Image (typischerweise auf VMware/ESXi) hat cloud-init keine Datenquelle, fällt auf „DHCP für die erste NIC" zurück und rendert die Netzwerkkonfiguration bei jedem Boot neu, weshalb eine mit `nmtui` gesetzte statische Adresse nach einem Neustart zurückgesetzt wird. Ein Alias behebt dies in einem Schritt, indem er nur das Netzwerk-Rendering von cloud-init deaktiviert, sodass eine anschliessend am bestehenden Profil gesetzte Adresse erhalten bleibt:
 
     1. Cloud-init daran hindern, das Netzwerk bei jedem Boot neu zu rendern:
     ```bash
     cloud-init-net-disable
     ```
-    2. Führen Sie `nmtui` aus, bearbeiten Sie die bestehende Verbindung **`cloud-init <iface>`** und setzen Sie dort die statische IP, das Gateway und den DNS. Fügen Sie kein zweites Profil für dieselbe Schnittstelle hinzu – das von cloud-init hat eine höhere Autoconnect-Priorität und würde gewinnen.
+    2. Führen Sie `nmtui` aus, bearbeiten Sie die bestehende Verbindung **`cloud-init <iface>`** und setzen Sie dort die statische IP, das Gateway und den DNS. Fügen Sie kein zweites Profil für dieselbe Schnittstelle hinzu. Das von cloud-init hat eine höhere Autoconnect-Priorität und würde gewinnen.
     ```bash
     nmtui
     ```
@@ -290,7 +324,7 @@ Stellen Sie sicher, dass die VM über eine Netzwerkverbindung verfügt und ihr e
     nmcli device status; ip -4 addr
     ```
 
-    `cloud-init-net-enable` stellt das standardmäßige, von cloud-init verwaltete Netzwerk wieder her. Ohne den Alias ist Schritt 1 dasselbe Drop-in von Hand:
+    `cloud-init-net-enable` stellt das standardmässige, von cloud-init verwaltete Netzwerk wieder her. Ohne den Alias ist Schritt 1 dasselbe Drop-in von Hand:
     ```bash
     echo 'network: {config: disabled}' | sudo tee /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
     ```
@@ -301,21 +335,18 @@ Stellen Sie sicher, dass die VM über eine Netzwerkverbindung verfügt und ihr e
     ```bash
     cd /usr/share/stargate-deployment/docker-compose
     ./scripts/purge.sh
-    # Update configuration with a new ip, by editing it with nano
-    # SERVER_STATIC_IP=<NEW IP>
-    nano customer-config.sh
-    # OR use sed
-    # sed -i 's/old IP/new IP/g' customer-config.sh
     ./scripts/install.sh
     ```
 
-    Das Installationsskript ermittelt die IP-Adresse des Servers automatisch anhand der Standardroute. Eine beliebige erreichbare IP-Adresse, egal ob öffentlich oder privat, ist ausreichend. Der eigentliche öffentliche Endpunkt wird später über das Dashboard konfiguriert.
+    Das Installationsskript ermittelt bei jedem Durchlauf automatisch die IP-Adresse des Servers anhand der Standardroute; eine manuelle Anpassung von `customer-config.sh` ist nicht erforderlich. Jede erreichbare IP-Adresse, ob öffentlich oder privat, ist ausreichend. Der eigentliche öffentliche Endpunkt wird später über das Dashboard konfiguriert.
+
+    !!! note "Hinter NAT oder mit einer Floating IP?"
+        Wenn Ihr Server über eine *andere* öffentliche oder Floating-IP erreichbar ist als über die IP seiner eigenen Netzwerkschnittstelle (häufig bei NAT), setzen Sie `SERVER_STATIC_IP` in `customer-config.sh` auf diese erreichbare IP, bevor Sie `install.sh` ausführen. Andernfalls lassen Sie das Feld leer, damit die IP-Adresse automatisch erkannt wird.
 
     Nachdem die Skripte erfolgreich ausgeführt wurden, fahren Sie mit "Schritt 6 - Zugriff über den Browser" fort.
 
     !!! question
-
-        Falls Sie nicht über die HIN-Admin-Zugangsdaten verfügen, wenden Sie sich bitte an den HIN Support per E-Mail oder Telefon (support@hin.ch / 0848 830 740). Siehe [Support-Bereich](./Support.md).
+        Falls Sie nicht über die HIN-Admin-Zugangsdaten verfügen, wenden Sie sich bitte an den HIN Support per E-Mail oder Telefon (**support@hin.ch** / **0848 830 740**). Siehe [Support-Bereich](./Support.md).
 
         [Klicken Sie hier, um eine E-Mail zu senden](mailto:support@hin.ch?subject=Passwort%20für%20VM-Installation%20erforderlich.&body=Sehr%20geehrter%20Support,%0A%0Aich%20benötige%20das%20Passwort%20für%20eine%20VM-Installation.%0A%0ABITTE%20GEBEN%20SIE%20HIER%20IHRE%20KUNDENINFORMATIONEN%20AN){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
@@ -338,7 +369,7 @@ Wählen Sie Ihre bevorzugte Sprache aus und geben Sie den Aktivierungscode ein, 
 ![Bildschirm zur Eingabe des Aktivierungscodes](assets/installation-guide/step7-activation-code.png)
 
 !!! question "Ich habe keinen Aktivierungscode"
-    Falls Sie den Aktivationscode nicht haben, wenden Sie sich bitte per E-Mail oder Telefon an den HIN Support (support@hin.ch / 0848 830 740).
+    Falls Sie den Aktivationscode nicht haben, wenden Sie sich bitte per E-Mail oder Telefon an den HIN Support (**support@hin.ch** / **0848 830 740**). Siehe [Support-Bereich](./Support.md).
 
     [Klicken Sie hier, um eine E-Mail zu senden](mailto:support@hin.ch?subject=Aktivierungscode%20erforderlich.&body=Sehr%20geehrter%20Support,%0A%0Aich%20benötige%20den%20Aktivierungscode%20für%20meine%20HIN-Gateway-Installation.%0A%0ABITTE%20GEBEN%20SIE%20HIER%20IHRE%20KUNDENINFORMATIONEN%20AN){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
@@ -349,8 +380,8 @@ Wählen Sie Ihre bevorzugte Sprache aus und geben Sie den Aktivierungscode ein, 
 Überprüfen Sie die Konfiguration des Mesh-Netzwerks:
 
 - **IP-Adresse** - Die öffentliche IP-Adresse des ausgehenden Datenverkehrs (wird automatisch erkannt).
-- **Transport** - Das Transportprotokoll (Standard: TCP).
-- **Port** - Der WireGuard-Port (Standard: 19818).
+- **Transport** - Das Transportprotokoll (Standard: `tcp`).
+- **Port** - Der WireGuard-Port (Standard: `19818`).
 
 ??? question "Was ist eine öffentliche IP?"
     Dies ist eine IP-Adresse, die der Rechner verwenden wird, um über das Internet erreichbar zu sein.
@@ -364,18 +395,18 @@ Wählen Sie Ihre bevorzugte Sprache aus und geben Sie den Aktivierungscode ein, 
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
 
-Das System baut nun die Verbindung zum sicheren Mesh-Netzwerk auf. In diesem Schritt wird das HIN Gateway mit dem Iris-Agent verbunden und die Zertifikate werden synchronisiert.
+Das System baut nun die sichere Mesh-Netzwerk-Verbindung auf. Dieser Schritt verbindet das HIN Gateway mit dem Mesh-Netzwerk und synchronisiert die Zertifikate.
 
 Warten Sie, bis der Vorgang abgeschlossen ist. Die Statusanzeigen zeigen "Up" an, sobald die Verbindung erfolgreich hergestellt wurde. Klicken Sie auf "Finish".
 
 ![Sicheres Mesh-Netzwerk einrichten](assets/installation-guide/step9-mesh-connecting.png)
 
 !!! failure "Falls die Verbindung fehlschlägt"
-    Falls die Verbindung fehlschlägt oder der Status des Iris-Agents oder der Zertifikatssynchronisation weiterhin "Down" lautet:
+    Wenn der Status von `Iris Agent` oder der Zertifikatssynchronisation weiterhin "Down" lautet:
 
-    - Stellen Sie sicher, dass Port 19818 (TCP/UDP) in Ihrer Firewall offen ist (siehe "Schritt 2 - WireGuard").
+    - Stellen Sie sicher, dass Port `19818` (TCP/UDP) in Ihrer Firewall offen ist (siehe "Schritt 2 - WireGuard").
     - Überprüfen Sie, ob die IP-Adresse unter "Schritt 8 - Setup des Mesh-Netzwerks" korrekt ist und über das Internet erreichbar ist.
-    - Starten Sie den Vorgang neu oder wenden Sie sich per E-Mail oder Telefon an den HIN Support (support@hin.ch / 0848 830 740).
+    - Starten Sie den Vorgang neu oder wenden Sie sich per E-Mail oder Telefon an den HIN Support (**support@hin.ch** / **0848 830 740**).
 
 ### Schritt 10 - Login bei Keycloak
 
@@ -392,7 +423,7 @@ Sobald das Mesh-Netzwerk eingerichtet ist, werden Sie zur Keycloak-Anmeldeseite 
 ![Keycloak-Anmeldeseite](assets/installation-guide/step10-keycloak-login.png)
 
 !!! question
-    Falls Sie diese Anmeldedaten nicht haben, wenden Sie sich bitte per E-Mail oder Telefon an den HIN Support (support@hin.ch / 0848 830 740).
+    Falls Sie diese Anmeldedaten nicht haben, wenden Sie sich bitte per E-Mail oder Telefon an den HIN Support (**support@hin.ch** / **0848 830 740**). Siehe [Support-Bereich](./Support.md).
 
     [Klicken Sie hier, um eine E-Mail zu senden](mailto:support@hin.ch?subject=Keycloak-Anmeldedaten%20erforderlich.&body=Sehr%20geehrter%20Support,%0A%0Aich%20benötige%20die%20Keycloak-Anmeldedaten%20für%20mein%20HIN-Gateway.%0A%0ABITTE%20GEBEN%20SIE%20HIER%20IHRE%20KUNDENINFORMATIONEN%20AN){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
@@ -401,6 +432,8 @@ Sobald das Mesh-Netzwerk eingerichtet ist, werden Sie zur Keycloak-Anmeldeseite 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
 
 Bei der ersten Anmeldung werden Sie aufgefordert, Ihr Passwort zu ändern. Geben Sie ein neues sicheres Passwort ein und bestätigen Sie es.
+
+Bitte stellen Sie sicher, dass Sie sich das Passwort merken!
 
 ![Bildschirm zum Aktualisieren des Passworts](assets/installation-guide/step11-update-password.png)
 
@@ -416,6 +449,9 @@ Vervollständigen Sie Ihr Kontoprofil, indem Sie Ihren Vornamen und Nachnamen ei
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
 
+!!! info Hinweis zu Multi-Domain-Migrationen
+    Führen Sie den Vorgang bei einer Multi-Domain-Migration für jede Domäne durch, die Sie gerade aktivieren.
+
 Konfigurieren Sie auf diesem Bildschirm Ihre Grundeinstellungen:
 
 - Überprüfen Sie, ob alle Ihre aktuellen vertrauenswürdigen Domänen innerhalb der HIN Community korrekt angezeigt werden.
@@ -423,53 +459,66 @@ Konfigurieren Sie auf diesem Bildschirm Ihre Grundeinstellungen:
 - Geben Sie an, für welche Domäne(n) das Präfix "sec.\<domain\>" bereits konfiguriert ist ("Use sec-prefix").
 
 ??? tip "Wie kann ich prüfen, ob meine Domain mit einem Security Prefix eingerichtet ist?"
-    Öffnen Sie unser Online-Tool im Browser: https://trust.hin.ls-infra.me/, geben Sie `sec.<domain>` ein und klicken Sie auf die Schaltfläche **Check**. Wenn folgende Meldung angezeigt wird:
+    Öffnen Sie unser Online-Tool im Browser: <https://trust.hin.ls-infra.me/>, geben Sie `sec.<domain>` ein und klicken Sie auf die Schaltfläche **Check**. Wenn folgende Meldung angezeigt wird:
 
     ✅ Diese Domain ist verschlüsselt.
 
     Dann ist Ihre Domain mit einem Security Prefix eingerichtet und Sie müssen die Option **Use sec-prefix** aktivieren.
 
-- Überprüfen Sie, ob der Organisationsname und die Domain-Inhaber korrekt sind. <br> ![Screenshot](assets/step_13_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" } <br> ![Screenshot](assets/step_13_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+- Überprüfen Sie, ob der Organisationsname und die Domain-Inhaber korrekt sind. <br> ![Screenshot](assets/installation-guide/step13-1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" } <br> ![Screenshot](assets/step_13_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 - Importieren Sie die vorhandene S/MIME-Zertifikatsdatei (`.p12`/`.pfx`) vom bestehenden MGW:
-    1. Erweitern Sie die Domäne und wählen Sie die Option "P12/PFX-Datei".
+    1. Erweitern Sie die Domäne und wählen Sie die Option **P12/PFX File**.
     2. Falls für die Zertifikatsdatei kein Passwort festgelegt wurde, lassen Sie das Passwortfeld leer.
-    3. Klicken Sie auf "Importieren".
-    4. Nachdem das Zertifikat importiert wurde, wird die Meldung "Certificate imported successfully" angezeigt.
-- Klicken Sie am Ende der Seite auf "Save configuration", um die Änderungen zu speichern.
+    3. Klicken Sie auf **"Import Certificate"**.
+    4. Nachdem das Zertifikat importiert wurde, wird die Meldung *Certificate imported successfully* angezeigt.
+- Klicken Sie am Ende der Seite auf **"Save Configuration"**, um die Änderungen zu speichern.
 
 ![Bildschirm für die Ersteinrichtung](assets/installation-guide/step13-initial-setup.png)
 
 !!! warning
-    - Mindestens eine Domain muss "Enabled" sein, um mit dem Onboarding-Prozess fortzufahren. Die Schaltfläche "Save configuration" wird erst aktiv, wenn diese Voraussetzung erfüllt ist.
-    - Sollten Sie feststellen, dass nicht alle vertrauenswürdigen Domains angezeigt werden oder die Organisationsangaben falsch sind, wenden Sie sich bitte per E-Mail oder Telefon an den HIN Support (support@hin.ch / 0848 830 740).
+    - Mindestens eine Domain muss **Enabled** sein, um mit dem Onboarding-Prozess fortzufahren. Die Schaltfläche "Save configuration" wird erst aktiv, wenn diese Voraussetzung erfüllt ist.
+    - Sollten Sie feststellen, dass nicht alle vertrauenswürdigen Domains angezeigt werden oder die Organisationsangaben falsch sind, wenden Sie sich bitte per E-Mail oder Telefon an den HIN Support (**support@hin.ch** / **0848 830 740**).
 
 !!! danger "Importieren Sie Ihren bestehenden privaten Schlüssel"
-    Wenn Sie den privaten Schlüssel nicht von Ihrem bestehenden MGW importieren, wird ein neuer Schlüssel ausgestellt. Dies kann dazu führen, dass Nachrichten bis zu 6 Stunden lang nicht entschlüsselt werden können, was zu Datenverlust führen könnte.
+    Hinweis: gilt nur für das Migrationsszenario!
+
+    Wenn Sie den privaten Schlüssel **nicht** von Ihrem bestehenden MGW importieren, wird ein neuer Schlüssel ausgestellt. Dies kann dazu führen, dass Nachrichten bis zu **6 Stunden** lang nicht entschlüsselt werden können, was zu **Datenverlust** führen könnte.
+
+![Bildschirm für die Ersteinrichtung](assets/installation-guide/step13-initial-setup2.png)
+
+| Einstellung | Beschreibung |
+|---------|-------------|
+| **Hostname des Mail-Servers** | Der FQDN dieser Mail-Gateway-Instanz (z. B. `mail.example.com`). |
+| **IP-Adressen des Mail-Servers** | Die öffentliche(n) IP-Adresse(n) dieses Servers. Fügen Sie weitere IP-Adressen hinzu, falls der Server über mehrere Adressen erreichbar ist. |
+| **DNS** | DNS des Hosts, der zur Auflösung von MX- und anderen DNS-Einträgen verwendet wird. |
+
+
 
 ### Schritt 14 - E-Mail-Transport konfigurieren
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
 
-Konfigurieren Sie auf diesem Bildschirm Ihre E-Mail-Transport-Einstellungen für die Einrichtung des sicheren E-Mail-Relays.
+Sie werden zum HIN-Gateway-Dashboard auf der Seite `Domains` angemeldet.
 
-![Bildschirm für die E-Mail-Transport-Konfiguration](assets/installation-guide/step14-mail-transport.png)
+ <br> ![Screenshot](assets/installation-guide/step14-dashboard-domains.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-Die folgenden Einstellungen stehen zur Verfügung:
+
+#### Seite "Domains"
+
+!!! info Hinweis zu Multi-Domain-Migrationen
+    Führen Sie den Vorgang bei einer Multi-Domain-Migration für jede aktive Domäne durch.
+
+Im Menü **Domains** können Sie für jede verfügbare Domäne eine spezifische Transportroute konfigurieren:
+
+![Bildschirm für die Domänen-Transportkonfiguration](assets/installation-guide/step14-domain-mail-transport.png)
 
 | Einstellung | Beschreibung |
 |---------|-------------|
-| **Hostname des Mail-Servers** | Der FQDN dieser Mail-Gateway-Instanz (z.B. mail.example.com). |
-| **IP-Adressen des Mail-Servers** | Die öffentliche(n) IP-Adresse(n) dieses Servers. Füge weitere IP-Adressen hinzu, falls der Server über mehrere Adressen erreichbar ist. |
-| **Domänen** | Jede Domain, die dieses Gateway verarbeitet, zusammen mit ihrem Relay-Host (dem internen Mailserver, an den eingehende E-Mails zugestellt werden). |
-| **Standard-Relay-Host** | Der Standard-SMTP-Relay für den ausgehenden Versand. |
-
-Im Abschnitt "Erweitert" können Sie optional Folgendes konfigurieren:
-
-| Einstellung | Beschreibung |
-|---------|-------------|
-| **Konfigurieren der TLS** | TLS-Zertifikateinstellungen für SMTP-Verbindungen. |
-| **Inhaltsfilter** | Der interne Endpunkt des Inhaltsfilters (Standard: mxengine:1587). |
-| **Vertrauenswürdige Netzwerke** | Zusätzliche Netzwerke, denen die Weiterleitung über dieses Gateway gestattet ist. |
+| **Inbound relay** | Der SMTP-Relay für die eingehende Zustellung der ausgewählten Domäne. |
+| **Outbound relay** | Der SMTP-Relay für die ausgehende Zustellung der ausgewählten Domäne. Diese Einstellung entspricht der Einstellung `Forwarding server` des alten MGW. |
+| **Trusted networks** | Zusätzliche Netzwerke, denen die Weiterleitung über dieses Gateway gestattet ist. Weitere Informationen finden Sie unter "Schritt 18 - Mailserver konfigurieren". |
+| **Configure TLS** | TLS-Zertifikateinstellungen für SMTP-Verbindungen; über die Schaltfläche `Generate TLS certificate` können Sie ein TLS-Zertifikat erzeugen. |
+| **Email authentication** | Alle Einstellungen unter dem Abschnitt `Email authentication` sind im Abschnitt [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) beschrieben. |
 
 ??? tip "Wie testet man eine TLS-Verbindung?"
     Sie können jederzeit testen, ob das konfigurierte TLS-Zertifikat auf Ihre Verbindung zum HIN Gateway angewendet wurde. Führen Sie den folgenden Befehl direkt im Terminal des HIN Gateways aus:
@@ -504,16 +553,36 @@ Im Abschnitt "Erweitert" können Sie optional Folgendes konfigurieren:
 Weitere Aktionen:
 
 - Fügen Sie bei Bedarf weitere Domains hinzu, indem Sie auf "Add domain" klicken.
-- Erweitern Sie den Abschnitt "Advanced", um die E-Mail-Transportparameter fein abzustimmen.
+    - Ist eine Domäne nicht HIN-gesichert, erscheint sie in der Liste `Domains` mit dem Typ "Routed", das heisst, sie kann nur lokal verwaltet werden.
 
 !!! note
     Stellen Sie sicher, dass alle Konfigurationen für Relay-Hosts und Domains korrekt sind, bevor Sie fortfahren.
 
-Sobald die Konfiguration überprüft und abgeschlossen ist, klicken Sie auf "Konfiguration übernehmen", um fortzufahren.
+Sobald die Konfiguration überprüft und abgeschlossen ist, klicken Sie auf "Save", um fortzufahren.
+
+#### Seite "Settings"
+
+Konfigurieren Sie auf dieser Seite im Menü `Settings` Ihre globalen E-Mail-Transporteinstellungen für die sichere Mail-Relay-Einrichtung, die für die gesamte Instanz gelten. Die detaillierte Konfiguration für jede Domäne erfolgt unter `Domains` → `$domain`.
+
+![Bildschirm für die E-Mail-Transport-Konfiguration](assets/installation-guide/step14-mail-transport2.png)
+
+Die folgenden Einstellungen stehen im Menü `Settings` zur Verfügung:
+
+| Einstellung | Beschreibung |
+|---------|-------------|
+| **Mail server host name** | Der FQDN dieser Mail-Gateway-Instanz (z. B. `mail.example.com`). |
+| **Mail server IP addresses** | Die öffentliche(n) IP-Adresse(n) dieses Servers. Fügen Sie weitere IP-Adressen hinzu, falls der Server über mehrere Adressen erreichbar ist. |
+| **DNS** | DNS des Hosts, der zur Auflösung von MX- und anderen DNS-Einträgen verwendet wird. |
+| **Default inbound relay** | Der Standard-SMTP-Relay für die eingehende Zustellung. |
+| **Default outbound relay** | Der Standard-SMTP-Relay für die ausgehende Zustellung. |
+
 
 ### Schritt 15 - Whitelist-Header konfigurieren
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
+
+!!! info Hinweis zu Multi-Domain
+    Führen Sie den Vorgang bei Multi-Domain-Konfigurationen für jede aktive Domäne durch.
 
 Klicken Sie auf "Domains" und wählen Sie anschliessend "Whitelist headers" aus.
 
@@ -540,13 +609,13 @@ Stellen Sie sicher, dass Ihre Domain ihr richtlinienbasiertes Peer-Zertifikat un
 ![Screenshot](assets/step_17_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 !!! question
-    Wenden Sie sich bei Problemen per E-Mail oder Telefon an den HIN Support (support@hin.ch / 0848 830 740).
+    Wenden Sie sich bei Problemen per E-Mail oder Telefon an den HIN Support (**support@hin.ch** / **0848 830 740**).
 
 ### Schritt 18 - Mailserver und HIN Gateway konfigurieren
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
 
-Wenn Sie die empfohlene Vorgehensweise befolgt haben, d. h. den privaten Schlüssel exportiert, ihn in das HIN Gateway importiert und dieselbe IP-Adresse wie beim bestehenden MGW beibehalten haben, sind auf dem E-Mail-Server keine Änderungen erforderlich.
+Wenn Sie die empfohlene Vorgehensweise befolgt haben, d. h. den privaten Schlüssel exportiert, ihn in das HIN Gateway importiert und **dieselbe IP-Adresse** wie beim bestehenden MGW beibehalten haben, sind auf dem E-Mail-Server keine Änderungen erforderlich.
 
 Andernfalls konfigurieren Sie Ihren Mailserver oder die zugehörigen Komponenten so, dass der Datenverkehr über das neue HIN Gateway geleitet wird. Überprüfen Sie die folgenden Einstellungen und passen Sie diese gegebenenfalls an:
 
@@ -561,11 +630,26 @@ Siehe [Exchange-Integration](Exchange-integration.md) für detaillierte Anweisun
 
 #### Konfiguration HIN Gateway
 
-- Gehen Sie zur Seite `Settings` und fügen Sie für jede Domain einen **Relay-Host** hinzu, wobei Sie den Wert verwenden, den Sie vom MGW unter `Forwarding server` in "Schritt 1.2 - Sichern des bestehenden MGW" notiert haben.
+#### Seite "Domains"
+
+!!! info Hinweis zu Multi-Domain-Migrationen
+    Führen Sie den Vorgang bei einer Multi-Domain-Migration für jede aktive Domäne durch.
+
+Im Menü **Domains** können Sie für jede verfügbare Domäne eine spezifische Transportroute konfigurieren:
+
+| Einstellung | Beschreibung |
+|---------|-------------|
+| **Inbound relay** | Der SMTP-Relay für die eingehende Zustellung der ausgewählten Domäne. |
+| **Outbound relay** | Der SMTP-Relay für die ausgehende Zustellung der ausgewählten Domäne. Diese Einstellung entspricht der Einstellung `Forwarding server` des alten MGW. |
+| **Trusted networks** | Zusätzliche Netzwerke, denen die Weiterleitung über dieses Gateway gestattet ist. Weitere Informationen finden Sie unter "Schritt 18 - Mailserver konfigurieren". |
+| **Configure TLS** | TLS-Zertifikateinstellungen für SMTP-Verbindungen; über die Schaltfläche `Generate TLS certificate` können Sie ein TLS-Zertifikat erzeugen. |
+| **Email authentication** | Alle Einstellungen unter dem Abschnitt `Email authentication` sind im Abschnitt [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) beschrieben. |
+
+- **Hinweis für das Migrationsszenario:** Gehen Sie auf die Seite jeder Domäne und fügen Sie einen **Outbound host** hinzu, wobei Sie den Wert verwenden, den Sie vom MGW unter `Forwarding server` in "Schritt 1.2 - Sichern des bestehenden MGWs" notiert haben.
+
   <br> ![domain-relay-host](assets/installation-guide/step18-add-domain-relay.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-- Legen Sie auf derselben Seite `Settings` den **Standard-Relay-Host** fest.
-- Wenn Sie Microsoft 365 / Exchange Online verwenden, fügen Sie die veröffentlichten ausgehenden IP-Adressbereiche unter **`Settings` → `Trusted networks`** hinzu, damit das HIN Gateway E-Mails aus Exchange Online als vertrauenswürdig einstuft und weiterleitet:
+- Wenn Sie Microsoft 365 / Exchange Online verwenden, fügen Sie die veröffentlichten ausgehenden IP-Adressbereiche unter **`Trusted networks`** hinzu, damit das HIN Gateway E-Mails aus Exchange Online als vertrauenswürdig einstuft und weiterleitet:
 
     ```text
     40.92.0.0/15
@@ -584,13 +668,32 @@ Siehe [Exchange-Integration](Exchange-integration.md) für detaillierte Anweisun
     2a01:4180:4051:800::/64
     ```
 
-  <br> ![domain-relay-host](assets/installation-guide/step18-add-default-relay-and-network.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+  <br> ![domain-relay-host](assets/installation-guide/step14-domain-mail-transport.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-### Schritt 19 - Test vor der Umstellung
+
+
+#### Seite "Settings"
+
+Konfigurieren Sie auf dieser Seite im Menü `Settings` Ihre globalen E-Mail-Transporteinstellungen für die sichere Mail-Relay-Einrichtung, die für die gesamte Instanz gelten. Die detaillierte Konfiguration für jede Domäne erfolgt unter `Domains` → `$domain`.
+
+![Bildschirm für die E-Mail-Transport-Konfiguration](assets/installation-guide/step14-mail-transport2.png)
+
+Die folgenden Einstellungen stehen im Menü `Settings` zur Verfügung:
+
+| Einstellung | Beschreibung |
+|---------|-------------|
+| **Mail server host name** | Der FQDN dieser Mail-Gateway-Instanz (z. B. `mail.example.com`). |
+| **Mail server IP addresses** | Die öffentliche(n) IP-Adresse(n) dieses Servers. Fügen Sie weitere IP-Adressen hinzu, falls der Server über mehrere Adressen erreichbar ist. |
+| **DNS** | DNS des Hosts, der zur Auflösung von MX- und anderen DNS-Einträgen verwendet wird. |
+| **Default inbound relay** | Der Standard-SMTP-Relay für die eingehende Zustellung. |
+| **Default outbound relay** | Der Standard-SMTP-Relay für die ausgehende Zustellung. |
+
+<br> ![domain-relay-host](assets/installation-guide/step14-mail-transport2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+
+### Schritt 19 - Test und Validierung
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
-
-Wiederholen Sie den "[Schritt 1.1 - Smoke-Test](#schritt-11-smoke-test)". Zusätzlich zum Smoke-Test testen und bestätigen Sie bitte die folgenden Schritte:
 
 **Ausgehend:**
 
@@ -601,50 +704,53 @@ Wiederholen Sie den "[Schritt 1.1 - Smoke-Test](#schritt-11-smoke-test)". Zusät
 
 **Eingehender Verkehr:**
 
-- Stellen Sie sicher, dass verschlüsselte E-Mails aus der HIN Community über WireGuard empfangen werden können. Ein Absender aus der Domäne hin.ch ist der einfachste Testweg.
+- Stellen Sie sicher, dass verschlüsselte E-Mails aus der HIN Community über WireGuard empfangen werden können. Ein Absender aus der Domäne `hin.ch` ist der einfachste Testweg.
 - Stellen Sie sicher, dass verschlüsselte E-Mails aus der HIN Community über SMTP unter Verwendung von S/MIME empfangen werden können.
 - Stellen Sie sicher, dass Antworten von Absendern ausserhalb der HIN Community auf eine erste sichere E-Mail (HIN Mail-SEAL) das HIN Gateway erreichen können.
 - Stellen Sie sicher, dass unverschlüsselte E-Mails von externen Absendern ausserhalb der HIN Community empfangen werden können.
 - Senden Sie eine E-Mail von einer externen E-Mail-Adresse an die HIN Community und überprüfen Sie, ob sie erfolgreich empfangen wird.
 
-### Schritt 20 - Validieren nach der Umstellung
-
-![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
-
 Bestätigen:
 
 - E-Mails werden in beide Richtungen zwischen der vertrauenswürdigen HIN-Domain und externen E-Mail-Adressen erfolgreich zugestellt.
 - Verschlüsselung wird angewendet, wo erforderlich.
-- Keine unerwarteten Verzögerungen oder Bounces.
-- Protokollierung erfolgreich.
+- Es treten keine unerwarteten Verzögerungen oder Bounces auf.
+- Die Protokollierung ist erfolgreich.
 
-Füllen Sie das [Abnahmeprotokoll](https://www.hin.ch/files/pdf1/gateway-abnahme-de.pdf) aus und senden Sie es an Ihren HIN Ansprechpartner zurück.
+Füllen Sie das [**Abnahmeprotokoll**](https://www.hin.ch/files/pdf1/gateway-abnahme-de.pdf) aus und senden Sie es an Ihren HIN Ansprechpartner zurück.
+
+### Schritt 20 - Passwort der VM ändern
+
+![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
+
+Bitte stellen Sie sicher, dass die Ihnen ursprünglich zur Verfügung gestellten Zugangsdaten für die VM in ein von Ihnen selbst festgelegtes Passwort geändert werden, und bewahren Sie dieses an einem sicheren und geschützten Ort auf.
 
 ### Schritt 21 - Bestehendes MGW ausser Betrieb nehmen
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
 
+!!! info Gilt nur für Migrationsfälle
+    Dieser Schritt gilt nur für Einzel- und Multi-Domain-Migrationen
+
 !!! warning
     Löschen Sie die bestehende MGW-VM nicht sofort, sondern bewahren Sie sie sicher auf, bis alles betriebsbereit ist.
 
-1. **Stellen Sie sicher, dass kein aktiver Datenverkehr vorhanden ist** - Überprüfen Sie:
+1. **Stellen Sie sicher, dass kein aktiver Datenverkehr vorhanden ist**: Überprüfen Sie:
     - Es verweisen keine Domains auf das MGW (DNS, SMTP, Konnektoren).
     - Es werden keine E-Mails über die alte Appliance weitergeleitet.
-2. **Protokolle archivieren** - exportieren und speichern:
+2. **Protokolle archivieren**: Exportieren und speichern Sie:
     - E-Mail-Protokolle
-    - Sicherheits-/Audit-Protokolle (erforderlich für Compliance und Fehlerbehebung)
-3. **Bereinigung (optional)** - Entfernen:
+    - Sicherheits-/Audit-Protokolle
+    - erforderlich für Compliance und Fehlerbehebung
+3. **Bereinigung (optional)**: Entfernen Sie:
     - Firewall-Regeln
     - DNS-Einträge
     - Routing-Konfigurationen, die auf das bestehende MGW verweisen
 
-### Schritt 22 - Passwort der VM ändern
-
-![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
-
-Bitte stellen Sie sicher, dass die Ihnen ursprünglich zur Verfügung gestellten Zugangsdaten für die VM in ein von Ihnen selbst festgelegtes Passwort geändert werden, und bewahren Sie dieses an einem sicheren Ort auf.
-
 ## Anhang 1 - Sichern und Wiederherstellen der Appliance-Einstellungen
+
+!!! info Gilt nur für Migrationsfälle
+    Dieser Schritt gilt nur für Einzel- und Multi-Domain-Migrationen
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
 
