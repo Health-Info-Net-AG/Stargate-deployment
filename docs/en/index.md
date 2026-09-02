@@ -20,11 +20,13 @@ The following items must be available or confirmed before the installation:
     - Activation code
 
 - **Export of private key**
+
 !!! info
     Export of private keys is only for customers moving from existing MGW to a new HIN Gateway
 
     - If you are working on a Windows machine that has access to the Mail Gateway VM via port 22, we can support you during the call in enabling the private key export from the MGW.
     - If you do not have access to such a machine, please contact HIN Support by email or phone (support@hin.ch / 0848 830 740) to help you establish a support connection via System Administration → Support Connection → Connect.
+
 - **Download latest** version of [VM image](vm/VM-Catalog.md)
 - **Firewall** requirements for WireGuard.
   Configure the WireGuard port 19818 (TCP/UDP) in your firewall:
@@ -33,10 +35,12 @@ The following items must be available or confirmed before the installation:
 - **DHCP access** should be available. For more information see "Installation Guidelines".
 
 - **Backup requirements** - see "Annex 1 - Backing up and restoring the appliance settings".
+
 !!! info
     Backup requirements is only for customers moving from existing MGW to a new HIN Gateway
 
 - Confirmation that the existing MGW will **not** be deleted until acceptance has been completed.
+
 !!! info
     Keeping the existing MGW available till acceptance report have been completed is only for customers moving from existing MGW to a new HIN Gateway
 
@@ -84,50 +88,9 @@ The following items must be available or confirmed before the installation:
 
 #### Inbound Network Access (firewall must allow)
 
-??? tip "Firewall note"
-
-    Depending on your firewall or NAT configuration, you may need to explicitly allow traffic for the required ports. Refer to your firewall and NAT documentation for details.
-
-    The VM must be able to **accept incoming** connections on the required service ports and **send responses back** to the requester. With a stateful firewall (such as `iptables` using `conntrack`), return traffic is automatically allowed by the `ESTABLISHED,RELATED` rules.
-
-    Example `iptables` configuration:
-
-    ```bash
-    # Allow return traffic for established connections
-    iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-    iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-
-    # Allow inbound TCP connections to the open ports
-    iptables -A INPUT -p tcp -m multiport --dports 25,8084,19818 -j ACCEPT
-
-    # Allow outbound TCP connections to the open ports
-    iptables -A OUTPUT -p tcp -m multiport --dports 25,8084,19818 -j ACCEPT
-
-    # Allow inbound UDP port 19818 for Wireguard
-    iptables -A INPUT -p udp --dport 19818 -j ACCEPT
-
-    # Allow outbound UDP port 19818 for Wireguard
-    iptables -A OUTPUT -p udp --dport 19818 -j ACCEPT
-
-    # Additional Services that VM shall be able to reach
-    # DNS
-    iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
-    iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
-
-    # NTP
-    iptables -A OUTPUT -p udp --dport 123 -j ACCEPT
-
-    # HTTP
-    iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT
-
-    # HTTPS
-    iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT
-    ```
-
 | Port | Protocol | Purpose |
 | :--- | :------: | :------ |
 | `25` | TCP | SMTP - receiving mail from external servers |
-| `8084` | TCP | HTTP - seal callback from remote sealer service |
 | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication. Read our [Security Assessment WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
 
 #### Inbound VM Access (your administrative machine to the HIN Gateway VM)
@@ -155,6 +118,49 @@ The following items must be available or confirmed before the installation:
 | Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
 | Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
 | NTP servers | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
+| WireGuard peers (HIN network) | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication |
+| `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | HIN KERI witness pool - required for agent identity verification (idagent / watcher) |
+| `app.hin.ch` | `443` | TCP | HIN member / mail-domain list (mtaconf) |
+
+??? tip "Firewall note"
+
+    Depending on your firewall or NAT configuration, you may need to explicitly allow traffic for the required ports. Refer to your firewall and NAT documentation for details.
+
+    The VM must be able to **accept incoming** connections on the required service ports and **send responses back** to the requester. With a stateful firewall (such as `iptables` using `conntrack`), return traffic is automatically allowed by the `ESTABLISHED,RELATED` rules.
+
+    Example `iptables` configuration:
+
+    ```bash
+    # Allow return traffic for established connections
+    iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+    # Allow inbound TCP connections to the open ports
+    iptables -A INPUT -p tcp -m multiport --dports 25,19818 -j ACCEPT
+
+    # Allow outbound TCP connections to the open ports
+    iptables -A OUTPUT -p tcp -m multiport --dports 25,19818 -j ACCEPT
+
+    # Allow inbound UDP port 19818 for Wireguard
+    iptables -A INPUT -p udp --dport 19818 -j ACCEPT
+
+    # Allow outbound UDP port 19818 for Wireguard
+    iptables -A OUTPUT -p udp --dport 19818 -j ACCEPT
+
+    # Additional Services that VM shall be able to reach
+    # DNS
+    iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
+    iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+
+    # NTP
+    iptables -A OUTPUT -p udp --dport 123 -j ACCEPT
+
+    # HTTP
+    iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT
+
+    # HTTPS
+    iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT
+    ```
 
 ## Contact us
 

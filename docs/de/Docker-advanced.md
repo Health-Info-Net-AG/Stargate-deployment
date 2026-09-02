@@ -338,7 +338,7 @@ Ziel-Mail-Server (via MX-Lookup)
 
 **Antiviren-Scan:** Eingehende E-Mails werden von **ClamAV** (`stargate-clamav`) gescannt, das als Milter in die SMTP-DATA-Phase sowohl beim öffentlichen (`:25`) als auch beim Reinjektions- (`:10026`) Listener eingebunden ist. Infizierte E-Mails werden auf SMTP-Ebene abgewiesen; wenn ClamAV nicht erreichbar ist, wird die Nachricht zurückgestellt anstatt ungescannt zugestellt (Fail-Closed). Die Signaturdatenbank von ClamAV befindet sich im `clamav_data`-Volume und wird von freshclam im Hintergrund aktuell gehalten.
 
-**Seal-Callback-Fluss (eingehend):** Wenn ein entferntes Sealer-Gerät eine versiegelte Nachricht zustellen muss, ruft es `MXENGINE_PUBLIC_ADDRESS` auf (Standard: `http://<SERVER_STATIC_IP>:8084`). Deshalb muss Port 8084 für eingehenden Datenverkehr geöffnet sein. Das `http://`-Protokoll ist korrekt – TLS ist nicht erforderlich, da die Seal-Nutzlast bereits verschlüsselt ist.
+**Seal-Callback-Fluss (eingehend):** Wenn ein entferntes Sealer-Gerät eine versiegelte Nachricht zustellen muss, ruft es `MXENGINE_PUBLIC_ADDRESS` auf (Standard: `http://<SERVER_STATIC_IP>:8084`). Das `http://`-Protokoll ist korrekt – TLS ist nicht erforderlich, da die Seal-Nutzlast bereits verschlüsselt ist.
 
 ### Mail-Relay-Konfiguration
 

@@ -338,7 +338,7 @@ Serveur de courrier de destination (via recherche MX)
 
 **Analyse antivirus:** Les courriels entrants sont analysés par **ClamAV** (`stargate-clamav`), intégré à Stalwart comme milter au stade SMTP DATA sur les écouteurs public (`:25`) et de réinjection (`:10026`). Les courriels infectés sont rejetés au niveau SMTP ; si ClamAV est inaccessible, le message est différé plutôt que livré non analysé (échec-fermé). La base de données de signatures de ClamAV réside dans le volume `clamav_data` et est maintenue à jour par freshclam en arrière-plan.
 
-**Flux de rappel de scellement (entrant):** Lorsqu'un scelleur distant doit livrer un message scellé, il appelle `MXENGINE_PUBLIC_ADDRESS` (par défaut: `http://<SERVER_STATIC_IP>:8084`). C'est pourquoi le port 8084 doit être ouvert pour le trafic entrant. Le protocole `http://` est correct - TLS n'est pas requis car la charge utile du sceau est déjà chiffrée.
+**Flux de rappel de scellement (entrant):** Lorsqu'un scelleur distant doit livrer un message scellé, il appelle `MXENGINE_PUBLIC_ADDRESS` (par défaut: `http://<SERVER_STATIC_IP>:8084`). Le protocole `http://` est correct - TLS n'est pas requis car la charge utile du sceau est déjà chiffrée.
 
 ### Configuration du relais de courrier
 

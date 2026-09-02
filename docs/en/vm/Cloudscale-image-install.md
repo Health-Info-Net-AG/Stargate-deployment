@@ -26,9 +26,14 @@
 - Under **Network Management**, enable only **IPv4** if the Stargate instance must be internet-accessible (e.g., for Office 365).
 - Under **Access Security**, select your SSH key (usable with the `almalinux` user).
 - Under **Password**, set any secure password you prefer.
+
 !!! tip "Without a password, SSH password authentication is disabled"
     You must still use the initial password provided by HIN for your first login. However, if you do not set a new password, cloud-init will disable SSH password authentication for all users, allowing SSH access only via public key authentication.
+
 - Click **Launch**.
+
+!!! warning "Attach the Data Disk first"
+    Before the first boot, attach a second, blank disk of at least 30 GB. On first boot the appliance formats it as the Data Disk (`VEREIGN-DATA`, mounted at `/var/data`) and keeps all config and data there; without it the boot fails and rolls back. See [Installation guide → Step 4](../Installation-guide.md#step-4-load-vm-image).
 
 ## Install HIN Gateway
 

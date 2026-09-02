@@ -48,50 +48,9 @@
 
 #### Eingehender Netzwerkzugriff (Firewall muss erlauben)
 
-??? tip "Firewall-Hinweis"
-
-    Abhängig von Ihrer Firewall- oder NAT-Konfiguration müssen Sie den Datenverkehr für die erforderlichen Ports möglicherweise explizit zulassen. Weitere Informationen finden Sie in der Dokumentation Ihrer Firewall bzw. NAT-Konfiguration.
-
-    Die VM muss **eingehende** Verbindungen auf den erforderlichen Dienstports **akzeptieren** und **Antworten zurück** an den Anfragenden senden können. Bei einer zustandsbehafteten Firewall (z. B. `iptables` mit `conntrack`) wird der Rückverkehr durch die `ESTABLISHED,RELATED`-Regeln automatisch zugelassen.
-
-    Beispiel für eine `iptables`-Konfiguration:
-
-    ```bash
-    # Rückverkehr für bestehende Verbindungen zulassen
-    iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-    iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-
-    # Eingehende TCP-Verbindungen zu den offenen Ports zulassen
-    iptables -A INPUT -p tcp -m multiport --dports 25,8084,19818 -j ACCEPT
-
-    # Ausgehende TCP-Verbindungen zu den offenen Ports zulassen
-    iptables -A OUTPUT -p tcp -m multiport --dports 25,8084,19818 -j ACCEPT
-
-    # Eingehenden UDP-Port 19818 für WireGuard zulassen
-    iptables -A INPUT -p udp --dport 19818 -j ACCEPT
-
-    # Ausgehenden UDP-Port 19818 für WireGuard zulassen
-    iptables -A OUTPUT -p udp --dport 19818 -j ACCEPT
-
-    # Zusätzliche Dienste, die von der VM erreichbar sein müssen
-    # DNS
-    iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
-    iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
-
-    # NTP
-    iptables -A OUTPUT -p udp --dport 123 -j ACCEPT
-
-    # HTTP
-    iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT
-
-    # HTTPS
-    iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT
-    ```
-
 | Port | Protokoll | Zweck |
 | :--- | :-------: | :---- |
 | `25` | TCP | SMTP – Empfangen von E-Mails von externen Servern |
-| `8084` | TCP | HTTP – Seal-Callback von einem entfernten Sealer-Dienst |
 | `19818` | UDP+TCP | WireGuard – Verschlüsselter Tunnel für die Agent-zu-Agent-Kommunikation. Lesen Sie unser [Sicherheitsgutachten zu WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
 
 #### Eingehender VM-Zugriff (von Ihrem Administrationsrechner zur HIN Gateway VM)
@@ -119,6 +78,49 @@
 | Ziel-Mailserver | `25` | TCP | Zustellung ausgehender E-Mails (via MX-Lookup) |
 | DNS-Server | `53` | UDP+TCP | Ausgehend an öffentliche DNS-Server |
 | NTP-Server | `123` | UDP | NTP synchronisiert die Uhren von Computern, Servern, Netzwerkgeräten und virtuellen Maschinen mit präzisen Zeitquellen |
+| WireGuard-Peers (HIN-Netzwerk) | `19818` | UDP+TCP | WireGuard – Verschlüsselter Tunnel für die Agent-zu-Agent-Kommunikation |
+| `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | HIN KERI-Witness-Pool - erforderlich für die Verifizierung von Agent-Identitäten (idagent / watcher) |
+| `app.hin.ch` | `443` | TCP | HIN Mitglieder- / Maildomain-Liste (mtaconf) |
+
+??? tip "Firewall-Hinweis"
+
+    Abhängig von Ihrer Firewall- oder NAT-Konfiguration müssen Sie den Datenverkehr für die erforderlichen Ports möglicherweise explizit zulassen. Weitere Informationen finden Sie in der Dokumentation Ihrer Firewall bzw. NAT-Konfiguration.
+
+    Die VM muss **eingehende** Verbindungen auf den erforderlichen Dienstports **akzeptieren** und **Antworten zurück** an den Anfragenden senden können. Bei einer zustandsbehafteten Firewall (z. B. `iptables` mit `conntrack`) wird der Rückverkehr durch die `ESTABLISHED,RELATED`-Regeln automatisch zugelassen.
+
+    Beispiel für eine `iptables`-Konfiguration:
+
+    ```bash
+    # Rückverkehr für bestehende Verbindungen zulassen
+    iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+    # Eingehende TCP-Verbindungen zu den offenen Ports zulassen
+    iptables -A INPUT -p tcp -m multiport --dports 25,19818 -j ACCEPT
+
+    # Ausgehende TCP-Verbindungen zu den offenen Ports zulassen
+    iptables -A OUTPUT -p tcp -m multiport --dports 25,19818 -j ACCEPT
+
+    # Eingehenden UDP-Port 19818 für WireGuard zulassen
+    iptables -A INPUT -p udp --dport 19818 -j ACCEPT
+
+    # Ausgehenden UDP-Port 19818 für WireGuard zulassen
+    iptables -A OUTPUT -p udp --dport 19818 -j ACCEPT
+
+    # Zusätzliche Dienste, die von der VM erreichbar sein müssen
+    # DNS
+    iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
+    iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+
+    # NTP
+    iptables -A OUTPUT -p udp --dport 123 -j ACCEPT
+
+    # HTTP
+    iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT
+
+    # HTTPS
+    iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT
+    ```
 
 ## Kontaktieren Sie uns
 

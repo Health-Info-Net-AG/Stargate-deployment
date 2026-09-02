@@ -3,10 +3,10 @@
 Eine strukturierte Anleitung zur Diagnose einer Stargate-Appliance über die Befehlszeile: Was überprüft werden muss, wo sich die Logs befinden und welche Massnahmen zur sicheren Wiederherstellung ergriffen werden können.
 
 !!! info "Wo diese Befehle ausgeführt werden sollen"
-    Führen Sie alle folgenden Befehle aus dem **Bereitstellungsverzeichnis** aus - dem Ordner, der `docker-compose.yml` und `scripts/` enthält (bei VM-Images ist dies in der Regel `/root/stargate-deployment/docker-compose`, oder das Verzeichnis, in dem Sie die Installation vorgenommen haben). Alle `docker compose`- und `./scripts/*`-Befehle gehen von diesem Arbeitsverzeichnis aus.
+    Führen Sie alle folgenden Befehle aus dem **Bereitstellungsverzeichnis** aus - dem Ordner, der `docker-compose.yml` und `scripts/` enthält (bei VM-Images ist dies in der Regel `/usr/share/stargate-deployment/docker-compose`, oder das Verzeichnis, in dem Sie die Installation vorgenommen haben). Alle `docker compose`- und `./scripts/*`-Befehle gehen von diesem Arbeitsverzeichnis aus.
 
     ```bash
-    cd /root/stargate-deployment/docker-compose   # adjust to your install path
+    cd /usr/share/stargate-deployment/docker-compose   # adjust to your install path
     ```
 
 ---
@@ -156,7 +156,7 @@ cat ../update.log                             # the update script output
 **Das Update startet, aber es passiert nichts (Update von einer älteren Version).** Wenn das Ops-Agent-Log bei `pulling deployment repo ...` stehen bleibt und das Update nicht fortgesetzt wird, enthält das Repository auf der VM höchstwahrscheinlich **lokale Änderungen an einer versionierten Datei** (meist eine manuell bearbeitete `docker-compose.yml`). Dadurch verweigert der `git checkout` des Ops-Agent die Ausführung, sodass das Update stehen bleibt. Setzen Sie das Repository zwangsweise auf den neuesten Stand zurück und führen Sie das Update anschliessend erneut aus. Git ist die einzige verbindliche Quelle; dabei gehen ausschliesslich lokale Änderungen an **versionierten** Dateien verloren - `customer-config.sh`, `.env` und `secrets/` stehen in der `.gitignore` und bleiben erhalten:
 
 ```bash
-cd /root/stargate-deployment
+cd /usr/share/stargate-deployment
 git fetch origin
 git checkout -f main
 git reset --hard origin/main
@@ -210,7 +210,7 @@ Host-Metriken werden zudem für Prometheus unter **`:9100/metrics`** exportiert 
 Schnelle Erreichbarkeitsprüfung für die wichtigsten eingehenden Ports:
 
 ```bash
-for p in 25 443 8180 8190 8084 19818; do nc -zv <this-server-ip> $p; done
+for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 ```
 
 | Port | Dienst | Richtung |
@@ -219,7 +219,6 @@ for p in 25 443 8180 8190 8084 19818; do nc -zv <this-server-ip> $p; done
 | `443` | Dashboard (HTTPS) | eingehend |
 | `8180` | Keycloak | eingehend |
 | `8190` | Dozzle (optional) | eingehend |
-| `8084` | mxengine Seal-Callback | eingehend |
 | `19818` | WireGuard (UDP **und** TCP) | ein-/ausgehend |
 
 Ausgehender Zugriff wird benötigt auf die Container-Registry, die S/MIME-Zertifizierungsstelle (über den WireGuard-Tunnel) und jedes konfigurierte Remote-Loki. Die vollständige Port-Tabelle finden Sie auf der **[Startseite](index.md)** und in der **[Anwendungsübersicht](Applications.md)**.

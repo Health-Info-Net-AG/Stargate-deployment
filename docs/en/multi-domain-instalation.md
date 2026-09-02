@@ -327,7 +327,7 @@ Add an IP address on Linux:
     If this happens, configure the network manually, then run:
 
     ```bash
-    cd /root/stargate-deployment/docker-compose
+    cd /usr/share/stargate-deployment/docker-compose
     ./scripts/purge.sh
     # Update configuration with a new ip, by editing it with nano
     # SERVER_STATIC_IP=<NEW IP>
@@ -343,7 +343,7 @@ Add an IP address on Linux:
     If you used Option C and configured the network manually, you must run the following commands:
 
     ```bash
-    cd /root/stargate-deployment/docker-compose
+    cd /usr/share/stargate-deployment/docker-compose
     ./scripts/purge.sh
     # Update configuration with a new ip, by editing it with nano
     # SERVER_STATIC_IP=<NEW IP>

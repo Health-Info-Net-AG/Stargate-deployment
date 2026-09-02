@@ -3,10 +3,10 @@
 Una guida strutturata alla diagnosi di un'appliance Stargate via riga di comando: aspetti da verificare, posizione dei log e misure di ripristino sicuro.
 
 !!! info "Dove eseguire questi comandi"
-    Eseguire tutto ciò che segue dalla **directory di deployment** - la cartella contenente `docker-compose.yml` e `scripts/` (nelle immagini VM si tratta generalmente di `/root/stargate-deployment/docker-compose`, oppure la directory in cui è stata effettuata l'installazione). Tutti i comandi `docker compose` e `./scripts/*` presuppongono questa directory di lavoro.
+    Eseguire tutto ciò che segue dalla **directory di deployment** - la cartella contenente `docker-compose.yml` e `scripts/` (nelle immagini VM si tratta generalmente di `/usr/share/stargate-deployment/docker-compose`, oppure la directory in cui è stata effettuata l'installazione). Tutti i comandi `docker compose` e `./scripts/*` presuppongono questa directory di lavoro.
 
     ```bash
-    cd /root/stargate-deployment/docker-compose   # adjust to your install path
+    cd /usr/share/stargate-deployment/docker-compose   # adjust to your install path
     ```
 
 ---
@@ -156,7 +156,7 @@ cat ../update.log                             # the update script output
 **L'aggiornamento si avvia ma non succede nulla (aggiornamento da una versione precedente).** Se il log dell'ops-agent si blocca su `pulling deployment repo ...` e l'aggiornamento non procede, il repository sulla VM molto probabilmente presenta **modifiche locali a un file monitorato** (solitamente un `docker-compose.yml` modificato manualmente). Questo fa sì che il `git checkout` dell'ops-agent si rifiuti di essere eseguito, e l'aggiornamento resta bloccato. Forzare il ripristino del repository all'ultima revisione, quindi ripetere l'aggiornamento. Git è l'unica fonte affidabile; questa operazione elimina esclusivamente le modifiche locali ai file **monitorati** - `customer-config.sh`, `.env` e `secrets/` sono esclusi tramite `.gitignore` e vengono preservati:
 
 ```bash
-cd /root/stargate-deployment
+cd /usr/share/stargate-deployment
 git fetch origin
 git checkout -f main
 git reset --hard origin/main
@@ -210,7 +210,7 @@ Le metriche dell'host vengono esportate anche per Prometheus sulla porta **`:910
 Verifica rapida della raggiungibilità delle principali porte in entrata:
 
 ```bash
-for p in 25 443 8180 8190 8084 19818; do nc -zv <this-server-ip> $p; done
+for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 ```
 
 | Porta | Servizio | Direzione |
@@ -219,7 +219,6 @@ for p in 25 443 8180 8190 8084 19818; do nc -zv <this-server-ip> $p; done
 | `443` | Dashboard (HTTPS) | in entrata |
 | `8180` | Keycloak | in entrata |
 | `8190` | Dozzle (opzionale) | in entrata |
-| `8084` | mxengine seal callback | in entrata |
 | `19818` | WireGuard (UDP **e** TCP) | in entrata / in uscita |
 
 È necessario l'accesso in uscita al registro dei container, all'autorità di certificazione S/MIME (tramite il tunnel WireGuard) e a qualsiasi istanza remota di Loki configurata. Per la tabella completa delle porte, vedere la **[home page](index.md)** e la **[panoramica delle applicazioni](Applications.md)**.
