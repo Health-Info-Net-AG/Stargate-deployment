@@ -183,6 +183,7 @@ nav:
       - Mail-Relay-Einrichtung: Mail-relay-setup.md
       - DNS-Einrichtung: DNS-setup.md
       - E-Mail-Authentifizierung (DKIM ARC SPF DMARC): Email-authentication-DKIM-ARC-SPF-DMARC.md
+      - Update und Rollback von HIN Gateway: update-hin-gateway.md
   - Server-Installation:
       - Container:
           - Installation mit Docker: Docker-deploy.md
