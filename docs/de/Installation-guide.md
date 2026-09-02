@@ -138,12 +138,19 @@ Die folgenden Punkte müssen vor der Migration verfügbar sein oder bestätigt w
 
 ![Verantwortlichkeit Kunde](https://img.shields.io/badge/Verantwortlichkeit-Kunde-success)
 
-Senden Sie eine Test-E-Mail an die folgenden Empfänger, wobei Sie Zugriff auf das Postfach haben, um den korrekten Empfang zu überprüfen:
+Senden Sie Test-E-Mails an die folgenden Empfänger und verwenden Sie dabei Postfächer, auf die Sie Zugriff haben, damit die erfolgreiche Zustellung überprüft werden kann:
 
-- eine HIN E-Mail-Adresse oder eine HIN Community-Domain von Ihnen, zum Beispiel: `user@hin.ch`
-- eine E-Mail-Adresse ausserhalb der HIN Community, zum Beispiel: `user@bluewin.ch`
+- eine HIN E-Mail-Adresse oder eine E-Mail-Adresse innerhalb Ihrer HIN Community-Domain, zum Beispiel: user@hin.ch
+- eine externe E-Mail-Adresse ausserhalb der HIN Community, zum Beispiel: Bluewin, Gmail, Yahoo oder GMX
 
-Überprüfen Sie, ob beide E-Mails erfolgreich zugestellt wurden, einschliesslich Betreff, Inhalt und allfälliger Anhänge.
+Senden Sie für den externen Empfänger eine E-Mail aus der HIN Community mit **dem Vermerk (vertraulich) in der Betreffzeile**.
+
+Testen Sie den E-Mail-Fluss in beide Richtungen:
+
+- von der vertrauenswürdigen HIN-Domain zur externen E-Mail-Adresse
+- von der externen E-Mail-Adresse zur HIN Community
+
+Überprüfen Sie, ob alle Test-E-Mails erfolgreich zugestellt wurden und Betreff, Inhalt und allfällige Anhänge korrekt empfangen wurden.
 
 ### Schritt 1.2 - Sichern des bestehenden MGWs
 
@@ -590,6 +597,7 @@ Wiederholen Sie den "[Schritt 1.1 - Smoke-Test](#schritt-11-smoke-test)". Zusät
 - Stellen Sie sicher, dass der Mailserver so konfiguriert ist, dass er E-Mails über ein SMTP-Relay oder einen Exchange-Konnektor an das HIN Gateway versendet.
 - Stellen Sie sicher, dass das HIN Gateway E-Mails an Empfänger ausserhalb der HIN Community versenden kann.
 - Stellen Sie sicher, dass das HIN Gateway E-Mails über WireGuard an Empfänger innerhalb der HIN Community senden kann.
+- Senden Sie eine E-Mail aus der HIN Community an eine externe E-Mail-Adresse (zum Beispiel Bluewin, Gmail, Yahoo oder GMX) mit dem Vermerk (vertraulich) in der Betreffzeile und überprüfen Sie, ob sie erfolgreich zugestellt wird.
 
 **Eingehender Verkehr:**
 
@@ -597,6 +605,7 @@ Wiederholen Sie den "[Schritt 1.1 - Smoke-Test](#schritt-11-smoke-test)". Zusät
 - Stellen Sie sicher, dass verschlüsselte E-Mails aus der HIN Community über SMTP unter Verwendung von S/MIME empfangen werden können.
 - Stellen Sie sicher, dass Antworten von Absendern ausserhalb der HIN Community auf eine erste sichere E-Mail (HIN Mail-SEAL) das HIN Gateway erreichen können.
 - Stellen Sie sicher, dass unverschlüsselte E-Mails von externen Absendern ausserhalb der HIN Community empfangen werden können.
+- Senden Sie eine E-Mail von einer externen E-Mail-Adresse an die HIN Community und überprüfen Sie, ob sie erfolgreich empfangen wird.
 
 ### Schritt 20 - Validieren nach der Umstellung
 
@@ -604,10 +613,10 @@ Wiederholen Sie den "[Schritt 1.1 - Smoke-Test](#schritt-11-smoke-test)". Zusät
 
 Bestätigen:
 
-- E-Mails zugestellt
-- Verschlüsselung angewendet
-- Keine Delays oder Bounces
-- Protokollierung erfolgreich
+- E-Mails werden in beide Richtungen zwischen der vertrauenswürdigen HIN-Domain und externen E-Mail-Adressen erfolgreich zugestellt.
+- Verschlüsselung wird angewendet, wo erforderlich.
+- Keine unerwarteten Verzögerungen oder Bounces.
+- Protokollierung erfolgreich.
 
 Füllen Sie das [Abnahmeprotokoll](https://www.hin.ch/files/pdf1/gateway-abnahme-de.pdf) aus und senden Sie es an Ihren HIN Ansprechpartner zurück.
 

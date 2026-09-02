@@ -132,12 +132,19 @@ I seguenti elementi devono essere disponibili o confermati prima della migrazion
 
 ![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)
 
-Invia una email di test ai seguenti destinatari, dove hai accesso alla cassetta postale per verificare la corretta ricezione:
+Invia email di test ai seguenti destinatari, utilizzando cassette postali a cui hai accesso in modo da poter verificare che la consegna avvenga con successo:
 
-- Un indirizzo email HIN o un dominio della comunità HIN di tua proprietà, ad esempio: `user@hin.ch`
-- Un indirizzo email al di fuori della comunità HIN, ad esempio: `user@bluewin.ch`
+- Un indirizzo email HIN o un indirizzo email all'interno del tuo dominio della Comunità HIN, ad esempio: user@hin.ch
+- Un indirizzo email esterno al di fuori della Comunità HIN, ad esempio: Bluewin, Gmail, Yahoo o GMX
 
-Verifica che entrambe le email vengano consegnate con successo, inclusi oggetto, contenuto e allegato (se inviato).
+Per il destinatario esterno, invia una email dalla Comunità HIN con **(confidenziale) inserito nell'oggetto**.
+
+Testa il flusso di posta in entrambe le direzioni:
+
+- Dal dominio HIN affidabile all'indirizzo email esterno
+- Dall'indirizzo email esterno alla Comunità HIN
+
+Verifica che tutte le email di test vengano consegnate con successo e che oggetto, contenuto del messaggio e allegati (se presenti) vengano ricevuti correttamente.
 
 ### Passo 1.2 - Backup del MGW esistente
 
@@ -581,6 +588,7 @@ Ripeti il "Passo 1.1 - Smoke test". In aggiunta allo smoke test, testa e conferm
 - Verifica che il server di posta sia configurato per inviare email all'HIN Gateway utilizzando un relay SMTP o un connettore Exchange.
 - Verifica che l'HIN Gateway possa inviare email a destinatari al di fuori della Comunità HIN.
 - Verifica che l'HIN Gateway possa inviare email a destinatari all'interno della Comunità HIN tramite WireGuard.
+- Invia una email dalla Comunità HIN a un indirizzo email esterno (ad esempio Bluewin, Gmail, Yahoo o GMX) con (confidenziale) inserito nell'oggetto, e verifica che venga consegnata con successo.
 
 **In entrata:**
 
@@ -588,6 +596,7 @@ Ripeti il "Passo 1.1 - Smoke test". In aggiunta allo smoke test, testa e conferm
 - Verifica che le email crittografate possano essere ricevute dalla Comunità HIN tramite SMTP utilizzando S/MIME.
 - Verifica che le risposte da mittenti al di fuori della Comunità HIN a una email sicura iniziale (HIN Mail-SEAL) possano raggiungere l'HIN Gateway.
 - Verifica che le email in testo semplice possano essere ricevute da mittenti esterni al di fuori della Comunità HIN.
+- Invia una email da un indirizzo email esterno alla Comunità HIN e verifica che venga ricevuta con successo.
 
 ### Passo 20 - Validazione dopo il passaggio
 
@@ -595,10 +604,10 @@ Ripeti il "Passo 1.1 - Smoke test". In aggiunta allo smoke test, testa e conferm
 
 Conferma:
 
-- Email consegnate
-- Crittografia applicata
-- Nessun ritardo o rimbalzo
-- Logging riuscito
+- Le email vengono consegnate con successo in entrambe le direzioni tra il dominio HIN affidabile e gli indirizzi email esterni.
+- La crittografia viene applicata dove richiesto.
+- Nessun ritardo o rimbalzo inatteso.
+- Il logging funziona correttamente.
 
 Compila il [**"Acceptance Report"**](https://www.hin.ch/files/pdf1/gateway-acceptance-en.pdf) e consegnalo al tuo rappresentante HIN.
 

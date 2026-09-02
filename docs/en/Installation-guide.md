@@ -143,12 +143,19 @@ The following items must be available or confirmed before the installation:
 !!! info Applicable for migration case
     This step applies only for single and multi domain migrations
 
-Send a test email to the following recipients, where you have access to the mailbox to check correct receipt:
+Send test emails to the following recipients, using mailboxes to which you have access so that successful delivery can be verified:
 
-- An HIN email address or HIN community domain of yours, for example: `user@hin.ch`
-- An email address outside of the HIN community, for example: `user@bluewin.ch`
+- An HIN email address or an email address within your HIN Community domain, for example: user@hin.ch
+- An external email address outside the HIN Community, for example: Bluewin, Gmail, Yahoo, or GMX
 
-Verify that both emails are delivered successfully, including subject, content and attachment (if sent).
+For the external recipient, send an email from the HIN Community with **(confidential) included in the subject line**.
+
+Test mail flow in both directions:
+
+- From the HIN trusted domain to the external email address
+- From the external email address to the HIN Community
+ 
+Verify that all test emails are delivered successfully and that the subject, message content, and attachments (if applicable) are received correctly.
 
 ### Step 1.2 - Backing up the existing MGW
 
@@ -693,6 +700,7 @@ The following settings are available `Settings` menu:
 - Verify that the mail server is configured to send emails to the HIN Gateway using an SMTP relay or Exchange connector.
 - Verify that the HIN Gateway can send emails to recipients outside the HIN Community.
 - Verify that the HIN Gateway can send emails to recipients inside the HIN Community via WireGuard.
+- Send an email from the HIN Community to an external email address (for example, Bluewin, Gmail, Yahoo, or GMX) with (confidential) included in the subject line, and verify that it is delivered successfully.
 
 **Incoming:**
 
@@ -700,13 +708,14 @@ The following settings are available `Settings` menu:
 - Verify that encrypted emails can be received from the HIN Community via SMTP using S/MIME.
 - Verify that replies from senders outside the HIN Community to an initial secure email (HIN Mail-SEAL) can reach the HIN Gateway.
 - Verify that plain-text emails can be received from external senders outside the HIN Community.
+- Send an email from an external email address to the HIN Community and verify that it is received successfully.
 
 Confirm:
 
-- Emails delivered
-- Encryption applied
-- No delays or bounces
-- Logging successful
+- Emails are delivered successfully in both directions between the HIN trusted domain and external email addresses.
+- Encryption is applied where required.
+- There are no unexpected delays or bounces.
+- Logging is successful.
 
 Complete the [**Acceptance Report**](https://www.hin.ch/files/pdf1/gateway-acceptance-en.pdf) and return it to your HIN representative.
 
