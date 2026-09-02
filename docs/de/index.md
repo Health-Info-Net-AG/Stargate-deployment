@@ -48,6 +48,40 @@
 
 #### Eingehender Netzwerkzugriff (Firewall muss erlauben)
 
+| Port | Protokoll | Zweck |
+| :--- | :-------: | :---- |
+| `25` | TCP | SMTP – Empfangen von E-Mails von externen Servern |
+| `19818` | UDP+TCP | WireGuard – Verschlüsselter Tunnel für die Agent-zu-Agent-Kommunikation. Lesen Sie unser [Sicherheitsgutachten zu WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
+
+#### Eingehender VM-Zugriff (von Ihrem Administrationsrechner zur HIN Gateway VM)
+
+!!! info
+    Diese Firewall-Regeln sollten nur zwischen Ihrem Administrationsrechner und der HIN Gateway VM angewendet werden. Es ist nicht erforderlich, diese Ports für das Internet freizugeben.
+
+| Port | Protokoll | Zweck |
+| :--- | :-------: | :---- |
+| `80` | TCP | Leitet HTTP-Datenverkehr auf HTTPS um |
+| `443` | TCP | Dient zur Verwaltung des HIN Gateway über das Web-Dashboard |
+| `8180` | TCP | Wird von Keycloak zur Authentifizierung von Benutzern für das HIN Gateway Dashboard verwendet |
+| `8190` | TCP | Optional. Erforderlich für die Fehlerbehebung und das Anzeigen von Protokollen |
+| `22` | TCP | Optional. Erforderlich für die Fehlerbehebung und das Ändern der Konfiguration |
+
+#### Ausgehender Netzwerkzugriff (Server muss erreichen können)
+
+| Ziel | Port | Protokoll | Zweck |
+| :--- | :--: | :-------: | :---- |
+| hub.docker.com | `443` | TCP | Docker-Image-Registry |
+| mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Entfernter Sealer-Dienst |
+| smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | S/MIME-CA-Dienst |
+| loki.example.com | `443` | TCP | Log-Versand (Alloy → Loki, optional) |
+| Update-Server von Alpine, AlmaLinux usw. | `80` | TCP | Verschiedene Update-Server |
+| Ziel-Mailserver | `25` | TCP | Zustellung ausgehender E-Mails (via MX-Lookup) |
+| DNS-Server | `53` | UDP+TCP | Ausgehend an öffentliche DNS-Server |
+| NTP-Server | `123` | UDP | NTP synchronisiert die Uhren von Computern, Servern, Netzwerkgeräten und virtuellen Maschinen mit präzisen Zeitquellen |
+| WireGuard-Peers (HIN-Netzwerk) | `19818` | UDP+TCP | WireGuard – Verschlüsselter Tunnel für die Agent-zu-Agent-Kommunikation |
+| `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | HIN KERI-Witness-Pool - erforderlich für die Verifizierung von Agent-Identitäten (idagent / watcher) |
+| `app.hin.ch` | `443` | TCP | HIN Mitglieder- / Maildomain-Liste (mtaconf) |
+
 ??? tip "Firewall-Hinweis"
 
     Abhängig von Ihrer Firewall- oder NAT-Konfiguration müssen Sie den Datenverkehr für die erforderlichen Ports möglicherweise explizit zulassen. Weitere Informationen finden Sie in der Dokumentation Ihrer Firewall bzw. NAT-Konfiguration.
@@ -87,40 +121,6 @@
     # HTTPS
     iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT
     ```
-
-| Port | Protokoll | Zweck |
-| :--- | :-------: | :---- |
-| `25` | TCP | SMTP – Empfangen von E-Mails von externen Servern |
-| `19818` | UDP+TCP | WireGuard – Verschlüsselter Tunnel für die Agent-zu-Agent-Kommunikation. Lesen Sie unser [Sicherheitsgutachten zu WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
-
-#### Eingehender VM-Zugriff (von Ihrem Administrationsrechner zur HIN Gateway VM)
-
-!!! info
-    Diese Firewall-Regeln sollten nur zwischen Ihrem Administrationsrechner und der HIN Gateway VM angewendet werden. Es ist nicht erforderlich, diese Ports für das Internet freizugeben.
-
-| Port | Protokoll | Zweck |
-| :--- | :-------: | :---- |
-| `80` | TCP | Leitet HTTP-Datenverkehr auf HTTPS um |
-| `443` | TCP | Dient zur Verwaltung des HIN Gateway über das Web-Dashboard |
-| `8180` | TCP | Wird von Keycloak zur Authentifizierung von Benutzern für das HIN Gateway Dashboard verwendet |
-| `8190` | TCP | Optional. Erforderlich für die Fehlerbehebung und das Anzeigen von Protokollen |
-| `22` | TCP | Optional. Erforderlich für die Fehlerbehebung und das Ändern der Konfiguration |
-
-#### Ausgehender Netzwerkzugriff (Server muss erreichen können)
-
-| Ziel | Port | Protokoll | Zweck |
-| :--- | :--: | :-------: | :---- |
-| hub.docker.com | `443` | TCP | Docker-Image-Registry |
-| mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Entfernter Sealer-Dienst |
-| smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | S/MIME-CA-Dienst |
-| loki.example.com | `443` | TCP | Log-Versand (Alloy → Loki, optional) |
-| Update-Server von Alpine, AlmaLinux usw. | `80` | TCP | Verschiedene Update-Server |
-| Ziel-Mailserver | `25` | TCP | Zustellung ausgehender E-Mails (via MX-Lookup) |
-| DNS-Server | `53` | UDP+TCP | Ausgehend an öffentliche DNS-Server |
-| NTP-Server | `123` | UDP | NTP synchronisiert die Uhren von Computern, Servern, Netzwerkgeräten und virtuellen Maschinen mit präzisen Zeitquellen |
-| WireGuard-Peers (HIN-Netzwerk) | `19818` | UDP+TCP | WireGuard – Verschlüsselter Tunnel für die Agent-zu-Agent-Kommunikation |
-| `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | HIN KERI-Witness-Pool - erforderlich für die Verifizierung von Agent-Identitäten (idagent / watcher) |
-| `app.hin.ch` | `443` | TCP | HIN Mitglieder- / Maildomain-Liste (mtaconf) |
 
 ## Kontaktieren Sie uns
 

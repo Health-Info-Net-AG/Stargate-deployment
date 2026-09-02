@@ -88,6 +88,40 @@ The following items must be available or confirmed before the installation:
 
 #### Inbound Network Access (firewall must allow)
 
+| Port | Protocol | Purpose |
+| :--- | :------: | :------ |
+| `25` | TCP | SMTP - receiving mail from external servers |
+| `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication. Read our [Security Assessment WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
+
+#### Inbound VM Access (your administrative machine to the HIN Gateway VM)
+
+!!! info
+    These firewall rules should be applied only between your administrative machine and the HIN Gateway VM. There is no need to expose these ports to the Internet.
+
+| Port | Protocol | Purpose |
+| :--- | :------: | :------ |
+| `80` | TCP | Redirects HTTP traffic to HTTPS |
+| `443` | TCP | Used to manage the HIN Gateway through the web dashboard |
+| `8180` | TCP | Used by Keycloak to authenticate users for the HIN Gateway dashboard |
+| `8190` | TCP | Optional. Required for troubleshooting and viewing logs |
+| `22` | TCP | Optional. Required for troubleshooting and modifying configuration |
+
+#### Outbound Network Access (server must reach)
+
+| Destination | Port | Protocol | Purpose |
+| :---------- | :--: | :------: | :------ |
+| hub.docker.com | `443` | TCP | Docker image registry |
+| mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Remote sealer service |
+| smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | S/MIME CA service |
+| loki.example.com | `443` | TCP | Log shipping (Alloy → Loki, optional) |
+| Update Server of alpine, almalinux, etc. | `80` | TCP | Various Update servers |
+| Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
+| Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
+| NTP servers | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
+| WireGuard peers (HIN network) | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication |
+| `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | HIN KERI witness pool - required for agent identity verification (idagent / watcher) |
+| `app.hin.ch` | `443` | TCP | HIN member / mail-domain list (mtaconf) |
+
 ??? tip "Firewall note"
 
     Depending on your firewall or NAT configuration, you may need to explicitly allow traffic for the required ports. Refer to your firewall and NAT documentation for details.
@@ -127,40 +161,6 @@ The following items must be available or confirmed before the installation:
     # HTTPS
     iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT
     ```
-
-| Port | Protocol | Purpose |
-| :--- | :------: | :------ |
-| `25` | TCP | SMTP - receiving mail from external servers |
-| `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication. Read our [Security Assessment WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
-
-#### Inbound VM Access (your administrative machine to the HIN Gateway VM)
-
-!!! info
-    These firewall rules should be applied only between your administrative machine and the HIN Gateway VM. There is no need to expose these ports to the Internet.
-
-| Port | Protocol | Purpose |
-| :--- | :------: | :------ |
-| `80` | TCP | Redirects HTTP traffic to HTTPS |
-| `443` | TCP | Used to manage the HIN Gateway through the web dashboard |
-| `8180` | TCP | Used by Keycloak to authenticate users for the HIN Gateway dashboard |
-| `8190` | TCP | Optional. Required for troubleshooting and viewing logs |
-| `22` | TCP | Optional. Required for troubleshooting and modifying configuration |
-
-#### Outbound Network Access (server must reach)
-
-| Destination | Port | Protocol | Purpose |
-| :---------- | :--: | :------: | :------ |
-| hub.docker.com | `443` | TCP | Docker image registry |
-| mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Remote sealer service |
-| smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | S/MIME CA service |
-| loki.example.com | `443` | TCP | Log shipping (Alloy → Loki, optional) |
-| Update Server of alpine, almalinux, etc. | `80` | TCP | Various Update servers |
-| Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
-| Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
-| NTP servers | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
-| WireGuard peers (HIN network) | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication |
-| `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | HIN KERI witness pool - required for agent identity verification (idagent / watcher) |
-| `app.hin.ch` | `443` | TCP | HIN member / mail-domain list (mtaconf) |
 
 ## Contact us
 
