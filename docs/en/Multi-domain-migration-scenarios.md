@@ -13,7 +13,7 @@
 
 !!! info "Pre-flight checklist"
     - Establish a baseline for the current MGW capacity and mail-flow logs.
-    - Validate HIN Gateway connectivity to Online Protect, Exchange Online, and the on-premises email server.
+    - Validate HIN Gateway connectivity to Online Protect, Exchange Online, and the on-premises e-mail server.
     - Align stakeholders on the migration schedule and communication plan.
     - Review firewall/port documentation ahead of Public IP B provisioning (Phase 2, step 1)
 
@@ -34,7 +34,7 @@
     - **Keep an ordered change log** of every connector and rule modification. A rollback must apply these changes in reverse order.
 
 !!! warning "Watch for customer-specific headers"
-    Some domains rely on custom X-headers (routing, anti-spam allow-lists, compliance tags). Confirm that the HIN Gateway connectors preserve or replicate these headers before migrating a domain. Missing headers may result in incorrect routing or rejected emails.
+    Some domains rely on custom X-headers (routing, anti-spam allow-lists, compliance tags). Confirm that the HIN Gateway connectors preserve or replicate these headers before migrating a domain. Missing headers may result in incorrect routing or rejected e-mails.
 
 ![Phase 2 Migration - gradual, domain-by-domain](assets/multi-domain-scenario/Phase2-migration-domain-by-domain.png)
 
@@ -47,11 +47,11 @@
 
 !!! note "Clean-up checklist"
     - Remove the old MGW connectors and mail-flow rules
-    - Decommission the MGW VM once monitoring confirms that it is receiving no traffic and that email flow is functioning correctly 
+    - Decommission the MGW VM once monitoring confirms that it is receiving no traffic and that e-mail flow is functioning correctly 
     - Release **Public IP A** if no longer required
     - Update runbooks and DNS documentation
 
-![Phase 2 Migration - gradual, domain-by-domain](Phase3-final-fully-migrated.png)
+![Phase 3 Final - fully migrated to HIN Gateway](assets/multi-domain-scenario/Phase3-final-fully-migrated.png)
 
 ## Migration strategy comparison
 

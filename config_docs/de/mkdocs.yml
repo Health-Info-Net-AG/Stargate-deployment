@@ -175,6 +175,7 @@ nav:
   - Installationsanleitungen:
       - Einzelne Domain, M365: Installation-guide.md
   #      - Neukunden: New-customers.md
+      - Szenario für die Migration mehrerer Domains: Multi-domain-migration-scenarios.md
   - Technische Konfiguration und Integration:
       - Anwendungsübersicht: Applications.md
       - Überwachung und Logs: Monitoring.md
