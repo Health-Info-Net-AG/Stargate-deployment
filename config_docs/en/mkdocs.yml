@@ -2,7 +2,7 @@ site_name: HIN Gateway - Software and Documentation
 site_url: https://Health-Info-Net-AG.github.io/stargate-deployment/
 site_author: HIN AG
 site_description: >-
-  Stargate deployment User documentation. Docker, Helmcharts, Virtual Machine, Azure, etc.
+  HIN Gateway deployment User documentation. Docker, Helmcharts, Virtual Machine, Azure, etc.
 
 docs_dir: "../../docs/en"
 site_dir: "../../site/en"
@@ -72,8 +72,8 @@ plugins:
       redirect_maps:
         "vm/VM-images-list.md": "vm/VM-Catalog.md"
         "Testing.md": "index.md"
-#        'old/file.md': 'new/file.md'
-#        'some_file.md': 'http://external.url.com/foobar'
+  #        'old/file.md': 'new/file.md'
+  #        'some_file.md': 'http://external.url.com/foobar'
   - print-site
 
 # Additional configuration
@@ -172,7 +172,7 @@ nav:
   - Home: index.md
   - Installation Guides:
       - HIN Gateway–Technical Guide for New Installation and Migration: Installation-guide.md
-  #      - New Customers: New-customers.md
+      #      - New Customers: New-customers.md
       - Multi-Domain Scenarios and Recommendation: Multi-domain-migration-scenarios.md
   - Technical configuration and Integration:
       - Applications overview: Applications.md

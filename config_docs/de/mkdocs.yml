@@ -2,7 +2,7 @@ site_name: HIN Gateway - Software und Dokumentation
 site_url: https://Health-Info-Net-AG.github.io/stargate-deployment/
 site_author: HIN AG
 site_description: >-
-  Stargate Einrichtung Nutzer Dokumentation. Docker, Helmcharts, Virtual Machine, Azure, usw.
+  HIN Gateway Einrichtung Nutzer Dokumentation. Docker, Helmcharts, Virtual Machine, Azure, usw.
 
 docs_dir: "../../docs/de"
 site_dir: "../../site/de"
@@ -72,8 +72,8 @@ plugins:
       redirect_maps:
         "vm/VM-images-list.md": "vm/VM-Catalog.md"
         "Testing.md": "index.md"
-#        'old/file.md': 'new/file.md'
-#        'some_file.md': 'http://external.url.com/foobar'
+  #        'old/file.md': 'new/file.md'
+  #        'some_file.md': 'http://external.url.com/foobar'
   - print-site
 
 # Additional configuration
@@ -148,8 +148,8 @@ markdown_extensions:
   - pymdownx.smartsymbols
   - pymdownx.snippets:
       check_paths: true
-#     auto_append:
-#        - docs/de/includes/mkdocs.md
+  #     auto_append:
+  #        - docs/de/includes/mkdocs.md
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -174,7 +174,7 @@ nav:
   - Startseite: index.md
   - Installationsanleitungen:
       - Einzelne Domain, M365: Installation-guide.md
-  #      - Neukunden: New-customers.md
+      #      - Neukunden: New-customers.md
       - Szenario für die Migration mehrerer Domains: Multi-domain-migration-scenarios.md
   - Technische Konfiguration und Integration:
       - Anwendungsübersicht: Applications.md
