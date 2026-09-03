@@ -125,7 +125,7 @@ trap 'rm -f "$TMP_PROD" "$TMP_PREV"' EXIT
 
 versions_for_ref "$TAG" > "$TMP_PROD" || true
 
-echo "## Stargate release ${TAG}"
+echo "## HIN Gateway release ${TAG}"
 echo
 echo "Tagged at \`${SHORT_SHA}\` — ${SUBJECT}"
 echo

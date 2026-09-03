@@ -1,8 +1,8 @@
 SVDH Local Development Environment
 Docker Compose setup for running SVDH services.
-All the scripts provided in this project are developed by Vereign AG 
-with a purpuse to install and configure Stargate related applications
-using Docker images. 
+All the scripts provided in this project are developed by Vereign AG
+with a purpuse to install and configure HIN Gateway related applications
+using Docker images.
 
 Copyright (C) 2026 Vereign AG
 Dammstrasse 16, 6300 Zug, Switzerland

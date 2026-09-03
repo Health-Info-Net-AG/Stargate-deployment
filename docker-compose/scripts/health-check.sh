@@ -1,8 +1,8 @@
 #!/bin/bash
 # ==============================================================================
-# Stargate Health Check
+# HIN Gateway Health Check
 # ==============================================================================
-# Performs a comprehensive health check of all Stargate services.
+# Performs a comprehensive health check of all HIN Gateway services.
 # Exit code: 0 = all healthy, 1 = one or more issues found.
 
 PASS=0
@@ -22,7 +22,7 @@ warn() { echo "  [WARN] $1"; WARN=$((WARN + 1)); }
 fail() { echo "  [FAIL] $1"; FAIL=$((FAIL + 1)); }
 
 echo "============================================"
-echo "  Stargate Health Check"
+echo "  HIN Gateway Health Check"
 echo "============================================"
 echo ""
 

@@ -2,7 +2,7 @@
 # =============================================================================
 # Stalwart Provision Script (Docker Compose)
 # =============================================================================
-# Idempotently provisions Stalwart for the Stargate deployment:
+# Idempotently provisions Stalwart for the HIN Gateway deployment:
 #   1. Creates network listeners (SMTP, reinject, management HTTP)
 #   2. Enables a Stdout tracer (docker stdout) + disables the built-in file tracer
 #   3. Ensures the service domain exists

@@ -42,7 +42,7 @@ reset_stateful_storage() {
 usage() {
   echo "Usage: $0 [--yes|-y] <backup-file.tar.gz>"
   echo ""
-  echo "Restore Stargate from a backup archive."
+  echo "Restore HIN Gateway from a backup archive."
   echo ""
   echo "Arguments:"
   echo "  backup-file.tar.gz  Path to the backup archive (absolute or relative)"
@@ -103,7 +103,7 @@ if [ ! -f "$BACKUP_FILE" ]; then
 fi
 
 echo "============================================"
-echo "  Stargate Restore"
+echo "  HIN Gateway Restore"
 echo "============================================"
 echo ""
 echo "Backup file: $BACKUP_FILE"
@@ -376,7 +376,7 @@ fi
 
 cat > "$ENV_FILE" << EOF
 # ==============================================================================
-# Stargate Environment Configuration
+# HIN Gateway Environment Configuration
 # ==============================================================================
 # Restored from backup on $(date)
 # Customer: $CUSTOMER_NAME

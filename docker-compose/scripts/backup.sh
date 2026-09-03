@@ -59,7 +59,7 @@ S3_BUCKET_NAME="${S3_BUCKET_NAME:-stargate-bucket}"
 AWS_CLI_IMAGE="amazon/aws-cli:2.27.31"
 
 echo "============================================"
-echo "  Stargate Full Backup"
+echo "  HIN Gateway Full Backup"
 echo "============================================"
 echo ""
 echo "Timestamp: $TIMESTAMP"

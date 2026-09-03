@@ -1,4 +1,4 @@
-# Docker Compose configuration for Stargate Alpha environment
+# Docker Compose configuration for HIN Gateway Alpha environment
 services:
   # ===================
   # Infrastructure
@@ -857,7 +857,7 @@ services:
       HOSPITAL_DATA_CACHE_TTL_SECONDS: "21600"
       CUSTOMER_DEVICE_DATA_CACHE_TTL_SECONDS: "21600"
 
-      # Stargate deployment release tag (server-side; read at runtime).
+      # HIN Gateway deployment release tag (server-side; read at runtime).
       APP_VERSION: "${APP_VERSION:-unknown}"
 
       # Base URL used by the auth library to construct the OAuth redirect_uri.
