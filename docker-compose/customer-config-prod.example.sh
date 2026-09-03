@@ -1,6 +1,6 @@
 #!/bin/bash
 # ==============================================================================
-# Stargate Customer Configuration - TEMPLATE
+# HIN Gateway Customer Configuration - TEMPLATE
 # ==============================================================================
 # Copy this file to customer-config.sh and fill in your values:
 #   cp customer-config-prod.example.sh customer-config.sh
@@ -178,7 +178,7 @@ MTACONF_SVC_PASSWORD=""  # Auto-generated if empty
 # ==============================================================================
 # OPTIONAL: Dozzle - Real-time Log Viewer
 # ==============================================================================
-# Dozzle provides a web UI to view live logs from all Stargate containers.
+# Dozzle provides a web UI to view live logs from all HIN Gateway containers.
 # When enabled it is published at DOZZLE_PUBLIC_URL (default
 # https://<SERVER_STATIC_IP>:8190) behind oauth2-proxy, which authenticates
 # against the same Keycloak realm as the dashboard. Log in with any user from

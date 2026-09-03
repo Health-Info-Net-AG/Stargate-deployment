@@ -1,5 +1,5 @@
 # Loki local configuration - single-binary mode with filesystem storage
-# Retention: 7 days, optimized for low-resource Stargate deployments
+# Retention: 7 days, optimized for low-resource HIN Gateway deployments
 
 auth_enabled: false
 

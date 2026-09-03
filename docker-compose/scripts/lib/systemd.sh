@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# Shared library: systemd service management for the Stargate stack.
+# Shared library: systemd service management for the HIN Gateway stack.
 #
 # Sourced by install.sh and restore.sh -- NOT meant to be executed directly.
 # The sourcing script must have already set:
@@ -22,7 +22,7 @@ setup_systemd_service() {
 
   cat > "$service_file" << EOF
 [Unit]
-Description=Stargate Deployment
+Description=HIN Gateway Deployment
 After=docker.service network-online.target
 Wants=network-online.target
 Requires=docker.service

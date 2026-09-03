@@ -2,7 +2,7 @@
 set -eo pipefail
 
 # ==============================================================================
-# Stargate Update Script
+# HIN Gateway Update Script
 # ==============================================================================
 # Re-reads customer-config.sh, regenerates .env, and restarts all services.
 # Can also jump the deployment repo itself to a specific tested release.
@@ -200,7 +200,7 @@ if [ -n "$RELEASE_TAG" ]; then
 fi
 
 echo "============================================"
-echo "  Stargate Configuration Update"
+echo "  HIN Gateway Configuration Update"
 if [ -n "${STARGATE_UPDATE_RELEASE:-}" ]; then
   echo "  (continuing --release $STARGATE_UPDATE_RELEASE)"
 fi

@@ -16,7 +16,7 @@ cd "$PROJECT_DIR"
 export APP_VERSION="$(detect_app_version "$PROJECT_DIR")"
 
 echo "============================================"
-echo "  Stargate - Starting Services ($APP_VERSION)"
+echo "  HIN Gateway - Starting Services ($APP_VERSION)"
 echo "============================================"
 echo ""
 

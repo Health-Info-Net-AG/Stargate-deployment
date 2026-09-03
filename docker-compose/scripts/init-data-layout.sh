@@ -32,7 +32,7 @@ init_data_layout() {
   # mountpoint(1)/findmnt(1), so a missing util-linux can't be misread as "not mounted".
   if [ -z "${STARGATE_DATA_DIR:-}" ] && ! awk -v t="$DATA_DIR" '$5==t{f=1} END{exit !f}' /proc/self/mountinfo 2>/dev/null; then
     echo "WARNING: no dedicated data disk mounted at $DATA_DIR -- falling back to the filesystem in boot disk." >&2
-    echo "         All Stargate state will live on the boot disk. This is fine for single-disk VMs;" >&2
+    echo "         All HIN Gateway state will live on the boot disk. This is fine for single-disk VMs;" >&2
     echo "         attach a VEREIGN-DATA disk to keep state on a separate, independently sized volume." >&2
   fi
 

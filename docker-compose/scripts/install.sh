@@ -263,7 +263,7 @@ load_customer_config() {
 
   LOKI_URL="${LOKI_URL:-}"
 
-  # Stargate deployment release tag — auto-detected from git on this repo
+  # HIN Gateway deployment release tag — auto-detected from git on this repo
   APP_VERSION="$(detect_app_version "$PROJECT_DIR")"
 
   # Keycloak / APISIX / Dashboard
@@ -313,7 +313,7 @@ generate_env_file() {
 
   cat > "$ENV_FILE" << EOF
 # ==============================================================================
-# Stargate Environment Configuration
+# HIN Gateway Environment Configuration
 # ==============================================================================
 # Generated from customer-config.sh on $(date)
 # Customer: $CUSTOMER_NAME
@@ -381,7 +381,7 @@ DASHBOARD_SHOW_DEV_PAGES="$DASHBOARD_SHOW_DEV_PAGES"
 DASHBOARD_ROOT_URL="$DASHBOARD_ROOT_URL"
 DASHBOARD_ROOT_DOMAIN="$DASHBOARD_ROOT_DOMAIN"
 
-# Stargate deployment release tag (refreshed by start.sh on every boot)
+# HIN Gateway deployment release tag (refreshed by start.sh on every boot)
 APP_VERSION="$APP_VERSION"
 
 # WireGuard Local Configuration
@@ -491,7 +491,7 @@ setup_backup_cron() {
   # environment; rewriting it on every run keeps it idempotent.
   local cron_file="/etc/cron.d/stargate-backup"
   cat > "$cron_file" << EOF
-# Stargate daily backup -- managed by install.sh, do not edit by hand.
+# HIN Gateway daily backup -- managed by install.sh, do not edit by hand.
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 0 2 * * * root $BACKUP_SCRIPT >> $BACKUP_DIR/cron.log 2>&1
@@ -643,7 +643,7 @@ if [ -f "$KEYS_FILE" ]; then
   # human running this on the console gets the banner and the error guidance.
   if [ "$INTERACTIVE" = "1" ]; then
     echo "============================================"
-    echo "  Stargate Installation"
+    echo "  HIN Gateway Installation"
     echo "============================================"
     echo ""
     echo "ERROR: Installation already completed."
@@ -658,7 +658,7 @@ fi
 
 # Fresh install -- show the banner for both manual and boot runs.
 echo "============================================"
-echo "  Stargate Installation"
+echo "  HIN Gateway Installation"
 echo "============================================"
 echo ""
 
