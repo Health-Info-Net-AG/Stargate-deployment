@@ -1,11 +1,11 @@
-# DNS Setup for Stargate
+# DNS Setup for HIN Gateway
 
-This guide covers all DNS records required for a working Stargate deployment. Configure these records **before** installing Stargate or immediately after, depending on the record type.
+This guide covers all DNS records required for a working HIN Gateway deployment. Configure these records **before** installing HIN Gateway or immediately after, depending on the record type.
 
 Throughout this guide:
 
-- `<STARGATE_IP>` - your Stargate server's public static IP address (`SERVER_STATIC_IP` in `customer-config.sh`)
-- `<MAIL_HOSTNAME>` - the FQDN of the Stargate relay (e.g. `mail.example.ch`; configured via the dashboard's `/mail` page)
+- `<HIN_GATEWAY_IP>` - your HIN Gateway server's public static IP address (`SERVER_STATIC_IP` in `customer-config.sh`)
+- `<MAIL_HOSTNAME>` - the FQDN of the HIN Gateway relay (e.g. `mail.example.ch`; configured via the dashboard's `/mail` page)
 - `<YOUR_DOMAIN>` - your mail domain (e.g. `example.ch`; configured via the dashboard's `/mail` page)
 
 ---
@@ -13,11 +13,11 @@ Throughout this guide:
 ## Record Summary
 
 | Record | Name | Value | Required | When |
-|--------|------|-------|----------|------|
-| [A](#a-record) | `<MAIL_HOSTNAME>` | `<STARGATE_IP>` | Yes | Before install |
+| -------- | ------ | ------- | ---------- | ------ |
+| [A](#a-record) | `<MAIL_HOSTNAME>` | `<HIN_GATEWAY_IP>` | Yes | Before install |
 | [MX](#mx-records) | `<YOUR_DOMAIN>` | `<MAIL_HOSTNAME>` (priority 15) | Yes | Before install |
-| [SPF](#spf-record) | `<YOUR_DOMAIN>` | `ip4:<STARGATE_IP>` added to TXT | Yes | Before install |
-| [PTR](#ptr-reverse-dns) | `<STARGATE_IP>` | `<MAIL_HOSTNAME>` | Recommended | Before install |
+| [SPF](#spf-record) | `<YOUR_DOMAIN>` | `ip4:<HIN_GATEWAY_IP>` added to TXT | Yes | Before install |
+| [PTR](#ptr-reverse-dns) | `<HIN_GATEWAY_IP>` | `<MAIL_HOSTNAME>` | Recommended | Before install |
 | [DMARC](#dmarc-record) | `_dmarc.<YOUR_DOMAIN>` | `v=DMARC1; p=none; ...` | Recommended | After install |
 | [DKIM](#dkim-records) | `selector._domainkey.<YOUR_DOMAIN>` | From M365/provider | Recommended | After install |
 
@@ -29,10 +29,10 @@ For multi-domain deployments, repeat the MX, SPF, DMARC, and DKIM records for ea
 
 ### A Record
 
-Create an A record pointing the Stargate mail hostname to the server's public IP:
+Create an A record pointing the HIN Gateway mail hostname to the server's public IP:
 
 ```plain
-<MAIL_HOSTNAME>.    A    <STARGATE_IP>
+<MAIL_HOSTNAME>.    A    <HIN_GATEWAY_IP>
 ```
 
 Example:
@@ -41,7 +41,7 @@ Example:
 mail.example.ch.    A    128.140.117.200
 ```
 
-If the Stargate has an IPv6 address, add an AAAA record as well:
+If the HIN Gateway has an IPv6 address, add an AAAA record as well:
 
 ```plain
 mail.example.ch.    AAAA    2a01:4f8:c012:1234::1
@@ -51,7 +51,7 @@ mail.example.ch.    AAAA    2a01:4f8:c012:1234::1
 
 ### MX Records
 
-Add an MX record for the Stargate with a **higher priority** (lower number) than the existing mail server. This ensures inbound mail reaches the Stargate first for S/MIME processing before being forwarded to Exchange or your mail platform.
+Add an MX record for the HIN Gateway with a **higher priority** (lower number) than the existing mail server. This ensures inbound mail reaches the HIN Gateway first for S/MIME processing before being forwarded to Exchange or your mail platform.
 
 ```plain
 <YOUR_DOMAIN>.    MX    15    <MAIL_HOSTNAME>.
@@ -71,26 +71,26 @@ example.ch.    MX    20    example-ch.mail.protection.outlook.com.
 ```
 
 !!! info
-    The lower MX number means higher priority. Stargate at priority 15 receives mail before Exchange Online at priority 20.
+    The lower MX number means higher priority. HIN Gateway at priority 15 receives mail before Exchange Online at priority 20.
 
-**Why**: The Stargate intercepts inbound mail, processes S/MIME, then forwards to the next MX (Exchange). The second MX record is also used by Stalwart to know where to relay processed mail.
+**Why**: The HIN Gateway intercepts inbound mail, processes S/MIME, then forwards to the next MX (Exchange). The second MX record is also used by Stalwart to know where to relay processed mail.
 
-**Important**: If the Stargate is the **only** MX record for a domain, Stalwart will filter out its own hostname and have no delivery target. Always keep a second MX pointing to your actual mail server.
+**Important**: If the HIN Gateway is the **only** MX record for a domain, Stalwart will filter out its own hostname and have no delivery target. Always keep a second MX pointing to your actual mail server.
 
 ### SPF Record
 
-Add the Stargate server IP **and the HIN sealer IP** to your domain's SPF record so outbound mail relayed through it passes SPF checks at the recipient's end.
+Add the HIN Gateway server IP **and the HIN sealer IP** to your domain's SPF record so outbound mail relayed through it passes SPF checks at the recipient's end.
 
 **If you use M365 / Exchange Online:**
 
 ```plain
-<YOUR_DOMAIN>.    TXT    "v=spf1 ip4:<STARGATE_IP> ip4:<HIN_SEALER_IP> include:spf.protection.outlook.com -all"
+<YOUR_DOMAIN>.    TXT    "v=spf1 ip4:<HIN_GATEWAY_IP> ip4:<HIN_SEALER_IP> include:spf.protection.outlook.com -all"
 ```
 
 **If you do not use M365 / Google Workspace:**
 
 ```plain
-<YOUR_DOMAIN>.    TXT    "v=spf1 ip4:<STARGATE_IP> ip4:<HIN_SEALER_IP> -all"
+<YOUR_DOMAIN>.    TXT    "v=spf1 ip4:<HIN_GATEWAY_IP> ip4:<HIN_SEALER_IP> -all"
 ```
 
 Example:
@@ -100,7 +100,7 @@ example.ch.    TXT    "v=spf1 ip4:128.140.117.200 ip4:193.247.208.66 include:spf
 ```
 
 !!! question "Why the HIN sealer IP is required"
-    When the Stargate produces a SEAL'd (encrypted) message for a non-HIN recipient, the final outbound hop to the recipient is the **HIN sealer**, not your Stargate or M365. Without the sealer IP in your SPF record, every SEAL'd outbound message will fail SPF at the recipient and - because there is no DKIM signature on the SEAL'd payload - DMARC will fail too. Strict-DMARC recipients (Gmail, Outlook with `p=reject` enforcement, Proofpoint) will reject or junk the message.
+    When the HIN Gateway produces a SEAL'd (encrypted) message for a non-HIN recipient, the final outbound hop to the recipient is the **HIN sealer**, not your HIN Gateway or M365. Without the sealer IP in your SPF record, every SEAL'd outbound message will fail SPF at the recipient and - because there is no DKIM signature on the SEAL'd payload - DMARC will fail too. Strict-DMARC recipients (Gmail, Outlook with `p=reject` enforcement, Proofpoint) will reject or junk the message.
 
     Sealer IPs to add in SPF:
 
@@ -114,7 +114,7 @@ example.ch.    TXT    "v=spf1 ip4:128.140.117.200 ip4:193.247.208.66 include:spf
 !!! warning "SPF lookup limit"
     The total `include:` chain in an SPF record must stay under **10 DNS lookups**. Adding `ip4:` entries does not count toward this limit. Check your count with [MXToolbox SPF lookup](https://mxtoolbox.com/spf.aspx).
 
-**How the Stargate uses SPF**: The mtaconf daemon resolves each domain's SPF record to auto-populate the list of IPs allowed to relay through the Stargate without authentication. This is how Microsoft 365 outbound IPs get whitelisted automatically - they appear in the `include:spf.protection.outlook.com` chain.
+**How the HIN Gateway uses SPF**: The mtaconf daemon resolves each domain's SPF record to auto-populate the list of IPs allowed to relay through the HIN Gateway without authentication. This is how Microsoft 365 outbound IPs get whitelisted automatically - they appear in the `include:spf.protection.outlook.com` chain.
 
 ---
 
@@ -122,7 +122,7 @@ example.ch.    TXT    "v=spf1 ip4:128.140.117.200 ip4:193.247.208.66 include:spf
 
 ### PTR (Reverse DNS)
 
-Configure the reverse DNS (PTR) record for the Stargate IP to match `<MAIL_HOSTNAME>`:
+Configure the reverse DNS (PTR) record for the HIN Gateway IP to match `<MAIL_HOSTNAME>`:
 
 ```plain
 200.117.140.128.in-addr.arpa.    PTR    mail.example.ch.
@@ -183,17 +183,17 @@ For deployments handling multiple mail domains (configured via the dashboard's `
 For each configured domain:
 
 | Record | Required |
-|--------|----------|
+| -------- | ---------- |
 | MX pointing to `<MAIL_HOSTNAME>` | Yes |
-| SPF including `ip4:<STARGATE_IP>` | Yes |
+| SPF including `ip4:<HIN_GATEWAY_IP>` | Yes |
 | DMARC (`_dmarc.<domain>`) | Recommended |
 | DKIM (from your mail provider) | Recommended |
 
-The A record and PTR record are shared (they point to the Stargate server, not to individual domains).
+The A record and PTR record are shared (they point to the HIN Gateway server, not to individual domains).
 
 ### Per-Domain Mail Routing
 
-Each domain's MX records tell the Stargate where to deliver processed mail. If different domains use different Exchange servers:
+Each domain's MX records tell the HIN Gateway where to deliver processed mail. If different domains use different Exchange servers:
 
 ```plain
 domain1.ch    MX    15    mail.domain1.ch.
@@ -214,23 +214,23 @@ After configuring all records, verify them:
 ```bash
 # A record
 host <MAIL_HOSTNAME>
-# Expected: <MAIL_HOSTNAME> has address <STARGATE_IP>
+# Expected: <MAIL_HOSTNAME> has address <HIN_GATEWAY_IP>
 
 # MX records
 host -t mx <YOUR_DOMAIN>
-# Expected: Both Stargate and Exchange MX records listed
+# Expected: Both HIN Gateway and Exchange MX records listed
 
 # SPF record
 host -t txt <YOUR_DOMAIN> | grep v=spf1
-# Expected: SPF record includes ip4:<STARGATE_IP>
+# Expected: SPF record includes ip4:<HIN_GATEWAY_IP>
 
 # PTR (reverse DNS)
-host <STARGATE_IP>
-# Expected: <STARGATE_IP> → <MAIL_HOSTNAME>
+host <HIN_GATEWAY_IP>
+# Expected: <HIN_GATEWAY_IP> → <MAIL_HOSTNAME>
 
 # Forward-confirmed reverse DNS (FCrDNS)
-host $(host <STARGATE_IP> | awk '{print $NF}' | sed 's/\.$//')
-# Expected: resolves back to <STARGATE_IP>
+host $(host <HIN_GATEWAY_IP> | awk '{print $NF}' | sed 's/\.$//')
+# Expected: resolves back to <HIN_GATEWAY_IP>
 
 # DMARC
 host -t txt _dmarc.<YOUR_DOMAIN>
@@ -283,17 +283,17 @@ Reload the mail configuration via the dashboard's `/mail` page (submit the confi
 
 ### Mail flagged as spam / "can't verify sender"
 
-- SPF is missing or does not include the Stargate IP - add `ip4:<STARGATE_IP>` to your SPF record
+- SPF is missing or does not include the HIN Gateway IP - add `ip4:<HIN_GATEWAY_IP>` to your SPF record
 - DMARC is not published - add at least `v=DMARC1; p=none`
 - PTR record is missing or mismatched - configure reverse DNS at your hosting provider
 - DKIM is not enabled in your M365/provider tenant
 
-### MX lookup returns only the Stargate
+### MX lookup returns only the HIN Gateway
 
-If the Stargate is the only MX for a domain, Stalwart filters out its own hostname and has no relay target. Add a second MX record pointing to your mail server:
+If the HIN Gateway is the only MX for a domain, Stalwart filters out its own hostname and has no relay target. Add a second MX record pointing to your mail server:
 
 ```plain
-example.ch.    MX    15    mail.example.ch.          ← Stargate (inbound)
+example.ch.    MX    15    mail.example.ch.          ← HIN Gateway (inbound)
 example.ch.    MX    20    example-ch.mail.protection.outlook.com.  ← Exchange (relay target)
 ```
 
@@ -307,4 +307,4 @@ Each `include:` in the SPF record triggers additional DNS lookups. The total cha
 
 ### Port 25 blocked by hosting provider
 
-Some cloud providers (Azure, certain Hetzner plans) block outbound port 25 by default. Check with your provider and request an exception. This affects both inbound delivery (external servers connecting to your Stargate) and outbound relay (Stargate delivering to MX targets).
+Some cloud providers (Azure, certain Hetzner plans) block outbound port 25 by default. Check with your provider and request an exception. This affects both inbound delivery (external servers connecting to your HIN Gateway) and outbound relay (HIN Gateway delivering to MX targets).

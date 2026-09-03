@@ -131,7 +131,7 @@ Klicken Sie auf "+Regel hinzufügen" --> "Neue Regel erstellen".
 
 ![Screenshot](./assets/new_transport_rule1.png)
 
-Benennen Sie sie z.B. "Alle E-Mails an Stargate weiterleiten, außer E-Mails von diesem", wählen Sie "Regel anwenden, wenn" "Der Empfänger:" "ist extern/intern" "Außerhalb der Organisation", klicken Sie auf "Speichern".
+Benennen Sie sie z.B. "Alle E-Mails an HIN Gateway weiterleiten, außer E-Mails von diesem", wählen Sie "Regel anwenden, wenn" "Der Empfänger:" "ist extern/intern" "Außerhalb der Organisation", klicken Sie auf "Speichern".
 
 ![Screenshot](./assets/new_transport_rule2.png)
 

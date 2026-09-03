@@ -2,7 +2,6 @@
 
 *MGW → HIN Gateway – Architektur des E-Mail-Flusses, schrittweiser Umzug und Rollback-Plan*
 
-
 ## Phase 1 Start – Ausgangslage (alle Domains auf MGW)
 
 **Ausgangszustand**
@@ -13,7 +12,7 @@
 
 !!! info "Checkliste vor der Migration"
     - Baseline: aktuelle MGW-Kapazität und E-Mail-Verlaufsprotokolle
-    - Verbindung von Stargate Lab zu Online Protect / Exchange Online / dem lokalen E-Mail-Server überprüfen
+    - Verbindung von HIN Gateway Lab zu Online Protect / Exchange Online / dem lokalen E-Mail-Server überprüfen
     - Beteiligte über Migrationszeitplan und Kommunikationsplan informieren
     - Dokumentation zu Firewall und Ports vor der Bereitstellung der öffentlichen IP B (Phase 2, Schritt 1) überprüfen
 
@@ -24,7 +23,7 @@
 **Migrationsschritte**
 
 1. **Einrichtung** des HIN&nbsp;Gateways – `Public IP B` zuweisen und Firewall-Regeln anpassen (die erforderlichen Ports sind der Netzwerkdokumentation zu entnehmen)
-2. **Erstellen Sie zwei Konnektoren** in Exchange Online – einen für eingehenden und einen für ausgehenden Datenverkehr –, die auf Stargate verweisen
+2. **Erstellen Sie zwei Konnektoren** in Exchange Online – einen für eingehenden und einen für ausgehenden Datenverkehr –, die auf HIN Gateway verweisen
 3. **Fügen Sie eine E-Mail-Fluss-Regel hinzu,** die nach Domain weiterleitet: domain1.ch → HIN&nbsp;Gateway, alle übrigen Domains bleiben auf dem MGW
 4. **Schrittweise wiederholen** – jeweils eine weitere Domain umstellen, bis alle Domains auf dem HIN&nbsp;Gateway laufen
 
@@ -58,7 +57,7 @@
 !!! tip "Empfohlen – alle Domains auf einmal umziehen"
     - Keine zusätzliche Public IP erforderlich
     - Keine vorübergehenden Änderungen an Konnektoren oder E-Mail-Fluss-Regeln
-    - Einfaches Rollback: Stargate ausschalten, alte MGW-VM wieder einschalten
+    - Einfaches Rollback: HIN Gateway ausschalten, alte MGW-VM wieder einschalten
     - Kürzestes Umstellungsfenster – geringste Wahrscheinlichkeit von Konfigurationsabweichungen
 
 !!! note "Alternative – schrittweise, eine Domain nach der anderen"

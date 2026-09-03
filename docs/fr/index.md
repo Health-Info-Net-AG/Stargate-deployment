@@ -1,10 +1,10 @@
-# Instruction de déploiement Stargate
+# Instruction de déploiement HIN Gateway
 
 --8<-- "docs/assets/Translation_notice.md"
 
 ![Logo](assets/stargate_visual.png)
 
-[Qu'est-ce que Stargate ?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
+[Qu'est-ce que HIN Gateway ?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ## Démarrage rapide
 
@@ -22,11 +22,11 @@
 
 ### Intégration Exchange
 
-* [Intégration Exchange](Exchange-integration.md) - Configurez les connecteurs Microsoft Exchange (Online et On-Premises) et les règles de transport pour acheminer les courriels via Stargate
+* [Intégration Exchange](Exchange-integration.md) - Configurez les connecteurs Microsoft Exchange (Online et On-Premises) et les règles de transport pour acheminer les courriels via HIN Gateway
 
 ### Exigences du serveur
 
-|      | Minimum | Recommandé |
+|   | Minimum | Recommandé |
 | :--- | :-----: | :--------: |
 | CPU, Cœurs | 4 | 6 |
 | RAM, GB | 8 | 12 |
@@ -126,7 +126,7 @@
 
 !!! tip "Support"
 
-    Pour toute question ou problème lié au déploiement et au fonctionnement de l'appliance HIN Mail (Stargate), veuillez contacter le support HIN.
+    Pour toute question ou problème lié au déploiement et au fonctionnement de l'appliance HIN Gateway, veuillez contacter le support HIN.
 
     Veuillez inclure des informations pertinentes telles que le nom du client, la version de l'appliance, et des captures d'écran/[logs](./Docker-advanced.md#fournir-les-logs-au-support) le cas échéant, pour nous aider à traiter votre demande efficacement.
 

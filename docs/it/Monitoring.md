@@ -1,11 +1,11 @@
 # Monitoraggio e Log
 
-Stargate include servizi integrati di monitoraggio e raccolta log che vengono eseguiti insieme ai container delle applicazioni.
+HIN Gateway include servizi integrati di monitoraggio e raccolta log che vengono eseguiti insieme ai container delle applicazioni.
 
 ## Componenti
 
 | Servizio | Porta | Scopo |
-|---------|------|---------|
+| --------- | ------ | --------- |
 | node-exporter | `9100` | Metriche a livello host (CPU, memoria, disco, rete) per Prometheus |
 | version-collector | - | Raccoglie le versioni delle app dagli endpoint `/liveness` |
 | Alloy | `12345` | Collettore di log Docker - invia i log dei container a Loki |
@@ -17,7 +17,7 @@ Stargate include servizi integrati di monitoraggio e raccolta log che vengono es
 
 ## Dozzle - Visualizzatore di log locale
 
-Dozzle fornisce un'interfaccia web per visualizzare i log in tempo reale di tutti i container Stargate. È opzionale e abilitato impostando `DOZZLE_ENABLED="true"` in `customer-config.sh`.
+Dozzle fornisce un'interfaccia web per visualizzare i log in tempo reale di tutti i container HIN Gateway. È opzionale e abilitato impostando `DOZZLE_ENABLED="true"` in `customer-config.sh`.
 
 L'accesso è protetto da **Keycloak**: un `oauth2-proxy` si trova davanti a Dozzle e richiede lo stesso login del dashboard (il realm `stargate`). Dozzle stesso non è esposto direttamente.
 
@@ -34,11 +34,11 @@ I log sono organizzati per servizio. Selezionando un servizio specifico, è poss
 
 ## Grafana Alloy - Inoltro log
 
-Grafana Alloy raccoglie i log da tutti i container delle applicazioni Stargate e li scrive nell'istanza Loki locale. Opzionalmente, i log possono anche essere inoltrati a un endpoint remoto compatibile con Loki per il monitoraggio centralizzato.
+Grafana Alloy raccoglie i log da tutti i container delle applicazioni HIN Gateway e li scrive nell'istanza Loki locale. Opzionalmente, i log possono anche essere inoltrati a un endpoint remoto compatibile con Loki per il monitoraggio centralizzato.
 
 ### Come funziona
 
-1. Alloy scopre i container Stargate tramite il socket Docker
+1. Alloy scopre i container HIN Gateway tramite il socket Docker
 2. I log vengono sempre scritti nell'istanza **Loki locale** (utilizzata dal dashboard per l'esportazione dei log)
 3. Se un URL Loki remoto è configurato, i log vengono **inoltrati anche** a quell'endpoint
 
@@ -61,18 +61,18 @@ Lasciare il campo vuoto per disabilitare l'inoltro log remoto.
 
 ### Requisiti lato remoto
 
-Il tuo endpoint Loki remoto deve essere raggiungibile dal server Stargate via HTTPS (porta 443). Se utilizzi l'inserimento in whitelist basato su IP sul tuo ingress, aggiungi l'IP pubblico del server Stargate.
+Il tuo endpoint Loki remoto deve essere raggiungibile dal server HIN Gateway via HTTPS (porta 443). Se utilizzi l'inserimento in whitelist basato su IP sul tuo ingress, aggiungi l'IP pubblico del server HIN Gateway.
 
 ---
 
 ## Metriche Prometheus
 
-Stargate espone endpoint di metriche compatibili con Prometheus dai suoi container applicativi. Questi possono essere raccolti da qualsiasi server compatibile con Prometheus per la raccolta centralizzata delle metriche.
+HIN Gateway espone endpoint di metriche compatibili con Prometheus dai suoi container applicativi. Questi possono essere raccolti da qualsiasi server compatibile con Prometheus per la raccolta centralizzata delle metriche.
 
 ### Endpoint disponibili
 
 | Servizio | Porta | Percorso |
-|---------|------|------|
+| --------- | ------ | ------ |
 | smimekeys-client | `2113` | `/metrics` |
 | irisagent | `2114` | `/metrics` |
 | policy | `2115` | `/metrics` |
@@ -82,13 +82,13 @@ Stargate espone endpoint di metriche compatibili con Prometheus dai suoi contain
 
 ### Configurazione di raccolta
 
-Aggiungi il server Stargate come target nella configurazione di Prometheus. Esempio per una singola istanza:
+Aggiungi il server HIN Gateway come target nella configurazione di Prometheus. Esempio per una singola istanza:
 
 ```yaml
 scrape_configs:
   - job_name: 'stargate-<nome>-smimekeys'
     static_configs:
-      - targets: ['<IP_STARGATE>:2113']
+      - targets: ['<IP_HIN_GATEWAY>:2113']
         labels:
           environment: 'stargate-<nome>'
           service: 'smimekeys-client'
@@ -96,7 +96,7 @@ scrape_configs:
 
   - job_name: 'stargate-<nome>-irisagent'
     static_configs:
-      - targets: ['<IP_STARGATE>:2114']
+      - targets: ['<IP_HIN_GATEWAY>:2114']
         labels:
           environment: 'stargate-<nome>'
           service: 'irisagent'
@@ -104,7 +104,7 @@ scrape_configs:
 
   - job_name: 'stargate-<nome>-policy'
     static_configs:
-      - targets: ['<IP_STARGATE>:2115']
+      - targets: ['<IP_HIN_GATEWAY>:2115']
         labels:
           environment: 'stargate-<nome>'
           service: 'policy'
@@ -112,7 +112,7 @@ scrape_configs:
 
   - job_name: 'stargate-<nome>-mxengine'
     static_configs:
-      - targets: ['<IP_STARGATE>:2116']
+      - targets: ['<IP_HIN_GATEWAY>:2116']
         labels:
           environment: 'stargate-<nome>'
           service: 'mxengine'
@@ -120,17 +120,17 @@ scrape_configs:
 
   - job_name: 'stargate-<nome>-node'
     static_configs:
-      - targets: ['<IP_STARGATE>:9100']
+      - targets: ['<IP_HIN_GATEWAY>:9100']
         labels:
           environment: 'stargate-<nome>'
           service: 'node-exporter'
     metrics_path: /metrics
 ```
 
-Sostituisci `<IP_STARGATE>` con l'IP pubblico o privato del server e `<nome>` con un identificatore di deployment (es., `prod`, `nome-cliente`).
+Sostituisci `<IP_HIN_GATEWAY>` con l'IP pubblico o privato del server e `<nome>` con un identificatore di deployment (es., `prod`, `nome-cliente`).
 
 !!! tip
-    Le etichette `environment` e `service` consentono il filtraggio nei dashboard Grafana su più istanze Stargate.
+    Le etichette `environment` e `service` consentono il filtraggio nei dashboard Grafana su più istanze HIN Gateway.
 
 ### Requisiti firewall
 
@@ -147,7 +147,7 @@ Il servizio node-exporter espone metriche standard a livello host (CPU, memoria,
 ## Riepilogo delle porte esposte
 
 | Porta | Servizio | Protocollo | Scopo |
-|------|---------|----------|---------|
+| ------ | --------- | ---------- | --------- |
 | `8190` | Dozzle (via oauth2-proxy) | HTTPS | Interfaccia di visualizzazione log autenticata (SSO Keycloak) |
 | `9100` | node-exporter | HTTP | Metriche dell'host (Prometheus) |
 | `2113` | smimekeys-client | HTTP | Metriche dell'app (Prometheus) |

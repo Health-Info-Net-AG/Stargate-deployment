@@ -1,4 +1,4 @@
-# Stargate Docker-Bereitstellung
+# HIN Gateway Docker-Bereitstellung
 
 ## Voraussetzungen
 
@@ -32,7 +32,7 @@ cp customer-config-prod.example.sh customer-config.sh
 Sie müssen darin **nichts** bearbeiten - jeder Wert wird entweder automatisch erkannt oder später über das Dashboard konfiguriert:
 
 | Einstellung | Wie sie gesetzt wird |
-|---------|---------------|
+| --------- | --------------- |
 | `SERVER_STATIC_IP` | Automatisch von der primären Netzwerkschnittstelle des Servers erkannt. |
 | `CUSTOMER_NAME` | Standardmäßig der System-Hostname. |
 | `DEPLOYMENT_NAME` | Von `CUSTOMER_NAME` abgeleitet (wird in Log-Labels und im Alloy-Hostname verwendet). |
@@ -63,7 +63,7 @@ Mail-Domains und der Stalwart-Hostname werden zur Laufzeit über die `/mail`-Sei
 **WireGuard lokale Einstellungen (normalerweise bei Standardwerten belassen):**
 
 | Einstellung | Standard | Beschreibung |
-|---------|-------------|---------|
+| --------- | ------------- | --------- |
 | `WG_PRIVATE_KEY` | *(automatisch generiert)* | Wird von IRISAgent beim ersten Start generiert und dann in `customer-config.sh` gespeichert |
 | `WG_LOCAL_IP` | `SERVER_STATIC_IP` | Automatisch abgeleitet. Nur überschreiben, wenn Sie eine andere Tunneladresse benötigen. |
 | `WG_INTERFACE_PORT` | `19818` | WireGuard-Tunnelport (sowohl TCP als auch UDP werden freigegeben) |
@@ -72,7 +72,7 @@ Mail-Domains und der Stalwart-Hostname werden zur Laufzeit über die `/mail`-Sei
 **Optionale Einstellungen (haben sinnvolle Standardwerte):**
 
 | Einstellung | Standard | Beschreibung |
-|---------|-------------|---------|
+| --------- | ------------- | --------- |
 | `POSTGRES_PASSWORD` | *(automatisch generiert)* | Automatisch generiertes 24-stelliges Zufallspasswort, falls leer |
 | `S3_SECRET_KEY` | *(automatisch generiert)* | S3-Secret-Key für den Objektspeicher |
 | `OUTBOUND_SEALER_MX_DOMAIN` | `hintest.ch` | Sealer-MX-Domain für die Zustellung ausgehender Siegel |
@@ -192,6 +192,7 @@ Starten Sie nur irisagent neu
 ```bash
 docker compose restart irisagent
 ```
+
 Prüfen Sie auf erfolgreichen WireGuard-Handshake
 
 ```bash
@@ -207,21 +208,21 @@ Sobald das Zertifikat ausgestellt ist und E-Mails fließen, werden zwei Konfigur
 
 ### Schritt 6.1 SPF / DKIM / DMARC für Absender-Domains
 
-Stargate sendet E-Mails von seiner eigenen öffentlichen IP im Namen Ihrer Benutzer. Ohne korrekte DNS-Authentifizierungsdatensätze sehen Empfänger Warnungen wie "wir können diesen Absender nicht überprüfen" und können die E-Mail ablehnen.
+HIN Gateway sendet E-Mails von seiner eigenen öffentlichen IP im Namen Ihrer Benutzer. Ohne korrekte DNS-Authentifizierungsdatensätze sehen Empfänger Warnungen wie "wir können diesen Absender nicht überprüfen" und können die E-Mail ablehnen.
 
 Vollständige Anweisungen zur Konfiguration von SPF, DKIM, DMARC und PTR-Einträgen finden Sie im [DNS-Einrichtungsleitfaden](DNS-setup.md#empfohlene-eintrage).
 
-Mindestens für jede Domain, die Sie über Stargate routen:
+Mindestens für jede Domain, die Sie über HIN Gateway routen:
 
-* **SPF**: Fügen Sie `ip4:<STARGATE_IP>` zum TXT-Eintrag der Domain hinzu
+* **SPF**: Fügen Sie `ip4:<HIN_GATEWAY_IP>` zum TXT-Eintrag der Domain hinzu
 * **DMARC**: Veröffentlichen Sie `v=DMARC1; p=none` unter `_dmarc.<IHRER_DOMAIN>`
 * **PTR**: Setzen Sie das reverse DNS für die Stargate-IP so, dass es mit `MAIL_HOSTNAME` übereinstimmt
 
 ### Schritt 6.2 Ausgehende E-Mails zurück über Ihre Mail-Plattform leiten (empfohlen für M365 / Exchange Online)
 
-Standardmäßig liefert Stargate nach dem Signieren/Verschlüsseln einer ausgehenden E-Mail direkt an den MX des Empfängers. Das funktioniert, aber die verbindende IP ist die Ihres Stargate – und es sei denn, diese IP hat jahrelang einen guten Ruf aufgebaut, kann sie auf Blocklisten von Drittanbietern (z.B. Barracuda, Abusix) landen, was zu gelegentlichen Zustellfehlern führt.
+Standardmäßig liefert HIN Gateway nach dem Signieren/Verschlüsseln einer ausgehenden E-Mail direkt an den MX des Empfängers. Das funktioniert, aber die verbindende IP ist die Ihres HIN Gateway – und es sei denn, diese IP hat jahrelang einen guten Ruf aufgebaut, kann sie auf Blocklisten von Drittanbietern (z.B. Barracuda, Abusix) landen, was zu gelegentlichen Zustellfehlern führt.
 
-Das empfohlene Muster ist, die **signierte E-Mail zurück über Ihren M365-/Exchange-Mandanten zu senden**, sodass der letzte Hop ins Internet die gut beleumundete Infrastruktur von Microsoft ist. Stargate signiert und prüft weiterhin jede Nachricht policy-gemäß; nur der letzte Hop ändert sich. Dies spiegelt das ursprüngliche "An MX senden"-Connector-Muster des HIN-MGW wider.
+Das empfohlene Muster ist, die **signierte E-Mail zurück über Ihren M365-/Exchange-Mandanten zu senden**, sodass der letzte Hop ins Internet die gut beleumundete Infrastruktur von Microsoft ist. HIN Gateway signiert und prüft weiterhin jede Nachricht policy-gemäß; nur der letzte Hop ändert sich. Dies spiegelt das ursprüngliche "An MX senden"-Connector-Muster des HIN-MGW wider.
 
 #### Stargate-Seite – pro-Domain-Relay
 
@@ -233,11 +234,11 @@ Nachdem mxengine die E-Mail signiert hat, übergibt Stalwart sie an Ihren Mandan
 
 Sie erstellen im Wesentlichen denselben Connector + Transportregeln-Satz wie beim alten HIN-MGW (das ursprüngliche HIN-MGW-O365-Handbuch ist die Referenz – die gleichen fünf Regeln gelten). Das Minimum ist:
 
-1. **Eingehender Connector** – akzeptiert E-Mails von Stargate, identifiziert durch das TLS-Zertifikat (der Zertifikatsgegenstand muss mit einer in Ihrem Mandanten akzeptierten Domain übereinstimmen). Ein selbstsigniertes Zertifikat auf Stargate wird von diesem Connector abgelehnt – verwenden Sie ein gültiges, von einer CA ausgestelltes Zertifikat (Let's Encrypt ist in Ordnung).
+1. **Eingehender Connector** – akzeptiert E-Mails von HIN Gateway, identifiziert durch das TLS-Zertifikat (der Zertifikatsgegenstand muss mit einer in Ihrem Mandanten akzeptierten Domain übereinstimmen). Ein selbstsigniertes Zertifikat auf HIN Gateway wird von diesem Connector abgelehnt – verwenden Sie ein gültiges, von einer CA ausgestelltes Zertifikat (Let's Encrypt ist in Ordnung).
 2. **Ausgehender Connector "An MX senden"** – stellt an den MX des Empfängers zu, wird nur durch eine Transportregel aktiviert.
 3. **Transportregel `set_header`** – kennzeichnet ausgehende E-Mails mit einem Header wie `outgoing: outgoing_<domain>`, bevor sie das erste Mal O365 verlassen, damit der Rückweg sie erkennen kann.
-4. **Transportregel `outgoing_to_mx`** – erkennt den `outgoing_<domain>`-Header auf E-Mails, die von Stargate zurückkommen, und leitet sie über den "An MX senden"-Connector.
-5. **Transportregel `mgw_bypass_antispam`** – umgeht die Spam-Filterung bei E-Mails, die von Stargate zurückkommen.
+4. **Transportregel `outgoing_to_mx`** – erkennt den `outgoing_<domain>`-Header auf E-Mails, die von HIN Gateway zurückkommen, und leitet sie über den "An MX senden"-Connector.
+5. **Transportregel `mgw_bypass_antispam`** – umgeht die Spam-Filterung bei E-Mails, die von HIN Gateway zurückkommen.
 
 mxengine entfernt keine beliebigen Header, daher überlebt das von `set_header` gesetzte `outgoing_<domain>`-Tag den Rundlauf und löst `outgoing_to_mx` korrekt aus.
 
@@ -277,7 +278,7 @@ Dies hält Container an, bewahrt aber alle Daten.
 Alle Daten werden in Docker-Volumes gespeichert und **bleiben über Neustarts hinweg erhalten**.
 
 | Dienst | Volume | Daten |
-|---------|--------|------|
+| --------- | -------- | ------ |
 | PostgreSQL | `postgres_data` | Alle Datenbanken (smimekeys, policy, irisagent, mxengine) |
 | Vault | `vault_data` | Verschlüsselungsschlüssel, Secrets, S/MIME-Schlüssel |
 | SeaweedFS | `seaweedfs_data` | Objektspeicher (Nachrichten, Anhänge) |
@@ -325,7 +326,7 @@ Das `start.sh`-Skript (und der Systemd-Dienst) entsiegeln Vault automatisch mit 
 ## Skriptübersicht
 
 | Skript | Zweck |
-|--------|--------|
+| -------- | -------- |
 | `install.sh` | Erstinstallation (Docker, Vault). Domain-/Zertifikats-/Peer-Setup erfolgt anschließend im Dashboard. |
 | `update.sh` | Service-Images aktualisieren (Vault-Token bleibt erhalten, Container werden neu erstellt) |
 | `start.sh` | Dienste starten und Vault entsiegeln |
@@ -341,7 +342,7 @@ Das `start.sh`-Skript (und der Systemd-Dienst) entsiegeln Vault automatisch mit 
 ## Konfigurationsdateien
 
 | Datei | Zweck |
-|------|---------|
+| ------ | --------- |
 | `customer-config-prod.example.sh` | Vorlage für Kundeneinstellungen (kopieren nach `customer-config.sh`) |
 | `customer-config.sh` | Kundenspezifische Einstellungen (aus Vorlage erstellt, vor der Installation ausfüllen) |
 | `.env` | Generierte Umgebungsdatei (wird von `install.sh` erstellt) |

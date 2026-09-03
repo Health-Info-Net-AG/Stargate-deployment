@@ -37,7 +37,7 @@ Dieser meldet den Status «bestanden»/«nicht bestanden» (pass/fail) für: **C
 ## 2. Wo sich die Logs befinden
 
 | Ebene | Befehl | Was es anzeigt |
-|-------|---------|---------------|
+| ------- | --------- | --------------- |
 | Start / Erstinstallation / Autostart | `sudo journalctl -u stargate -n 200 --no-pager` | Den systemd-Dienst, der `start.sh` beim Start und bei der Erstinstallation ausführt |
 | Updates | `cat ../update.log` (Bereitstellungsstammverzeichnis, eine Ebene über `docker-compose/`) | Ausgabe des letzten Dashboard-/Host-ausgelösten `update.sh` |
 | Ein einzelner Dienst | `docker logs stargate-<service> --tail 100` | z. B. `stargate-dashboard`, `stargate-mxengine`, `stargate-keycloak` |
@@ -62,7 +62,7 @@ docker compose ps -a --format 'table {{.Service}}\t{{.Status}}'
 Lesen Sie die Spalte `Status`:
 
 | Status | Bedeutung | Massnahme |
-|--------|---------|--------|
+| -------- | --------- | -------- |
 | `Up ... (healthy)` | Läuft einwandfrei | - |
 | `Up ...` (no health) | Läuft; kein Health Check definiert | Überprüfen Sie die `docker logs`, wenn Sie Probleme vermuten |
 | `Restarting` | Crash-Looping | `docker logs stargate-<svc>` - beheben Sie den Root-Fehler (config, secret, dependency) |
@@ -165,7 +165,7 @@ cd docker-compose
 ./scripts/update.sh
 ```
 
-`update.sh` erzeugt die `.env` neu, lädt die Images und erstellt die betroffenen Dienste neu - Sie müssen Stargate **nicht** manuell neu starten. Sobald der Vorgang abgeschlossen ist, starten Sie das Update erneut über das Dashboard; es wird nun fortgesetzt.
+`update.sh` erzeugt die `.env` neu, lädt die Images und erstellt die betroffenen Dienste neu - Sie müssen HIN Gateway **nicht** manuell neu starten. Sobald der Vorgang abgeschlossen ist, starten Sie das Update erneut über das Dashboard; es wird nun fortgesetzt.
 
 !!! warning
     Verwenden Sie hier nicht `git pull`. Bei einem Arbeitsverzeichnis mit lokalen Änderungen bricht dieser Befehl mit der Meldung "local changes would be overwritten" ab, was einen Umweg über `git stash`, Merge-Konflikte oder eine manuelle Wiederherstellung erzwingt. Die obige Abfolge aus `git checkout -f` und `git reset --hard` vermeidet das vollständig und ist die sichere, wiederholbare Methode, um das Repository auf den aktuellen Stand zu bringen.
@@ -214,7 +214,7 @@ for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 ```
 
 | Port | Dienst | Richtung |
-|------|---------|-----------|
+| ------ | --------- | ----------- |
 | `25` | Stalwart SMTP (eingehende E-Mails) | eingehend |
 | `443` | Dashboard (HTTPS) | eingehend |
 | `8180` | Keycloak | eingehend |
@@ -256,15 +256,15 @@ Die folgenden Anweisungen beschreiben, wie Sie eine Verimesh-Instanz von v0.5.1 
 *Hinweis:* Sie müssen sich mit dem Linux-Administratorkonto auf der VM anmelden.
 
 ### Update-Schritte
+
 1. Bearbeiten Sie die .env-Datei und aktualisieren Sie die Ops-Agent-Version auf v0.0.3.
 2. Bearbeiten Sie die Kundenkonfiguration und aktualisieren Sie dort ebenfalls die Ops-Agent-Version auf v0.0.3.
 3. Wechseln Sie zum Main-Branch: `git checkout main`
 4. Rufen Sie die neuesten Änderungen ab: `git pull`
 5. Aktualisieren Sie den Ops-Agent-Container: `docker compose up -d ops-agent`
 6. Melden Sie sich im Dashboard an.
-6. Navigieren Sie zu Settings.
-7. Geben Sie im Abschnitt Update am Seitenende die Zielversion (v0.5.3) ein und starten Sie den Update-Vorgang.
-
+7. Navigieren Sie zu Settings.
+8. Geben Sie im Abschnitt Update am Seitenende die Zielversion (v0.5.3) ein und starten Sie den Update-Vorgang.
 
 ## Aktualisierte Keycloak einrichten
 
@@ -285,12 +285,12 @@ Zur Behebung muss die folgende manuelle Konfiguration in der *Keycloak-UI* vorge
 4. Zur Registerkarte Client scopes wechseln → auf dashboard-dedicated klicken
 5. Configure a new mapper wählen → Audience
 6. Folgende Einstellungen vornehmen:
-    * Name: apisix-audience
-    * Included client audience: apisix (aus dem Dropdown auswählen)
-    * Included custom audience: (leer lassen)
-    * Add to access token: On
-    * Add to token introspection: On
-    * Add to ID token / lightweight token: Off
+    - Name: apisix-audience
+    - Included client audience: apisix (aus dem Dropdown auswählen)
+    - Included custom audience: (leer lassen)
+    - Add to access token: On
+    - Add to token introspection: On
+    - Add to ID token / lightweight token: Off
 
 7. Auf Save klicken
 

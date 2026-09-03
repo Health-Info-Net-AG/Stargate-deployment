@@ -2,7 +2,6 @@
 
 *MGW → HIN Gateway – Mail-Flow Architecture, Phased Rollout, and Rollback Plan*
 
-
 ## Phase 1 – Starting Point: Baseline (All Domains on MGW)
 
 **Baseline state**
@@ -30,7 +29,7 @@
 
 !!! danger "Roll-back (per domain)"
     - Point the affected domain's mail-flow rule back to MGW
-    - Leave the Stargate connectors in place for the next attempt
+    - Leave the HIN Gateway connectors in place for the next attempt
     - **Keep an ordered change log** of every connector and rule modification. A rollback must apply these changes in reverse order.
 
 !!! warning "Watch for customer-specific headers"
@@ -47,7 +46,7 @@
 
 !!! note "Clean-up checklist"
     - Remove the old MGW connectors and mail-flow rules
-    - Decommission the MGW VM once monitoring confirms that it is receiving no traffic and that e-mail flow is functioning correctly 
+    - Decommission the MGW VM once monitoring confirms that it is receiving no traffic and that e-mail flow is functioning correctly
     - Release **Public IP A** if no longer required
     - Update runbooks and DNS documentation
 
@@ -58,7 +57,7 @@
 !!! tip "Recommended – Migrate All Domains at Once"
     - No additional Public IP required
     - No temporary connector or mail-flow-rule changes
-    - Simple roll-back: power off Stargate, power the old MGW VM back on
+    - Simple roll-back: power off HIN Gateway, power the old MGW VM back on
     - Shortest cutover window — lowest chance of configuration drift
 
 !!! note "Alternative – Gradual Domain-by-Domain Migration"

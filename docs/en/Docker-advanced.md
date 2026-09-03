@@ -1,11 +1,11 @@
-# Stargate Docker advanced configuration
+# HIN Gateway Docker advanced configuration
 
 ## Data Layout
 
 All writable state - generated config, secrets, backups, logs, and every service's own data - lives under **`/var/data`**, not inside the `docker-compose/` checkout:
 
 | Path | Contents |
-|------|----------|
+| ------ | ---------- |
 | `/var/data/vereign/.env` | Generated environment file (do not edit by hand) |
 | `/var/data/vereign/customer-config.sh` | Your install-time settings (copied from `customer-config-prod.example.sh`) |
 | `/var/data/vereign/secrets/` | Vault unseal keys, WireGuard private key, S/MIME CSR |
@@ -19,7 +19,7 @@ All writable state - generated config, secrets, backups, logs, and every service
 The `docker-compose/` tree (scripts, `docker-compose.yml`, config templates) is **read-only at runtime** - a bootc image layer on VM appliances - and nothing under it is ever written to. `docker-compose/scripts/init-data-layout.sh` creates the `/var/data` tree and sets per-service ownership; it runs automatically during `install.sh` and is safe to re-run.
 
 !!! note "Testing with a different root"
-    Set the `STARGATE_DATA_DIR` environment variable to point at a different root instead of `/var/data` - useful for local testing without touching the real path. Every script and `docker-compose.yml` itself resolve their data paths from it.
+    Set the `HIN_GATEWAY_DATA_DIR` environment variable to point at a different root instead of `/var/data` - useful for local testing without touching the real path. Every script and `docker-compose.yml` itself resolve their data paths from it.
 
 !!! warning "Prefer the wrapper scripts for anything that (re)creates containers"
     Because `.env` no longer lives next to `docker-compose.yml`, a bare `docker compose up -d` run from inside `docker-compose/` falls back to default credentials instead of your real ones. Use `./scripts/start.sh`, `./scripts/update.sh`, `./scripts/stop.sh`, etc. - they already pass `--env-file /var/data/vereign/.env` - or add `--env-file /var/data/vereign/.env` yourself to a manual `docker compose` command. Read-only commands (`docker compose ps`, `logs`, `exec`) are unaffected either way.
@@ -84,11 +84,11 @@ tar -xzf /var/data/backups/20260130_143022.tar.gz -C /tmp/
 cat /tmp/20260130_143022/database/mxengine.sql | docker exec -i stargate-postgres psql -U postgres -d mxengine
 ```
 
-## Updating Stargate
+## Updating HIN Gateway
 
 ### Update Deployment Scripts and Configuration
 
-The Stargate deployment repository receives updates to scripts (`install.sh`, `start.sh`, `health-check.sh`, `restore.sh`, etc.), configuration templates, and documentation. To apply these updates:
+The HIN Gateway deployment repository receives updates to scripts (`install.sh`, `start.sh`, `health-check.sh`, `restore.sh`, etc.), configuration templates, and documentation. To apply these updates:
 
 #### 1. Create a backup before updating
 
@@ -180,7 +180,7 @@ WG_TRANSPORT_MODE=tcp
 ## Service URLs
 
 | Service | URL/Port |
-|---------|----------|
+| --------- | ---------- |
 | Dashboard | <https://localhost> |
 | smimekeys-client | <http://localhost:8081> |
 | policy | <http://localhost:8082> |
@@ -208,7 +208,7 @@ curl http://localhost:8084/liveness  # mxengine
 All application services expose Prometheus metrics on port 2112 (internally), mapped to different host ports:
 
 | Service | Metrics Port | Metrics URL |
-|---------|--------------|-------------|
+| --------- | -------------- | ------------- |
 | smimekeys-client | `2113` | <http://localhost:2113/metrics> |
 | irisagent | `2114` | <http://localhost:2114/metrics> |
 | policy | `2115` | <http://localhost:2115/metrics> |
@@ -306,7 +306,7 @@ ALLOY_HOSTNAME=stargate-acme
 
 ## Stalwart MTA + mtaconf
 
-Stargate uses **Stalwart** as the mail transfer agent and **mtaconf** as the configuration daemon. The dashboard sends domain and relay configuration to mtaconf's REST API, which pushes it to Stalwart via the management CLI.
+HIN Gateway uses **Stalwart** as the mail transfer agent and **mtaconf** as the configuration daemon. The dashboard sends domain and relay configuration to mtaconf's REST API, which pushes it to Stalwart via the management CLI.
 
 ### Mail Flow Architecture
 
@@ -366,7 +366,7 @@ There is no per-domain config in `customer-config.sh` or `.env` - operators add 
 ### Mail Routing (Migrating from Old MGW)
 
 !!! tip "Key difference from the old HIN-MGW"
-    In the old MGW, you had to manually configure a target server per domain. In Stargate, mail routing is decided by **DNS MX records by default** - Stalwart resolves each domain's MX at delivery time. The dashboard's `/mail` page lets you override this per-domain (e.g. to relay back through your M365 / Exchange tenant) without touching DNS.
+    In the old MGW, you had to manually configure a target server per domain. In HIN Gateway, mail routing is decided by **DNS MX records by default** - Stalwart resolves each domain's MX at delivery time. The dashboard's `/mail` page lets you override this per-domain (e.g. to relay back through your M365 / Exchange tenant) without touching DNS.
 
 **Default - automatic via DNS MX:**
 
@@ -380,11 +380,11 @@ domain3.com    MX 10  exchange3.domain3.com
 
 This works for any number of domains - each domain can point to a different mail server, and Stalwart will route accordingly.
 
-**If Stargate is the only MX record** for a domain, Stalwart will filter it out and have no delivery target. Add a second MX record pointing to your mail server with a higher priority (= lower number) so Stalwart uses it as the delivery target:
+**If HIN Gateway is the only MX record** for a domain, Stalwart will filter it out and have no delivery target. Add a second MX record pointing to your mail server with a higher priority (= lower number) so Stalwart uses it as the delivery target:
 
 ```plain
 example.com    MX 10  exchange.example.com      ← delivery target (mail server)
-example.com    MX 20  stargate.example.com      ← inbound gateway (Stargate)
+example.com    MX 20  stargate.example.com      ← inbound gateway (HIN Gateway)
 ```
 
 **Alternative - explicit per-domain relay (sender-based):**
@@ -394,7 +394,7 @@ For relay-back through M365 / Exchange Online, configure per-domain relay target
 ### Ports
 
 | Port | Purpose |
-|------|---------|
+| ------ | --------- |
 | `25` | Main SMTP listener (external connections) |
 | `10026` | Reinjection port (mxengine → stalwart, internal only) |
 | `1587` | MXEngine SMTP input (stalwart → mxengine, internal only) |
@@ -406,21 +406,25 @@ For relay-back through M365 / Exchange Online, configure per-domain relay target
 ### Verification
 
 Check Stalwart status
+
 ```bash
 docker exec stargate-stalwart stalwart-cli -u http://localhost:8080 server list-listeners
 ```
 
 Check logs
+
 ```bash
 docker logs stargate-stalwart
 ```
 
 Test connection to port 25
+
 ```bash
 telnet localhost 25
 ```
 
 Test internal port 10026 (from mxengine container)
+
 ```bash
 docker exec stargate-mxengine nc -zv stalwart 10026
 ```
@@ -429,7 +433,7 @@ docker exec stargate-mxengine nc -zv stalwart 10026
 
 Like every service, the mtaconf image version is part of a release and is updated through the dashboard - not by editing its tag by hand. Select the target release on the dashboard's update page to apply it.
 
-### Stargate Troubleshooting
+### HIN Gateway Troubleshooting
 
 **Mail not being processed by mxengine**:
 
@@ -465,16 +469,16 @@ Like every service, the mtaconf image version is part of a release and is update
 
 ## WireGuard (Agent-to-Agent Communication)
 
-IRISAgent uses WireGuard to establish secure encrypted tunnels between Stargate instances for delivering sealed messages.
+IRISAgent uses WireGuard to establish secure encrypted tunnels between HIN Gateway instances for delivering sealed messages.
 
 ### How It Works
 
-Each Stargate instance uses its server's real static public IP as the WireGuard tunnel address. This guarantees uniqueness across all deployments without manual coordination.
+Each HIN Gateway instance uses its server's real static public IP as the WireGuard tunnel address. This guarantees uniqueness across all deployments without manual coordination.
 
 ```mermaid
 block
 columns 5
-  block:Stargate["Your Stargate (203.0.113.50)"]:2
+  block:HIN Gateway["Your HIN Gateway (203.0.113.50)"]:2
     columns 1
     A
     space
@@ -639,7 +643,7 @@ columns 8
 Settings in `customer-config.sh`:
 
 ```bash
-## Git repository containing policies (pre-configured with HIN Stargate policies)
+## Git repository containing policies (pre-configured with HIN HIN Gateway policies)
 POLICY_SYNC_REPO_URL="https://github.com/Health-Info-Net-AG/Stargate-policies.git"
 
 ## Optional: Authentication for private repos
@@ -812,7 +816,7 @@ This is the most common issue after initial installation. The S/MIME certificate
 
    Along with your `DEPLOYMENT_NAME`, `SERVER_STATIC_IP`, and `WG_INTERFACE_PORT` (if changed from 19818).
 
-2. **Firewall blocking port 19818** - Ensure `19818/TCP` is open both inbound and outbound on the Stargate server.
+2. **Firewall blocking port 19818** - Ensure `19818/TCP` is open both inbound and outbound on the HIN Gateway server.
 
 3. **Wrong hostname** - If the Stalwart hostname is still set to the template default (`mail.example.com`), update it via the dashboard's `/mail` page.
 
@@ -860,7 +864,7 @@ docker compose logs <service-name>
 
 ## Files Structure
 
-The deployment is split across two trees: the **read-only** repository checkout (`docker-compose/`) and the **writable** data root (`/var/data`, overridable via `STARGATE_DATA_DIR` - see [Data Layout](#data-layout) above). Nothing is ever written under `docker-compose/`.
+The deployment is split across two trees: the **read-only** repository checkout (`docker-compose/`) and the **writable** data root (`/var/data`, overridable via `HIN_GATEWAY_DATA_DIR` - see [Data Layout](#data-layout) above). Nothing is ever written under `docker-compose/`.
 
 ### `docker-compose/` (read-only)
 

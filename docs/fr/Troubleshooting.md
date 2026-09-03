@@ -1,6 +1,6 @@
 # Dépannage et diagnostics
 
-Guide structuré pour le diagnostic d'une appliance Stargate depuis la ligne de commande: éléments à vérifier, emplacement des journaux et procédures de récupération sans risque.
+Guide structuré pour le diagnostic d'une appliance HIN Gateway depuis la ligne de commande: éléments à vérifier, emplacement des journaux et procédures de récupération sans risque.
 
 !!! info "Où exécuter ces commandes"
     Exécutez toutes les commandes ci-dessous à partir du **répertoire de déploiement** - le dossier contenant `docker-compose.yml` et `scripts/` (sur les images de machine virtuelle (VM), il s'agit généralement de `/usr/share/stargate-deployment/docker-compose`, ou du répertoire dans lequel vous avez effectué l'installation). Toutes les commandes `docker compose` et `./scripts/*` supposent que vous vous trouvez dans ce répertoire de travail.
@@ -37,7 +37,7 @@ Elle indique, pour chacun des éléments suivants, si le contrôle a réussi ou 
 ## 2. Où trouver les journaux
 
 | Couche | Commande | Informations affichées |
-|-------|---------|---------------|
+| ------- | --------- | --------------- |
 | Démarrage / installation initiale / démarrage automatique | `sudo journalctl -u stargate -n 200 --no-pager` | Le service systemd qui exécute `start.sh` au démarrage et lors de la première installation |
 | Exécutions des mises à jour | `cat ../update.log` (racine du déploiement, un niveau au-dessus de `docker-compose/`) | Sortie du dernier `update.sh` déclenché depuis le tableau de bord ou l'hôte |
 | Un seul service | `docker logs stargate-<service> --tail 100` | par exemple `stargate-dashboard`, `stargate-mxengine`, `stargate-keycloak` |
@@ -62,7 +62,7 @@ docker compose ps -a --format 'table {{.Service}}\t{{.Status}}'
 Consultez la colonne `Status`:
 
 | Statut | Signification | Action |
-|--------|---------|--------|
+| -------- | --------- | -------- |
 | `Up ... (healthy)` | Fonctionnement normal | - |
 | `Up ...` (no health) | En cours d'exécution; aucun contrôle d'état défini | Consultez ses `docker logs` si vous suspectez un problème |
 | `Restarting` | Redémarrages en boucle | `docker logs stargate-<svc>` - corrigez l'erreur à l'origine du problème (configuration, secret, dépendance) |
@@ -165,7 +165,7 @@ cd docker-compose
 ./scripts/update.sh
 ```
 
-`update.sh` régénère `.env`, récupère les images et recrée les services concernés - vous n'avez **pas** besoin de redémarrer Stargate manuellement. Une fois l'opération terminée, relancez la mise à jour depuis le tableau de bord; elle se poursuivra alors normalement.
+`update.sh` régénère `.env`, récupère les images et recrée les services concernés - vous n'avez **pas** besoin de redémarrer HIN Gateway manuellement. Une fois l'opération terminée, relancez la mise à jour depuis le tableau de bord; elle se poursuivra alors normalement.
 
 !!! warning
     N'utilisez pas `git pull` ici. Sur une copie de travail comportant des modifications locales, cette commande échoue avec le message «local changes would be overwritten», ce qui impose de passer par un `git stash`, un conflit de fusion ou une récupération manuelle. La séquence `git checkout -f` puis `git reset --hard` ci-dessus évite entièrement ce problème: c'est la méthode sûre et reproductible pour remettre le dépôt à jour.
@@ -214,7 +214,7 @@ for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 ```
 
 | Port | Service | Direction |
-|------|---------|-----------|
+| ------ | --------- | ----------- |
 | `25` | Stalwart SMTP (e-mails entrants) | entrant |
 | `443` | Tableau de bord (HTTPS) | entrant |
 | `8180` | Keycloak | entrant |
@@ -256,15 +256,15 @@ Les instructions suivantes décrivent la mise à jour d'une instance Verimesh de
 *Remarque:* vous devez vous connecter à la VM avec le compte administrateur Linux.
 
 ### Étapes de mise à jour
+
 1. Modifiez le fichier .env et définissez la version de l'ops-agent sur v0.0.3.
 2. Modifiez également la configuration du client et définissez-y la version de l'ops-agent sur v0.0.3.
-3. Basculez sur la branche main: `git checkout main` 
-4. Récupérez les dernières modifications: `git pull` 
-5. Mettez à jour le conteneur ops-agent: `docker compose up -d ops-agent` 
+3. Basculez sur la branche main: `git checkout main`
+4. Récupérez les dernières modifications: `git pull`
+5. Mettez à jour le conteneur ops-agent: `docker compose up -d ops-agent`
 6. Connectez-vous au tableau de bord.
-6. Accédez à Settings.
-7. Dans la section Update, en bas de la page, saisissez la version cible (v0.5.3) et lancez le processus de mise à jour.
-
+7. Accédez à Settings.
+8. Dans la section Update, en bas de la page, saisissez la version cible (v0.5.3) et lancez le processus de mise à jour.
 
 ## Configurer Keycloak après la mise à jour
 
@@ -276,7 +276,7 @@ Pour résoudre ce problème, la configuration manuelle suivante doit être effec
 
 ### Étapes de résolution
 
-1. Ouvrez Keycloak sur l'environnement concerné et saisissez l'URL - `<VM IP address>/admin/master/console/` 
+1. Ouvrez Keycloak sur l'environnement concerné et saisissez l'URL - `<VM IP address>/admin/master/console/`
     utilisateur: Admin
     mot de passe: récupérez le mot de passe administrateur dans le fichier .env de la machine (vous devez pour cela vous connecter à la console Linux)
 
@@ -285,12 +285,12 @@ Pour résoudre ce problème, la configuration manuelle suivante doit être effec
 4. Ouvrez l'onglet Client scopes → cliquez sur dashboard-dedicated
 5. Sélectionnez Configure a new mapper → Audience
 6. Définissez les paramètres suivants:
-    * Name: apisix-audience
-    * Included client audience: apisix (à sélectionner dans la liste déroulante)
-    * Included custom audience: (laissez vide)
-    * Add to access token: On
-    * Add to token introspection: On
-    * Add to ID token / lightweight token: Off
+    - Name: apisix-audience
+    - Included client audience: apisix (à sélectionner dans la liste déroulante)
+    - Included custom audience: (laissez vide)
+    - Add to access token: On
+    - Add to token introspection: On
+    - Add to ID token / lightweight token: Off
 
 7. Cliquez sur Save
 

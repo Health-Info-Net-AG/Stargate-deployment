@@ -1,7 +1,7 @@
 
 # Windows 11 Pro-Bereitstellung mittels eines Images
 
-Stargate auf Windows Pro bereitstellen (Nicht-Pro-Versionen unterstützen Hyper-V nicht)
+HIN Gateway auf Windows Pro bereitstellen (Nicht-Pro-Versionen unterstützen Hyper-V nicht)
 
 ## Hyper-V installieren
 

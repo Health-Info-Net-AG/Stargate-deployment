@@ -1,6 +1,6 @@
 # Deployment Proxmox tramite immagine
 
-Distribuisci Stargate su Proxmox
+Distribuisci HIN Gateway su Proxmox
 
 ## Ottenere l'URL del file immagine
 
@@ -41,6 +41,6 @@ Dopo che la VM è stata creata con successo, procedi con i passaggi di installaz
 
 !!! tip "Supporto"
 
-    Per qualsiasi domanda o problema relativo al deployment e al funzionamento dell'appliance Stargate, contatta il supporto HIN.
+    Per qualsiasi domanda o problema relativo al deployment e al funzionamento dell'appliance HIN Gateway, contatta il supporto HIN.
 
     Includi informazioni rilevanti come il nome del cliente, la versione dell'appliance e screenshot/[log](../Docker-advanced.md#fornire-log-al-supporto) dove applicabile, per aiutarci a elaborare la tua richiesta in modo efficiente.

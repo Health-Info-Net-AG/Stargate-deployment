@@ -1,10 +1,10 @@
-# DNS-Einrichtung für Stargate
+# DNS-Einrichtung für HIN Gateway
 
-Dieser Leitfaden deckt alle DNS-Einträge ab, die für eine funktionierende Stargate-Bereitstellung erforderlich sind. Konfigurieren Sie diese Einträge **vor** der Installation von Stargate oder unmittelbar danach, je nach Eintragstyp.
+Dieser Leitfaden deckt alle DNS-Einträge ab, die für eine funktionierende Stargate-Bereitstellung erforderlich sind. Konfigurieren Sie diese Einträge **vor** der Installation von HIN Gateway oder unmittelbar danach, je nach Eintragstyp.
 
 In diesem Leitfaden:
 
-- `<STARGATE_IP>` – die öffentliche statische IP-Adresse Ihres Stargate-Servers (`SERVER_STATIC_IP` in `customer-config.sh`)
+- `<HIN_GATEWAY_IP>` – die öffentliche statische IP-Adresse Ihres Stargate-Servers (`SERVER_STATIC_IP` in `customer-config.sh`)
 - `<MAIL_HOSTNAME>` – der FQDN des Stargate-Relays (z.B. `mail.example.ch`; konfiguriert über die `/mail`-Seite des Dashboards)
 - `<YOUR_DOMAIN>` – Ihre Mail-Domain (z.B. `example.ch`; konfiguriert über die `/mail`-Seite des Dashboards)
 
@@ -13,11 +13,11 @@ In diesem Leitfaden:
 ## Eintragsübersicht
 
 | Eintrag | Name | Wert | Erforderlich | Wann |
-|--------|------|-------|----------|------|
-| [A](#a-eintrag) | `<MAIL_HOSTNAME>` | `<STARGATE_IP>` | Ja | Vor der Installation |
+| -------- | ------ | ------- | ---------- | ------ |
+| [A](#a-eintrag) | `<MAIL_HOSTNAME>` | `<HIN_GATEWAY_IP>` | Ja | Vor der Installation |
 | [MX](#mx-eintrage) | `<YOUR_DOMAIN>` | `<MAIL_HOSTNAME>` (Priorität 15) | Ja | Vor der Installation |
-| [SPF](#spf-eintrag) | `<YOUR_DOMAIN>` | `ip4:<STARGATE_IP>` zum TXT hinzufügen | Ja | Vor der Installation |
-| [PTR](#ptr-reverse-dns) | `<STARGATE_IP>` | `<MAIL_HOSTNAME>` | Empfohlen | Vor der Installation |
+| [SPF](#spf-eintrag) | `<YOUR_DOMAIN>` | `ip4:<HIN_GATEWAY_IP>` zum TXT hinzufügen | Ja | Vor der Installation |
+| [PTR](#ptr-reverse-dns) | `<HIN_GATEWAY_IP>` | `<MAIL_HOSTNAME>` | Empfohlen | Vor der Installation |
 | [DMARC](#dmarc-eintrag) | `_dmarc.<YOUR_DOMAIN>` | `v=DMARC1; p=none; ...` | Empfohlen | Nach der Installation |
 | [DKIM](#dkim-eintrage) | `selector._domainkey.<YOUR_DOMAIN>` | Von M365/Anbieter | Empfohlen | Nach der Installation |
 
@@ -32,7 +32,7 @@ Für Multi-Domain-Bereitstellungen wiederholen Sie die MX-, SPF-, DMARC- und DKI
 Erstellen Sie einen A-Eintrag, der den Stargate-Mail-Hostnamen auf die öffentliche IP des Servers verweist:
 
 ```plain
-<MAIL_HOSTNAME>.    A    <STARGATE_IP>
+<MAIL_HOSTNAME>.    A    <HIN_GATEWAY_IP>
 ```
 
 Beispiel:
@@ -41,7 +41,7 @@ Beispiel:
 mail.example.ch.    A    128.140.117.200
 ```
 
-Wenn Stargate eine IPv6-Adresse hat, fügen Sie auch einen AAAA-Eintrag hinzu:
+Wenn HIN Gateway eine IPv6-Adresse hat, fügen Sie auch einen AAAA-Eintrag hinzu:
 
 ```plain
 mail.example.ch.    AAAA    2a01:4f8:c012:1234::1
@@ -51,7 +51,7 @@ mail.example.ch.    AAAA    2a01:4f8:c012:1234::1
 
 ### MX-Einträge
 
-Fügen Sie einen MX-Eintrag für Stargate mit einer **höheren Priorität** (niedrigere Zahl) als den vorhandenen Mailserver hinzu. Dies stellt sicher, dass eingehende E-Mails zuerst Stargate zur S/MIME-Verarbeitung erreichen, bevor sie an Exchange oder Ihre Mail-Plattform weitergeleitet werden.
+Fügen Sie einen MX-Eintrag für HIN Gateway mit einer **höheren Priorität** (niedrigere Zahl) als den vorhandenen Mailserver hinzu. Dies stellt sicher, dass eingehende E-Mails zuerst HIN Gateway zur S/MIME-Verarbeitung erreichen, bevor sie an Exchange oder Ihre Mail-Plattform weitergeleitet werden.
 
 ```plain
 <YOUR_DOMAIN>.    MX    15    <MAIL_HOSTNAME>.
@@ -71,26 +71,26 @@ example.ch.    MX    20    example-ch.mail.protection.outlook.com.
 ```
 
 !!! info
-    Die niedrigere MX-Zahl bedeutet höhere Priorität. Stargate mit Priorität 15 empfängt E-Mails vor Exchange Online mit Priorität 20.
+    Die niedrigere MX-Zahl bedeutet höhere Priorität. HIN Gateway mit Priorität 15 empfängt E-Mails vor Exchange Online mit Priorität 20.
 
-**Warum**: Stargate fängt eingehende E-Mails ab, verarbeitet S/MIME und leitet sie dann an den nächsten MX (Exchange) weiter. Der zweite MX-Eintrag wird auch von Stalwart verwendet, um zu wissen, wohin verarbeitete E-Mails weitergeleitet werden sollen.
+**Warum**: HIN Gateway fängt eingehende E-Mails ab, verarbeitet S/MIME und leitet sie dann an den nächsten MX (Exchange) weiter. Der zweite MX-Eintrag wird auch von Stalwart verwendet, um zu wissen, wohin verarbeitete E-Mails weitergeleitet werden sollen.
 
-**Wichtig**: Wenn Stargate der **einzige** MX-Eintrag für eine Domain ist, filtert Stalwart seinen eigenen Hostnamen heraus und hat kein Zustellziel. Behalten Sie immer einen zweiten MX bei, der auf Ihren tatsächlichen Mailserver verweist.
+**Wichtig**: Wenn HIN Gateway der **einzige** MX-Eintrag für eine Domain ist, filtert Stalwart seinen eigenen Hostnamen heraus und hat kein Zustellziel. Behalten Sie immer einen zweiten MX bei, der auf Ihren tatsächlichen Mailserver verweist.
 
 ### SPF-Eintrag
 
-Fügen Sie die Stargate-Server-IP **und die HIN-Sealer-IP** zum SPF-Eintrag Ihrer Domain hinzu, damit über Stargate weitergeleitete ausgehende E-Mails die SPF-Prüfungen beim Empfänger bestehen.
+Fügen Sie die Stargate-Server-IP **und die HIN-Sealer-IP** zum SPF-Eintrag Ihrer Domain hinzu, damit über HIN Gateway weitergeleitete ausgehende E-Mails die SPF-Prüfungen beim Empfänger bestehen.
 
 **Wenn Sie M365 / Exchange Online verwenden:**
 
 ```plain
-<YOUR_DOMAIN>.    TXT    "v=spf1 ip4:<STARGATE_IP> ip4:<HIN_SEALER_IP> include:spf.protection.outlook.com -all"
+<YOUR_DOMAIN>.    TXT    "v=spf1 ip4:<HIN_GATEWAY_IP> ip4:<HIN_SEALER_IP> include:spf.protection.outlook.com -all"
 ```
 
 **Wenn Sie M365 / Google Workspace nicht verwenden:**
 
 ```plain
-<YOUR_DOMAIN>.    TXT    "v=spf1 ip4:<STARGATE_IP> ip4:<HIN_SEALER_IP> -all"
+<YOUR_DOMAIN>.    TXT    "v=spf1 ip4:<HIN_GATEWAY_IP> ip4:<HIN_SEALER_IP> -all"
 ```
 
 Beispiel:
@@ -100,7 +100,7 @@ example.ch.    TXT    "v=spf1 ip4:128.140.117.200 ip4:193.247.208.66 include:spf
 ```
 
 !!! question "Warum die HIN-Sealer-IP erforderlich ist"
-    Wenn Stargate eine SEAL'd (verschlüsselte) Nachricht für einen Nicht-HIN-Empfänger erzeugt, ist der letzte ausgehende Hop zum Empfänger der **HIN-Sealer**, nicht Ihr Stargate oder M365. Ohne die Sealer-IP in Ihrem SPF-Eintrag wird jede SEAL'd ausgehende Nachricht beim Empfänger die SPF-Prüfung nicht bestehen, und – da es keine DKIM-Signatur auf der SEAL'd-Nutzlast gibt – wird auch DMARC fehlschlagen. Strenge DMARC-Empfänger (Gmail, Outlook mit `p=reject`-Durchsetzung, Proofpoint) werden die Nachricht ablehnen oder im Spam-Ordner ablegen.
+    Wenn HIN Gateway eine SEAL'd (verschlüsselte) Nachricht für einen Nicht-HIN-Empfänger erzeugt, ist der letzte ausgehende Hop zum Empfänger der **HIN-Sealer**, nicht Ihr HIN Gateway oder M365. Ohne die Sealer-IP in Ihrem SPF-Eintrag wird jede SEAL'd ausgehende Nachricht beim Empfänger die SPF-Prüfung nicht bestehen, und – da es keine DKIM-Signatur auf der SEAL'd-Nutzlast gibt – wird auch DMARC fehlschlagen. Strenge DMARC-Empfänger (Gmail, Outlook mit `p=reject`-Durchsetzung, Proofpoint) werden die Nachricht ablehnen oder im Spam-Ordner ablegen.
 
     Sealer-IPs, die in SPF aufgenommen werden müssen:
 
@@ -114,7 +114,7 @@ example.ch.    TXT    "v=spf1 ip4:128.140.117.200 ip4:193.247.208.66 include:spf
 !!! warning "SPF-Lookup-Limit"
     Die gesamte `include:`-Kette in einem SPF-Eintrag darf **10 DNS-Lookups** nicht überschreiten. Das Hinzufügen von `ip4:`-Einträgen zählt nicht zu diesem Limit. Überprüfen Sie Ihre Anzahl mit [MXToolbox SPF-Lookup](https://mxtoolbox.com/spf.aspx).
 
-**Wie Stargate SPF verwendet**: Der mtaconf-Daemon löst den SPF-Eintrag jeder Domain auf, um die Liste der IPs, die ohne Authentifizierung über Stargate weiterleiten dürfen, automatisch zu befüllen. So werden die ausgehenden IPs von Microsoft 365 automatisch auf die Whitelist gesetzt – sie erscheinen in der `include:spf.protection.outlook.com`-Kette.
+**Wie HIN Gateway SPF verwendet**: Der mtaconf-Daemon löst den SPF-Eintrag jeder Domain auf, um die Liste der IPs, die ohne Authentifizierung über HIN Gateway weiterleiten dürfen, automatisch zu befüllen. So werden die ausgehenden IPs von Microsoft 365 automatisch auf die Whitelist gesetzt – sie erscheinen in der `include:spf.protection.outlook.com`-Kette.
 
 ---
 
@@ -183,9 +183,9 @@ Für Bereitstellungen, die mehrere Mail-Domains verwalten (konfiguriert über di
 Für jede konfigurierte Domain:
 
 | Eintrag | Erforderlich |
-|--------|----------|
+| -------- | ---------- |
 | MX, der auf `<MAIL_HOSTNAME>` verweist | Ja |
-| SPF mit `ip4:<STARGATE_IP>` | Ja |
+| SPF mit `ip4:<HIN_GATEWAY_IP>` | Ja |
 | DMARC (`_dmarc.<domain>`) | Empfohlen |
 | DKIM (von Ihrem Mail-Anbieter) | Empfohlen |
 
@@ -193,7 +193,7 @@ Der A-Eintrag und der PTR-Eintrag werden gemeinsam genutzt (sie verweisen auf de
 
 ### Mail-Routing pro Domain
 
-Die MX-Einträge jeder Domain sagen Stargate, wohin verarbeitete E-Mails zugestellt werden sollen. Wenn verschiedene Domains unterschiedliche Exchange-Server verwenden:
+Die MX-Einträge jeder Domain sagen HIN Gateway, wohin verarbeitete E-Mails zugestellt werden sollen. Wenn verschiedene Domains unterschiedliche Exchange-Server verwenden:
 
 ```plain
 domain1.ch    MX    15    mail.domain1.ch.
@@ -214,7 +214,7 @@ Nach der Konfiguration aller Einträge überprüfen Sie diese:
 ```bash
 # A-Eintrag
 host <MAIL_HOSTNAME>
-# Erwartet: <MAIL_HOSTNAME> has address <STARGATE_IP>
+# Erwartet: <MAIL_HOSTNAME> has address <HIN_GATEWAY_IP>
 
 # MX-Einträge
 host -t mx <YOUR_DOMAIN>
@@ -222,15 +222,15 @@ host -t mx <YOUR_DOMAIN>
 
 # SPF-Eintrag
 host -t txt <YOUR_DOMAIN> | grep v=spf1
-# Erwartet: SPF-Eintrag enthält ip4:<STARGATE_IP>
+# Erwartet: SPF-Eintrag enthält ip4:<HIN_GATEWAY_IP>
 
 # PTR (Reverse DNS)
-host <STARGATE_IP>
-# Erwartet: <STARGATE_IP> → <MAIL_HOSTNAME>
+host <HIN_GATEWAY_IP>
+# Erwartet: <HIN_GATEWAY_IP> → <MAIL_HOSTNAME>
 
 # Forward-confirmed reverse DNS (FCrDNS)
-host $(host <STARGATE_IP> | awk '{print $NF}' | sed 's/\.$//')
-# Erwartet: löst auf <STARGATE_IP> auf
+host $(host <HIN_GATEWAY_IP> | awk '{print $NF}' | sed 's/\.$//')
+# Erwartet: löst auf <HIN_GATEWAY_IP> auf
 
 # DMARC
 host -t txt _dmarc.<YOUR_DOMAIN>
@@ -283,17 +283,17 @@ Laden Sie die Mail-Konfiguration über die `/mail`-Seite des Dashboards neu (Kon
 
 ### E-Mail als Spam markiert / "Absender kann nicht überprüft werden"
 
-- SPF fehlt oder enthält nicht die Stargate-IP – fügen Sie `ip4:<STARGATE_IP>` zu Ihrem SPF-Eintrag hinzu
+- SPF fehlt oder enthält nicht die Stargate-IP – fügen Sie `ip4:<HIN_GATEWAY_IP>` zu Ihrem SPF-Eintrag hinzu
 - DMARC ist nicht veröffentlicht – fügen Sie mindestens `v=DMARC1; p=none` hinzu
 - PTR-Eintrag fehlt oder stimmt nicht überein – konfigurieren Sie Reverse DNS bei Ihrem Hosting-Anbieter
 - DKIM ist in Ihrem M365/Anbieter-Mandanten nicht aktiviert
 
-### MX-Lookup gibt nur Stargate zurück
+### MX-Lookup gibt nur HIN Gateway zurück
 
-Wenn Stargate der einzige MX für eine Domain ist, filtert Stalwart seinen eigenen Hostnamen heraus und hat kein Relay-Ziel. Fügen Sie einen zweiten MX-Eintrag hinzu, der auf Ihren Mailserver verweist:
+Wenn HIN Gateway der einzige MX für eine Domain ist, filtert Stalwart seinen eigenen Hostnamen heraus und hat kein Relay-Ziel. Fügen Sie einen zweiten MX-Eintrag hinzu, der auf Ihren Mailserver verweist:
 
 ```plain
-example.ch.    MX    15    mail.example.ch.          ← Stargate (eingehend)
+example.ch.    MX    15    mail.example.ch.          ← HIN Gateway (eingehend)
 example.ch.    MX    20    example-ch.mail.protection.outlook.com.  ← Exchange (Relay-Ziel)
 ```
 
@@ -307,4 +307,4 @@ Jedes `include:` im SPF-Eintrag löst zusätzliche DNS-Lookups aus. Die gesamte 
 
 ### Port 25 wird vom Hosting-Anbieter blockiert
 
-Einige Cloud-Anbieter (Azure, bestimmte Hetzner-Tarife) blockieren ausgehenden Port 25 standardmäßig. Überprüfen Sie dies bei Ihrem Anbieter und beantragen Sie eine Ausnahme. Dies betrifft sowohl die eingehende Zustellung (externe Server, die sich mit Ihrem Stargate verbinden) als auch das ausgehende Relay (Stargate, das an MX-Ziele zustellt).
+Einige Cloud-Anbieter (Azure, bestimmte Hetzner-Tarife) blockieren ausgehenden Port 25 standardmäßig. Überprüfen Sie dies bei Ihrem Anbieter und beantragen Sie eine Ausnahme. Dies betrifft sowohl die eingehende Zustellung (externe Server, die sich mit Ihrem HIN Gateway verbinden) als auch das ausgehende Relay (HIN Gateway, das an MX-Ziele zustellt).

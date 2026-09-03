@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document provides a comprehensive guide to the technical installation of, and migration to, the new HIN Gateway (“Stargate Appliance”).  
+This document provides a comprehensive guide to the technical installation of, and migration to, the new HIN Gateway (“HIN Gateway Appliance”).  
 
 The guide is intended for HIN customers, IT administrators, and system engineers who are responsible for deploying and configuring the new HIN Gateway and, where applicable, migrating from the existing Mail Gateway (MGW) to the new solution.
 
@@ -29,12 +29,10 @@ The structured, step-by-step procedure described in this document covers both ne
     HIN's objective is to ensure a secure, smooth and fully validated deployment with minimal disruption to operations and uninterrupted continuity of email services.
      In migration scenarios, the existing MGW should remain available as a fallback option until the HIN Gateway has been successfully validated in production. It should only be decommissioned once the migration has been completed and stable operation has been confirmed.
 
-
 ## Frequently asked questions
 
 !!! question "Can I perform the installation or migration on my own?"
-    Yes, the installation or migration can be completed entirely by the customer. 
-
+    Yes, the installation or migration can be completed entirely by the customer.
 
     For migration scenario the only exceptions is **"Step 1.3 - Export private key(s)"**. For security reasons and to keep your private key safe, you must contact HIN Support or join the planned migration call to receive the code required to export the private key from the currently operating Mail Gateway.
 
@@ -42,15 +40,12 @@ The structured, step-by-step procedure described in this document covers both ne
     If the installation or migration cannot be completed successfully, please join the planned support call with our engineers.
 
 !!! question "Will there be any outage in email delivery during the setup process?"
-    **Migration:** Between **"Step 1.5 - Shutdown existing MGW VM"** and **"Step 18 - Configure mail server"**, all emails will be queued on the mail server. Once "Step 18 - Configure mail server" has been completed, the queued emails will be sent out or delivered to the mailbox. 
-
+    **Migration:** Between **"Step 1.5 - Shutdown existing MGW VM"** and **"Step 18 - Configure mail server"**, all emails will be queued on the mail server. Once "Step 18 - Configure mail server" has been completed, the queued emails will be sent out or delivered to the mailbox.
 
     **New instalation:** While you are configuring the email flow rules, all emails will be queued on the mail server. Once "Step 18 - Configure mail server" has been completed, the queued emails will be sent out or delivered to the mailbox. 
 
-
-
 !!! question "Will any emails be lost during the installation and migration?"
-    No, no emails will be lost during the installation and migration. Some emails might be delaied. 
+    No, no emails will be lost during the installation and migration. Some emails might be delayed.
 
 ## Overview of the installation steps
 
@@ -121,7 +116,7 @@ The following items must be available or confirmed before the installation:
             - Dozzle port `8190`
                 - Incoming and outgoing traffic
 - **DHCP access** should be available for "[Step 5 - Network connection to the VM](#step-5-network-connection-to-the-vm)" (recommended).
-- **Backup requirements** - see "Annex 1 - Backing up and restoring the appliance settings". **Note:** Applicable only for migration case 
+- **Backup requirements** - see "Annex 1 - Backing up and restoring the appliance settings". **Note:** Applicable only for migration case
 - Note: Applicable only for migration case - Confirmation that the existing MGW will **not** be deleted until acceptance has been completed.
 - Access to DNS, mail server connectors, transport rules, and relay settings.
 
@@ -145,7 +140,7 @@ The following items must be available or confirmed before the installation:
 
 Send test emails to the following recipients, using mailboxes to which you have access so that successful delivery can be verified:
 
-- An HIN email address or an email address within your HIN Community domain, for example: user@hin.ch
+- An HIN email address or an email address within your HIN Community domain, for example: `user@hin.ch`
 - An external email address outside the HIN Community, for example: Bluewin, Gmail, Yahoo, or GMX
 
 For the external recipient, send an email from the HIN Community with **(confidential) included in the subject line**.
@@ -154,7 +149,7 @@ Test mail flow in both directions:
 
 - From the HIN trusted domain to the external email address
 - From the external email address to the HIN Community
- 
+
 Verify that all test emails are delivered successfully and that the subject, message content, and attachments (if applicable) are received correctly.
 
 ### Step 1.2 - Backing up the existing MGW
@@ -184,7 +179,7 @@ Create a backup of the existing MGW appliance and ensure that the VM is retained
 
 !!! info Applicable for migration case
     This step applies only for single and multi domain migrations
-    
+
     For multi-domain migration perform the operation for each domain
     
 
@@ -220,7 +215,7 @@ If you would like to continue the installation on your own, please contact HIN S
 1. Stop the new HIN Gateway.
 2. Power on the existing MGW.
 3. Verify that inbound and outbound email traffic is functioning correctly via the existing MGW.
-    * For multi-domain migration perform the verification operation for each domain
+    - For multi-domain migration perform the verification operation for each domain
 
 ### Step 1.5 - Shutdown existing MGW VM
 
@@ -304,7 +299,7 @@ Add an IP address on Linux:
     ```
 
 ??? tip "Cloud-init overrides VM network settings after reboot"
-    
+
     **This applies to the legacy image only.** The bootc appliance - now the default - does not use cloud-init to manage networking, so it is not affected and does not ship the `cloud-init-net-*` aliases used below.
 
     On the legacy image (typically on VMware/ESXi) cloud-init has no datasource, falls back to "DHCP the first NIC", and re-renders the network config on every boot - so a static address set with `nmtui` reverts after a reboot. An alias fixes this in one step by disabling only cloud-init's network rendering, so an address you then set on the existing profile persists:
@@ -431,7 +426,7 @@ Once the mesh network is established, you will be redirected to the Keycloak log
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-On first login, you will be prompted to change your password. Enter a new secure password and confirm it. 
+On first login, you will be prompted to change your password. Enter a new secure password and confirm it.
 
 Please make sure you remember the password!
 
@@ -450,7 +445,7 @@ Complete your account profile by entering your first name and last name. The ema
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
 !!! info Multi-domain migration note
-    For multi-domain migration perform the operation for each domain domain you are activating at that moment. 
+    For multi-domain migration perform the operation for each domain domain you are activating at that moment.
 
 On this screen, configure your initial settings:
 
@@ -480,19 +475,17 @@ On this screen, configure your initial settings:
     - If you notice that not all trusted domains are displayed or that the organisational information is incorrect, please contact HIN Support by email or phone (**<support@hin.ch>** / **0848 830 740**).
 
 !!! danger "Import your existing private key"
-    Note: applicable for migration scenario! 
-    
+    Note: applicable for migration scenario!
+
     If you do **not** import the private key from your existing MGW, a new key will be issued. This may result in messages not being decryptable for up to **6 hours**, which could lead to **data loss**.
 
 ![Setup screen](assets/installation-guide/step13-initial-setup2.png)
 
 | Setting | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
 | **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
-
-
 
 ### Step 14 - Configure mail transport
 
@@ -502,22 +495,21 @@ You will be logged at the HIN gateway dashboard at `Domains` page
 
  <br> ![Screenshot](assets/installation-guide/step14-dashboard-domains.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-
 #### Domains page
 
 !!! info Multi-domain migration note
-    For multi-domain migration perform the operation for each active domain. 
+    For multi-domain migration perform the operation for each active domain.
 
 Under the **Domains** menu, for each available domain you can configure specific transport route:
 
 ![Domain transport configuration screen](assets/installation-guide/step14-domain-mail-transport.png)
 
 | Setting | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Inbound relay** | The  SMTP relay for inbound delivery for selected domain |
 | **Outbound relay** | The SMTP relay for outbound delivery for selected domain. This setting corespond to `Forwarding server` setting from old MGW |
-| **Trusted networks** | Additional networks allowed to relay through this gateway. For more information please check on "Step 18 - Configure mail server"|
-| **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate|
+| **Trusted networks** | Additional networks allowed to relay through this gateway. For more information please check on "Step 18 - Configure mail server" |
+| **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate |
 | **Email authentication** | For all settings under `Email authentication` section please refer to [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) section |
 
 ??? tip "How to test TLS connection?"
@@ -552,8 +544,8 @@ Under the **Domains** menu, for each available domain you can configure specific
 
 Additional actions:
 
-- Add additional domains by clicking "Add domain", if required. 
-    - if domain is not not HIN secured, it will apper in the `Domains` list as Type: Routed - which mean it can be managed only locally 
+- Add additional domains by clicking "Add domain", if required.
+    - if domain is not not HIN secured, it will apper in the `Domains` list as Type: Routed - which mean it can be managed only locally
 
 !!! note
     Ensure that all relay host and domain configurations are correct before proceeding.
@@ -569,20 +561,19 @@ On this page under `Settings` menu, configure your global mail transport setting
 The following settings are available `Settings` menu:
 
 | Setting | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
 | **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
 | **Default inbound relay** | The default SMTP relay for inbound delivery |
 | **Default outbound relay** | The default SMTP relay for outbound delivery |
 
-
 ### Step 15 - Configure whitelist headers
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
 !!! info Multi-domain note
-    For multi-domain perform the operation for each active domain. 
+    For multi-domain perform the operation for each active domain.
 
 Click **"Domains"** -> "Select domain", then select **"Whitelist headers"**.
 
@@ -633,16 +624,16 @@ See [Exchange Integration](Exchange-integration.md) for detailed instructions.
 #### Domains page
 
 !!! info Multi-domain migration note
-    For multi-domain migration perform the operation for each active domain. 
+    For multi-domain migration perform the operation for each active domain.
 
 Under the **Domains** menu, for each available domain you can configure specific transport route:
 
 | Setting | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Inbound relay** | The  SMTP relay for inbound delivery for selected domain |
 | **Outbound relay** | The SMTP relay for outbound delivery for selected domain. This setting corespond to `Forwarding server` setting from old MGW |
-| **Trusted networks** | Additional networks allowed to relay through this gateway. For more information please check on "Step 18 - Configure mail server"|
-| **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate|
+| **Trusted networks** | Additional networks allowed to relay through this gateway. For more information please check on "Step 18 - Configure mail server" |
+| **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate |
 | **Email authentication** | For all settings under `Email authentication` section please refer to [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) section |
 
 - **Note: for migration scenarion:** Go to the page for each domain, add a **Outbound host** using the value you recorded from the MGW's `Forwarding server` field in "Step 1.2 - Backing up the existing MGW".
@@ -670,8 +661,6 @@ Under the **Domains** menu, for each available domain you can configure specific
 
   <br> ![domain-relay-host](assets/installation-guide/step14-domain-mail-transport.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-
-
 #### Settings page
 
 On this page under `Settings` menu, configure your global mail transport settings for the secure mail relay setup which are common for the whole instance. Detailed configuration for each domain can be performed under `Domains` -> `$domain`
@@ -681,7 +670,7 @@ On this page under `Settings` menu, configure your global mail transport setting
 The following settings are available `Settings` menu:
 
 | Setting | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
 | **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
@@ -689,7 +678,6 @@ The following settings are available `Settings` menu:
 | **Default outbound relay** | The default SMTP relay for outbound delivery |
 
 <br> ![domain-relay-host](assets/installation-guide/step14-mail-transport2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-
 
 ### Step 19 - Test and validate
 

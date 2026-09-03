@@ -1,6 +1,6 @@
-# Stargate VMware ESXi-Bereitstellung mittels eines Images
+# HIN Gateway VMware ESXi-Bereitstellung mittels eines Images
 
-Stargate auf VMware bereitstellen
+HIN Gateway auf VMware bereitstellen
 
 ## Image-Datei herunterladen
 

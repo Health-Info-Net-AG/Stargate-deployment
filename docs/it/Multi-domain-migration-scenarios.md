@@ -2,7 +2,6 @@
 
 *MGW → HIN Gateway – architettura del flusso di posta, implementazione graduale e piano di rollback*
 
-
 ## Fase 1: Avvio – situazione iniziale (tutti i domini su MGW)
 
 **Stato iniziale**
@@ -13,7 +12,7 @@
 
 !!! info "Checklist preliminare"
     - Definire i parametri di riferimento della capacità attuale MGW e dei log del flusso di posta
-    - Verificare la connettività di Stargate lab verso Online Protect / Exchange Online / server di posta elettronica on-premise
+    - Verificare la connettività di HIN Gateway lab verso Online Protect / Exchange Online / server di posta elettronica on-premise
     - Allineare gli stakeholder sul calendario di migrazione e sul piano di comunicazione
     - Esaminare la documentazione relativa a firewall/porte prima dell’assegnazione dell’IP pubblico B (fase 2, passaggio 1)
 
@@ -24,17 +23,17 @@
 **Procedura di migrazione**
 
 1. **Abilitazione** di HIN Gateway – assegnare `Public IP B` e aggiornare le regole del firewall (si veda la documentazione di rete per le porte richieste)
-2. **Creare due connettori** su Exchange Online – uno in entrata e uno in uscita – che puntino a Stargate
+2. **Creare due connettori** su Exchange Online – uno in entrata e uno in uscita – che puntino a HIN Gateway
 3. **Aggiungere una regola del flusso di posta** che instradi in base al dominio: domain1.ch → HIN Gateway, tutti gli altri domini rimangono su MGW
 4. **Ripetere gradualmente** – spostare un dominio alla volta fino a quando tutti i domini non saranno su HIN Gateway
 
 !!! danger "Rollback (per dominio)"
     - Reindirizzare la regola del flusso di posta del dominio interessato verso MGW
-    - Lasciare attivi i connettori di Stargate in vista del tentativo successivo
+    - Lasciare attivi i connettori di HIN Gateway in vista del tentativo successivo
     - Tenere un **log delle modifiche** per ogni variazione apportata a connettori/regole, in ordine cronologico – il rollback dovrà riprodurlo in ordine inverso
 
 !!! warning "Prestare attenzione alle intestazioni specifiche del cliente"
-    Alcuni domini utilizzano X-header personalizzati (instradamento, liste di autorizzazione antispam, tag di compliance). Verificare che i connettori di Stargate conservino/replichino queste intestazioni prima di spostare un dominio – l’assenza di intestazioni può causare un instradamento errato o il rifiuto della posta.
+    Alcuni domini utilizzano X-header personalizzati (instradamento, liste di autorizzazione antispam, tag di compliance). Verificare che i connettori di HIN Gateway conservino/replichino queste intestazioni prima di spostare un dominio – l’assenza di intestazioni può causare un instradamento errato o il rifiuto della posta.
 
 ![Phase 2 Migration - gradual, domain-by-domain](assets/multi-domain-scenario/Phase2-migration-domain-by-domain.png)
 
@@ -58,7 +57,7 @@
 !!! tip "Consigliata – trasferire tutti i domini in una sola volta"
     - Non è richiesto alcun indirizzo IP pubblico aggiuntivo
     - Nessuna modifica temporanea al connettore o alle regole del flusso di posta
-    - Rollback semplice: spegnere Stargate e riaccendere la vecchia VM di MGW
+    - Rollback semplice: spegnere HIN Gateway e riaccendere la vecchia VM di MGW
     - Finestra di cutover più breve – minima probabilità di scostamenti nella configurazione
 
 !!! note "Alternativa – graduale, dominio per dominio"

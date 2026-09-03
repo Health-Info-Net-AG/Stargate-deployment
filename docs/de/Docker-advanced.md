@@ -1,4 +1,4 @@
-# Stargate Docker erweiterte Konfiguration
+# HIN Gateway Docker erweiterte Konfiguration
 
 ## Backups
 
@@ -60,7 +60,7 @@ tar -xzf backups/20260130_143022.tar.gz -C /tmp/
 cat /tmp/20260130_143022/database/mxengine.sql | docker exec -i stargate-postgres psql -U postgres -d mxengine
 ```
 
-## Stargate aktualisieren
+## HIN Gateway aktualisieren
 
 ### Bereitstellungsskripte und Konfiguration aktualisieren
 
@@ -289,7 +289,7 @@ ALLOY_HOSTNAME=stargate-acme
 
 ## Stalwart MTA + mtaconf
 
-Stargate verwendet **Stalwart** als Mail Transfer Agent und **mtaconf** als Konfigurations-Daemon. Das Dashboard sendet Domain- und Relay-Konfiguration an die REST-API von mtaconf, die diese dann über die Verwaltungs-CLI an Stalwart weitergibt.
+HIN Gateway verwendet **Stalwart** als Mail Transfer Agent und **mtaconf** als Konfigurations-Daemon. Das Dashboard sendet Domain- und Relay-Konfiguration an die REST-API von mtaconf, die diese dann über die Verwaltungs-CLI an Stalwart weitergibt.
 
 ### Mail-Fluss-Architektur
 
@@ -349,7 +349,7 @@ Es gibt keine pro-Domain-Konfiguration in `customer-config.sh` oder `.env` – B
 ### Mail-Routing (Migration von altem MGW)
 
 !!! tip "Wichtiger Unterschied zum alten HIN-MGW"
-    Im alten MGW mussten Sie manuell einen Zielserver pro Domain konfigurieren. In Stargate wird das Mail-Routing standardmäßig durch **DNS-MX-Einträge** entschieden – Stalwart löst zur Zustellzeit die MX jeder Domain auf. Die `/mail`-Seite des Dashboards ermöglicht es Ihnen, dies pro Domain zu überschreiben (z.B. um zurück zu Ihrem M365-/Exchange-Mandanten weiterzuleiten), ohne DNS ändern zu müssen.
+    Im alten MGW mussten Sie manuell einen Zielserver pro Domain konfigurieren. In HIN Gateway wird das Mail-Routing standardmäßig durch **DNS-MX-Einträge** entschieden – Stalwart löst zur Zustellzeit die MX jeder Domain auf. Die `/mail`-Seite des Dashboards ermöglicht es Ihnen, dies pro Domain zu überschreiben (z.B. um zurück zu Ihrem M365-/Exchange-Mandanten weiterzuleiten), ohne DNS ändern zu müssen.
 
 **Standard – automatisch via DNS MX:**
 
@@ -363,11 +363,11 @@ domain3.com    MX 10  exchange3.domain3.com
 
 Dies funktioniert für beliebig viele Domains – jede Domain kann auf einen anderen Mail-Server verweisen, und Stalwart leitet entsprechend weiter.
 
-**Wenn Stargate der einzige MX-Eintrag** für eine Domain ist, filtert Stalwart diesen heraus und hat kein Zustellziel. Fügen Sie einen zweiten MX-Eintrag hinzu, der auf Ihren Mail-Server verweist, mit einer höheren Priorität (= niedrigere Zahl), damit Stalwart ihn als Zustellziel verwendet:
+**Wenn HIN Gateway der einzige MX-Eintrag** für eine Domain ist, filtert Stalwart diesen heraus und hat kein Zustellziel. Fügen Sie einen zweiten MX-Eintrag hinzu, der auf Ihren Mail-Server verweist, mit einer höheren Priorität (= niedrigere Zahl), damit Stalwart ihn als Zustellziel verwendet:
 
 ```plain
 example.com    MX 10  exchange.example.com      ← Zustellziel (Mail-Server)
-example.com    MX 20  stargate.example.com      ← Eingangs-Gateway (Stargate)
+example.com    MX 20  stargate.example.com      ← Eingangs-Gateway (HIN Gateway)
 ```
 
 **Alternative – explizites pro-Domain-Relay (senderbasiert):**
@@ -457,7 +457,7 @@ Jede Stargate-Instanz verwendet die reale statische öffentliche IP des Servers 
 ```mermaid
 block
 columns 5
-  block:Stargate["Ihr Stargate (203.0.113.50)"]:2
+  block:HIN Gateway["Ihr HIN Gateway (203.0.113.50)"]:2
     columns 1
     A
     space

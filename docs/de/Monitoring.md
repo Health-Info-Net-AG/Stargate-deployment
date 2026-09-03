@@ -1,11 +1,11 @@
 # Überwachung und Logs
 
-Stargate enthält integrierte Überwachungs- und Log-Sammeldienste, die neben den Anwendungscontainern laufen.
+HIN Gateway enthält integrierte Überwachungs- und Log-Sammeldienste, die neben den Anwendungscontainern laufen.
 
 ## Komponenten
 
 | Dienst | Port | Zweck |
-|---------|------|---------|
+| --------- | ------ | --------- |
 | node-exporter | `9100` | Host-Metriken (CPU, Speicher, Festplatte, Netzwerk) für Prometheus |
 | version-collector | - | Sammelt App-Versionen von `/liveness`-Endpunkten |
 | Alloy | `12345` | Docker-Log-Sammler – sendet Container-Logs an Loki |
@@ -67,12 +67,12 @@ Ihr entfernter Loki-Endpunkt muss vom Stargate-Server über HTTPS (Port 443) err
 
 ## Prometheus-Metriken
 
-Stargate stellt Prometheus-kompatible Metrik-Endpunkte von seinen Anwendungscontainern bereit. Diese können von jedem Prometheus-kompatiblen Server für die zentralisierte Metrik-Sammlung abgerufen werden.
+HIN Gateway stellt Prometheus-kompatible Metrik-Endpunkte von seinen Anwendungscontainern bereit. Diese können von jedem Prometheus-kompatiblen Server für die zentralisierte Metrik-Sammlung abgerufen werden.
 
 ### Verfügbare Endpunkte
 
 | Dienst | Port | Pfad |
-|---------|------|------|
+| --------- | ------ | ------ |
 | smimekeys-client | `2113` | `/metrics` |
 | irisagent | `2114` | `/metrics` |
 | policy | `2115` | `/metrics` |
@@ -88,7 +88,7 @@ Fügen Sie den Stargate-Server als Ziel in Ihrer Prometheus-Konfiguration hinzu.
 scrape_configs:
   - job_name: 'stargate-<name>-smimekeys'
     static_configs:
-      - targets: ['<STARGATE_IP>:2113']
+      - targets: ['<HIN_GATEWAY_IP>:2113']
         labels:
           environment: 'stargate-<name>'
           service: 'smimekeys-client'
@@ -96,7 +96,7 @@ scrape_configs:
 
   - job_name: 'stargate-<name>-irisagent'
     static_configs:
-      - targets: ['<STARGATE_IP>:2114']
+      - targets: ['<HIN_GATEWAY_IP>:2114']
         labels:
           environment: 'stargate-<name>'
           service: 'irisagent'
@@ -104,7 +104,7 @@ scrape_configs:
 
   - job_name: 'stargate-<name>-policy'
     static_configs:
-      - targets: ['<STARGATE_IP>:2115']
+      - targets: ['<HIN_GATEWAY_IP>:2115']
         labels:
           environment: 'stargate-<name>'
           service: 'policy'
@@ -112,7 +112,7 @@ scrape_configs:
 
   - job_name: 'stargate-<name>-mxengine'
     static_configs:
-      - targets: ['<STARGATE_IP>:2116']
+      - targets: ['<HIN_GATEWAY_IP>:2116']
         labels:
           environment: 'stargate-<name>'
           service: 'mxengine'
@@ -120,14 +120,14 @@ scrape_configs:
 
   - job_name: 'stargate-<name>-node'
     static_configs:
-      - targets: ['<STARGATE_IP>:9100']
+      - targets: ['<HIN_GATEWAY_IP>:9100']
         labels:
           environment: 'stargate-<name>'
           service: 'node-exporter'
     metrics_path: /metrics
 ```
 
-Ersetzen Sie `<STARGATE_IP>` durch die öffentliche oder private IP des Servers und `<name>` durch einen Bereitstellungsbezeichner (z.B. `prod`, `customer-name`).
+Ersetzen Sie `<HIN_GATEWAY_IP>` durch die öffentliche oder private IP des Servers und `<name>` durch einen Bereitstellungsbezeichner (z.B. `prod`, `customer-name`).
 
 !!! tip
     Die Labels `environment` und `service` ermöglichen das Filtern in Grafana-Dashboards über mehrere Stargate-Instanzen hinweg.
@@ -147,7 +147,7 @@ Der node-exporter-Dienst stellt standardmäßige Host-Metriken (CPU, Speicher, F
 ## Zusammenfassung der exponierten Ports
 
 | Port | Dienst | Protokoll | Zweck |
-|------|---------|----------|---------|
+| ------ | --------- | ---------- | --------- |
 | `8190` | Dozzle (via oauth2-proxy) | HTTPS | Authentifizierter Log-Viewer-UI (Keycloak-SSO) |
 | `9100` | node-exporter | HTTP | Host-Metriken (Prometheus) |
 | `2113` | smimekeys-client | HTTP | App-Metriken (Prometheus) |

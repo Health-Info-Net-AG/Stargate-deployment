@@ -1,6 +1,6 @@
 # Troubleshooting & Diagnostics
 
-A structured guide to diagnosing a Stargate appliance from the command line: what to check, where the logs are, and safe recovery actions.
+A structured guide to diagnosing a HIN Gateway appliance from the command line: what to check, where the logs are, and safe recovery actions.
 
 !!! info "Where the scripts are"
     The helper scripts live in the deployment directory under `scripts/`. Commands below use the **full path for VM images**: `/usr/share/stargate-deployment/docker-compose/scripts/`. If you installed elsewhere, substitute your own install directory (the folder that contains `docker-compose.yml` and `scripts/`).
@@ -12,7 +12,7 @@ A structured guide to diagnosing a Stargate appliance from the command line: wha
     ```
 
 !!! info "Where the writable state is"
-    The `docker-compose/` tree above (scripts, `docker-compose.yml`, config templates) is **read-only at runtime**. All writable state - `.env`, `customer-config.sh`, `secrets/`, generated TLS/Keycloak/APISIX config, backups, and every service's own data - lives under **`/var/data`** instead (`STARGATE_DATA_DIR` overrides this root for testing). In particular: config/secrets are under `/var/data/vereign/`, backups under `/var/data/backups/`, and the update log at `/var/data/vereign/update.log`. See [Data Layout](Docker-advanced.md#data-layout) for the full breakdown. Prefer the wrapper scripts (`./scripts/start.sh`, `./scripts/update.sh`, ...) over a bare `docker compose up -d`, which won't pick up `/var/data/vereign/.env` on its own.
+    The `docker-compose/` tree above (scripts, `docker-compose.yml`, config templates) is **read-only at runtime**. All writable state - `.env`, `customer-config.sh`, `secrets/`, generated TLS/Keycloak/APISIX config, backups, and every service's own data - lives under **`/var/data`** instead (`HIN_GATEWAY_DATA_DIR` overrides this root for testing). In particular: config/secrets are under `/var/data/vereign/`, backups under `/var/data/backups/`, and the update log at `/var/data/vereign/update.log`. See [Data Layout](Docker-advanced.md#data-layout) for the full breakdown. Prefer the wrapper scripts (`./scripts/start.sh`, `./scripts/update.sh`, ...) over a bare `docker compose up -d`, which won't pick up `/var/data/vereign/.env` on its own.
 
 ---
 
@@ -42,7 +42,7 @@ It reports pass/fail for: **containers** (running/healthy), **liveness** endpoin
 ## 2. Where the logs are
 
 | Layer | Command | What it shows |
-|-------|---------|---------------|
+| ------- | --------- | --------------- |
 | Boot / first-install / auto-start | `sudo journalctl -u stargate -n 200 --no-pager` | The systemd service that runs `start.sh` on boot and the first-boot install |
 | Update runs | `cat /var/data/vereign/update.log` | Output of the last dashboard/host-triggered `update.sh` |
 | A single service | `docker logs stargate-<service> --tail 100` | e.g. `stargate-dashboard`, `stargate-mxengine`, `stargate-keycloak` |
@@ -70,7 +70,7 @@ docker compose ps -a --format 'table {{.Service}}\t{{.Status}}'
 Read the `Status` column:
 
 | Status | Meaning | Action |
-|--------|---------|--------|
+| -------- | --------- | -------- |
 | `Up ... (healthy)` | Running fine | - |
 | `Up ...` (no health) | Running; no healthcheck defined | Check its `docker logs` if you suspect trouble |
 | `Restarting` | Crash-looping | `docker logs stargate-<svc>` - fix the root error (config, secret, dependency) |
@@ -172,7 +172,7 @@ cd docker-compose
 /usr/share/stargate-deployment/docker-compose/scripts/update.sh
 ```
 
-`update.sh` regenerates `.env`, pulls the images, and recreates the affected services - you do **not** need to restart Stargate manually. When it completes, retry the update from the dashboard; it will now proceed.
+`update.sh` regenerates `.env`, pulls the images, and recreates the affected services - you do **not** need to restart HIN Gateway manually. When it completes, retry the update from the dashboard; it will now proceed.
 
 !!! warning
     Do not use `git pull` here. On a working tree with local edits it aborts with "local changes would be overwritten", which forces a `git stash` / merge-conflict / manual-recovery detour. The `git checkout -f` + `git reset --hard` sequence above avoids that entirely and is the safe, repeatable way to bring the repo current.
@@ -254,7 +254,7 @@ for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 ```
 
 | Port | Service | Direction |
-|------|---------|-----------|
+| ------ | --------- | ----------- |
 | `25` | Stalwart SMTP (inbound mail) | inbound |
 | `443` | Dashboard (HTTPS) | inbound |
 | `8180` | Keycloak | inbound |
@@ -296,19 +296,19 @@ The following instructions describe how to update a Verimesh instance from v0.5.
 *Note:* You will need to login to the VM using the Linux administrator account.
 
 ### Update Steps
+
 1. Edit the .env file and update the ops-agent version to v0.0.3.
 2. Edit the customer configuration and update the ops-agent version to v0.0.3 there as well.
-3. Switch to the main branch: `git checkout main` 
-4. Pull the latest changes: `git pull` 
-5. Update the ops-agent container: `docker compose up -d ops-agent` 
+3. Switch to the main branch: `git checkout main`
+4. Pull the latest changes: `git pull`
+5. Update the ops-agent container: `docker compose up -d ops-agent`
 6. Log in to the Dashboard.
-6. Navigate to Settings.
-7. In the Update section at the bottom of the page, enter the target version (v0.5.3) and start the update process.
-
+7. Navigate to Settings.
+8. In the Update section at the bottom of the page, enter the target version (v0.5.3) and start the update process.
 
 ## Setup updated keycloak
 
-Note: This instructions is valid if you are running on VM image v0.5.1 and then you updated to newer version. 
+Note: This instructions is valid if you are running on VM image v0.5.1 and then you updated to newer version.
 
 After the latest Keycloak update, a breaking change causes authenticated users to be unexpectedly redirected to the login page when navigating to specific application routes (e.g., Peers, Peer Certificates).
 
@@ -325,54 +325,52 @@ To resolve this, the following manual configuration must be completed in the *Ke
 4. Navigate to the Client scopes tab → click dashboard-dedicated
 5. Select Configure a new mapper → Audience
 6. Set the following configurations:
-    * Name: apisix-audience
-    * Included client audience: apisix (select from dropdown)
-    * Included custom audience: (leave empty)
-    * Add to access token: On
-    * Add to token introspection: On
-    * Add to ID token / lightweight token: Off
+    - Name: apisix-audience
+    - Included client audience: apisix (select from dropdown)
+    - Included custom audience: (leave empty)
+    - Add to access token: On
+    - Add to token introspection: On
+    - Add to ID token / lightweight token: Off
 
 7. Click Save
 
  <br> ![keycloak-console](assets/troubleshooting/keycloak-update.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
- 
- ## Keycloak Reset Password 
+## Keycloak Reset Password
 
-# Resetting a Stargate User Password in Keycloak
+# Resetting a HIN Gateway User Password in Keycloak
 
-Follow the steps below to reset the password of a Stargate user through the Keycloak administration console.
-
+Follow the steps below to reset the password of a HIN Gateway user through the Keycloak administration console.
 
 1. **Connect to the HIN Gateway VM**
 
-   * Open the VM console, or connect to the HIN Gateway VM via SSH.
+   - Open the VM console, or connect to the HIN Gateway VM via SSH.
 
 2. **Retrieve the Keycloak administrator credentials**
 
-   * Open the `/var/data/vereign/.env` file
-   * Locate the following variables:
-     * `KEYCLOAK_ADMIN_USER`
-     * `KEYCLOAK_ADMIN_PASSWORD`
-   
+   - Open the `/var/data/vereign/.env` file
+   - Locate the following variables:
+     - `KEYCLOAK_ADMIN_USER`
+     - `KEYCLOAK_ADMIN_PASSWORD`
+
 3. **Open the Keycloak Admin Console**
-   * In a browser, navigate to: `http://<VM-IP>:8180/admin/master/console`
-   * Replace `<VM-IP>` with the IP address of the HIN Gateway VM.
+   - In a browser, navigate to: `http://<VM-IP>:8180/admin/master/console`
+   - Replace `<VM-IP>` with the IP address of the HIN Gateway VM.
 
 4. **Sign in to Keycloak**
-   * Enter the administrator username and password retrieved from the `.env` file.
-   * keep the same administrator password if you change it you must store it securely 
+   - Enter the administrator username and password retrieved from the `.env` file.
+   - keep the same administrator password if you change it you must store it securely
 
-5. **Select the Stargate realm**
-   * From the realm selector in the Keycloak Admin Console, select **Stargate**.
+5. **Select the HIN Gateway realm**
+   - From the realm selector in the Keycloak Admin Console, select **HIN Gateway**.
 
 6. **Find the user**
-   * Navigate to **Users**.
-   * Search for and select the Stargate user whose password needs to be reset.
+   - Navigate to **Users**.
+   - Search for and select the HIN Gateway user whose password needs to be reset.
 
 7. **Reset the user's password**
-   * Select the option to reset the user's password.
-   * Enter the new password and confirm the change.
-   
+   - Select the option to reset the user's password.
+   - Enter the new password and confirm the change.
+
 **Do not change or reset the Keycloak administrator password as part of this procedure.**
 Any changes of admin password can lead to potention lockdown of keyclaok without anyone be able to access it!

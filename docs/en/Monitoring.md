@@ -1,11 +1,11 @@
 # Monitoring and Logs
 
-Stargate includes built-in monitoring and log collection services that run alongside the application containers.
+HIN Gateway includes built-in monitoring and log collection services that run alongside the application containers.
 
 ## Components
 
 | Service | Port | Purpose |
-|---------|------|---------|
+| --------- | ------ | --------- |
 | node-exporter | `9100` | Host-level metrics (CPU, memory, disk, network) for Prometheus |
 | version-collector | - | Collects app versions from `/liveness` endpoints |
 | Alloy | `12345` | Docker log collector - ships container logs to Loki |
@@ -17,7 +17,7 @@ Stargate includes built-in monitoring and log collection services that run along
 
 ## Dozzle - Local Log Viewer
 
-Dozzle provides a web-based UI to view real-time logs from all Stargate containers. It is optional and enabled by setting `DOZZLE_ENABLED="true"` in `customer-config.sh`.
+Dozzle provides a web-based UI to view real-time logs from all HIN Gateway containers. It is optional and enabled by setting `DOZZLE_ENABLED="true"` in `customer-config.sh`.
 
 Access is protected by **Keycloak**: an `oauth2-proxy` sits in front of Dozzle and requires the same login as the dashboard (the `stargate` realm). Dozzle itself is not exposed directly.
 
@@ -34,11 +34,11 @@ Logs are organized by service. By selecting a specific service, you can view its
 
 ## Grafana Alloy - Log Forwarding
 
-Grafana Alloy collects logs from all Stargate application containers and writes them to the local Loki instance. Optionally, logs can also be forwarded to a remote Loki-compatible endpoint for centralized monitoring.
+Grafana Alloy collects logs from all HIN Gateway application containers and writes them to the local Loki instance. Optionally, logs can also be forwarded to a remote Loki-compatible endpoint for centralized monitoring.
 
 ### How it works
 
-1. Alloy discovers Stargate containers via the Docker socket
+1. Alloy discovers HIN Gateway containers via the Docker socket
 2. Logs are always written to the **local Loki** instance (used by the dashboard for log export)
 3. If a remote Loki URL is configured, logs are **additionally forwarded** to that endpoint
 
@@ -61,18 +61,18 @@ Leave the field blank to disable remote log forwarding.
 
 ### Requirements on the remote side
 
-Your remote Loki endpoint must be reachable from the Stargate server over HTTPS (port 443). If you use IP-based allowlisting on your ingress, add the Stargate server's public IP.
+Your remote Loki endpoint must be reachable from the HIN Gateway server over HTTPS (port 443). If you use IP-based allowlisting on your ingress, add the HIN Gateway server's public IP.
 
 ---
 
 ## Prometheus Metrics
 
-Stargate exposes Prometheus-compatible metrics endpoints from its application containers. These can be scraped by any Prometheus-compatible server for centralized metrics collection.
+HIN Gateway exposes Prometheus-compatible metrics endpoints from its application containers. These can be scraped by any Prometheus-compatible server for centralized metrics collection.
 
 ### Available endpoints
 
 | Service | Port | Path |
-|---------|------|------|
+| --------- | ------ | ------ |
 | smimekeys-client | `2113` | `/metrics` |
 | irisagent | `2114` | `/metrics` |
 | policy | `2115` | `/metrics` |
@@ -82,13 +82,13 @@ Stargate exposes Prometheus-compatible metrics endpoints from its application co
 
 ### Scrape configuration
 
-Add the Stargate server as a target in your Prometheus configuration. Example for a single instance:
+Add the HIN Gateway server as a target in your Prometheus configuration. Example for a single instance:
 
 ```yaml
 scrape_configs:
   - job_name: 'stargate-<name>-smimekeys'
     static_configs:
-      - targets: ['<STARGATE_IP>:2113']
+      - targets: ['<HIN_GATEWAY_IP>:2113']
         labels:
           environment: 'stargate-<name>'
           service: 'smimekeys-client'
@@ -96,7 +96,7 @@ scrape_configs:
 
   - job_name: 'stargate-<name>-irisagent'
     static_configs:
-      - targets: ['<STARGATE_IP>:2114']
+      - targets: ['<HIN_GATEWAY_IP>:2114']
         labels:
           environment: 'stargate-<name>'
           service: 'irisagent'
@@ -104,7 +104,7 @@ scrape_configs:
 
   - job_name: 'stargate-<name>-policy'
     static_configs:
-      - targets: ['<STARGATE_IP>:2115']
+      - targets: ['<HIN_GATEWAY_IP>:2115']
         labels:
           environment: 'stargate-<name>'
           service: 'policy'
@@ -112,7 +112,7 @@ scrape_configs:
 
   - job_name: 'stargate-<name>-mxengine'
     static_configs:
-      - targets: ['<STARGATE_IP>:2116']
+      - targets: ['<HIN_GATEWAY_IP>:2116']
         labels:
           environment: 'stargate-<name>'
           service: 'mxengine'
@@ -120,17 +120,17 @@ scrape_configs:
 
   - job_name: 'stargate-<name>-node'
     static_configs:
-      - targets: ['<STARGATE_IP>:9100']
+      - targets: ['<HIN_GATEWAY_IP>:9100']
         labels:
           environment: 'stargate-<name>'
           service: 'node-exporter'
     metrics_path: /metrics
 ```
 
-Replace `<STARGATE_IP>` with the server's public or private IP and `<name>` with a deployment identifier (e.g., `prod`, `customer-name`).
+Replace `<HIN_GATEWAY_IP>` with the server's public or private IP and `<name>` with a deployment identifier (e.g., `prod`, `customer-name`).
 
 !!! tip
-    The `environment` and `service` labels enable filtering in Grafana dashboards across multiple Stargate instances.
+    The `environment` and `service` labels enable filtering in Grafana dashboards across multiple HIN Gateway instances.
 
 ### Firewall requirements
 
@@ -147,7 +147,7 @@ The node-exporter service exposes standard host-level metrics (CPU, memory, disk
 ## Summary of exposed ports
 
 | Port | Service | Protocol | Purpose |
-|------|---------|----------|---------|
+| ------ | --------- | ---------- | --------- |
 | `8190` | Dozzle (via oauth2-proxy) | HTTPS | Authenticated log viewer UI (Keycloak SSO) |
 | `9100` | node-exporter | HTTP | Host metrics (Prometheus) |
 | `2113` | smimekeys-client | HTTP | App metrics (Prometheus) |

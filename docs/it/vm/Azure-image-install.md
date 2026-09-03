@@ -1,6 +1,6 @@
-# Deployment Stargate su Azure tramite immagine
+# Deployment HIN Gateway su Azure tramite immagine
 
-Distribuisci Stargate su Azure
+Distribuisci HIN Gateway su Azure
 
 ## Requisiti della porta 25 (SMTP) di Azure
 
@@ -68,7 +68,7 @@ Riferimento: [Risolvere i problemi di connettività SMTP in uscita in Azure](htt
 !!! warning "Collega prima il disco dati"
     Prima del primo avvio, collega un secondo disco vuoto di almeno 30 GB. Al primo avvio l'appliance lo formatta come disco dati (`VEREIGN-DATA`, montato su `/var/data`) e vi conserva tutta la configurazione e i dati; senza di esso l'avvio fallisce ed esegue il rollback. Vedi [Guida all'installazione → Passo 4](../Installation-guide.md#passo-4-caricamento-dellimmagine-vm).
 
-## Accedi e inizializza l'istanza Stargate
+## Accedi e inizializza l'istanza HIN Gateway
 
 - Accedi alla VM con l'utente scelto durante la creazione della VM e l'indirizzo IP pubblico della nuova VM:
 - Per ottenere la password `hinadmin`, invia un'email a <support@hin.ch> con oggetto: **"Password required for VM installation."**
@@ -96,6 +96,6 @@ cd ~/stargate-deployment/docker-compose/
 
 !!! tip "Supporto"
 
-    Per qualsiasi domanda o problema relativo al deployment e al funzionamento dell'appliance Stargate, contatta il supporto HIN.
+    Per qualsiasi domanda o problema relativo al deployment e al funzionamento dell'appliance HIN Gateway, contatta il supporto HIN.
 
     Includi informazioni rilevanti come il nome del cliente, la versione dell'appliance e screenshot/[log](../Docker-advanced.md#fornire-log-al-supporto) dove applicabile, per aiutarci a elaborare la tua richiesta in modo efficiente.

@@ -1,4 +1,4 @@
-# Configurazione avanzata di Stargate Docker
+# Configurazione avanzata di HIN Gateway Docker
 
 ## Backup
 
@@ -60,11 +60,11 @@ tar -xzf backups/20260130_143022.tar.gz -C /tmp/
 cat /tmp/20260130_143022/database/mxengine.sql | docker exec -i stargate-postgres psql -U postgres -d mxengine
 ```
 
-## Aggiornamento di Stargate
+## Aggiornamento di HIN Gateway
 
 ### Aggiornare script di deployment e configurazione
 
-Il repository di deployment di Stargate riceve aggiornamenti per script (`install.sh`, `start.sh`, `health-check.sh`, `restore.sh`, ecc.), modelli di configurazione e documentazione. Per applicare questi aggiornamenti:
+Il repository di deployment di HIN Gateway riceve aggiornamenti per script (`install.sh`, `start.sh`, `health-check.sh`, `restore.sh`, ecc.), modelli di configurazione e documentazione. Per applicare questi aggiornamenti:
 
 #### 1. Creare un backup prima dell'aggiornamento
 
@@ -163,7 +163,7 @@ WG_TRANSPORT_MODE=tcp
 ## URL dei servizi
 
 | Servizio | URL/Porta |
-|---------|----------|
+| --------- | ---------- |
 | Dashboard | <https://localhost> |
 | smimekeys-client | <http://localhost:8081> |
 | policy | <http://localhost:8082> |
@@ -191,7 +191,7 @@ curl http://localhost:8084/liveness  # mxengine
 Tutti i servizi applicativi espongono metriche Prometheus sulla porta 2112 (internamente), mappate a diverse porte host:
 
 | Servizio | Porta metriche | URL metriche |
-|---------|--------------|-------------|
+| --------- | -------------- | ------------- |
 | smimekeys-client | `2113` | <http://localhost:2113/metrics> |
 | irisagent | `2114` | <http://localhost:2114/metrics> |
 | policy | `2115` | <http://localhost:2115/metrics> |
@@ -289,7 +289,7 @@ ALLOY_HOSTNAME=stargate-acme
 
 ## Stalwart MTA + mtaconf
 
-Stargate utilizza **Stalwart** come mail transfer agent e **mtaconf** come demone di configurazione. Il dashboard invia la configurazione di domini e relay all'API REST di mtaconf, che la invia a Stalwart tramite la CLI di gestione.
+HIN Gateway utilizza **Stalwart** come mail transfer agent e **mtaconf** come demone di configurazione. Il dashboard invia la configurazione di domini e relay all'API REST di mtaconf, che la invia a Stalwart tramite la CLI di gestione.
 
 ### Architettura del flusso di posta
 
@@ -349,7 +349,7 @@ Non c'è configurazione per dominio in `customer-config.sh` o `.env` - gli opera
 ### Routing della posta (Migrazione dal vecchio MGW)
 
 !!! tip "Differenza chiave rispetto al vecchio HIN-MGW"
-    Nel vecchio MGW, era necessario configurare manualmente un server di destinazione per dominio. In Stargate, il routing della posta è deciso da **record MX DNS per impostazione predefinita** - Stalwart risolve il MX di ogni dominio al momento della consegna. La pagina `/mail` del dashboard consente di sovrascrivere questo comportamento per dominio (es. per relayare attraverso il tenant M365 / Exchange) senza toccare il DNS.
+    Nel vecchio MGW, era necessario configurare manualmente un server di destinazione per dominio. In HIN Gateway, il routing della posta è deciso da **record MX DNS per impostazione predefinita** - Stalwart risolve il MX di ogni dominio al momento della consegna. La pagina `/mail` del dashboard consente di sovrascrivere questo comportamento per dominio (es. per relayare attraverso il tenant M365 / Exchange) senza toccare il DNS.
 
 **Predefinito - automatico tramite DNS MX:**
 
@@ -363,11 +363,11 @@ domain3.com    MX 10  exchange3.domain3.com
 
 Funziona per qualsiasi numero di domini - ogni dominio può puntare a un server di posta diverso e Stalwart instraderà di conseguenza.
 
-**Se Stargate è l'unico record MX** per un dominio, Stalwart lo filtrerà e non avrà alcuna destinazione di consegna. Aggiungere un secondo record MX che punti al server di posta con una priorità più alta (= numero inferiore) in modo che Stalwart lo utilizzi come destinazione di consegna:
+**Se HIN Gateway è l'unico record MX** per un dominio, Stalwart lo filtrerà e non avrà alcuna destinazione di consegna. Aggiungere un secondo record MX che punti al server di posta con una priorità più alta (= numero inferiore) in modo che Stalwart lo utilizzi come destinazione di consegna:
 
 ```plain
 example.com    MX 10  exchange.example.com      ← destinazione di consegna (server di posta)
-example.com    MX 20  stargate.example.com      ← gateway in entrata (Stargate)
+example.com    MX 20  stargate.example.com      ← gateway in entrata (HIN Gateway)
 ```
 
 **Alternativa - relay esplicito per dominio (basato sul mittente):**
@@ -377,7 +377,7 @@ Per il relay di ritorno attraverso M365 / Exchange Online, configurare le destin
 ### Porte
 
 | Porta | Scopo |
-|------|---------|
+| ------ | --------- |
 | `25` | Listener SMTP principale (connessioni esterne) |
 | `10026` | Porta di reiniezione (mxengine → stalwart, solo interno) |
 | `1587` | Ingresso SMTP MXEngine (stalwart → mxengine, solo interno) |
@@ -389,21 +389,25 @@ Per il relay di ritorno attraverso M365 / Exchange Online, configurare le destin
 ### Verifica
 
 Controllare lo stato di Stalwart
+
 ```bash
 docker exec stargate-stalwart stalwart-cli -u http://localhost:8080 server list-listeners
 ```
 
 Controllare i log
+
 ```bash
 docker logs stargate-stalwart
 ```
 
 Testare la connessione alla porta 25
+
 ```bash
 telnet localhost 25
 ```
 
 Testare la porta interna 10026 (dal container mxengine)
+
 ```bash
 docker exec stargate-mxengine nc -zv stalwart 10026
 ```
@@ -412,7 +416,7 @@ docker exec stargate-mxengine nc -zv stalwart 10026
 
 Come ogni servizio, la versione dell'immagine mtaconf fa parte di una release e si aggiorna tramite la dashboard - non modificando il suo tag manualmente. Selezionare la release desiderata nella pagina di aggiornamento della dashboard per applicarla.
 
-### Risoluzione dei problemi di Stargate
+### Risoluzione dei problemi di HIN Gateway
 
 **Posta non elaborata da mxengine**:
 
@@ -448,16 +452,16 @@ Come ogni servizio, la versione dell'immagine mtaconf fa parte di una release e 
 
 ## WireGuard (Comunicazione Agente-Agente)
 
-IRISAgent utilizza WireGuard per stabilire tunnel crittografati sicuri tra istanze Stargate per la consegna di messaggi sigillati.
+IRISAgent utilizza WireGuard per stabilire tunnel crittografati sicuri tra istanze HIN Gateway per la consegna di messaggi sigillati.
 
 ### Come funziona
 
-Ogni istanza Stargate utilizza l'IP pubblico statico reale del proprio server come indirizzo del tunnel WireGuard. Questo garantisce l'unicità tra tutti i deployment senza coordinazione manuale.
+Ogni istanza HIN Gateway utilizza l'IP pubblico statico reale del proprio server come indirizzo del tunnel WireGuard. Questo garantisce l'unicità tra tutti i deployment senza coordinazione manuale.
 
 ```mermaid
 block
 columns 5
-  block:Stargate["Il tuo Stargate (203.0.113.50)"]:2
+  block:HIN Gateway["Il tuo HIN Gateway (203.0.113.50)"]:2
     columns 1
     A
     space
@@ -511,7 +515,7 @@ Per la configurazione iniziale con l'ambiente HIN Test:
 3. Aprire i log IRISAgent (`docker compose logs irisagent`) e copiare la riga `wireguard public key:`. Inviarla insieme a `DEPLOYMENT_NAME` e `SERVER_STATIC_IP` a Vereign (<kalin.canov@vereign.com>) in modo che possano registrare il peer sul lato CA.
 4. Dopo la conferma della registrazione da parte di Vereign, completare `/onboarding` nel dashboard per emettere il certificato S/MIME.
 
-Per qualsiasi **peer aggiuntivo** (peer-to-peer tra due Stargate), scambiare chiavi pubbliche + endpoint con l'altra parte e aggiungere la connessione tramite l'API IRISAgent:
+Per qualsiasi **peer aggiuntivo** (peer-to-peer tra due HIN Gateway), scambiare chiavi pubbliche + endpoint con l'altra parte e aggiungere la connessione tramite l'API IRISAgent:
 
 ```bash
 curl --location 'localhost:8083/v1/connections' \
@@ -622,7 +626,7 @@ columns 8
 Impostazioni in `customer-config.sh`:
 
 ```bash
-## Repository Git contenente le policy (preconfigurato con le policy HIN Stargate)
+## Repository Git contenente le policy (preconfigurato con le policy HIN HIN Gateway)
 POLICY_SYNC_REPO_URL="https://github.com/Health-Info-Net-AG/Stargate-policies.git"
 
 ## Opzionale: Autenticazione per repo privati
@@ -794,7 +798,7 @@ Questo è il problema più comune dopo l'installazione iniziale. Il certificato 
 
    Insieme a `DEPLOYMENT_NAME`, `SERVER_STATIC_IP` e `WG_INTERFACE_PORT` (se modificato da 19818).
 
-2. **Firewall che blocca la porta 19818** - Assicurarsi che `19818/TCP` sia aperto sia in entrata che in uscita sul server Stargate.
+2. **Firewall che blocca la porta 19818** - Assicurarsi che `19818/TCP` sia aperto sia in entrata che in uscita sul server HIN Gateway.
 
 3. **Nome host errato** - Se il nome host di Stalwart è ancora impostato sul valore predefinito del modello (`mail.example.com`), aggiornarlo tramite la pagina `/mail` del dashboard.
 

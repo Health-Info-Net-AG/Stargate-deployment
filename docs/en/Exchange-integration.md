@@ -1,9 +1,9 @@
-# Exchange Integration with Stargate
+# Exchange Integration with HIN Gateway
 
-This guide explains how to configure Microsoft Exchange (Online and On-Premises) to route mail through the Stargate gateway for S/MIME signing and encryption.
+This guide explains how to configure Microsoft Exchange (Online and On-Premises) to route mail through the HIN Gateway gateway for S/MIME signing and encryption.
 
 <!-- Internal reference
-     This guide is based on the [Stargate mail relay setup](https://plan.vereign.com/projects/mail-gateway/wiki/stargate-mail-relay-setup) wiki page (by Zdravko Komitov). -->
+     This guide is based on the [HIN Gateway mail relay setup](https://plan.vereign.com/projects/mail-gateway/wiki/stargate-mail-relay-setup) wiki page (by Zdravko Komitov). -->
 
 ![Mesh node](assets/hin-mesh-node-orange-rgb-1.jpg){ width=32%; }
 ![O365 as MX Server](assets/hin-mesh-node-orange-rgb-2.png){ width=32%; }
@@ -11,7 +11,7 @@ This guide explains how to configure Microsoft Exchange (Online and On-Premises)
 
 ## Overview
 
-Stargate acts as a mail relay between external mail servers and your Exchange environment. Two integration patterns are supported:
+HIN Gateway acts as a mail relay between external mail servers and your Exchange environment. Two integration patterns are supported:
 
 **Pattern A - Exchange Online as primary MX with transport rules:**
 
@@ -27,40 +27,40 @@ flowchart LR
     TR2["Transport Rule"]
     OC["Outbound Connector"]
     C["Connector"]
-    S1["Stargate"]
-    S2["Stargate"]
+    S1["HIN Gateway"]
+    S2["HIN Gateway"]
 ```
 
-**Pattern B - Stargate as primary MX:**
+**Pattern B - HIN Gateway as primary MX:**
 
 ```mermaid
 flowchart LR
     I1 --> mx15 --> mx20
-    EO --> TR --> OC --> Stargate --> I2
+    EO --> TR --> OC --> HIN Gateway --> I2
     I1["Internet"]
     I2["Internet"]
-    mx15["Stargate (MX priority 15)"]
+    mx15["HIN Gateway (MX priority 15)"]
     mx20["Exchange Online (MX priority 20)"]
     EO["Exchange Online"]
     TR["Transport Rule"]
     OC["Outbound Connector"]
-    Stargate
+    HIN Gateway
 ```
 
 In both patterns, you need:
 
-1. **DNS records** pointing to the Stargate server
-2. **Outbound connector** - routes mail from Exchange to Stargate
-3. **Inbound connector** - accepts mail from Stargate into Exchange
+1. **DNS records** pointing to the HIN Gateway server
+2. **Outbound connector** - routes mail from Exchange to HIN Gateway
+3. **Inbound connector** - accepts mail from HIN Gateway into Exchange
 4. **Transport rule** - triggers the outbound connector for external recipients
 
 ## Prerequisites
 
 Before configuring Exchange, ensure:
 
-- [X] Stargate is installed and running ([deployment instructions](Docker-deploy.md))
-- [X] You have the **Stargate server's public IP address** (referred to as `<STARGATE_IP>` below)
-- [X] You have the **mail hostname** of the Stargate server (referred to as `<MAIL_HOSTNAME>`, e.g. `mail.example.com`)
+- [X] HIN Gateway is installed and running ([deployment instructions](Docker-deploy.md))
+- [X] You have the **HIN Gateway server's public IP address** (referred to as `<HIN_GATEWAY_IP>` below)
+- [X] You have the **mail hostname** of the HIN Gateway server (referred to as `<MAIL_HOSTNAME>`, e.g. `mail.example.com`)
 - [X] You know your **mail domain** (referred to as `<YOUR_DOMAIN>`, e.g. `example.com`)
 - [X] You have **Exchange admin** access (Exchange Admin Center or on-premises Exchange Management Shell)
 - [X] DNS records are configured per the [DNS Setup Guide](DNS-setup.md) (A, MX, SPF at minimum)
@@ -73,17 +73,17 @@ See the [DNS Setup Guide](DNS-setup.md) for complete instructions on configuring
 
 At minimum, before proceeding with the Exchange configuration below, you need:
 
-- **A record**: `<MAIL_HOSTNAME>` pointing to `<STARGATE_IP>`
-- **MX record**: `<YOUR_DOMAIN>` with Stargate at higher priority (lower number) than Exchange
-- **SPF record**: `ip4:<STARGATE_IP>` and `ip4:<HIN_SEALER_IP>` added to your domain's TXT record (see [DNS Setup Guide - SPF](DNS-setup.md#spf-record) for sealer IPs)
+- **A record**: `<MAIL_HOSTNAME>` pointing to `<HIN_GATEWAY_IP>`
+- **MX record**: `<YOUR_DOMAIN>` with HIN Gateway at higher priority (lower number) than Exchange
+- **SPF record**: `ip4:<HIN_GATEWAY_IP>` and `ip4:<HIN_SEALER_IP>` added to your domain's TXT record (see [DNS Setup Guide - SPF](DNS-setup.md#spf-record) for sealer IPs)
 
 ---
 
 ## Part 2: Exchange Online Configuration
 
-### Step A: Create the Outbound Connector (Office 365 → Stargate)
+### Step A: Create the Outbound Connector (Office 365 → HIN Gateway)
 
-This connector routes outbound mail from Exchange Online to the Stargate relay server.
+This connector routes outbound mail from Exchange Online to the HIN Gateway relay server.
 
 1. Navigate to the [Exchange Admin Center - Connectors](https://admin.exchange.microsoft.com/#/connectors)
 
@@ -96,7 +96,7 @@ This connector routes outbound mail from Exchange Online to the Stargate relay s
 4. **Connector name**: Enter a descriptive name, e.g.:
 
    ```plain
-   From Office 365 to Stargate relay server
+   From Office 365 to HIN Gateway relay server
    ```
 
    - Check **"Retain internal Exchange email headers"**
@@ -109,29 +109,29 @@ This connector routes outbound mail from Exchange Online to the Stargate relay s
     This is important - the connector won't route any mail by itself. It will only be used when triggered by the transport rule created in Step C.
 
 6. **Routing**: Select **"Route email through these smart hosts"**
-   - Enter the Stargate server IP address: `<STARGATE_IP>`
+   - Enter the HIN Gateway server IP address: `<HIN_GATEWAY_IP>`
    - Click **"+"** to add it, then click **"Next"**
 
 7. **Security restrictions**: Select **"Any digital certificate, including self-signed certificates"**
    - Click **"Next"**
 
 !!! note
-    Stargate's MTA (Stalwart) accepts opportunistic TLS on inbound connections. Selecting "any digital certificate" ensures connectivity even with self-signed certificates.
+    HIN Gateway's MTA (Stalwart) accepts opportunistic TLS on inbound connections. Selecting "any digital certificate" ensures connectivity even with self-signed certificates.
 
 8. **Validation email**: Enter a valid email address for your domain (e.g. `user@<YOUR_DOMAIN>`)
    - Click **"+"**, then click **"Validate"**
    - Wait for validation to complete, then click **"Next"**
 
 !!! tip
-    For validation to succeed, the Stargate server must be running and accepting mail on port 25.
+    For validation to succeed, the HIN Gateway server must be running and accepting mail on port 25.
 
 9. Review the settings and click **"Create connector"**
 
 10. On the confirmation screen, click **"Done"**
 
-### Step B: Create the Inbound Connector (Stargate → Office 365)
+### Step B: Create the Inbound Connector (HIN Gateway → Office 365)
 
-This connector accepts mail from the Stargate relay server into Exchange Online.
+This connector accepts mail from the HIN Gateway relay server into Exchange Online.
 
 1. From the [Connectors page](https://admin.exchange.microsoft.com/#/connectors), click **"+ Add a connector"**
 
@@ -142,18 +142,18 @@ This connector accepts mail from the Stargate relay server into Exchange Online.
 3. **Connector name**: Enter a descriptive name, e.g.:
 
    ```plain
-   Receive mail from Stargate relay server
+   Receive mail from HIN Gateway relay server
    ```
 
    - Check **"Retain internal Exchange email headers"**
    - Click **"Next"**
 
 4. **Authenticating sent email**: Select **"By verifying that the IP address of the sending server matches one of the following IP addresses that belong exclusively to your organization"**
-   - Enter the Stargate server IP address: `<STARGATE_IP>`
+   - Enter the HIN Gateway server IP address: `<HIN_GATEWAY_IP>`
    - Click **"+"** to add it, then click **"Next"**
 
 !!! note
-    This tells Exchange Online to trust mail from this specific IP address, bypassing additional spam/authentication checks for mail that has already been processed by Stargate.
+    This tells Exchange Online to trust mail from this specific IP address, bypassing additional spam/authentication checks for mail that has already been processed by HIN Gateway.
 
 5. Review the settings and click **"Create connector"**
 
@@ -164,13 +164,13 @@ This connector accepts mail from the Stargate relay server into Exchange Online.
 After creating both connectors, the Connectors page should show:
 
 | Status | Name | From | To |
-|--------|------|------|-----|
-| On | Receive mail from Stargate relay server | Your org | O365 |
-| On | From Office 365 to Stargate relay server | O365 | Your org |
+| -------- | ------ | ------ | ----- |
+| On | Receive mail from HIN Gateway relay server | Your org | O365 |
+| On | From Office 365 to HIN Gateway relay server | O365 | Your org |
 
 ### Step C: Create the Transport Rule
 
-The transport rule redirects all outbound mail through the Stargate outbound connector, except mail originating from Stargate itself (to prevent mail loops).
+The transport rule redirects all outbound mail through the HIN Gateway outbound connector, except mail originating from HIN Gateway itself (to prevent mail loops).
 
 1. Navigate to [Exchange Admin Center - Rules](https://admin.exchange.microsoft.com/#/transportrules)
 
@@ -179,30 +179,30 @@ The transport rule redirects all outbound mail through the Stargate outbound con
 3. **Rule name**: Enter a descriptive name, e.g.:
 
    ```plain
-   Relay all mail to Stargate except mail coming from it
+   Relay all mail to HIN Gateway except mail coming from it
    ```
 
 4. **Apply this rule if**: Select **"The recipient..."** → **"is external/internal"** → **"Outside the organization"**
    - Click **"Save"**
 
 !!! note
-    This condition ensures only outbound mail (to external recipients) is redirected through Stargate.
+    This condition ensures only outbound mail (to external recipients) is redirected through HIN Gateway.
 
-5. **Do the following**: Select **"Redirect the message to..."** → **"the following connector"** → select the outbound connector created in Step A (e.g. "From Office 365 to Stargate relay server")
+5. **Do the following**: Select **"Redirect the message to..."** → **"the following connector"** → select the outbound connector created in Step A (e.g. "From Office 365 to HIN Gateway relay server")
    - Click **"Save"**
 
 6. **Except if**: Click **"+"** to add an exception
    - Select **"The sender..."** → **"IP address is in any of these ranges"**
-   - Enter the Stargate server IP address: `<STARGATE_IP>`
+   - Enter the HIN Gateway server IP address: `<HIN_GATEWAY_IP>`
    - Click **"Add"**, verify the IP is listed, then click **"Save"**
 
 !!! warning
-    **This exception is critical** - it prevents mail loops. Without it, mail from Stargate arriving at Exchange Online would be redirected back to Stargate in an infinite loop.
+    **This exception is critical** - it prevents mail loops. Without it, mail from HIN Gateway arriving at Exchange Online would be redirected back to HIN Gateway in an infinite loop.
 
 7. Review the rule summary. It should show:
    - **Apply this rule if**: The recipient is located Outside the organization
-   - **Do the following**: Redirect the message to the connector "From Office 365 to Stargate relay server"
-   - **Except if**: The sender IP address is in one of these ranges: `<STARGATE_IP>`
+   - **Do the following**: Redirect the message to the connector "From Office 365 to HIN Gateway relay server"
+   - **Except if**: The sender IP address is in one of these ranges: `<HIN_GATEWAY_IP>`
 
 8. Click **"Next"**, then **"Next"** again, then **"Finish"**, then **"Done"**
 
@@ -217,16 +217,16 @@ The transport rule redirects all outbound mail through the Stargate outbound con
 
 For on-premises Exchange Server (2016, 2019), the setup is similar but configured through the Exchange Management Console (EAC) or Exchange Management Shell (PowerShell).
 
-### Send Connector (On-Premises → Stargate)
+### Send Connector (On-Premises → HIN Gateway)
 
-Create a Send connector to route outbound mail through Stargate:
+Create a Send connector to route outbound mail through HIN Gateway:
 
 **Exchange Management Shell (PowerShell):**
 
 ```powershell
-New-SendConnector -Name "To Stargate Relay" `
+New-SendConnector -Name "To HIN Gateway Relay" `
   -AddressSpaces "SMTP:*;1" `
-  -SmartHosts "<STARGATE_IP>" `
+  -SmartHosts "<HIN_GATEWAY_IP>" `
   -SmartHostAuthMechanism None `
   -DNSRoutingEnabled $false `
   -SourceTransportServers "<YOUR_EXCHANGE_SERVER>"
@@ -236,23 +236,23 @@ New-SendConnector -Name "To Stargate Relay" `
 
 1. Navigate to **Mail flow** → **Send connectors**
 2. Click **+** to create a new connector
-3. **Name**: "To Stargate Relay"
+3. **Name**: "To HIN Gateway Relay"
 4. **Type**: Select **"Internet"**
-5. **Network settings**: Select **"Route mail through smart hosts"**, add `<STARGATE_IP>`
+5. **Network settings**: Select **"Route mail through smart hosts"**, add `<HIN_GATEWAY_IP>`
 6. **Smart host authentication**: Select **"None"**
 7. **Address space**: Add `*` (all domains) or specific external domains
 8. **Source server**: Select your Exchange transport server(s)
 
-### Receive Connector (Stargate → On-Premises)
+### Receive Connector (HIN Gateway → On-Premises)
 
-Create or modify a Receive connector to accept mail from Stargate:
+Create or modify a Receive connector to accept mail from HIN Gateway:
 
 **Exchange Management Shell (PowerShell):**
 
 ```powershell
-New-ReceiveConnector -Name "From Stargate Relay" `
+New-ReceiveConnector -Name "From HIN Gateway Relay" `
   -Bindings "0.0.0.0:25" `
-  -RemoteIPRanges "<STARGATE_IP>" `
+  -RemoteIPRanges "<HIN_GATEWAY_IP>" `
   -TransportRole FrontendTransport `
   -Usage Custom `
   -AuthMechanism ExternalAuthoritative `
@@ -263,10 +263,10 @@ New-ReceiveConnector -Name "From Stargate Relay" `
 
 1. Navigate to **Mail flow** → **Receive connectors**
 2. Click **+** to create a new connector
-3. **Name**: "From Stargate Relay"
+3. **Name**: "From HIN Gateway Relay"
 4. **Type**: Select **"Frontend Transport"**
 5. **Network adapter bindings**: Leave default or bind to specific IP
-6. **Remote network settings**: Remove the default `0.0.0.0-255.255.255.255` and add only `<STARGATE_IP>`
+6. **Remote network settings**: Remove the default `0.0.0.0-255.255.255.255` and add only `<HIN_GATEWAY_IP>`
 7. **Authentication**: Check **"Externally Secured"**
 8. **Permission groups**: Check **"Exchange servers"**
 
@@ -277,20 +277,20 @@ Create a transport rule to redirect outbound mail through the Send connector:
 **Exchange Management Shell (PowerShell):**
 
 ```powershell
-New-TransportRule -Name "Relay outbound via Stargate" `
+New-TransportRule -Name "Relay outbound via HIN Gateway" `
   -SentToScope NotInOrganization `
-  -RouteMessageOutboundConnector "To Stargate Relay" `
-  -ExceptIfSenderIpRanges "<STARGATE_IP>"
+  -RouteMessageOutboundConnector "To HIN Gateway Relay" `
+  -ExceptIfSenderIpRanges "<HIN_GATEWAY_IP>"
 ```
 
 **Exchange Admin Center (GUI):**
 
 1. Navigate to **Mail flow** → **Rules**
 2. Click **+** → **"Create a new rule"**
-3. **Name**: "Relay outbound via Stargate"
+3. **Name**: "Relay outbound via HIN Gateway"
 4. **Apply this rule if**: "The recipient is located..." → "Outside the organization"
-5. **Do the following**: "Redirect the message to..." → "the following connector" → "To Stargate Relay"
-6. **Except if**: "The sender IP address is in..." → add `<STARGATE_IP>`
+5. **Do the following**: "Redirect the message to..." → "the following connector" → "To HIN Gateway Relay"
+6. **Except if**: "The sender IP address is in..." → add `<HIN_GATEWAY_IP>`
 
 ---
 
@@ -302,12 +302,12 @@ By default, Stalwart automatically discovers where to deliver processed mail by 
 
 This works when:
 
-- Your domain has MX records pointing to both Stargate and Exchange
-- Stargate has a higher-priority (lower number) MX record than Exchange
+- Your domain has MX records pointing to both HIN Gateway and Exchange
+- HIN Gateway has a higher-priority (lower number) MX record than Exchange
 
 ### Manual Override via the dashboard
 
-If you want all outbound mail from Stargate to go to a single Exchange endpoint (e.g. Exchange Online Protection), set the relay host through the dashboard's `/mail` page (e.g. `[smtp.office365.com]`). The dashboard sends the value to mtaconf's REST API and the daemon applies it to Stalwart.
+If you want all outbound mail from HIN Gateway to go to a single Exchange endpoint (e.g. Exchange Online Protection), set the relay host through the dashboard's `/mail` page (e.g. `[smtp.office365.com]`). The dashboard sends the value to mtaconf's REST API and the daemon applies it to Stalwart.
 
 !!! note
     A single relay host sends all mail through one server and does not support per-domain routing. For multiple domains routing through different Exchange servers, use the per-domain relay map on the same dashboard page (configures `sender_dependent_relayhost_maps` under the hood) - see [Multi-Domain Setup](#multi-domain-setup) below.
@@ -324,9 +324,9 @@ domain2.com    MX 10  exchange2.domain2.com
 domain2.com    MX 20  stargate.domain2.com
 ```
 
-Each domain's MX records tell Stargate where to deliver processed mail for that specific domain.
+Each domain's MX records tell HIN Gateway where to deliver processed mail for that specific domain.
 
-### Verify Stargate Configuration
+### Verify HIN Gateway Configuration
 
 After setup, verify the Stalwart configuration:
 
@@ -359,24 +359,24 @@ docker logs stargate-stalwart --tail 50
 
 ### Mail loops (duplicate messages)
 
-- Ensure the transport rule has the **exception** for the Stargate IP address
-- Without this exception, mail from Stargate arriving at Exchange gets redirected back to Stargate
+- Ensure the transport rule has the **exception** for the HIN Gateway IP address
+- Without this exception, mail from HIN Gateway arriving at Exchange gets redirected back to HIN Gateway
 
-### Stargate not accepting mail from Exchange
+### HIN Gateway not accepting mail from Exchange
 
-- Check port 25 is open on the Stargate server's firewall
-- Verify SPF record includes the Stargate IP
+- Check port 25 is open on the HIN Gateway server's firewall
+- Verify SPF record includes the HIN Gateway IP
 - Check Stalwart logs: `docker logs stargate-stalwart`
 
-### Exchange Online rejecting mail from Stargate
+### Exchange Online rejecting mail from HIN Gateway
 
-- Verify the inbound connector is configured with the correct Stargate IP
-- Check that the Stargate IP hasn't changed
+- Verify the inbound connector is configured with the correct HIN Gateway IP
+- Check that the HIN Gateway IP hasn't changed
 - Verify the connector is enabled (Status: On)
 
 ### TLS Certificate Errors
 
-Stargate uses opportunistic TLS with a self-signed certificate. The outbound connector in Exchange should be configured to accept "Any digital certificate, including self-signed certificates". If you see TLS-related errors:
+HIN Gateway uses opportunistic TLS with a self-signed certificate. The outbound connector in Exchange should be configured to accept "Any digital certificate, including self-signed certificates". If you see TLS-related errors:
 
 - Verify the outbound connector security setting allows self-signed certificates
 - For on-premises Exchange, ensure the Send connector does not require TLS (`-RequireTLS $false`)
@@ -385,25 +385,25 @@ Stargate uses opportunistic TLS with a self-signed certificate. The outbound con
 
 The outbound connector validation requires:
 
-- Stargate server is running and accepting connections on port 25
+- HIN Gateway server is running and accepting connections on port 25
 - The validation email address is valid for your domain
-- Network path between Exchange Online and Stargate is open (no firewall blocking)
+- Network path between Exchange Online and HIN Gateway is open (no firewall blocking)
 
 ---
 
 ## Quick Reference
 
 | Component | Exchange Online Location | Purpose |
-|-----------|--------------------------|---------|
-| Outbound Connector | Admin Center → Mail flow → Connectors | Route outbound mail to Stargate |
-| Inbound Connector | Admin Center → Mail flow → Connectors | Accept mail from Stargate |
+| ----------- | -------------------------- | --------- |
+| Outbound Connector | Admin Center → Mail flow → Connectors | Route outbound mail to HIN Gateway |
+| Inbound Connector | Admin Center → Mail flow → Connectors | Accept mail from HIN Gateway |
 | Transport Rule | Admin Center → Mail flow → Rules | Trigger outbound connector for external recipients |
 
 | DNS Record | Example | Purpose |
-|------------|---------|---------|
-| A | `mail IN A <STARGATE_IP>` | Point hostname to Stargate |
-| MX (Stargate) | `@ IN MX 15 mail.<YOUR_DOMAIN>.` | Inbound mail hits Stargate first |
+| ------------ | --------- | --------- |
+| A | `mail IN A <HIN_GATEWAY_IP>` | Point hostname to HIN Gateway |
+| MX (HIN Gateway) | `@ IN MX 15 mail.<YOUR_DOMAIN>.` | Inbound mail hits HIN Gateway first |
 | MX (Exchange) | `@ IN MX 20 <DOMAIN>.mail.protection.outlook.com.` | Fallback / delivery target |
-| SPF | `ip4:<STARGATE_IP>` and `ip4:<HIN_SEALER_IP>` added to existing TXT record | Authorize Stargate and HIN sealer to send mail |
+| SPF | `ip4:<HIN_GATEWAY_IP>` and `ip4:<HIN_SEALER_IP>` added to existing TXT record | Authorize HIN Gateway and HIN sealer to send mail |
 
 For the full DNS setup (including PTR, DMARC, DKIM, and multi-domain), see the [DNS Setup Guide](DNS-setup.md).

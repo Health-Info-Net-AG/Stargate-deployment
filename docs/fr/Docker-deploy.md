@@ -1,4 +1,4 @@
-# Déploiement Docker de Stargate
+# Déploiement Docker de HIN Gateway
 
 ## Prérequis
 
@@ -7,8 +7,8 @@
 Veuillez vous référer aux [Exigences recommandées](./index.md#exigences-du-serveur)
 
 * Docker sera installé automatiquement s'il manque
-* Assurez-vous qu'il y a une connexion Internet sur la machine où vous installez les services Stargate
-* Assurez-vous que le trafic est correctement configuré pour atteindre l'instance Stargate
+* Assurez-vous qu'il y a une connexion Internet sur la machine où vous installez les services HIN Gateway
+* Assurez-vous que le trafic est correctement configuré pour atteindre l'instance HIN Gateway
 
 ## Étape 1: Configurer les paramètres client
 
@@ -30,7 +30,7 @@ cp customer-config-prod.example.sh customer-config.sh
 Vous n'avez **pas** besoin de le modifier - chaque valeur est soit détectée automatiquement, soit configurée ultérieurement via le tableau de bord:
 
 | Paramètre | Comment il est défini |
-|---------|---------------|
+| --------- | --------------- |
 | `SERVER_STATIC_IP` | Détecté automatiquement à partir de l'interface réseau principale du serveur. |
 | `CUSTOMER_NAME` | Par défaut, le nom d'hôte du système. |
 | `DEPLOYMENT_NAME` | Dérivé de `CUSTOMER_NAME` (utilisé dans les étiquettes de logs et le nom d'hôte Alloy). |
@@ -59,7 +59,7 @@ Les domaines de courrier, le nom d'hôte de messagerie, les certificats S/MIME e
 **Paramètres locaux WireGuard (généralement laissés par défaut) :**
 
 | Paramètre | Défaut | Description |
-|---------|---------|-------------|
+| --------- | --------- | ------------- |
 | `WG_PRIVATE_KEY` | *(auto-généré)* | Généré par IRISAgent lors de la première exécution, puis sauvegardé dans `customer-config.sh` |
 | `WG_LOCAL_IP` | `SERVER_STATIC_IP` | Auto-dérivé. Remplacez uniquement si vous avez besoin d'une adresse de tunnel différente. |
 | `WG_INTERFACE_PORT` | `19818` | Port du tunnel WireGuard (TCP et UDP sont exposés) |
@@ -68,11 +68,11 @@ Les domaines de courrier, le nom d'hôte de messagerie, les certificats S/MIME e
 **Paramètres optionnels (ont des valeurs par défaut raisonnables) :**
 
 | Paramètre | Défaut | Description |
-|---------|-------------|---------|
+| --------- | ------------- | --------- |
 | `POSTGRES_PASSWORD` | *(auto-généré)* | Mot de passe aléatoire de 24 caractères auto-généré si vide |
 | `S3_SECRET_KEY` | *(auto-généré)* | Clé secrète S3 pour le stockage d'objets |
 | `OUTBOUND_SEALER_MX_DOMAIN` | `hintest.ch` | Domaine MX du scelleur pour la livraison des sceaux sortants |
-| `POLICY_SYNC_REPO_URL` | GitHub HIN Stargate policies | URL du dépôt Git pour la synchronisation des politiques OPA/Rego |
+| `POLICY_SYNC_REPO_URL` | GitHub HIN HIN Gateway policies | URL du dépôt Git pour la synchronisation des politiques OPA/Rego |
 | `LOKI_URL` | *(non défini)* | Point de terminaison Loki pour l'envoi centralisé des logs (ex. `https://loki.example.com`) |
 
 **Auto-générés (ne pas définir manuellement) :**
@@ -163,7 +163,7 @@ Soumet le nom d'hôte et la liste des domaines de relais au service `mtaconf` vi
 
 ## Étape 5: Enregistrement du pair WireGuard
 
-La soumission du CSR S/MIME sur `/onboarding` échouera si votre instance Stargate n'est pas encore enregistrée en tant que pair WireGuard côté CA HIN. C'est le problème le plus courant lors de la configuration initiale.
+La soumission du CSR S/MIME sur `/onboarding` échouera si votre instance HIN Gateway n'est pas encore enregistrée en tant que pair WireGuard côté CA HIN. C'est le problème le plus courant lors de la configuration initiale.
 
 La page `/installation` du tableau de bord gère l'enregistrement automatique du pair WireGuard via la négociation nonce/HIN. Si l'enregistrement automatique échoue, l'enregistrement manuel peut être effectué en fournissant les valeurs suivantes à HIN:
 
@@ -174,7 +174,7 @@ La page `/installation` du tableau de bord gère l'enregistrement automatique du
    ```
 
 2. **`DEPLOYMENT_NAME`** — depuis votre `customer-config.sh`
-3. **`SERVER_STATIC_IP`** — l'IP publique de votre serveur Stargate
+3. **`SERVER_STATIC_IP`** — l'IP publique de votre serveur HIN Gateway
 4. **`WG_INTERFACE_PORT`** — seulement si vous l'avez modifié par rapport au défaut `19818`
 
 **Une fois l'enregistrement du pair confirmé :**
@@ -196,7 +196,7 @@ docker compose logs irisagent 2>&1 | grep -i "handshake\|peer"
 ```
 
 !!! tip
-    Vérifiez votre pare-feu: Le port `19818/TCP` doit être ouvert **dans les deux sens, entrant et sortant** sur le serveur Stargate.
+    Vérifiez votre pare-feu: Le port `19818/TCP` doit être ouvert **dans les deux sens, entrant et sortant** sur le serveur HIN Gateway.
 
 ## Étape 6: Recommandations post-intégration
 
@@ -204,23 +204,23 @@ Une fois le certificat émis et les courriels circulant, deux éléments de conf
 
 ### Étape 6.1 SPF / DKIM / DMARC pour les domaines expéditeurs
 
-Stargate envoie des courriels depuis sa propre IP publique au nom de vos utilisateurs. Sans enregistrements d'authentification DNS appropriés, les destinataires verront des avertissements "nous ne pouvons pas vérifier cet expéditeur" et pourront rejeter le courrier.
+HIN Gateway envoie des courriels depuis sa propre IP publique au nom de vos utilisateurs. Sans enregistrements d'authentification DNS appropriés, les destinataires verront des avertissements "nous ne pouvons pas vérifier cet expéditeur" et pourront rejeter le courrier.
 
 Pour des instructions complètes sur la configuration des enregistrements SPF, DKIM, DMARC et PTR, consultez le [Guide de configuration DNS](DNS-setup.md#enregistrements-recommandes).
 
-Au minimum, pour chaque domaine que vous acheminez via Stargate:
+Au minimum, pour chaque domaine que vous acheminez via HIN Gateway:
 
-* **SPF**: ajoutez `ip4:<STARGATE_IP>` à l'enregistrement TXT du domaine
+* **SPF**: ajoutez `ip4:<HIN_GATEWAY_IP>` à l'enregistrement TXT du domaine
 * **DMARC**: publiez `v=DMARC1; p=none` à `_dmarc.<VOTRE_DOMAINE>`
-* **PTR**: définissez le DNS inversé pour l'IP Stargate pour qu'il corresponde à `MAIL_HOSTNAME`
+* **PTR**: définissez le DNS inversé pour l'IP HIN Gateway pour qu'il corresponde à `MAIL_HOSTNAME`
 
 ### Étape 6.2 Relayer les courriels sortants via votre plateforme de courrier (recommandé pour M365 / Exchange Online)
 
-Par défaut, après que Stargate a signé/chiffré un courrier sortant, il le livre directement au MX du destinataire. Cela fonctionne, mais l'IP de connexion est l'IP de votre Stargate - et à moins que cette IP ait des années de bonne réputation, elle peut finir sur des listes noires tierces (ex. Barracuda, Abusix), provoquant des échecs de livraison intermittents.
+Par défaut, après que HIN Gateway a signé/chiffré un courrier sortant, il le livre directement au MX du destinataire. Cela fonctionne, mais l'IP de connexion est l'IP de votre HIN Gateway - et à moins que cette IP ait des années de bonne réputation, elle peut finir sur des listes noires tierces (ex. Barracuda, Abusix), provoquant des échecs de livraison intermittents.
 
-Le modèle recommandé est d'**envoyer le courrier signé via votre locataire M365 / Exchange** afin que le dernier saut vers l'Internet soit l'infrastructure bien réputée de Microsoft. Stargate signe et vérifie toujours chaque message par politique ; seul le dernier saut change. Cela reflète le modèle de connecteur "Envoyer à MX" de l'ancien HIN MGW.
+Le modèle recommandé est d'**envoyer le courrier signé via votre locataire M365 / Exchange** afin que le dernier saut vers l'Internet soit l'infrastructure bien réputée de Microsoft. HIN Gateway signe et vérifie toujours chaque message par politique ; seul le dernier saut change. Cela reflète le modèle de connecteur "Envoyer à MX" de l'ancien HIN MGW.
 
-#### Côté Stargate — relais par domaine
+#### Côté HIN Gateway — relais par domaine
 
 Configurez le relais par domaine via la page `/mail` du tableau de bord. Chaque domaine peut être mappé à son propre point de terminaison entrant M365 / Exchange ; le tableau de bord envoie le mappage à l'API REST de mtaconf et Stalwart est reconfiguré à l'exécution.
 
@@ -230,11 +230,11 @@ Après que mxengine a signé le courrier, Stalwart le renverra à votre locatair
 
 Vous recréez essentiellement le même ensemble de connecteurs + règles de transport que l'ancien HIN MGW (le manuel O365 original de HIN MGW est la référence - les mêmes cinq règles s'appliquent). Le minimum est:
 
-1. **Connecteur entrant** - accepte les courriels de Stargate, identifié par le certificat TLS (le sujet du certificat doit correspondre à un domaine accepté dans votre locataire). Un certificat auto-signé sur Stargate sera rejeté par ce connecteur - utilisez un certificat valide émis par une AC (Let's Encrypt convient).
+1. **Connecteur entrant** - accepte les courriels de HIN Gateway, identifié par le certificat TLS (le sujet du certificat doit correspondre à un domaine accepté dans votre locataire). Un certificat auto-signé sur HIN Gateway sera rejeté par ce connecteur - utilisez un certificat valide émis par une AC (Let's Encrypt convient).
 2. **Connecteur sortant "Envoyer à MX"** - livre au MX du destinataire, activé uniquement par règle de transport.
 3. **Règle de transport `set_header`** - étiquette les courriels sortants avec un en-tête comme `outgoing: outgoing_<domaine>` avant qu'ils ne quittent O365 la première fois, afin que le voyage de retour puisse le reconnaître.
-4. **Règle de transport `outgoing_to_mx`** - correspond à l'en-tête `outgoing_<domaine>` sur les courriels revenant de Stargate et les achemine via le connecteur "Envoyer à MX".
-5. **Règle de transport `mgw_bypass_antispam`** - contourne le filtrage anti-spam sur les courriels revenant de Stargate.
+4. **Règle de transport `outgoing_to_mx`** - correspond à l'en-tête `outgoing_<domaine>` sur les courriels revenant de HIN Gateway et les achemine via le connecteur "Envoyer à MX".
+5. **Règle de transport `mgw_bypass_antispam`** - contourne le filtrage anti-spam sur les courriels revenant de HIN Gateway.
 
 mxengine ne supprime pas les en-têtes arbitraires, donc l'étiquette `outgoing_<domaine>` définie par `set_header` survit à l'aller-retour et déclenche `outgoing_to_mx` correctement.
 
@@ -274,7 +274,7 @@ Cela arrête les conteneurs mais préserve toutes les données.
 Toutes les données sont stockées dans des volumes Docker et **persistent à travers les redémarrages**.
 
 | Service | Volume | Données |
-|---------|--------|------|
+| --------- | -------- | ------ |
 | PostgreSQL | `postgres_data` | Toutes les bases de données (smimekeys, policy, irisagent, mxengine) |
 | Vault | `vault_data` | Clés de chiffrement, secrets, clés S/MIME |
 | SeaweedFS | `seaweedfs_data` | Stockage d'objets (messages, pièces jointes) |
@@ -322,7 +322,7 @@ Le script `start.sh` (et le service systemd) descellent automatiquement Vault en
 ## Référence des scripts
 
 | Script | Objectif |
-|--------|--------|
+| -------- | -------- |
 | `install.sh` | Première installation (Docker, Vault). La configuration du domaine/certificat/pair se fait ensuite dans le tableau de bord. |
 | `update.sh` | Mettre à jour les images des services (préserve le jeton Vault, recrée les conteneurs) |
 | `start.sh` | Démarrer les services et desceller Vault |
@@ -338,7 +338,7 @@ Le script `start.sh` (et le service systemd) descellent automatiquement Vault en
 ## Fichiers de configuration
 
 | Fichier | Objectif |
-|------|---------|
+| ------ | --------- |
 | `customer-config-prod.example.sh` | Modèle pour les paramètres client (copier vers `customer-config.sh`) |
 | `customer-config.sh` | Paramètres spécifiques au client (créés à partir du modèle, remplir avant l'installation) |
 | `.env` | Fichier d'environnement généré (créé par `install.sh`) |
@@ -349,6 +349,6 @@ Le script `start.sh` (et le service systemd) descellent automatiquement Vault en
 
 !!! tip "Support"
 
-    Pour toute question ou problème lié au déploiement et au fonctionnement de l'appliance Stargate, veuillez contacter le support HIN.
+    Pour toute question ou problème lié au déploiement et au fonctionnement de l'appliance HIN Gateway, veuillez contacter le support HIN.
 
     Veuillez inclure des informations pertinentes telles que le nom du client, la version de l'appliance, et des captures d'écran/[logs](./Docker-advanced.md#fournir-les-logs-au-support) le cas échéant, pour nous aider à traiter votre demande efficacement.

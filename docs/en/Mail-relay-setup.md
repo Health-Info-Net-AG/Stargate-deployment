@@ -1,6 +1,6 @@
-# Stargate mail relay setup
+# HIN Gateway mail relay setup
 
-## Create a Stargate relay for a mail domain hosted in Microsoft Office 365
+## Create a HIN Gateway relay for a mail domain hosted in Microsoft Office 365
 
 For the relay, we need a VM or a server with a real static IP address.
 
@@ -10,7 +10,7 @@ In this example we will use a VM with IP address `128.140.117.200` and hostname 
 
 See the [DNS Setup Guide](./DNS-setup.md) for complete instructions on all required records (A, MX, SPF, PTR, DMARC, DKIM).
 
-Quick example for domain `vrgnservices.eu` with Stargate IP `128.140.117.200`:
+Quick example for domain `vrgnservices.eu` with HIN Gateway IP `128.140.117.200`:
 
 * **A record**: `mail.vrgnservices.eu` → `128.140.117.200`
 * **MX record**: `MX @ 15 mail.vrgnservices.eu.` (higher priority than the existing Exchange MX at 20)
@@ -34,9 +34,9 @@ vrgnservices.eu mail is handled by 15 mail.vrgnservices.eu.
 vrgnservices.eu descriptive text "v=spf1 ip4:128.140.117.200 include:spf.protection.outlook.com -all"
 ```
 
-## Install the Stargate docker compose containers
+## Install the HIN Gateway docker compose containers
 
-[Stargate Deployment](./Docker-deploy.md)
+[HIN Gateway Deployment](./Docker-deploy.md)
 
 ### Requirements
 
@@ -57,7 +57,7 @@ The script installs all components and starts them. Mail domains and the Stalwar
 
 ## Set up Exchange
 
-We need to configure connectors and a transport rule in Exchange to relay all outgoing mail to the Stargate relay and allow incoming mail from it.
+We need to configure connectors and a transport rule in Exchange to relay all outgoing mail to the HIN Gateway relay and allow incoming mail from it.
 
 Navigate to [https://admin.exchange.microsoft.com/#/connectors](https://admin.exchange.microsoft.com/#/connectors)
 
@@ -69,7 +69,7 @@ Select "Connection from": "Office 365" "Connection to": "your organization's ema
 
 ![screenshot](./assets/new_connector_outgoing1.png)
 
-Name it something like "From Office 365 to Stargate relay server" and check "Retain Internal Exchange email headers", click "Next".
+Name it something like "From Office 365 to HIN Gateway relay server" and check "Retain Internal Exchange email headers", click "Next".
 
 ![screenshot](./assets/new_connector_outgoing2.png)
 
@@ -77,7 +77,7 @@ Select "Only when I have a transport rule set up that redirects messages to this
 
 ![screenshot](./assets/new_connector_outgoing3.png)
 
-Enter the IP address of the Stargate relay server, click "+", click "Next".
+Enter the IP address of the HIN Gateway relay server, click "+", click "Next".
 
 ![screenshot](./assets/new_connector_outgoing4.png)
 
@@ -103,11 +103,11 @@ Create an incoming mail connector, choose "Connection from": "Your organization'
 
 ![screenshot](./assets/new_connector_incoming1.png)
 
-Name it something like "Receive mail from Stargate relay server" and check "Retain internal Exchange email headers", click "Next.
+Name it something like "Receive mail from HIN Gateway relay server" and check "Retain internal Exchange email headers", click "Next.
 
 ![screenshot](./assets/new_connector_incoming2.png)
 
-Select "By verifying that the IP address of the sending server matches one of the following IP addresses, type the IP address of the Stargate server, click "+", click "Next".
+Select "By verifying that the IP address of the sending server matches one of the following IP addresses, type the IP address of the HIN Gateway server, click "+", click "Next".
 
 ![screenshot](./assets/new_connector_incoming3.png)
 
@@ -131,15 +131,15 @@ Click "+Add a rule" --> "Create a new rule".
 
 ![screenshot](./assets/new_transport_rule1.png)
 
-Name it something like "Relay all mail to Stargate except mail coming from it", choose "Apply rule if" "The recipient:" "is external/internal" "Outside the organization", click "Save".  
+Name it something like "Relay all mail to HIN Gateway except mail coming from it", choose "Apply rule if" "The recipient:" "is external/internal" "Outside the organization", click "Save".  
 
 ![screenshot](./assets/new_transport_rule2.png)
 
-Choose "Do the following" "Redirect message to the following connector" "From Office 365 to Stargate relay server", click "Save".
+Choose "Do the following" "Redirect message to the following connector" "From Office 365 to HIN Gateway relay server", click "Save".
 
 ![screenshot](./assets/new_transport_rule3.png)
 
-Choose "Except if The sender IP address is in any of these ranges" enter the IP address of the Stargate server, click "Add", check the IP address and click "Save".
+Choose "Except if The sender IP address is in any of these ranges" enter the IP address of the HIN Gateway server, click "Add", check the IP address and click "Save".
 
 This is needed to prevent mail loops, as this rule also applies to other domains hosted in Office 365.  
 
