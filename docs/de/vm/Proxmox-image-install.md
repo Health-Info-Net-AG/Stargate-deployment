@@ -1,6 +1,6 @@
 # Proxmox-Bereitstellung mittels eines Images
 
-Stargate auf Proxmox bereitstellen
+HIN Gateway auf Proxmox bereitstellen
 
 ## URL der Image-Datei abrufen
 

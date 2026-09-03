@@ -2,7 +2,6 @@
 
 *MGW → HIN Gateway - architecture du flux de messagerie, déploiement par étapes et plan de retour arrière*
 
-
 ## Phase&nbsp;1 Début - Situation de référence (tous les domaines sur MGW)
 
 **État de référence**
@@ -13,7 +12,7 @@
 
 !!! info "Liste de contrôle préalable"
     - Établir une situation de référence pour la capacité actuelle de MGW et les journaux des flux de messagerie
-    - Vérifier la connectivité de Stargate Lab avec Online Protect / Exchange Online / le serveur de messagerie sur site
+    - Vérifier la connectivité de HIN Gateway Lab avec Online Protect / Exchange Online / le serveur de messagerie sur site
     - Mettre d’accord les parties prenantes sur le calendrier de migration et le plan de communication
     - Examiner la documentation relative au pare-feu et aux ports avant l’attribution de l’adresse IP publique B (phase&nbsp;2, étape&nbsp;1)
 
@@ -24,17 +23,17 @@
 **Étapes de la migration**
 
 1. **Mettre en service** HIN Gateway – attribuer `Public IP B` et mettre à jour les règles du pare-feu (voir la documentation réseau pour connaître les ports requis)
-2. **Créer deux connecteurs** sur Exchange Online – un connecteur entrant et un connecteur sortant – pointant vers Stargate
+2. **Créer deux connecteurs** sur Exchange Online – un connecteur entrant et un connecteur sortant – pointant vers HIN Gateway
 3. **Ajouter une règle de flux de messagerie** qui achemine les e-mails en fonction du domaine: domain1.ch → HIN Gateway, tous les autres domaines restent sur MGW
 4. **Répéter progressivement** – migrer un domaine supplémentaire à la fois jusqu’à ce que tous les domaines soient sur HIN Gateway
 
 !!! danger "Retour arrière (par domaine)"
     - Rediriger la règle de flux de messagerie du domaine concerné vers MGW
-    - Laisser les connecteurs Stargate en place pour la prochaine tentative
+    - Laisser les connecteurs HIN Gateway en place pour la prochaine tentative
     - Tenir à jour un **journal de toutes les modifications** apportées aux connecteurs ou aux règles, dans l’ordre – le retour arrière doit suivre cette séquence dans l’ordre inverse
 
 !!! warning "Attention aux en-têtes spécifiques au client"
-    Certains domaines utilisent des en-têtes X personnalisés (routage, listes d’autorisation anti-spam, balises de conformité). Vérifier que les connecteurs de Stargate conservent ou reproduisent ces en-têtes avant de basculer un domaine vers HIN Gateway – des en-têtes manquants peuvent entraîner des erreurs de routage ou le rejet des e-mails.
+    Certains domaines utilisent des en-têtes X personnalisés (routage, listes d’autorisation anti-spam, balises de conformité). Vérifier que les connecteurs de HIN Gateway conservent ou reproduisent ces en-têtes avant de basculer un domaine vers HIN Gateway – des en-têtes manquants peuvent entraîner des erreurs de routage ou le rejet des e-mails.
 
 ![Phase 2 Migration - gradual, domain-by-domain](assets/multi-domain-scenario/Phase2-migration-domain-by-domain.png)
 
@@ -58,7 +57,7 @@
 !!! tip "Recommandé – Migrer tous les domaines en une seule fois"
     - Aucune adresse IP publique supplémentaire requise
     - Aucune modification temporaire des connecteurs ou des règles de flux de messagerie
-    - Retour arrière simple: éteindre Stargate, puis rallumer l’ancienne VM MGW
+    - Retour arrière simple: éteindre HIN Gateway, puis rallumer l’ancienne VM MGW
     - Fenêtre de basculement la plus courte – risque minimal de dérive de configuration
 
 !!! note "Alternative – migration progressive, domaine par domaine"

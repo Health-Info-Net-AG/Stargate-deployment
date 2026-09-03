@@ -1,10 +1,10 @@
-# Stargate Deployment Information
+# HIN Gateway Deployment Information
 
 --8<-- "docs/assets/Translation_notice.md"
 
 ![Logo](assets/stargate_visual.png)
 
-[What is Stargate?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
+[What is HIN Gateway?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ## Pre-Requisites
 
@@ -15,9 +15,9 @@ Please ensure that all necessary preparatory steps have been completed before th
 The following items must be available or confirmed before the installation:
 
 - **Credentials will be delivered to you by HIN**
-    - VM credential
-    - Keycloak credential
-    - Activation code
+  - VM credential
+  - Keycloak credential
+  - Activation code
 
 - **Export of private key**
 
@@ -30,8 +30,8 @@ The following items must be available or confirmed before the installation:
 - **Download latest** version of [VM image](vm/VM-Catalog.md)
 - **Firewall** requirements for WireGuard.
   Configure the WireGuard port 19818 (TCP/UDP) in your firewall:
-    - Incoming and outgoing traffic
-    - Allow traffic: any-to-HIN Gateway and HIN Gateway-to-any
+  - Incoming and outgoing traffic
+  - Allow traffic: any-to-HIN Gateway and HIN Gateway-to-any
 - **DHCP access** should be available. For more information see "Installation Guidelines".
 
 - **Backup requirements** - see "Annex 1 - Backing up and restoring the appliance settings".
@@ -50,23 +50,23 @@ The following items must be available or confirmed before the installation:
 
 ### Installation Options
 
-* VM image installation:
-    * [Azure VM image installation](vm/Azure-image-install.md)
-    * [Windows 11 Pro (Hyper-V) image installation](vm/Windows11pro-image-install.md)
-    * [VMware image installation](vm/VMware-image-install.md)
-    * [Proxmox image installation](vm/Proxmox-image-install.md)
-    * [Cloudscale.ch image installation](vm/Cloudscale-image-install.md)
+- VM image installation:
+  - [Azure VM image installation](vm/Azure-image-install.md)
+  - [Windows 11 Pro (Hyper-V) image installation](vm/Windows11pro-image-install.md)
+  - [VMware image installation](vm/VMware-image-install.md)
+  - [Proxmox image installation](vm/Proxmox-image-install.md)
+  - [Cloudscale.ch image installation](vm/Cloudscale-image-install.md)
 
 !!! tip "🖨️"
     You can get this documentation printed or saved as PDF, please visit our [Print page view](print_page).
 
 ### Exchange Integration
 
-* [Exchange integration](Exchange-integration.md) - Configure Microsoft Exchange (Online and On-Premises) connectors and transport rules to route mail through Stargate
+- [Exchange integration](Exchange-integration.md) - Configure Microsoft Exchange (Online and On-Premises) connectors and transport rules to route mail through HIN Gateway
 
 ### Server Requirements
 
-|      | Minimum | Recommended |
+|   | Minimum | Recommended |
 | :--- | :-----: | :---------: |
 | CPU, Cores | 4 | 6 |
 | RAM, GB | 8 | 12 |
@@ -74,17 +74,17 @@ The following items must be available or confirmed before the installation:
 
 #### Common Requirements
 
-* **Root access**: Must be run as root or with `sudo`
-* Supported distributions:
-    * RHEL 8, 9 and 10 compatible distributions such as Alma Linux, Rocky Linux, CentOS Stream
-    * Ubuntu 22 and 24
-    * Debian 11, 12 and 13
-* **Real IPv4 address**
-* **Valid DNS records**. Your domain must have:
-    * MX records pointing to your mail servers
-    * SPF record defining allowed sending networks
-    * Server must be able to resolve DNS (MX, SPF, A records)
-    * Used for mail routing and SPF-based network allowlisting
+- **Root access**: Must be run as root or with `sudo`
+- Supported distributions:
+  - RHEL 8, 9 and 10 compatible distributions such as Alma Linux, Rocky Linux, CentOS Stream
+  - Ubuntu 22 and 24
+  - Debian 11, 12 and 13
+- **Real IPv4 address**
+- **Valid DNS records**. Your domain must have:
+  - MX records pointing to your mail servers
+  - SPF record defining allowed sending networks
+  - Server must be able to resolve DNS (MX, SPF, A records)
+  - Used for mail routing and SPF-based network allowlisting
 
 #### Inbound Network Access (firewall must allow)
 
@@ -166,7 +166,7 @@ The following items must be available or confirmed before the installation:
 
 !!! tip "Support"
 
-    For any questions or issues related to the deployment and operation of the HIN Mail (Stargate) appliance, please contact HIN support.
+    For any questions or issues related to the deployment and operation of the HIN Mail (HIN Gateway) appliance, please contact HIN support.
 
     Please include relevant information such as the customer name, appliance version, and screenshots/[logs](./Docker-advanced.md#provide-logs-to-support) where applicable, to help us process your request efficiently.
 

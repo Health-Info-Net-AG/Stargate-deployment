@@ -1,32 +1,32 @@
-# Stargate Bereitstellungsanleitung
+# HIN Gateway Bereitstellungsanleitung
 
 --8<-- "docs/assets/Translation_notice.md"
 
 ![Logo](assets/stargate_visual.png)
 
-[Was ist Stargate?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
+[Was ist HIN Gateway?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
 ## Schnellstart
 
 ### Installationsoptionen
 
 * VM-Image-Installation:
-    * [Azure VM-Image-Installation](vm/Azure-image-install.md)
-    * [Windows 11 Pro (Hyper-V) Image-Installation](vm/Windows11pro-image-install.md)
-    * [VMware-Image-Installation](vm/VMware-image-install.md)
-    * [Proxmox-Image-Installation](vm/Proxmox-image-install.md)
-    * [Cloudscale.ch Image-Installation](vm/Cloudscale-image-install.md)
+  * [Azure VM-Image-Installation](vm/Azure-image-install.md)
+  * [Windows 11 Pro (Hyper-V) Image-Installation](vm/Windows11pro-image-install.md)
+  * [VMware-Image-Installation](vm/VMware-image-install.md)
+  * [Proxmox-Image-Installation](vm/Proxmox-image-install.md)
+  * [Cloudscale.ch Image-Installation](vm/Cloudscale-image-install.md)
 
 !!! tip "🖨️"
     Sie können diese Dokumentation ausdrucken oder als PDF speichern. Besuchen Sie unsere [Druckseitenansicht](print_page).
 
 ### Exchange-Integration
 
-* [Exchange-Integration](Exchange-integration.md) – Konfigurieren Sie Microsoft Exchange (Online und On-Premises)-Connectors und Transportregeln, um E-Mails über Stargate zu leiten
+* [Exchange-Integration](Exchange-integration.md) – Konfigurieren Sie Microsoft Exchange (Online und On-Premises)-Connectors und Transportregeln, um E-Mails über HIN Gateway zu leiten
 
 ### Server-Anforderungen
 
-|      | Minimum | Empfohlen |
+|   | Minimum | Empfohlen |
 | :--- | :-----: | :---------: |
 | CPU, Kerne | 4 | 6 |
 | RAM, GB | 8 | 12 |
@@ -36,15 +36,15 @@
 
 * **Root-Zugriff**: Muss als Root oder mit `sudo` ausgeführt werden
 * Unterstützte Distributionen:
-    * RHEL 8, 9 und 10 kompatible Distributionen wie Alma Linux, Rocky Linux, CentOS Stream
-    * Ubuntu 22 und 24
-    * Debian 11, 12 und 13
+  * RHEL 8, 9 und 10 kompatible Distributionen wie Alma Linux, Rocky Linux, CentOS Stream
+  * Ubuntu 22 und 24
+  * Debian 11, 12 und 13
 * **Reale IPv4-Adresse**
 * **Gültige DNS-Einträge**. Ihre Domain muss Folgendes haben:
-    * MX-Einträge, die auf Ihre Mailserver verweisen
-    * SPF-Eintrag, der die erlaubten sendenden Netzwerke definiert
-    * Der Server muss in der Lage sein, DNS aufzulösen (MX, SPF, A-Einträge)
-    * Wird für das Mail-Routing und die SPF-basierte Netzwerk-Allowlist verwendet
+  * MX-Einträge, die auf Ihre Mailserver verweisen
+  * SPF-Eintrag, der die erlaubten sendenden Netzwerke definiert
+  * Der Server muss in der Lage sein, DNS aufzulösen (MX, SPF, A-Einträge)
+  * Wird für das Mail-Routing und die SPF-basierte Netzwerk-Allowlist verwendet
 
 #### Eingehender Netzwerkzugriff (Firewall muss erlauben)
 
@@ -126,7 +126,7 @@
 
 !!! tip "Support"
 
-    Bei Fragen oder Problemen im Zusammenhang mit der Bereitstellung und dem Betrieb der HIN Mail (Stargate)-Appliance wenden Sie sich bitte an den HIN-Support.
+    Bei Fragen oder Problemen im Zusammenhang mit der Bereitstellung und dem Betrieb der HIN Mail (HIN Gateway)-Appliance wenden Sie sich bitte an den HIN-Support.
 
     Bitte fügen Sie relevante Informationen wie den Kundennamen, die Appliance-Version und Screenshots/[Logs](./Docker-advanced.md#logs-an-den-support-senden) hinzu, um die Bearbeitung Ihres Anliegens zu beschleunigen.
 

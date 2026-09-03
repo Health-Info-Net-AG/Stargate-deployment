@@ -45,13 +45,13 @@ vrgnservices.eu beschreibender Text "v=spf1 ip4:128.140.117.200 include:spf.prot
 * **20 GB Speicher** (Minimum)
 * **Root-Zugriff**: Muss als Root oder mit `sudo` ausgeführt werden
 * **Unterstützte Distributionen**:
-    * RHEL 8, 9 und 10 kompatible Distributionen wie Alma Linux, Rocky Linux, CentOS Stream
-    * Ubuntu 22 und 24
-    * Debian 11, 12 und 13
+  * RHEL 8, 9 und 10 kompatible Distributionen wie Alma Linux, Rocky Linux, CentOS Stream
+  * Ubuntu 22 und 24
+  * Debian 11, 12 und 13
 * **Reale IPv4-Adresse**
 * **Gültige DNS-Einträge**: Ihre Domain muss Folgendes haben:
-    * MX-Einträge, die auf Ihre Mailserver verweisen
-    * SPF-Eintrag, der die erlaubten sendenden Netzwerke definiert
+  * MX-Einträge, die auf Ihre Mailserver verweisen
+  * SPF-Eintrag, der die erlaubten sendenden Netzwerke definiert
 
 Das Skript installiert alle Komponenten und startet sie. Mail-Domains und der Stalwart-Hostname werden dann zur Laufzeit über die `/mail`-Seite des Dashboards konfiguriert (der mtaconf-Daemon extrahiert die erforderlichen Mail-Relay-Einstellungen basierend auf diesen Domains aus DNS).
 
@@ -131,7 +131,7 @@ Klicken Sie auf "+Regel hinzufügen" --> "Neue Regel erstellen".
 
 ![Screenshot](./assets/new_transport_rule1.png)
 
-Benennen Sie sie z.B. "Alle E-Mails an Stargate weiterleiten, außer E-Mails von diesem", wählen Sie "Regel anwenden, wenn" "Der Empfänger:" "ist extern/intern" "Außerhalb der Organisation", klicken Sie auf "Speichern".
+Benennen Sie sie z.B. "Alle E-Mails an HIN Gateway weiterleiten, außer E-Mails von diesem", wählen Sie "Regel anwenden, wenn" "Der Empfänger:" "ist extern/intern" "Außerhalb der Organisation", klicken Sie auf "Speichern".
 
 ![Screenshot](./assets/new_transport_rule2.png)
 

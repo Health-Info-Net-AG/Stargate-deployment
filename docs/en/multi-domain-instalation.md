@@ -5,7 +5,7 @@
 
 ## Introduction
 
-This document provides a comprehensive guide to the technical installation and migration process to the new [HIN Gateway](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm) ("Stargate Appliance"). It applies to Microsoft 365 mail and on-premase email architecture that operate **single and multiple trusted domains** , and covers both migrating all domains at once and migrating them gradually, in stages, one domain (or a small group of domains) at a time.
+This document provides a comprehensive guide to the technical installation and migration process to the new [HIN Gateway](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm) ("HIN Gateway Appliance"). It applies to Microsoft 365 mail and on-premase email architecture that operate **single and multiple trusted domains** , and covers both migrating all domains at once and migrating them gradually, in stages, one domain (or a small group of domains) at a time.
 
 The guide is intended for HIN customers, IT administrators and system engineers who are responsible for deploying and configuring the new HIN Gateway, and for migrating from the existing Mail Gateway (MGW) to the new solution.
 
@@ -105,30 +105,30 @@ Please ensure that all necessary preparatory steps have been completed before th
 The following items must be available or confirmed before the installation:
 
 - **Credentials will be delivered to you by HIN**
-    - VM credential
-    - Keycloak credential
-    - Activation code
+  - VM credential
+  - Keycloak credential
+  - Activation code
 
 - **Export of private key**
-    - If you are working on a Windows machine that has access to the Mail Gateway VM via port 22, we can support you during the call in enabling the private key export from the MGW.
-    - If you do not have access to such a machine, please contact HIN Support by email or phone (<support@hin.ch> / 0848 830 740) to help you establish a support connection via System Administration → Support Connection → Connect.
+  - If you are working on a Windows machine that has access to the Mail Gateway VM via port 22, we can support you during the call in enabling the private key export from the MGW.
+  - If you do not have access to such a machine, please contact HIN Support by email or phone (<support@hin.ch> / 0848 830 740) to help you establish a support connection via System Administration → Support Connection → Connect.
 - **Download latest** version of [VM image](vm/VM-Catalog.md)
 - **Firewall**:
-    - Allow traffic: any-to-HIN Gateway and HIN Gateway-to-any
-        - WireGuard, please refer to [Server Requirements - Inbound Network Access](./index.md#inbound-network-access-firewall-must-allow):
-            - Configure the WireGuard port `19818` (TCP/UDP) in your firewall
-                - Incoming and outgoing traffic
-    - Allow traffic: your administrative machine-to-HIN Gateway VM
-        - Installation requirements:
-            - HTTPS port `443`
-                - Incoming and outgoing traffic
-            - Keycloak port `8180`
-                - Incoming and outgoing traffic
-        - Troubleshooting requirements (optional needed to see logs, modify all parameters):
-            - SSH port `22`
-                - Incoming and outgoing traffic
-            - Dozzle port `8190`
-                - Incoming and outgoing traffic
+  - Allow traffic: any-to-HIN Gateway and HIN Gateway-to-any
+    - WireGuard, please refer to [Server Requirements - Inbound Network Access](./index.md#inbound-network-access-firewall-must-allow):
+      - Configure the WireGuard port `19818` (TCP/UDP) in your firewall
+        - Incoming and outgoing traffic
+  - Allow traffic: your administrative machine-to-HIN Gateway VM
+    - Installation requirements:
+      - HTTPS port `443`
+        - Incoming and outgoing traffic
+      - Keycloak port `8180`
+        - Incoming and outgoing traffic
+    - Troubleshooting requirements (optional needed to see logs, modify all parameters):
+      - SSH port `22`
+        - Incoming and outgoing traffic
+      - Dozzle port `8190`
+        - Incoming and outgoing traffic
 - **DHCP access** should be available for "[Step 5 - Network connection to the VM](#step-5-network-connection-to-the-vm)" (recommended).
 - **Backup requirements** - see "Annex 1 - Backing up and restoring the appliance settings".
 - Confirmation that the existing MGW will **not** be deleted until acceptance has been completed.
@@ -136,7 +136,7 @@ The following items must be available or confirmed before the installation:
 - **Domain inventory** - for every trusted domain that will be migrated, record the following information:
 
     | Item | Description |
-    |------|-------------|
+    | ------ | ------------- |
     | Domain name and owner | The domain and the person or team responsible for it |
     | Sec-prefix status | Whether the `sec.<domain>` security prefix is configured |
     | Forwarding / outgoing server | The current relay configuration on the MGW |
@@ -274,11 +274,11 @@ Select one of the available virtual images and provision it as described in the 
     For security and supportability reasons, ensure that your hypervisor is not running an end-of-life version. The HIN Gateway appliance is supported on the latest hypervisor release and the immediately preceding major version.
 
 - VM Image Installation:
-    - [Azure VM Image](vm/Azure-image-install.md)
-    - [Windows 11 Pro (Hyper-V) Image](vm/Windows11pro-image-install.md)
-    - [VMware image](vm/VMware-image-install.md)
-    - [Proxmox image](vm/Proxmox-image-install.md)
-    - [Cloudscale](vm/Cloudscale-image-install.md)
+  - [Azure VM Image](vm/Azure-image-install.md)
+  - [Windows 11 Pro (Hyper-V) Image](vm/Windows11pro-image-install.md)
+  - [VMware image](vm/VMware-image-install.md)
+  - [Proxmox image](vm/Proxmox-image-install.md)
+  - [Cloudscale](vm/Cloudscale-image-install.md)
 - [Configuration of Microsoft Exchange](Exchange-integration.md)
 
 ### Step 4 - Load VM image
@@ -499,12 +499,10 @@ On this screen, configure your initial settings for **every trusted domain**:
 ![Setup screen](assets/installation-guide/step13-initial-setup2.png)
 
 | Setting | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
 | **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
-
-
 
 ### Step 14 - Configure mail transport
 
@@ -519,13 +517,12 @@ On this page under `Settings` menu, configure your global mail transport setting
 The following settings are available `Settings` menu:
 
 | Setting | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
 | **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
 | **Default inbound relay** | The default SMTP relay for inbound delivery |
 | **Default outbound relay** | The default SMTP relay for outbound delivery |
-
 
 ##### Domains page
 
@@ -534,13 +531,12 @@ Under the **Domains** menu, for each available domain you can configure specific
 ![Domain transport configuration screen](assets/installation-guide/step14-domain-mail-transport.png)
 
 | Setting | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Inbound relay** | The  SMTP relay for inbound delivery for selected domain |
 | **Outbound relay** | The SMTP relay for outbound delivery for selected domain. This setting corespond to `Forwarding server` setting from old MGW |
 | **Trusted networks** | Additional networks allowed to relay through this gateway. |
 | **ARC** | Recommended to keep it as is |
-| **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate|
-
+| **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate |
 
 !!! note
     Ensure that all relay host and domain configurations are correct before proceeding.

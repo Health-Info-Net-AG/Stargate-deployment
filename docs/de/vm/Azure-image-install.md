@@ -1,6 +1,6 @@
-# Stargate Azure Deployment mittels eines Images
+# HIN Gateway Azure Deployment mittels eines Images
 
-Stargate auf Azure bereitstellen
+HIN Gateway auf Azure bereitstellen
 
 ## Azure Port 25 (SMTP) Anforderungen
 

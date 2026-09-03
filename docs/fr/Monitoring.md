@@ -1,11 +1,11 @@
 # Surveillance et Logs
 
-Stargate inclut des services intégrés de surveillance et de collecte de logs qui fonctionnent aux côtés des conteneurs d'application.
+HIN Gateway inclut des services intégrés de surveillance et de collecte de logs qui fonctionnent aux côtés des conteneurs d'application.
 
 ## Composants
 
 | Service | Port | Objectif |
-|---------|------|---------|
+| --------- | ------ | --------- |
 | node-exporter | `9100` | Métriques au niveau de l'hôte (CPU, mémoire, disque, réseau) pour Prometheus |
 | version-collector | - | Collecte les versions des applications depuis les points de terminaison `/liveness` |
 | Alloy | `12345` | Collecteur de logs Docker - envoie les logs des conteneurs à Loki |
@@ -17,7 +17,7 @@ Stargate inclut des services intégrés de surveillance et de collecte de logs q
 
 ## Dozzle - Visualisateur de logs local
 
-Dozzle fournit une interface web pour visualiser les logs en temps réel de tous les conteneurs Stargate. Il est optionnel et activé en définissant `DOZZLE_ENABLED="true"` dans `customer-config.sh`.
+Dozzle fournit une interface web pour visualiser les logs en temps réel de tous les conteneurs HIN Gateway. Il est optionnel et activé en définissant `DOZZLE_ENABLED="true"` dans `customer-config.sh`.
 
 L'accès est protégé par **Keycloak**: un `oauth2-proxy` se place devant Dozzle et nécessite la même connexion que le tableau de bord (le domaine `stargate`). Dozzle lui-même n'est pas exposé directement.
 
@@ -34,11 +34,11 @@ Les logs sont organisés par service. En sélectionnant un service spécifique, 
 
 ## Grafana Alloy - Transfert de logs
 
-Grafana Alloy collecte les logs de tous les conteneurs d'application Stargate et les écrit dans l'instance Loki locale. Optionnellement, les logs peuvent également être transférés vers un point de terminaison distant compatible Loki pour une surveillance centralisée.
+Grafana Alloy collecte les logs de tous les conteneurs d'application HIN Gateway et les écrit dans l'instance Loki locale. Optionnellement, les logs peuvent également être transférés vers un point de terminaison distant compatible Loki pour une surveillance centralisée.
 
 ### Comment cela fonctionne
 
-1. Alloy découvre les conteneurs Stargate via le socket Docker
+1. Alloy découvre les conteneurs HIN Gateway via le socket Docker
 2. Les logs sont toujours écrits dans l'instance **Loki locale** (utilisée par le tableau de bord pour l'exportation des logs)
 3. Si une URL Loki distante est configurée, les logs sont **également transférés** vers ce point de terminaison
 
@@ -61,18 +61,18 @@ Laissez le champ vide pour désactiver le transfert de logs à distance.
 
 ### Exigences du côté distant
 
-Votre point de terminaison Loki distant doit être accessible depuis le serveur Stargate via HTTPS (port 443). Si vous utilisez une liste d'autorisation basée sur IP sur votre entrée, ajoutez l'IP publique du serveur Stargate.
+Votre point de terminaison Loki distant doit être accessible depuis le serveur HIN Gateway via HTTPS (port 443). Si vous utilisez une liste d'autorisation basée sur IP sur votre entrée, ajoutez l'IP publique du serveur HIN Gateway.
 
 ---
 
 ## Métriques Prometheus
 
-Stargate expose des points de terminaison de métriques compatibles Prometheus depuis ses conteneurs d'application. Ceux-ci peuvent être récupérés par tout serveur compatible Prometheus pour une collecte centralisée des métriques.
+HIN Gateway expose des points de terminaison de métriques compatibles Prometheus depuis ses conteneurs d'application. Ceux-ci peuvent être récupérés par tout serveur compatible Prometheus pour une collecte centralisée des métriques.
 
 ### Points de terminaison disponibles
 
 | Service | Port | Chemin |
-|---------|------|------|
+| --------- | ------ | ------ |
 | smimekeys-client | `2113` | `/metrics` |
 | irisagent | `2114` | `/metrics` |
 | policy | `2115` | `/metrics` |
@@ -82,13 +82,13 @@ Stargate expose des points de terminaison de métriques compatibles Prometheus d
 
 ### Configuration de récupération
 
-Ajoutez le serveur Stargate comme cible dans votre configuration Prometheus. Exemple pour une instance unique:
+Ajoutez le serveur HIN Gateway comme cible dans votre configuration Prometheus. Exemple pour une instance unique:
 
 ```yaml
 scrape_configs:
   - job_name: 'stargate-<name>-smimekeys'
     static_configs:
-      - targets: ['<STARGATE_IP>:2113']
+      - targets: ['<HIN_GATEWAY_IP>:2113']
         labels:
           environment: 'stargate-<name>'
           service: 'smimekeys-client'
@@ -96,7 +96,7 @@ scrape_configs:
 
   - job_name: 'stargate-<name>-irisagent'
     static_configs:
-      - targets: ['<STARGATE_IP>:2114']
+      - targets: ['<HIN_GATEWAY_IP>:2114']
         labels:
           environment: 'stargate-<name>'
           service: 'irisagent'
@@ -104,7 +104,7 @@ scrape_configs:
 
   - job_name: 'stargate-<name>-policy'
     static_configs:
-      - targets: ['<STARGATE_IP>:2115']
+      - targets: ['<HIN_GATEWAY_IP>:2115']
         labels:
           environment: 'stargate-<name>'
           service: 'policy'
@@ -112,7 +112,7 @@ scrape_configs:
 
   - job_name: 'stargate-<name>-mxengine'
     static_configs:
-      - targets: ['<STARGATE_IP>:2116']
+      - targets: ['<HIN_GATEWAY_IP>:2116']
         labels:
           environment: 'stargate-<name>'
           service: 'mxengine'
@@ -120,17 +120,17 @@ scrape_configs:
 
   - job_name: 'stargate-<name>-node'
     static_configs:
-      - targets: ['<STARGATE_IP>:9100']
+      - targets: ['<HIN_GATEWAY_IP>:9100']
         labels:
           environment: 'stargate-<name>'
           service: 'node-exporter'
     metrics_path: /metrics
 ```
 
-Remplacez `<IP_STARGATE>` par l'IP publique ou privée du serveur et `<nom>` par un identifiant de déploiement (ex. `prod`, `nom-client`).
+Remplacez `<IP_HIN_GATEWAY>` par l'IP publique ou privée du serveur et `<nom>` par un identifiant de déploiement (ex. `prod`, `nom-client`).
 
 !!! tip
-    Les étiquettes `environment` et `service` permettent le filtrage dans les tableaux de bord Grafana sur plusieurs instances Stargate.
+    Les étiquettes `environment` et `service` permettent le filtrage dans les tableaux de bord Grafana sur plusieurs instances HIN Gateway.
 
 ### Exigences de pare-feu
 
@@ -147,7 +147,7 @@ Le service node-exporter expose des métriques standard au niveau de l'hôte (CP
 ## Résumé des ports exposés
 
 | Port | Service | Protocole | Objectif |
-|------|---------|----------|---------|
+| ------ | --------- | ---------- | --------- |
 | `8190` | Dozzle (via oauth2-proxy) | HTTPS | Interface de visualisation des logs authentifiée (SSO Keycloak) |
 | `9100` | node-exporter | HTTP | Métriques de l'hôte (Prometheus) |
 | `2113` | smimekeys-client | HTTP | Métriques de l'application (Prometheus) |

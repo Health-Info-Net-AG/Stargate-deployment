@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Ce document fournit un guide complet sur le processus d'installation technique et de migration vers le nouveau HIN Gateway ("Stargate Appliance").
+Ce document fournit un guide complet sur le processus d'installation technique et de migration vers le nouveau HIN Gateway ("HIN Gateway Appliance").
 
 Ce guide s'adresse aux clients HIN, aux administrateurs informatiques et aux ingénieurs système chargés du déploiement et de la configuration du nouveau HIN Gateway ainsi que, le cas échéant, de la migration du Mail Gateway (MGW) existant vers la nouvelle solution.
 
@@ -29,12 +29,10 @@ La procédure structurée, étape par étape, décrite dans ce document couvre �
     L'objectif de HIN est d'assurer un déploiement sécurisé, fluide et entièrement validé, avec une perturbation minimale des opérations et une continuité ininterrompue des services de messagerie.
      Dans les scénarios de migration, le MGW existant doit rester disponible en tant qu'option de repli jusqu'à ce que le HIN Gateway ait été validé avec succès en production. Il ne doit être mis hors service qu'une fois la migration terminée et le fonctionnement stable confirmé.
 
-
 ## Foire aux questions
 
 !!! question "Puis-je effectuer l'installation ou la migration moi-même?"
     Oui, l'installation ou la migration peuvent être entièrement réalisées par le client.
-
 
     Pour un scénario de migration, la seule exception concerne l'"Étape 1.3 - Exporter la ou les clés privées". Pour des raisons de sécurité et afin de préserver la sécurité de votre clé privée, vous devez contacter le support HIN ou participer à la réunion de migration prévue afin de recevoir le code nécessaire à l'exportation de la clé privée depuis le Mail Gateway actuellement en service.
 
@@ -44,10 +42,7 @@ La procédure structurée, étape par étape, décrite dans ce document couvre �
 !!! question "Y aura-t-il une interruption de la distribution des e-mails pendant le processus d'installation?"
     **Migration:** Entre l'"Étape 1.5 - Arrêt de la machine virtuelle MGW existante" et l'"Étape 18 - Configurer le serveur de messagerie", tous les e-mails seront mis en file d'attente sur le serveur de messagerie. Une fois l'"Étape 18 - Configurer le serveur de messagerie" terminée, les e-mails en file d'attente seront envoyés ou remis dans la boîte de réception.
 
-
     **Nouvelle installation:** Pendant que vous configurez les règles de flux de messagerie, tous les e-mails seront mis en file d'attente sur le serveur de messagerie. Une fois l'"Étape 18 - Configurer le serveur de messagerie" terminée, les e-mails en file d'attente seront envoyés ou remis dans la boîte de réception.
-
-
 
 !!! question "Des e-mails seront-ils perdus pendant l'installation et la migration?"
     Non, aucun e-mail ne sera perdu pendant l'installation et la migration. Certains e-mails pourraient être retardés.
@@ -95,31 +90,31 @@ Veuillez vous assurer que toutes les étapes préparatoires nécessaires ont ét
 Les éléments suivants doivent être disponibles ou confirmés avant l'installation:
 
 - **Les identifiants vous seront fournis par HIN**
-    - Identifiants de la machine virtuelle
-    - Identifiants Keycloak
-    - Code d'activation
+  - Identifiants de la machine virtuelle
+  - Identifiants Keycloak
+  - Code d'activation
 
 - **Exportation de la clé privée**
     **Note :** Applicable uniquement en cas de migration
-    - Si vous travaillez sur un ordinateur Windows ayant accès à la machine virtuelle Mail Gateway via le port 22, nous pouvons vous aider, pendant l'appel, à activer l'exportation de la clé privée depuis le MGW.
-    - Si vous n'avez pas accès à un tel ordinateur, veuillez contacter le support HIN par e-mail ou par téléphone (<support@hin.ch> / 0848 830 740) afin que nous puissions vous aider à établir une connexion d'assistance via System Administration -> Support Connection -> Connect.
+  - Si vous travaillez sur un ordinateur Windows ayant accès à la machine virtuelle Mail Gateway via le port 22, nous pouvons vous aider, pendant l'appel, à activer l'exportation de la clé privée depuis le MGW.
+  - Si vous n'avez pas accès à un tel ordinateur, veuillez contacter le support HIN par e-mail ou par téléphone (<support@hin.ch> / 0848 830 740) afin que nous puissions vous aider à établir une connexion d'assistance via System Administration -> Support Connection -> Connect.
 - **Télécharger la dernière** version de l'[image de la machine virtuelle](vm/VM-Catalog.md)
 - **Pare-feu** :
-    - Autorisez le trafic : de n'importe quelle source vers HIN Gateway et de HIN Gateway vers n'importe quelle destination
-        - WireGuard : veuillez consulter [Configuration requise du serveur - Accès réseau entrant](./index.md#acces-reseau-entrant-le-pare-feu-doit-autoriser) :
-            - Configurez le port WireGuard `19818` (TCP/UDP) dans votre pare-feu.
-                - Trafic entrant et sortant
-    - Autorisez le trafic : poste d'administration → VM HIN Gateway
-        - Exigences pour l'installation :
-            - Port HTTPS `443`
-                - Trafic entrant et sortant
-            - Port Keycloak `8180`
-                - Trafic entrant et sortant
-        - Exigences pour le dépannage (facultatif, requis pour consulter les journaux et modifier tous les paramètres) :
-            - Port SSH `22`
-                - Trafic entrant et sortant
-            - Port Dozzle `8190`
-                - Trafic entrant et sortant
+  - Autorisez le trafic : de n'importe quelle source vers HIN Gateway et de HIN Gateway vers n'importe quelle destination
+    - WireGuard : veuillez consulter [Configuration requise du serveur - Accès réseau entrant](./index.md#acces-reseau-entrant-le-pare-feu-doit-autoriser) :
+      - Configurez le port WireGuard `19818` (TCP/UDP) dans votre pare-feu.
+        - Trafic entrant et sortant
+  - Autorisez le trafic : poste d'administration → VM HIN Gateway
+    - Exigences pour l'installation :
+      - Port HTTPS `443`
+        - Trafic entrant et sortant
+      - Port Keycloak `8180`
+        - Trafic entrant et sortant
+    - Exigences pour le dépannage (facultatif, requis pour consulter les journaux et modifier tous les paramètres) :
+      - Port SSH `22`
+        - Trafic entrant et sortant
+      - Port Dozzle `8190`
+        - Trafic entrant et sortant
 - **L'accès DHCP** doit être disponible pour l'"[Étape 5 - Connexion réseau à la machine virtuelle](#etape-5-connexion-reseau-a-la-machine-virtuelle)" (recommandé).
 - **Exigences en matière de sauvegarde** - voir "Annexe 1 - Sauvegarde et restauration des paramètres de l'appliance". **Note :** Applicable uniquement en cas de migration
 - Note : Applicable uniquement en cas de migration - Confirmation que le MGW existant ne sera **pas** supprimé tant que la procédure d'acceptation n'aura pas été menée à bien.
@@ -145,7 +140,7 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
 
 Envoyez des e-mails de test aux destinataires suivants, en utilisant des boîtes aux lettres auxquelles vous avez accès afin de pouvoir vérifier que la remise a été effectuée avec succès:
 
-- une adresse e-mail HIN ou une adresse e-mail au sein de votre domaine de la communauté HIN, par exemple: user@hin.ch
+- une adresse e-mail HIN ou une adresse e-mail au sein de votre domaine de la communauté HIN, par exemple: <user@hin.ch>
 - une adresse e-mail externe en dehors de la communauté HIN, par exemple: Bluewin, Gmail, Yahoo ou GMX
 
 Pour le destinataire externe, envoyez un e-mail depuis la communauté HIN avec **la mention (confidentiel) dans l'objet**.
@@ -187,7 +182,6 @@ Effectuez une sauvegarde de l'appliance MGW existante et assurez-vous que la mac
 
     Pour une migration à domaines multiples, effectuez l'opération pour chaque domaine
 
-
 !!! warning "Assistance HIN requise"
     Un code de déverrouillage est requis pour cette étape. Ce code est fourni par un ingénieur du support HIN.
 
@@ -220,7 +214,7 @@ Si vous souhaitez poursuivre l'installation par vous-même, veuillez contacter l
 1. Arrêtez le nouveau HIN Gateway.
 2. Démarrez le MGW existant.
 3. Vérifiez que le trafic de messagerie entrant et sortant fonctionne correctement via le MGW existant.
-    * Pour une migration à domaines multiples, effectuez l'opération de vérification pour chaque domaine
+    - Pour une migration à domaines multiples, effectuez l'opération de vérification pour chaque domaine
 
 ### Étape 1.5 - Arrêt de la machine virtuelle MGW existante
 
@@ -253,11 +247,11 @@ Sélectionnez l'une des images virtuelles disponibles et provisionnez-la comme d
     Pour des raisons de sécurité et de prise en charge, assurez-vous que votre hyperviseur n'utilise pas une version en fin de vie. L'appliance HIN Gateway est prise en charge sur la dernière version de l'hyperviseur et sur la version majeure immédiatement précédente.
 
 - Installation de l'image de machine virtuelle:
-    - [Image de machine virtuelle Azure](vm/Azure-image-install.md)
-    - [Image Windows 11 Pro (Hyper-V)](vm/Windows11pro-image-install.md)
-    - [Image VMware](vm/VMware-image-install.md)
-    - [Image Proxmox](vm/Proxmox-image-install.md)
-    - [Cloudscale](vm/Cloudscale-image-install.md)
+  - [Image de machine virtuelle Azure](vm/Azure-image-install.md)
+  - [Image Windows 11 Pro (Hyper-V)](vm/Windows11pro-image-install.md)
+  - [Image VMware](vm/VMware-image-install.md)
+  - [Image Proxmox](vm/Proxmox-image-install.md)
+  - [Cloudscale](vm/Cloudscale-image-install.md)
 - [Configuration de Microsoft Exchange](Exchange-integration.md)
 
 ### Étape 4 - Charger l'image de machine virtuelle
@@ -487,12 +481,10 @@ Sur cet écran, configurez vos paramètres initiaux:
 ![Setup screen](assets/installation-guide/step13-initial-setup2.png)
 
 | Paramètre | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Nom d'hôte du serveur de messagerie** | Le FQDN de cette instance de passerelle de messagerie (par exemple, `mail.example.com`). |
 | **Adresses IP du serveur de messagerie** | La ou les adresses IP publiques de ce serveur. Ajoutez des adresses IP supplémentaires si le serveur est accessible via plusieurs adresses. |
 | **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS |
-
-
 
 ### Étape 14 - Configurer le transport du courrier
 
@@ -501,7 +493,6 @@ Sur cet écran, configurez vos paramètres initiaux:
 Vous serez connecté au tableau de bord du HIN Gateway sur la page `Domains`
 
  <br> ![Screenshot](assets/installation-guide/step14-dashboard-domains.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-
 
 #### Page Domains
 
@@ -513,11 +504,11 @@ Dans le menu **Domains**, pour chaque domaine disponible, vous pouvez configurer
 ![Domain transport configuration screen](assets/installation-guide/step14-domain-mail-transport.png)
 
 | Paramètre | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Inbound relay** | Le relais SMTP pour la livraison entrante du domaine sélectionné |
 | **Outbound relay** | Le relais SMTP pour la livraison sortante du domaine sélectionné. Ce paramètre correspond au paramètre `Forwarding server` de l'ancien MGW |
-| **Trusted networks** | Réseaux supplémentaires autorisés à relayer via cette passerelle. Pour plus d'informations, consultez l'"Étape 18 - Configurer le serveur de messagerie"|
-| **Configure TLS** | Paramètres du certificat TLS pour les connexions SMTP ; le bouton `Generate TLS certificate` permet de générer un certificat TLS|
+| **Trusted networks** | Réseaux supplémentaires autorisés à relayer via cette passerelle. Pour plus d'informations, consultez l'"Étape 18 - Configurer le serveur de messagerie" |
+| **Configure TLS** | Paramètres du certificat TLS pour les connexions SMTP ; le bouton `Generate TLS certificate` permet de générer un certificat TLS |
 | **Email authentication** | Pour tous les paramètres de la section `Email authentication`, veuillez consulter la section [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) |
 
 ??? tip "Comment tester une connexion TLS ?"
@@ -553,7 +544,7 @@ Dans le menu **Domains**, pour chaque domaine disponible, vous pouvez configurer
 Actions supplémentaires:
 
 - Ajoutez des domaines supplémentaires en cliquant sur "Add domain", si nécessaire.
-    - si un domaine n'est pas sécurisé par HIN, il apparaîtra dans la liste `Domains` avec le type Routed, ce qui signifie qu'il ne peut être géré que localement
+  - si un domaine n'est pas sécurisé par HIN, il apparaîtra dans la liste `Domains` avec le type Routed, ce qui signifie qu'il ne peut être géré que localement
 
 !!! note
     Assurez-vous que toutes les configurations des hôtes de relais et des domaines sont correctes avant de continuer.
@@ -569,13 +560,12 @@ Sur cette page, dans le menu `Settings`, configurez les paramètres globaux de t
 Les paramètres suivants sont disponibles dans le menu `Settings`:
 
 | Paramètre | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Nom d'hôte du serveur de messagerie** | Le FQDN de cette instance de passerelle de messagerie (par exemple, `mail.example.com`). |
 | **Adresses IP du serveur de messagerie** | La ou les adresses IP publiques de ce serveur. Ajoutez des adresses IP supplémentaires si le serveur est accessible via plusieurs adresses. |
 | **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS |
 | **Default inbound relay** | Le relais SMTP par défaut pour la livraison entrante |
 | **Default outbound relay** | Le relais SMTP par défaut pour la livraison sortante |
-
 
 ### Étape 15 - Configurer les whitelist headers
 
@@ -638,11 +628,11 @@ Voir [Intégration à Exchange](Exchange-integration.md) pour obtenir des instru
 Dans le menu **Domains**, pour chaque domaine disponible, vous pouvez configurer une route de transport spécifique:
 
 | Paramètre | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Inbound relay** | Le relais SMTP pour la livraison entrante du domaine sélectionné |
 | **Outbound relay** | Le relais SMTP pour la livraison sortante du domaine sélectionné. Ce paramètre correspond au paramètre `Forwarding server` de l'ancien MGW |
-| **Trusted networks** | Réseaux supplémentaires autorisés à relayer via cette passerelle. Pour plus d'informations, consultez l'"Étape 18 - Configurer le serveur de messagerie"|
-| **Configure TLS** | Paramètres du certificat TLS pour les connexions SMTP ; le bouton `Generate TLS certificate` permet de générer un certificat TLS|
+| **Trusted networks** | Réseaux supplémentaires autorisés à relayer via cette passerelle. Pour plus d'informations, consultez l'"Étape 18 - Configurer le serveur de messagerie" |
+| **Configure TLS** | Paramètres du certificat TLS pour les connexions SMTP ; le bouton `Generate TLS certificate` permet de générer un certificat TLS |
 | **Email authentication** | Pour tous les paramètres de la section `Email authentication`, veuillez consulter la section [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) |
 
 - **Note : pour un scénario de migration :** Accédez à la page de chaque domaine et ajoutez un **Outbound host** en utilisant la valeur relevée dans le champ `Forwarding server` du MGW à l'"Étape 1.2 - Sauvegarde du MGW existant".
@@ -670,8 +660,6 @@ Dans le menu **Domains**, pour chaque domaine disponible, vous pouvez configurer
 
   <br> ![domain-relay-host](assets/installation-guide/step14-domain-mail-transport.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-
-
 #### Page Settings
 
 Sur cette page, dans le menu `Settings`, configurez les paramètres globaux de transport du courrier pour la mise en place du relais de messagerie sécurisé, communs à toute l'instance. La configuration détaillée de chaque domaine peut être effectuée sous `Domains` -> `$domain`
@@ -681,7 +669,7 @@ Sur cette page, dans le menu `Settings`, configurez les paramètres globaux de t
 Les paramètres suivants sont disponibles dans le menu `Settings`:
 
 | Paramètre | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Nom d'hôte du serveur de messagerie** | Le FQDN de cette instance de passerelle de messagerie (par exemple, `mail.example.com`). |
 | **Adresses IP du serveur de messagerie** | La ou les adresses IP publiques de ce serveur. Ajoutez des adresses IP supplémentaires si le serveur est accessible via plusieurs adresses. |
 | **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS |
@@ -689,7 +677,6 @@ Les paramètres suivants sont disponibles dans le menu `Settings`:
 | **Default outbound relay** | Le relais SMTP par défaut pour la livraison sortante |
 
 <br> ![domain-relay-host](assets/installation-guide/step14-mail-transport2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-
 
 ### Étape 19 - Tester et valider
 

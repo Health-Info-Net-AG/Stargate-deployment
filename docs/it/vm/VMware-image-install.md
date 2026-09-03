@@ -1,6 +1,6 @@
-# Deployment Stargate su VMware ESXi tramite immagine
+# Deployment HIN Gateway su VMware ESXi tramite immagine
 
-Distribuisci Stargate su VMware
+Distribuisci HIN Gateway su VMware
 
 ## Ottenere il file immagine
 
@@ -25,9 +25,9 @@ Distribuisci Stargate su VMware
 !!! info "Disco dati incluso"
     L'OVA contiene già il disco dati dell'appliance (`VEREIGN-DATA`, montato su `/var/data`) — non c'è alcun disco aggiuntivo da collegare. Vedi [Guida all'installazione → Passo 4](../Installation-guide.md#passo-4-caricamento-dellimmagine-vm).
 
-## Accedi e inizializza l'istanza Stargate
+## Accedi e inizializza l'istanza HIN Gateway
 
-- Accedi alla console VM con l'utente `hinadmin` per configurare e installare i componenti Stargate.
+- Accedi alla console VM con l'utente `hinadmin` per configurare e installare i componenti HIN Gateway.
 - Per ottenere la password `hinadmin`, invia un'email a <support@hin.ch> con oggetto: **"Password required for VM installation."**
 
 [Clicca qui per inviare un'email](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
@@ -47,6 +47,6 @@ cd ~/stargate-deployment/docker-compose/
 
 !!! tip "Supporto"
 
-    Per qualsiasi domanda o problema relativo al deployment e al funzionamento dell'appliance Stargate, contatta il supporto HIN.
+    Per qualsiasi domanda o problema relativo al deployment e al funzionamento dell'appliance HIN Gateway, contatta il supporto HIN.
 
     Includi informazioni rilevanti come il nome del cliente, la versione dell'appliance e screenshot/[log](../Docker-advanced.md#fornire-log-al-supporto) dove applicabile, per aiutarci a elaborare la tua richiesta in modo efficiente.

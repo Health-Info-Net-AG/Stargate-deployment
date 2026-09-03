@@ -1,6 +1,6 @@
 # Migrating a Compose Deployment to a bootc Appliance
 
-This guide walks through moving an existing standard-Compose Stargate installation (a `git clone` on a plain VM) onto a new **bootc appliance** VM - the immutable, image-based deployment that runs the same Compose stack read-only from `/usr` with all state on a dedicated `/var/data` Data Disk.
+This guide walks through moving an existing standard-Compose HIN Gateway installation (a `git clone` on a plain VM) onto a new **bootc appliance** VM - the immutable, image-based deployment that runs the same Compose stack read-only from `/usr` with all state on a dedicated `/var/data` Data Disk.
 
 Migration reuses the same backup/restore tooling used for disaster recovery: back up the old VM, provision the new appliance, and restore the archive onto it. The one step no script can do for you is re-pointing the CA-side WireGuard registration at the new VM's public IP - budget time for that with your HIN contact.
 
