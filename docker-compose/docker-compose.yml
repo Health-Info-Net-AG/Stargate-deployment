@@ -465,7 +465,7 @@ services:
 
   irisagent:
     # renovate: datasource=docker depName=healthinfonetag/irisagent
-    image: healthinfonetag/irisagent:v0.0.12
+    image: healthinfonetag/irisagent:v0.0.13
     container_name: stargate-irisagent
     restart: unless-stopped
     logging:
@@ -547,7 +547,7 @@ services:
 
   mxengine:
     # renovate: datasource=docker depName=healthinfonetag/mxengine
-    image: healthinfonetag/mxengine:v0.0.53
+    image: healthinfonetag/mxengine:v0.0.54
     container_name: stargate-mxengine
     restart: unless-stopped
     logging:
@@ -1263,7 +1263,7 @@ services:
   # Ops Agent - executes infrastructure commands (updates, restarts) from dashboard via NATS
   ops-agent:
     # renovate: datasource=docker depName=healthinfonetag/stargate-ops
-    image: healthinfonetag/stargate-ops:v0.0.7
+    image: healthinfonetag/stargate-ops:v0.0.9
     container_name: stargate-ops-agent
     restart: unless-stopped
     logging:
