@@ -32,6 +32,16 @@ upstreams:
       "mailauth:8080": 1
     type: roundrobin
 
+  - id: "idagent"
+    nodes:
+      "idagent:8080": 1
+    type: roundrobin
+
+  - id: "seaweedfs"
+    nodes:
+      "seaweedfs:8333": 1
+    type: roundrobin
+
 plugin_configs:
   - id: "oidc-bearer"
     plugins:
@@ -97,6 +107,21 @@ routes:
     plugins:
       proxy-rewrite:
         regex_uri: ["^/mailauth/(.*)", "/$1"]
+
+  - id: "idagent-liveness"
+    uri: "/idagent/liveness"
+    upstream_id: "idagent"
+    plugins:
+      proxy-rewrite:
+        regex_uri: ["^/idagent/(.*)", "/$1"]
+
+  # SeaweedFS exposes /status rather than /liveness; health-check.sh probes it here.
+  - id: "seaweedfs-status"
+    uri: "/seaweedfs/status"
+    upstream_id: "seaweedfs"
+    plugins:
+      proxy-rewrite:
+        regex_uri: ["^/seaweedfs/(.*)", "/$1"]
 
   # ==================
   # Internal routes — IP-restricted, no auth

@@ -87,25 +87,29 @@ echo ""
 # ------------------------------------------------------------------
 echo "--- Liveness ---"
 
+# Probed through the APISIX gateway rather than the per-service host ports, so
+# these checks no longer depend on those ports being published. Maps the service
+# name to its APISIX route prefix, which differs from the container name for
+# smimekeys.
 declare -A LIVENESS_ENDPOINTS=(
-  [smimekeys-client]=8081
-  [policy]=8082
-  [irisagent]=8083
-  [mxengine]=8084
-  [idagent]=8085
-  [mailauth]=8086
+  [smimekeys-client]=smimekeys
+  [policy]=policy
+  [irisagent]=irisagent
+  [mxengine]=mxengine
+  [idagent]=idagent
+  [mailauth]=mailauth
 )
 
 for svc in "${!LIVENESS_ENDPOINTS[@]}"; do
-  port=${LIVENESS_ENDPOINTS[$svc]}
-  resp=$(curl -sf --max-time 5 "http://localhost:${port}/liveness" 2>/dev/null)
+  route=${LIVENESS_ENDPOINTS[$svc]}
+  resp=$(curl -sf --max-time 5 "http://localhost:9080/${route}/liveness" 2>/dev/null)
   if [ $? -eq 0 ]; then
-    pass "$svc :${port}/liveness"
+    pass "$svc :9080/${route}/liveness"
     if $VERBOSE && [ -n "$resp" ]; then
       echo "         $resp"
     fi
   else
-    fail "$svc :${port}/liveness"
+    fail "$svc :9080/${route}/liveness"
   fi
 done
 
@@ -157,7 +161,7 @@ echo ""
 # ------------------------------------------------------------------
 echo "--- SeaweedFS ---"
 
-if curl -sf --max-time 5 "http://localhost:8333/status" >/dev/null 2>&1; then
+if curl -sf --max-time 5 "http://localhost:9080/seaweedfs/status" >/dev/null 2>&1; then
   pass "SeaweedFS S3 live"
 else
   fail "SeaweedFS health check failed"
