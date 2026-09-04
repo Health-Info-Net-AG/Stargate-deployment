@@ -685,12 +685,13 @@ compose ps
 echo ""
 
 # Check service health
-SERVICES=("smimekeys-client:8081" "policy:8082" "irisagent:8083" "mxengine:8084")
+# Probed via APISIX so these checks do not depend on the per-service host ports.
+SERVICES=("smimekeys-client:smimekeys" "policy:policy" "irisagent:irisagent" "mxengine:mxengine")
 echo "Service health checks:"
 for svc in "${SERVICES[@]}"; do
   NAME="${svc%%:*}"
-  PORT="${svc##*:}"
-  if curl -s "http://localhost:$PORT/liveness" > /dev/null 2>&1; then
+  ROUTE="${svc##*:}"
+  if curl -s "http://localhost:9080/$ROUTE/liveness" > /dev/null 2>&1; then
     echo "  ✓ $NAME is healthy"
   else
     echo "  - $NAME not responding (may still be starting)"

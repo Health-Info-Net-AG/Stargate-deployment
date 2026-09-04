@@ -470,6 +470,11 @@ generate_keycloak_realm() {
     "$PROJECT_DIR/config/keycloak/realm-stargate.json" \
     > "$out_dir/realm-stargate.json"
 
+  # Holds the three rendered client secrets, so it must not be world-readable.
+  # 640 rather than 600: the keycloak container reads the import file as
+  # uid 1000 / gid 0, so group root must retain read access.
+  chmod 640 "$out_dir/realm-stargate.json"
+
   echo "Keycloak realm config generated: $out_dir/realm-stargate.json"
   echo ""
 }

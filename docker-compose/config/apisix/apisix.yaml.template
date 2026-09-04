@@ -32,16 +32,26 @@ upstreams:
       "mailauth:8080": 1
     type: roundrobin
 
+  - id: "idagent"
+    nodes:
+      "idagent:8080": 1
+    type: roundrobin
+
+  - id: "seaweedfs"
+    nodes:
+      "seaweedfs:8333": 1
+    type: roundrobin
+
 plugin_configs:
   - id: "oidc-bearer"
     plugins:
       openid-connect:
         client_id: apisix
         client_secret: ${KEYCLOAK_APISIX_CLIENT_SECRET}
-        discovery: http://host.docker.internal:8181/realms/stargate/.well-known/openid-configuration
+        discovery: http://keycloak:8080/realms/stargate/.well-known/openid-configuration
         bearer_only: true
         realm: stargate
-        introspection_endpoint: http://host.docker.internal:8181/realms/stargate/protocol/openid-connect/token/introspect
+        introspection_endpoint: http://keycloak:8080/realms/stargate/protocol/openid-connect/token/introspect
         introspection_endpoint_auth_method: client_secret_post
         set_access_token_header: true
         access_token_in_authorization_header: true
@@ -97,6 +107,21 @@ routes:
     plugins:
       proxy-rewrite:
         regex_uri: ["^/mailauth/(.*)", "/$1"]
+
+  - id: "idagent-liveness"
+    uri: "/idagent/liveness"
+    upstream_id: "idagent"
+    plugins:
+      proxy-rewrite:
+        regex_uri: ["^/idagent/(.*)", "/$1"]
+
+  # SeaweedFS exposes /status rather than /liveness; health-check.sh probes it here.
+  - id: "seaweedfs-status"
+    uri: "/seaweedfs/status"
+    upstream_id: "seaweedfs"
+    plugins:
+      proxy-rewrite:
+        regex_uri: ["^/seaweedfs/(.*)", "/$1"]
 
   # ==================
   # Internal routes — IP-restricted, no auth
