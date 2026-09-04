@@ -325,7 +325,6 @@ KEYCLOAK_ADMIN_USER="${KEYCLOAK_ADMIN_USER:-admin}"
 KEYCLOAK_ADMIN_PASSWORD="${KEYCLOAK_ADMIN_PASSWORD:-}"
 KEYCLOAK_APISIX_CLIENT_SECRET="${KEYCLOAK_APISIX_CLIENT_SECRET:-}"
 KEYCLOAK_DASHBOARD_CLIENT_SECRET="${KEYCLOAK_DASHBOARD_CLIENT_SECRET:-}"
-APISIX_ADMIN_KEY="${APISIX_ADMIN_KEY:-}"
 # IP-derived public URLs (and WG_LOCAL_IP below) live only in .env -- they are
 # empty in customer-config.sh and derived at install time. Restore must
 # re-derive them from SERVER_STATIC_IP, or Keycloak/dashboard/mxengine fall back
@@ -358,7 +357,7 @@ BACKUP_ENV="$BACKUP_CONTENT/config/.env"
 if [ -f "$BACKUP_ENV" ]; then
   for _k in POSTGRES_USER POSTGRES_PASSWORD S3_ACCESS_KEY S3_SECRET_KEY \
             STALWART_ADMIN_PASSWORD MTACONF_SVC_PASSWORD KEYCLOAK_ADMIN_PASSWORD \
-            KEYCLOAK_APISIX_CLIENT_SECRET KEYCLOAK_DASHBOARD_CLIENT_SECRET APISIX_ADMIN_KEY; do
+            KEYCLOAK_APISIX_CLIENT_SECRET KEYCLOAK_DASHBOARD_CLIENT_SECRET; do
     _v=$(read_env_var "$_k" "$BACKUP_ENV")
     if [ -n "$_v" ]; then printf -v "$_k" '%s' "$_v"; fi
   done
@@ -420,7 +419,6 @@ KEYCLOAK_ADMIN_USER=$KEYCLOAK_ADMIN_USER
 KEYCLOAK_ADMIN_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD
 KEYCLOAK_APISIX_CLIENT_SECRET=$KEYCLOAK_APISIX_CLIENT_SECRET
 KEYCLOAK_DASHBOARD_CLIENT_SECRET=$KEYCLOAK_DASHBOARD_CLIENT_SECRET
-APISIX_ADMIN_KEY=$APISIX_ADMIN_KEY
 KEYCLOAK_PUBLIC_URL=$KEYCLOAK_PUBLIC_URL
 DASHBOARD_PUBLIC_URL=$DASHBOARD_PUBLIC_URL
 DASHBOARD_SHOW_DEV_PAGES=$DASHBOARD_SHOW_DEV_PAGES
@@ -691,7 +689,7 @@ echo "Service health checks:"
 for svc in "${SERVICES[@]}"; do
   NAME="${svc%%:*}"
   ROUTE="${svc##*:}"
-  if curl -s "http://localhost:9080/$ROUTE/liveness" > /dev/null 2>&1; then
+  if curl -sf "http://localhost:9080/$ROUTE/liveness" > /dev/null 2>&1; then
     echo "  ✓ $NAME is healthy"
   else
     echo "  - $NAME not responding (may still be starting)"

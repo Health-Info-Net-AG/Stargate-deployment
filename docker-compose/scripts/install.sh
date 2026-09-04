@@ -274,7 +274,6 @@ load_customer_config() {
   KEYCLOAK_DOZZLE_CLIENT_SECRET="$(resolve_secret "$KEYCLOAK_DOZZLE_CLIENT_SECRET" KEYCLOAK_DOZZLE_CLIENT_SECRET 32)"
   # oauth2-proxy cookie secret must be exactly 16, 24, or 32 bytes -> 32 chars.
   OAUTH2_PROXY_COOKIE_SECRET="$(resolve_secret "$OAUTH2_PROXY_COOKIE_SECRET" OAUTH2_PROXY_COOKIE_SECRET 32)"
-  APISIX_ADMIN_KEY="$(resolve_secret "$APISIX_ADMIN_KEY" APISIX_ADMIN_KEY 32)"
   DASHBOARD_SHOW_DEV_PAGES="${DASHBOARD_SHOW_DEV_PAGES:-false}"
 
   # WireGuard local configuration
@@ -294,7 +293,6 @@ load_customer_config() {
   persist_secret KEYCLOAK_DASHBOARD_CLIENT_SECRET "$KEYCLOAK_DASHBOARD_CLIENT_SECRET" "$CONFIG_FILE"
   persist_secret KEYCLOAK_DOZZLE_CLIENT_SECRET "$KEYCLOAK_DOZZLE_CLIENT_SECRET" "$CONFIG_FILE"
   persist_secret OAUTH2_PROXY_COOKIE_SECRET "$OAUTH2_PROXY_COOKIE_SECRET" "$CONFIG_FILE"
-  persist_secret APISIX_ADMIN_KEY "$APISIX_ADMIN_KEY" "$CONFIG_FILE"
 
   echo "Customer: $CUSTOMER_NAME"
   echo "Deployment: $DEPLOYMENT_NAME"
@@ -373,7 +371,6 @@ KEYCLOAK_APISIX_CLIENT_SECRET="$KEYCLOAK_APISIX_CLIENT_SECRET"
 KEYCLOAK_DASHBOARD_CLIENT_SECRET="$KEYCLOAK_DASHBOARD_CLIENT_SECRET"
 KEYCLOAK_DOZZLE_CLIENT_SECRET="$KEYCLOAK_DOZZLE_CLIENT_SECRET"
 OAUTH2_PROXY_COOKIE_SECRET="$OAUTH2_PROXY_COOKIE_SECRET"
-APISIX_ADMIN_KEY="$APISIX_ADMIN_KEY"
 KEYCLOAK_PUBLIC_URL="$KEYCLOAK_PUBLIC_URL"
 DASHBOARD_PUBLIC_URL="$DASHBOARD_PUBLIC_URL"
 DOZZLE_PUBLIC_URL="$DOZZLE_PUBLIC_URL"
@@ -470,13 +467,25 @@ generate_keycloak_realm() {
     "$PROJECT_DIR/config/keycloak/realm-stargate.json" \
     > "$out_dir/realm-stargate.json"
 
-  # Holds the three rendered client secrets, so it must not be world-readable.
-  # 640 rather than 600: the keycloak container reads the import file as
-  # uid 1000 / gid 0, so group root must retain read access.
-  chmod 640 "$out_dir/realm-stargate.json"
+  secure_keycloak_realm
 
   echo "Keycloak realm config generated: $out_dir/realm-stargate.json"
   echo ""
+}
+
+# Holds three client secrets. 640 not 600: keycloak reads it as uid 1000 / gid 0,
+# so gid 0 must be set explicitly, not assumed from running as root. Falls back to
+# 644 when gid 0 is unavailable -- a failed realm import breaks all OIDC auth.
+# Also called by update.sh so pre-existing 0644 files are remediated.
+secure_keycloak_realm() {
+  local f="$KEYCLOAK_GEN_DIR/realm-stargate.json"
+  [ -f "$f" ] || return 0
+  if chown :0 "$f" 2>/dev/null; then
+    chmod 640 "$f"
+  else
+    echo "  note: not root, leaving realm file world-readable (gid 0 unavailable)"
+    chmod 644 "$f"
+  fi
 }
 
 # setup_systemd_service() is provided by lib/systemd.sh (sourced above).

@@ -254,6 +254,10 @@ if [ -n "$EXISTING_VAULT_TOKEN" ]; then
   echo ""
 fi
 
+# Re-assert permissions on the rendered realm file (older installs left it 0644
+# with live client secrets). Mode only -- the file is not re-rendered here.
+secure_keycloak_realm
+
 if [ "$ENV_ONLY" = true ]; then
   echo "Done. .env updated (--env-only, services not restarted)."
   echo ""

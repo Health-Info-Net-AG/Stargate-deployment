@@ -273,15 +273,13 @@ services:
       - ${STARGATE_DATA_DIR:-/var/data}/vereign/apisix:/output
     environment:
       KEYCLOAK_APISIX_CLIENT_SECRET: ${KEYCLOAK_APISIX_CLIENT_SECRET:-changeme}
-    # The rendered file holds KEYCLOAK_APISIX_CLIENT_SECRET in cleartext, so it must
-    # not be world-readable. 636 is the uid/gid the apache/apisix image runs as; the
-    # apisix container reads this file as that user, so root-owned 0600 would be
-    # unreadable to it. Revisit if the image's uid changes on a version bump.
+    # Holds a client secret in cleartext. 636 is the apache/apisix image's gid;
+    # root-owned + :ro so the gateway can read but not rewrite its own routes.
     command: >
       sh -c "apk add --no-cache gettext &&
              envsubst '$$KEYCLOAK_APISIX_CLIENT_SECRET' < /templates/apisix.yaml.template > /output/apisix.yaml &&
-             chown 636:636 /output/apisix.yaml &&
-             chmod 600 /output/apisix.yaml &&
+             chown root:636 /output/apisix.yaml &&
+             chmod 640 /output/apisix.yaml &&
              echo 'APISIX config generated'"
     networks:
       - stargate-network
@@ -815,7 +813,7 @@ services:
 
   apisix:
     # renovate: datasource=docker depName=apache/apisix
-    image: apache/apisix:3.17.0-debian
+    image: apache/apisix:3.18.0-debian
     container_name: stargate-apisix
     restart: unless-stopped
     logging:
@@ -828,11 +826,9 @@ services:
         condition: service_completed_successfully
       keycloak:
         condition: service_healthy
-    environment:
-      APISIX_ADMIN_KEY: ${APISIX_ADMIN_KEY:-changeme}
     volumes:
       - ./config/apisix/config.yaml:/usr/local/apisix/conf/config.yaml:ro
-      - ${STARGATE_DATA_DIR:-/var/data}/vereign/apisix/apisix.yaml:/usr/local/apisix/conf/apisix.yaml
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/apisix/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro
     ports:
       - "9080:9080" # Gateway — main entry point for API traffic
       - "9091:9091" # Prometheus metrics

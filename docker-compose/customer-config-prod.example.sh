@@ -142,9 +142,6 @@ KEYCLOAK_DASHBOARD_CLIENT_SECRET="" # Auto-generated if empty
 KEYCLOAK_DOZZLE_CLIENT_SECRET=""    # Auto-generated if empty (Dozzle login via oauth2-proxy)
 OAUTH2_PROXY_COOKIE_SECRET=""       # Auto-generated if empty (oauth2-proxy session cookie)
 
-# APISIX admin API key (for the debug admin endpoint on port 9180)
-APISIX_ADMIN_KEY=""  # Auto-generated if empty
-
 # Public-facing URLs (must be reachable from the end-user's browser)
 KEYCLOAK_PUBLIC_URL=""      # Default: https://<SERVER_STATIC_IP>:8180
 DASHBOARD_PUBLIC_URL=""     # Default: https://<SERVER_STATIC_IP>

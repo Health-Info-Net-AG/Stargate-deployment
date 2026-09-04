@@ -35,6 +35,9 @@ EXPECTED_RUNNING=(
   stargate-postgres
   stargate-vault
   stargate-seaweedfs
+  # Listed so a gateway outage is named here rather than as 7 failed probes.
+  stargate-apisix
+  stargate-keycloak
   stargate-smimekeys-client
   stargate-policy
   stargate-irisagent
@@ -87,10 +90,8 @@ echo ""
 # ------------------------------------------------------------------
 echo "--- Liveness ---"
 
-# Probed through the APISIX gateway rather than the per-service host ports, so
-# these checks no longer depend on those ports being published. Maps the service
-# name to its APISIX route prefix, which differs from the container name for
-# smimekeys.
+# Service name -> APISIX route prefix (differs for smimekeys). Probed through
+# the gateway so these checks do not depend on per-service host ports.
 declare -A LIVENESS_ENDPOINTS=(
   [smimekeys-client]=smimekeys
   [policy]=policy
@@ -98,6 +99,8 @@ declare -A LIVENESS_ENDPOINTS=(
   [mxengine]=mxengine
   [idagent]=idagent
   [mailauth]=mailauth
+  [mtaconf]=mtaconf
+  [ops-agent]=ops-agent
 )
 
 for svc in "${!LIVENESS_ENDPOINTS[@]}"; do
