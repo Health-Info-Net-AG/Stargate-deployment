@@ -38,10 +38,10 @@ plugin_configs:
       openid-connect:
         client_id: apisix
         client_secret: ${KEYCLOAK_APISIX_CLIENT_SECRET}
-        discovery: http://host.docker.internal:8181/realms/stargate/.well-known/openid-configuration
+        discovery: http://keycloak:8080/realms/stargate/.well-known/openid-configuration
         bearer_only: true
         realm: stargate
-        introspection_endpoint: http://host.docker.internal:8181/realms/stargate/protocol/openid-connect/token/introspect
+        introspection_endpoint: http://keycloak:8080/realms/stargate/protocol/openid-connect/token/introspect
         introspection_endpoint_auth_method: client_secret_post
         set_access_token_header: true
         access_token_in_authorization_header: true
