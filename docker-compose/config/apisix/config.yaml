@@ -7,15 +7,6 @@ deployment:
   role: data_plane
   role_data_plane:
     config_provider: yaml
-  admin:
-    allow_admin:
-      - 127.0.0.1
-      - 172.16.0.0/12
-      - 10.0.0.0/8
-    admin_key:
-      - name: admin
-        key: ${{APISIX_ADMIN_KEY}}
-        role: admin
 
 plugins:
   - prometheus

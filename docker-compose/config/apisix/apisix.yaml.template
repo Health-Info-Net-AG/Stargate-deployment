@@ -63,6 +63,7 @@ routes:
   - id: "mxengine-liveness"
     uri: "/mxengine/liveness"
     upstream_id: "mxengine"
+    priority: 100
     plugins:
       proxy-rewrite:
         regex_uri: ["^/mxengine/(.*)", "/$1"]
@@ -70,6 +71,7 @@ routes:
   - id: "policy-liveness"
     uri: "/policy/liveness"
     upstream_id: "policy"
+    priority: 100
     plugins:
       proxy-rewrite:
         regex_uri: ["^/policy/(.*)", "/$1"]
@@ -77,6 +79,7 @@ routes:
   - id: "smimekeys-liveness"
     uri: "/smimekeys/liveness"
     upstream_id: "smimekeys"
+    priority: 100
     plugins:
       proxy-rewrite:
         regex_uri: ["^/smimekeys/(.*)", "/$1"]
@@ -84,6 +87,7 @@ routes:
   - id: "mtaconf-liveness"
     uri: "/mtaconf/liveness"
     upstream_id: "mtaconf"
+    priority: 100
     plugins:
       proxy-rewrite:
         regex_uri: ["^/mtaconf/(.*)", "/$1"]
@@ -91,6 +95,7 @@ routes:
   - id: "irisagent-liveness"
     uri: "/irisagent/liveness"
     upstream_id: "irisagent"
+    priority: 100
     plugins:
       proxy-rewrite:
         regex_uri: ["^/irisagent/(.*)", "/$1"]
@@ -98,12 +103,14 @@ routes:
   - id: "ops-agent-liveness"
     uri: "/ops-agent/liveness"
     upstream_id: "ops-agent"
+    priority: 100
     plugins:
       proxy-rewrite:
         regex_uri: ["^/ops-agent/(.*)", "/$1"]
   - id: "mailauth-liveness"
     uri: "/mailauth/liveness"
     upstream_id: "mailauth"
+    priority: 100
     plugins:
       proxy-rewrite:
         regex_uri: ["^/mailauth/(.*)", "/$1"]
@@ -111,6 +118,7 @@ routes:
   - id: "idagent-liveness"
     uri: "/idagent/liveness"
     upstream_id: "idagent"
+    priority: 100
     plugins:
       proxy-rewrite:
         regex_uri: ["^/idagent/(.*)", "/$1"]
@@ -119,6 +127,7 @@ routes:
   - id: "seaweedfs-status"
     uri: "/seaweedfs/status"
     upstream_id: "seaweedfs"
+    priority: 100
     plugins:
       proxy-rewrite:
         regex_uri: ["^/seaweedfs/(.*)", "/$1"]
