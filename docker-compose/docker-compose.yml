@@ -119,7 +119,9 @@ services:
     volumes:
       - ${STARGATE_DATA_DIR:-/var/data}/seaweedfs:/data
     ports:
-      - "8333:8333"
+      # Bind to loopback only: the SeaweedFS S3 API is unauthenticated on this port.
+      # In-stack services reach it as seaweedfs:8333 over the compose network.
+      - "127.0.0.1:8333:8333"
     healthcheck:
       test:
         [
@@ -403,7 +405,9 @@ services:
 
       LOG_LEVEL: "info"
     ports:
-      - "8081:8080"
+      # Bind to loopback only: unauthenticated API; external access goes through
+      # APISIX (/smimekeys/*, oidc-bearer). localhost keeps health-check.sh working.
+      - "127.0.0.1:8081:8080"
       - "2113:2112"
     networks:
       - stargate-network
@@ -448,7 +452,9 @@ services:
 
       LOG_LEVEL: "INFO"
     ports:
-      - "8082:8080"
+      # Bind to loopback only: unauthenticated API; external access goes through
+      # APISIX (/policy/*, oidc-bearer). localhost keeps health-check.sh working.
+      - "127.0.0.1:8082:8080"
       - "2115:2112"
     networks:
       - stargate-network
@@ -527,7 +533,9 @@ services:
 
       LOG_LEVEL: "info"
     ports:
-      - "8083:8080"
+      # Bind to loopback only: unauthenticated API; external access goes through
+      # APISIX (/irisagent/*, oidc-bearer). localhost keeps health-check.sh working.
+      - "127.0.0.1:8083:8080"
       - "2114:2112"
       - "${WG_INTERFACE_PORT:-19818}:${WG_INTERFACE_PORT:-19818}/tcp" # WireGuard tunnel (TCP)
     networks:
@@ -643,7 +651,12 @@ services:
       # Metrics
       METRICS_ADDR: ":2112"
     ports:
-      - "8084:8080"
+      # Bind to loopback only: the /v1 REST API has no authentication of its own
+      # (message status, config and customer endpoints included). External access
+      # goes through APISIX (/mxengine/*, oidc-bearer). Publishing this on 0.0.0.0
+      # exposed it to the internet AND to every WireGuard peer; localhost keeps
+      # health-check.sh working.
+      - "127.0.0.1:8084:8080"
       - "2116:2112"
     tmpfs:
       - /tmp:size=100M,mode=1777,uid=1001,gid=1001
