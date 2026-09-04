@@ -587,7 +587,7 @@ services:
       INBOUND_SMTP_TLS: "false"
       INBOUND_SMTP_AUTH: "false"
       INBOUND_SMTP_FORWARD_ENCRYPTED_ON_FAILURE: "false"
-      INBOUND_PRESERVE_HEADERS_ON_DECRYPT: "Authentication-Results"
+      INBOUND_PRESERVE_HEADERS_ON_DECRYPT: "Authentication-Results,X-Hin-Message-Id"
       REMOTE_CONFIG_URL: "http://dashboard:3000/api/internal/installation-config?service=mxengine"
 
       # Database
