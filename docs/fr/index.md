@@ -6,6 +6,57 @@
 
 [Qu'est-ce que Stargate ?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
+## Prérequis
+
+![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+
+Veuillez vous assurer que toutes les étapes préparatoires nécessaires ont été effectuées avant le début des activités de migration ou de nouvelle installation du HIN Gateway.
+
+Les éléments suivants doivent être disponibles ou confirmés avant l'installation :
+
+- **Les identifiants vous seront fournis par HIN**
+    - Identifiants VM
+    - Identifiants Keycloak
+    - Code d'activation
+
+- **Exportation de la ou des clé(s) privée(s)**
+
+!!! info
+    L'exportation des clés privées ne concerne que les clients qui passent d'un MGW existant à un nouveau HIN Gateway
+
+    - Si vous travaillez sur une machine Windows ayant accès à la VM Mail Gateway via le port 22, nous pouvons vous accompagner pendant l'appel pour activer l'exportation de la clé privée depuis le MGW.
+    - Si vous n'avez pas accès à une telle machine, veuillez contacter le support HIN par e-mail ou par téléphone (support@hin.ch / 0848 830 740) afin qu'il vous aide à établir une connexion de support via System Administration → Support Connection → Connect.
+
+!!! danger Pour les clients disposant de plusieurs domaines
+    Note : applicable à tous les scénarios de migration multi-domaine ! 
+    Afin de réduire le temps nécessaire à l'exécution de la migration, nous encourageons les clients à effectuer les étapes suivantes avant la date et la session de migration prévues : 
+    
+    * Exportez la clé privée pour chaque domaine.
+    * Identifiez et documentez le flux de courrier entrant et sortant pour chaque domaine.
+    
+    Veuillez contacter le support HIN pour obtenir le code de déverrouillage nécessaire à l'exportation des clés privées.
+    
+
+
+- **Téléchargez la dernière version** de l'[image VM](vm/VM-Catalog.md)
+- Exigences **pare-feu** pour WireGuard.
+  Configurez le port WireGuard 19818 (TCP/UDP) dans votre pare-feu :
+    - Trafic entrant et sortant
+    - Autoriser le trafic : any-to-HIN Gateway et HIN Gateway-to-any
+- L'**accès DHCP** doit être disponible. Pour plus d'informations, voir "Installation Guidelines".
+
+- **Exigences de sauvegarde** - voir "Annexe 1 - Sauvegarde et restauration des paramètres de l'appliance".
+
+!!! info
+    Les exigences de sauvegarde ne concernent que les clients qui passent d'un MGW existant à un nouveau HIN Gateway
+
+- Confirmation que le MGW existant ne sera **pas** supprimé avant que la réception ait été effectuée.
+
+!!! info
+    Le maintien de la disponibilité du MGW existant jusqu'à ce que le rapport de réception soit terminé ne concerne que les clients qui passent d'un MGW existant à un nouveau HIN Gateway
+
+- Accès au DNS, aux connecteurs du serveur de messagerie, aux règles de transport et aux paramètres de relais.
+
 ## Démarrage rapide
 
 ### Options d'installation

@@ -19,13 +19,24 @@ The following items must be available or confirmed before the installation:
     - Keycloak credential
     - Activation code
 
-- **Export of private key**
+- **Export of private key(s)**
 
 !!! info
     Export of private keys is only for customers moving from existing MGW to a new HIN Gateway
 
     - If you are working on a Windows machine that has access to the Mail Gateway VM via port 22, we can support you during the call in enabling the private key export from the MGW.
     - If you do not have access to such a machine, please contact HIN Support by email or phone (support@hin.ch / 0848 830 740) to help you establish a support connection via System Administration → Support Connection → Connect.
+
+!!! danger For customers with multiple domains
+    Note: applicable for all multi-domain migration scenarios! 
+    To reduce the time required to execute the migration, we encourage customers to complete the following steps before the planned migration date and session: 
+    
+    * Export the private key for each domain.
+    * Identify and document the incoming and outgoing mail flow for each domain.
+    
+    Please contact HIN Support to obtain the unlock code required to export the private keys.
+    
+
 
 - **Download latest** version of [VM image](vm/VM-Catalog.md)
 - **Firewall** requirements for WireGuard.

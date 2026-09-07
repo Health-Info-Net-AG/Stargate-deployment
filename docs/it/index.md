@@ -6,6 +6,57 @@
 
 [Cos'è Stargate?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
+## Prerequisiti
+
+![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+
+Assicurati che tutti i passaggi preparatori necessari siano stati completati prima dell'inizio delle attività di migrazione o di nuova installazione dell'HIN Gateway.
+
+I seguenti elementi devono essere disponibili o confermati prima dell'installazione:
+
+- **Le credenziali ti verranno fornite da HIN**
+    - Credenziali VM
+    - Credenziali Keycloak
+    - Codice di attivazione
+
+- **Esportazione della/e chiave/i privata/e**
+
+!!! info
+    L'esportazione delle chiavi private è prevista solo per i clienti che passano da un MGW esistente a un nuovo HIN Gateway
+
+    - Se stai lavorando su una macchina Windows che ha accesso alla VM del Mail Gateway tramite la porta 22, possiamo assisterti durante la chiamata per abilitare l'esportazione della chiave privata dal MGW.
+    - Se non disponi di una macchina di questo tipo, contatta il Supporto HIN via e-mail o telefono (support@hin.ch / 0848 830 740) per aiutarti a stabilire una connessione di supporto tramite System Administration → Support Connection → Connect.
+
+!!! danger Per i clienti con più domini
+    Nota: applicabile a tutti gli scenari di migrazione multi-dominio! 
+    Per ridurre il tempo necessario a eseguire la migrazione, incoraggiamo i clienti a completare i seguenti passaggi prima della data e della sessione di migrazione pianificate: 
+    
+    * Esporta la chiave privata per ciascun dominio.
+    * Identifica e documenta il flusso di posta in entrata e in uscita per ciascun dominio.
+    
+    Contatta il Supporto HIN per ottenere il codice di sblocco necessario per esportare le chiavi private.
+    
+
+
+- **Scarica l'ultima versione** dell'[immagine VM](vm/VM-Catalog.md)
+- Requisiti **firewall** per WireGuard.
+  Configura la porta WireGuard 19818 (TCP/UDP) nel tuo firewall:
+    - Traffico in entrata e in uscita
+    - Consenti il traffico: any-to-HIN Gateway e HIN Gateway-to-any
+- L'**accesso DHCP** dovrebbe essere disponibile. Per maggiori informazioni consulta le "Installation Guidelines".
+
+- **Requisiti di backup** - vedi "Allegato 1 - Backup e ripristino delle impostazioni dell'appliance".
+
+!!! info
+    I requisiti di backup sono previsti solo per i clienti che passano da un MGW esistente a un nuovo HIN Gateway
+
+- Conferma che l'MGW esistente **non** verrà eliminato fino al completamento dell'accettazione.
+
+!!! info
+    Mantenere disponibile l'MGW esistente fino al completamento del report di accettazione è previsto solo per i clienti che passano da un MGW esistente a un nuovo HIN Gateway
+
+- Accesso a DNS, connettori del server di posta, regole di trasporto e impostazioni di relay.
+
 ## Guida rapida
 
 ### Opzioni di installazione
