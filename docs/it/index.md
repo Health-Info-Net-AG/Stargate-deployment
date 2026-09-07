@@ -27,8 +27,10 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
     - Se stai lavorando su una macchina Windows che ha accesso alla VM del Mail Gateway tramite la porta 22, possiamo assisterti durante la chiamata per abilitare l'esportazione della chiave privata dal MGW.
     - Se non disponi di una macchina di questo tipo, contatta il Supporto HIN via e-mail o telefono (support@hin.ch / 0848 830 740) per aiutarti a stabilire una connessione di supporto tramite System Administration → Support Connection → Connect.
 
-!!! danger Per i clienti con più domini
-    Nota: applicabile a tutti gli scenari di migrazione multi-dominio! 
+!!! danger "Per i clienti con più domini"
+
+    **Nota:** applicabile a tutti gli scenari di migrazione multi-dominio! 
+
     Per ridurre il tempo necessario a eseguire la migrazione, incoraggiamo i clienti a completare i seguenti passaggi prima della data e della sessione di migrazione pianificate: 
     
     * Esporta la chiave privata per ciascun dominio.

@@ -493,7 +493,7 @@ On this screen, configure your initial settings:
 | **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
 
 
-!!! warning Multi-domain gradual migration scenario
+!!! warning "Multi-domain gradual migration scenario"
     
     During the migration support session, HIN engineers will assist the customer with the migration of one domain. Once the first domain has been successfully migrated, the customer is responsible for migrating any remaining domains independently.
     

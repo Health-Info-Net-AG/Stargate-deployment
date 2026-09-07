@@ -493,7 +493,7 @@ Konfigurieren Sie auf diesem Bildschirm Ihre Grundeinstellungen:
 | **DNS** | DNS des Hosts, der zur Auflösung von MX- und anderen DNS-Einträgen verwendet wird. |
 
 
-!!! warning Migrationsszenario für schrittweise Multi-Domain-Migration
+!!! warning "Migrationsszenario für schrittweise Multi-Domain-Migration"
     
     Während der Migrations-Support-Sitzung unterstützen HIN-Ingenieure den Kunden bei der Migration einer Domain. Sobald die erste Domain erfolgreich migriert wurde, ist der Kunde selbst dafür verantwortlich, alle verbleibenden Domains eigenständig zu migrieren.
     
