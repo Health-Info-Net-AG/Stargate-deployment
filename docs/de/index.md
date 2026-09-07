@@ -6,6 +6,57 @@
 
 [Was ist Stargate?](https://www.hin.ch/de/services/hin-mail/hin-gateway.cfm){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
+## Voraussetzungen
+
+![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
+
+Bitte stellen Sie sicher, dass alle notwendigen vorbereitenden Schritte abgeschlossen sind, bevor die Migration oder Neuinstallation des HIN Gateway beginnt.
+
+Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sein:
+
+- **Zugangsdaten werden Ihnen von HIN zur Verfügung gestellt**
+    - VM-Zugangsdaten
+    - Keycloak-Zugangsdaten
+    - Aktivierungscode
+
+- **Export des/der privaten Schlüssel(s)**
+
+!!! info
+    Der Export privater Schlüssel ist nur für Kunden relevant, die von einem bestehenden MGW zu einem neuen HIN Gateway wechseln
+
+    - Wenn Sie an einem Windows-Rechner arbeiten, der über Port 22 Zugriff auf die Mail Gateway VM hat, können wir Sie während des Calls bei der Aktivierung des Exports des privaten Schlüssels vom MGW unterstützen.
+    - Falls Sie keinen Zugriff auf einen solchen Rechner haben, wenden Sie sich bitte per E-Mail oder Telefon an den HIN Support (support@hin.ch / 0848 830 740), um eine Support-Verbindung über System Administration → Support Connection → Connect herzustellen.
+
+!!! danger Für Kunden mit mehreren Domains
+    Hinweis: gilt für alle Multi-Domain-Migrationsszenarien! 
+    Um den für die Migration benötigten Zeitaufwand zu reduzieren, empfehlen wir Kunden, die folgenden Schritte bereits vor dem geplanten Migrationstermin und der Sitzung durchzuführen: 
+    
+    * Exportieren Sie den privaten Schlüssel für jede Domain.
+    * Identifizieren und dokumentieren Sie den eingehenden und ausgehenden Mailfluss für jede Domain.
+    
+    Bitte wenden Sie sich an den HIN Support, um den Freischaltcode zu erhalten, der für den Export der privaten Schlüssel benötigt wird.
+    
+
+
+- **Neueste Version herunterladen** des [VM-Images](vm/VM-Catalog.md)
+- **Firewall**-Anforderungen für WireGuard.
+  Konfigurieren Sie den WireGuard-Port 19818 (TCP/UDP) in Ihrer Firewall:
+    - Eingehender und ausgehender Datenverkehr
+    - Datenverkehr zulassen: any-to-HIN Gateway und HIN Gateway-to-any
+- **DHCP-Zugriff** sollte verfügbar sein. Weitere Informationen finden Sie in den "Installation Guidelines".
+
+- **Backup-Anforderungen** - siehe "Anhang 1 - Sichern und Wiederherstellen der Appliance-Einstellungen".
+
+!!! info
+    Backup-Anforderungen gelten nur für Kunden, die von einem bestehenden MGW zu einem neuen HIN Gateway wechseln
+
+- Bestätigung, dass das bestehende MGW erst nach Abschluss der Abnahme gelöscht wird.
+
+!!! info
+    Das Verfügbarhalten des bestehenden MGW bis zum Abschluss des Abnahmeberichts gilt nur für Kunden, die von einem bestehenden MGW zu einem neuen HIN Gateway wechseln
+
+- Zugriff auf DNS, Mail-Server-Connectors, Transportregeln und Relay-Einstellungen.
+
 ## Schnellstart
 
 ### Installationsoptionen

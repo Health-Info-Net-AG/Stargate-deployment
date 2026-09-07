@@ -493,6 +493,10 @@ In questa schermata, configura le tue impostazioni iniziali:
 | **DNS** | Il DNS dell'host che verrà utilizzato per risolvere i record MX e altri record DNS |
 
 
+!!! warning Scenario di migrazione graduale multi-dominio
+    
+    Durante la sessione di supporto alla migrazione, gli ingegneri HIN assisteranno il cliente nella migrazione di un dominio. Una volta completata con successo la migrazione del primo dominio, il cliente è responsabile della migrazione dei domini rimanenti in autonomia.
+    
 
 ### Passo 14 - Configurazione trasporto posta
 

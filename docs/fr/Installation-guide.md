@@ -493,6 +493,10 @@ Sur cet écran, configurez vos paramètres initiaux:
 | **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS |
 
 
+!!! warning Scénario de migration progressive multi-domaine
+    
+    Pendant la session de support à la migration, les ingénieurs HIN aideront le client à migrer un domaine. Une fois le premier domaine migré avec succès, le client est responsable de la migration des domaines restants de manière autonome.
+    
 
 ### Étape 14 - Configurer le transport du courrier
 
