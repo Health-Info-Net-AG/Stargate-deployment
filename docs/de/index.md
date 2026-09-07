@@ -27,8 +27,9 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
     - Wenn Sie an einem Windows-Rechner arbeiten, der über Port 22 Zugriff auf die Mail Gateway VM hat, können wir Sie während des Calls bei der Aktivierung des Exports des privaten Schlüssels vom MGW unterstützen.
     - Falls Sie keinen Zugriff auf einen solchen Rechner haben, wenden Sie sich bitte per E-Mail oder Telefon an den HIN Support (support@hin.ch / 0848 830 740), um eine Support-Verbindung über System Administration → Support Connection → Connect herzustellen.
 
-!!! danger Für Kunden mit mehreren Domains
+!!! danger "Für Kunden mit mehreren Domains"
     Hinweis: gilt für alle Multi-Domain-Migrationsszenarien! 
+    
     Um den für die Migration benötigten Zeitaufwand zu reduzieren, empfehlen wir Kunden, die folgenden Schritte bereits vor dem geplanten Migrationstermin und der Sitzung durchzuführen: 
     
     * Exportieren Sie den privaten Schlüssel für jede Domain.
