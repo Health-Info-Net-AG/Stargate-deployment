@@ -1,3 +1,20 @@
+## v0.6.1
+
+*Released on 4 September 2026.*
+
+This maintenance release strengthens HIN Gateway security, corrects email-header handling and improves update and migration guidance.
+
+### What’s new and improved
+
+- **Security:** Restricted external access to internal service ports and strengthened authentication settings and permissions.
+- **Updates and rollback:** Added instructions for updating HIN Gateway and returning to a previous version, available in English, German, French and Italian.
+- **Migration guidance:** Updated email checks before and after migration and added translations of the multi-domain guidance.
+
+### Fixes
+
+- Corrected the handling of HIN-specific email headers.
+- Added the missing VMware data-disk image to the v0.6.0 downloads.
+
 ## v0.6.0
 
 *Released on 31 August 2026.*
