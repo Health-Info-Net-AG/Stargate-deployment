@@ -123,9 +123,9 @@ The following items must be available or confirmed before the installation:
 
 | Destination | Port | Protocol | Purpose |
 | :---------- | :--: | :------: | :------ |
-| hub.docker.com | `443` | TCP | Docker image registry |
-| mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Remote sealer service |
-| smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | S/MIME CA service |
+| `registry-1.docker.io`, `auth.docker.io`, `production.cloudflare.docker.com` | `443` | TCP | Docker Hub image registry |
+| `quay.io` | `443` | TCP | Container registry (Keycloak, oauth2-proxy) |
+| `github.com` | `443` | TCP | Policy repository (policy-sync) |
 | loki.example.com | `443` | TCP | Log shipping (Alloy → Loki, optional) |
 | Update Server of alpine, almalinux, etc. | `80` | TCP | Various Update servers |
 | Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
@@ -134,6 +134,7 @@ The following items must be available or confirmed before the installation:
 | WireGuard peers (HIN network) | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication |
 | `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | HIN KERI witness pool - required for agent identity verification (idagent / watcher) |
 | `app.hin.ch` | `443` | TCP | HIN member / mail-domain list (mtaconf) |
+| `apisix.verify-mail.hin-infra.ch` | `443` | TCP | HIN gateway registration during onboarding (dashboard) |
 
 ??? tip "Firewall note"
 

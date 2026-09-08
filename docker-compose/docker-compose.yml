@@ -387,7 +387,6 @@ services:
 
       # CA Configuration (external CA)
       CERT_CA_ROOT: "false"
-      CERT_CA_ADDR: "https://smimekeys-ca-dev.k8s.vereign-cdn.com"
       CERT_CA_EXPIRY: "8760h"
       CERT_CA_PUBLIC_HTTP_ADDR: ""
       CERT_CA_IRISAGENT_DOMAIN: "${CERT_CA_IRISAGENT_DOMAIN:-}"
@@ -628,9 +627,6 @@ services:
       OUTBOUND_SMIME_HOST: ""
       OUTBOUND_SMIME_PORT: ""
       OUTBOUND_IRISAGENT_ADDR: "http://irisagent:8080"
-      # OUTBOUND_SMTP_USER: "seal@vereign-cdn.com"
-      # OUTBOUND_SMTP_PASS: "SecureMessage"
-      # OUTBOUND_SMTP_AUTH: "PLAIN"
 
       # NATS
       NATS_ADDR: "nats://nats:4222"
@@ -889,8 +885,8 @@ services:
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
 
       # Root instance URL and domain (used for cross-instance API calls)
-      ROOT_URL: "${DASHBOARD_ROOT_URL:-https://apisix.k8s.vereign-cdn.com}"
-      ROOT_DOMAIN: "${DASHBOARD_ROOT_DOMAIN:-vereign-cdn.com}"
+      ROOT_URL: "${DASHBOARD_ROOT_URL:-https://apisix.verify-mail.hin-infra.ch}"
+      ROOT_DOMAIN: "${DASHBOARD_ROOT_DOMAIN:-hin}"
       NATS_URL: "nats://nats:4222"
 
       VAULT_ADDRESS: "http://vault:8200"

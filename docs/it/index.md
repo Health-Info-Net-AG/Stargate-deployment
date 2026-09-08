@@ -123,9 +123,9 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
 
 | Destinazione | Porta | Protocollo | Scopo |
 | :----------- | :---: | :--------: | :---- |
-| hub.docker.com | `443` | TCP | Registry delle immagini Docker |
-| mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Servizio di sigillatura remoto |
-| smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | Servizio CA S/MIME |
+| `registry-1.docker.io`, `auth.docker.io`, `production.cloudflare.docker.com` | `443` | TCP | Registry delle immagini Docker Hub |
+| `quay.io` | `443` | TCP | Registry dei container (Keycloak, oauth2-proxy) |
+| `github.com` | `443` | TCP | Repository delle policy (policy-sync) |
 | loki.example.com | `443` | TCP | Invio log (Alloy → Loki, opzionale) |
 | Server di aggiornamento di Alpine, AlmaLinux, ecc. | `80` | TCP | Vari server di aggiornamento |
 | Server di posta di destinazione | `25` | TCP | Consegna posta in uscita (tramite ricerca MX) |
@@ -134,6 +134,7 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
 | Peer WireGuard (rete HIN) | `19818` | UDP+TCP | WireGuard - tunnel crittografato per la comunicazione agente-agente |
 | `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | Pool di witness KERI di HIN - richiesto per la verifica delle identità degli agenti (idagent / watcher) |
 | `app.hin.ch` | `443` | TCP | Elenco membri / domini di posta HIN (mtaconf) |
+| `apisix.verify-mail.hin-infra.ch` | `443` | TCP | Registrazione del gateway HIN durante l'onboarding (dashboard) |
 
 ??? tip "Nota sul firewall"
 
