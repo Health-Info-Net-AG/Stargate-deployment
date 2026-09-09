@@ -68,15 +68,44 @@ cat /tmp/smime-export/example.com/example.com.key.pem \
     /tmp/smime-export/example.com/example.com.cert.pem
 ```
 
-On your workstation, rebuild the `.p12` from the copied text:
+On your workstation create the two pem files for the key and cert,then rebuild the `.p12`:
 
 ```bash
-./pem-to-p12.sh          # paste the PEM content, press Ctrl-D, set a password
-#   ✓ example.com.p12
+./pem-to-p12.sh example.com.cert.pem example.com.key.pem --out example.com.p12          # paste the PEM content, press Ctrl-D, set a password
 ```
 
 Stray text around the PEM blocks (shell prompts, the `cat` command line) is
 ignored, and the key/cert paste order does not matter.
+
+## Step 3c — Windows workstation
+
+Windows 10/11 ships the OpenSSH client, so scp works from PowerShell or cmd
+exactly as in step 3a (WinSCP works too):
+
+```powershell
+scp user@old-vm:/tmp/smime-export/example.com/example.com.p12 $env:USERPROFILE\Downloads\
+```
+
+On older Windows (7/8.1) there is no built-in scp -- use `pscp.exe` (portable,
+from the PuTTY site) or WinSCP, or use the base64 route below, which needs no
+extra tools on any Windows version.
+
+If scp is not possible, skip the PEM route -- copy the finished .p12 itself as
+text. In the existing SSH session on the VM, print it base64-encoded and copy
+the output from the terminal:
+
+```bash
+base64 -w0 /tmp/smime-export/example.com/example.com.p12
+```
+
+On Windows, paste it into a file and decode it (both tools are built in):
+
+```powershell
+notepad p12.b64        # paste the base64 text, save
+certutil -decode p12.b64 example.com.p12
+```
+
+The password set during the export still protects the file.
 
 ## Step 4 — import into the 6.x dashboard
 
