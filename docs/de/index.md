@@ -132,7 +132,7 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
 | NTP-Server | `123` | UDP | NTP synchronisiert die Uhren von Computern, Servern, Netzwerkgeräten und virtuellen Maschinen mit präzisen Zeitquellen |
 | WireGuard-Peers (HIN-Netzwerk) | `19818` | UDP+TCP | WireGuard – Verschlüsselter Tunnel für die Agent-zu-Agent-Kommunikation |
 | `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | HIN KERI-Witness-Pool - erforderlich für die Verifizierung von Agent-Identitäten (idagent / watcher) |
-| `app.hin.ch` | `443` | TCP | HIN Mitglieder- / Maildomain-Liste (mtaconf) |
+| `app.hin.ch` | `443` | TCP | HIN Mitglieder- / Maildomain-Liste (mxengine) |
 | `apisix.verify-mail.hin-infra.ch` | `443` | TCP | Registrierung des HIN Gateways beim Onboarding (Dashboard) |
 
 ??? tip "Firewall-Hinweis"
