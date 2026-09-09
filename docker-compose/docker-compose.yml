@@ -781,7 +781,7 @@ services:
   # pinned keriox commit (see the keriox-tools repo).
   watcher:
     # renovate: datasource=docker depName=healthinfonetag/keriox-watcher
-    image: healthinfonetag/keriox-watcher:v0.0.1
+    image: healthinfonetag/keriox-watcher:v0.0.2
     container_name: stargate-watcher
     profiles: ["keri-watcher"]
     restart: unless-stopped
@@ -798,7 +798,8 @@ services:
       - -c
       - mkdir -p /db/watcher /db/tel && exec /usr/local/bin/watcher --config-file=/config/watcher.yml
     healthcheck:
-      test: ["CMD", "bash", "-c", ":> /dev/tcp/127.0.0.1/3235"]
+      # busybox image: no bash, so no /dev/tcp. busybox nc has no -z either.
+      test: ["CMD", "nc", "-w", "2", "127.0.0.1", "3235"]
       interval: 10s
       timeout: 5s
       retries: 20
