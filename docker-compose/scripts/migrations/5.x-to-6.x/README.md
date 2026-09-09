@@ -69,9 +69,14 @@ cat /tmp/smime-export/example.com/example.com.key.pem \
 ```
 
 On your workstation create the two pem files for the key and cert,then rebuild the `.p12`:
-
+a) interactive - you will be prompted to paste the pems for key and cert (order does NOT matter) then for password for the p12
 ```bash
-./pem-to-p12.sh example.com.cert.pem example.com.key.pem --out example.com.p12          # paste the PEM content, press Ctrl-D, set a password
+./pem-to-p12.sh
+```
+
+b) non-interactive - you pass the files and the password and desired output file
+```bash
+./pem-to-p12.sh example.com.cert.pem example.com.key.pem --password 'your-password-here' --out example.com.p12
 ```
 
 Stray text around the PEM blocks (shell prompts, the `cat` command line) is
