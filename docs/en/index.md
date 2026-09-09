@@ -126,7 +126,7 @@ The following items must be available or confirmed before the installation:
 | `registry-1.docker.io`, `auth.docker.io`, `production.cloudflare.docker.com` | `443` | TCP | Docker Hub image registry |
 | `quay.io` | `443` | TCP | Container registry (Keycloak, oauth2-proxy) |
 | `github.com` | `443` | TCP | Policy repository (policy-sync) |
-| loki.example.com | `443` | TCP | Log shipping (Alloy → Loki, optional) |
+| Your own Loki endpoint (e.g. loki.example.com) | 443 | TCP | Optional. Only needed if you provide your own Loki instance the stack should ship logs to (Alloy → Loki) |
 | Update Server of alpine, almalinux, etc. | `80` | TCP | Various Update servers |
 | Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
 | Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |

@@ -125,7 +125,7 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
 | `registry-1.docker.io`, `auth.docker.io`, `production.cloudflare.docker.com` | `443` | TCP | Docker-Hub-Image-Registry |
 | `quay.io` | `443` | TCP | Container-Registry (Keycloak, oauth2-proxy) |
 | `github.com` | `443` | TCP | Richtlinien-Repository (policy-sync) |
-| loki.example.com | `443` | TCP | Log-Versand (Alloy → Loki, optional) |
+| Ihr eigener Loki-Endpunkt (z. B. `loki.example.com`) | `443` | TCP | Optional. Nur erforderlich, wenn Sie eine eigene Loki-Instanz bereitstellen, an die der Stack Logs senden soll (Alloy → Loki) |
 | Update-Server von Alpine, AlmaLinux usw. | `80` | TCP | Verschiedene Update-Server |
 | Ziel-Mailserver | `25` | TCP | Zustellung ausgehender E-Mails (via MX-Lookup) |
 | DNS-Server | `53` | UDP+TCP | Ausgehend an öffentliche DNS-Server |
