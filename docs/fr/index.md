@@ -123,17 +123,18 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
 
 | Destination | Port | Protocole | Objectif |
 | :---------- | :--: | :-------: | :------- |
-| hub.docker.com | `443` | TCP | Registre d'images Docker |
-| mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Service de scellement distant |
-| smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | Service CA S/MIME |
-| loki.example.com | `443` | TCP | Envoi de logs (Alloy → Loki, optionnel) |
+| `registry-1.docker.io`, `auth.docker.io`, `production.cloudflare.docker.com` | `443` | TCP | Registre d'images Docker Hub |
+| `quay.io` | `443` | TCP | Registre de conteneurs (Keycloak, oauth2-proxy) |
+| `github.com` | `443` | TCP | Dépôt de politiques (policy-sync) |
+| Votre propre point de terminaison Loki (p. ex. `loki.example.com`) | `443` | TCP | Optionnel. Nécessaire uniquement si vous fournissez votre propre instance Loki vers laquelle la stack doit envoyer les logs (Alloy → Loki) |
 | Serveur de mise à jour d'Alpine, AlmaLinux, etc. | `80` | TCP | Divers serveurs de mise à jour |
 | Serveurs de courrier de destination | `25` | TCP | Livraison des courriels sortants (via recherche MX) |
 | Serveurs DNS | `53` | UDP+TCP | Sortant vers les serveurs DNS publics |
 | Serveurs NTP | `123` | UDP | NTP synchronise les horloges des ordinateurs, serveurs, équipements réseau et machines virtuelles avec des sources de temps précises |
 | Pairs WireGuard (réseau HIN) | `19818` | UDP+TCP | WireGuard - tunnel crypté pour la communication agent-à-agent |
 | `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | Pool de témoins KERI de HIN - requis pour la vérification des identités des agents (idagent / watcher) |
-| `app.hin.ch` | `443` | TCP | Liste des membres / domaines de messagerie HIN (mtaconf) |
+| `app.hin.ch` | `443` | TCP | Liste des membres / domaines de messagerie HIN (mxengine) |
+| `apisix.verify-mail.hin-infra.ch` | `443` | TCP | Enregistrement de la passerelle HIN lors de l'intégration (tableau de bord) |
 
 ??? tip "Remarque concernant le pare-feu"
 

@@ -123,17 +123,18 @@ The following items must be available or confirmed before the installation:
 
 | Destination | Port | Protocol | Purpose |
 | :---------- | :--: | :------: | :------ |
-| hub.docker.com | `443` | TCP | Docker image registry |
-| mxengine-dev.k8s.vereign-cdn.com | `443` | TCP | Remote sealer service |
-| smimekeys-ca-dev.k8s.vereign-cdn.com | `443` | TCP | S/MIME CA service |
-| loki.example.com | `443` | TCP | Log shipping (Alloy → Loki, optional) |
+| `registry-1.docker.io`, `auth.docker.io`, `production.cloudflare.docker.com` | `443` | TCP | Docker Hub image registry |
+| `quay.io` | `443` | TCP | Container registry (Keycloak, oauth2-proxy) |
+| `github.com` | `443` | TCP | Policy repository (policy-sync) |
+| Your own Loki endpoint (e.g. loki.example.com) | 443 | TCP | Optional. Only needed if you provide your own Loki instance the stack should ship logs to (Alloy → Loki) |
 | Update Server of alpine, almalinux, etc. | `80` | TCP | Various Update servers |
 | Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
 | Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
 | NTP servers | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
 | WireGuard peers (HIN network) | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication |
 | `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | HIN KERI witness pool - required for agent identity verification (idagent / watcher) |
-| `app.hin.ch` | `443` | TCP | HIN member / mail-domain list (mtaconf) |
+| `app.hin.ch` | `443` | TCP | HIN member / mail-domain list (mxengine) |
+| `apisix.verify-mail.hin-infra.ch` | `443` | TCP | HIN gateway registration during onboarding (dashboard) |
 
 ??? tip "Firewall note"
 
