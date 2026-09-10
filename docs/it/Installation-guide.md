@@ -350,6 +350,25 @@ Aggiungere un indirizzo IP su Linux:
 
         [Clicca qui per inviare un'email](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
+
+!!! note "Avviso importante per l'esercizio su Microsoft Azure"
+        Per il collegamento SMTP Relay dell'HIN Gateway a Exchange Online è necessaria la comunicazione SMTP in uscita tramite la porta TCP 25.
+        Microsoft Azure blocca le connessioni in uscita tramite la porta 25 nella maggior parte dei modelli di abbonamento. [Per gli abbonamenti standard Enterprise Agreement (EA) e Microsoft Customer Agreement for Enterprise (MCA-E)](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity), secondo Microsoft la porta 25 è in linea di principio disponibile. Per alcune altre configurazioni Enterprise si applicano condizioni particolari.
+        
+        Poiché queste restrizioni ed eventuali abilitazioni sono stabilite esclusivamente da Microsoft, l'esercizio dell'HIN Gateway su Azure non è uno scenario di implementazione supportato come standard. HIN non può influire sulla disponibilità o sull'attivazione di questa porta da parte di Microsoft.
+        
+        Raccomandazione: State pianificando una migrazione o una modifica dell'infrastruttura con Azure? Prima dell'installazione, verificate assolutamente se il vostro abbonamento Azure consente la comunicazione SMTP in uscita tramite la porta TCP 25. Contattate tempestivamente il vostro contatto presso HIN per concordare la variante operativa più adatta alle vostre esigenze.
+        
+        Varianti operative alternative consigliate
+        Se la porta TCP 25 non è disponibile nel vostro ambiente Azure, vi consigliamo:
+        
+        · l'esercizio dell'HIN Gateway su una VM locale o on-premises (come finora)
+        · l'esercizio dell'HIN Gateway presso un provider di hosting conforme alle norme sulla protezione dei dati
+        
+        **Prospettive: Gateway as a Service**
+        
+        HIN prevede di offrire in futuro il Gateway anche come servizio completamente gestito. Desiderate essere informati non appena l'HIN Gateway as a Service sarà disponibile? Rivolgetevi al vostro contatto presso HIN e fatevi inserire in lista d'attesa senza impegno.
+
 ### Passo 6 - Accesso tramite browser
 
 ![Responsabilità Cliente](https://img.shields.io/badge/Responsabilita-Cliente-success)

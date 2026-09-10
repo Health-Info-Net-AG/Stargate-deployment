@@ -128,7 +128,13 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
 | `github.com` | `443` | TCP | Repository delle policy (policy-sync) |
 | Il proprio endpoint Loki (es. `loki.example.com`) | `443` | TCP | Opzionale. Necessario solo se si fornisce una propria istanza Loki a cui lo stack deve inviare i log (Alloy → Loki) |
 | Server di aggiornamento di Alpine, AlmaLinux, ecc. | `80` | TCP | Vari server di aggiornamento |
-| Server di posta di destinazione | `25` | TCP | Consegna posta in uscita (tramite ricerca MX) |
+| Server di posta di destinazione | `25` | TCP | Consegna posta in uscita (tramite ricerca MX)
+**Esercizio su Microsoft Azure**
+Per il collegamento SMTP Relay dell'HIN Gateway a Exchange Online, deve essere possibile il traffico in uscita tramite la porta TCP 25.
+
+Microsoft Azure blocca le connessioni in uscita tramite la porta 25 nella maggior parte dei modelli di abbonamento. HIN non può influire sulla disponibilità o sull'attivazione di questa porta da parte di Microsoft. L'esercizio dell'HIN Gateway su Azure non è quindi uno scenario di implementazione supportato come standard. Esistono eccezioni, in particolare per [alcuni abbonamenti Enterprise di Microsoft](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Verificate quindi, prima di procedere all'installazione su Azure, se il vostro abbonamento consente il traffico SMTP in uscita tramite la porta TCP 25.
+
+In caso di domande sulla variante operativa più adatta, si prega di contattare tempestivamente il vostro contatto presso HIN. |
 | Server DNS | `53` | UDP+TCP | In uscita verso server DNS pubblici |
 | Server NTP | `123` | UDP | NTP sincronizza gli orologi di computer, server, dispositivi di rete e macchine virtuali con fonti di tempo precise |
 | Peer WireGuard (rete HIN) | `19818` | UDP+TCP | WireGuard - tunnel crittografato per la comunicazione agente-agente |

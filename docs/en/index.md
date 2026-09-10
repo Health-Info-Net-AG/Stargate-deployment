@@ -128,7 +128,13 @@ The following items must be available or confirmed before the installation:
 | `github.com` | `443` | TCP | Policy repository (policy-sync) |
 | Your own Loki endpoint (e.g. loki.example.com) | 443 | TCP | Optional. Only needed if you provide your own Loki instance the stack should ship logs to (Alloy → Loki) |
 | Update Server of alpine, almalinux, etc. | `80` | TCP | Various Update servers |
-| Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
+| Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) 
+**Operation on Microsoft Azure**
+For the SMTP relay connection between the HIN Gateway and Exchange Online, outgoing data traffic via TCP port 25 must be permitted.
+
+Microsoft Azure blocks outbound connections via port 25 for most subscription models. HIN has no control over the availability or activation of this port by Microsoft. Operating the HIN Gateway on Azure is therefore **not a standard supported deployment scenario**. Exceptions apply in particular to [certain Microsoft Enterprise subscriptions](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Before installing on Azure, please check whether your subscription permits outbound SMTP traffic via TCP port 25.
+
+If you have any questions regarding the appropriate deployment option, please contact your HIN contact person at an early stage. |
 | Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
 | NTP servers | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
 | WireGuard peers (HIN network) | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication |
