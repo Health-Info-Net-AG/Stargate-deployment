@@ -745,6 +745,8 @@ echo "  If services show errors, wait a minute and check:"
 echo "    docker compose logs -f <service-name>"
 echo ""
 
+enable_greenboot
+
 # Move a consumed archive out of the drop zone so a re-run or a future
 # first-boot check won't re-trigger on it. Best-effort: this cleanup must
 # never flip an already-successful restore's exit code to non-zero (dashboard

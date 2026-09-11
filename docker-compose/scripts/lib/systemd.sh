@@ -59,3 +59,8 @@ EOF
   echo "  Status:  sudo systemctl status $service_name"
   echo ""
 }
+
+enable_greenboot() {
+  systemctl list-unit-files greenboot-healthcheck.service >/dev/null 2>&1 || return 0
+  systemctl enable greenboot-healthcheck.service || true
+}

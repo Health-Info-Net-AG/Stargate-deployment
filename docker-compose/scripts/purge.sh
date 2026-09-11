@@ -83,6 +83,11 @@ if [ "$confirmation" = "DELETE ALL DATA" ]; then
   sudo rm -f /etc/systemd/system/stargate.service
   sudo systemctl daemon-reload
 
+  if sudo systemctl list-unit-files greenboot-healthcheck.service >/dev/null 2>&1; then
+    echo "Disabling greenboot health check (re-enabled on next successful install)..."
+    sudo systemctl disable greenboot-healthcheck.service || true
+  fi
+
   echo ""
   echo "============================================"
   echo "  All data has been deleted"
