@@ -139,6 +139,7 @@ services:
 
   # SeaweedFS bucket initialization
   seaweedfs-init:
+    # renovate: datasource=docker depName=amazon/aws-cli
     image: amazon/aws-cli:2.27.31
     container_name: stargate-seaweedfs-init
     logging:
@@ -239,6 +240,7 @@ services:
   # Idempotent: if the admin already changed their password (auth with the
   # configured value fails), the script exits cleanly without touching anything.
   keycloak-init:
+    # renovate: datasource=docker depName=alpine
     image: alpine:3.22
     container_name: stargate-keycloak-init
     logging:
@@ -261,6 +263,7 @@ services:
   # Generates /config/apisix/generated/apisix.yaml from the template by
   # substituting KEYCLOAK_APISIX_CLIENT_SECRET with envsubst.
   apisix-init:
+    # renovate: datasource=docker depName=alpine
     image: alpine:3.22
     container_name: stargate-apisix-init
     logging:
@@ -321,6 +324,7 @@ services:
       options:
         max-size: "100m"
         max-file: "5"
+    # renovate: datasource=docker depName=willfarrell/autoheal
     image: willfarrell/autoheal:1.2.0
     network_mode: none
     volumes:
@@ -978,6 +982,7 @@ services:
 
   # Collects app versions from /liveness endpoints for node-exporter
   version-collector:
+    # renovate: datasource=docker depName=alpine
     image: alpine:3.22
     container_name: stargate-version-collector
     restart: unless-stopped
