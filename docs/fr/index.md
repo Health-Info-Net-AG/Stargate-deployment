@@ -128,19 +128,27 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
 | `github.com` | `443` | TCP | Dépôt de politiques (policy-sync) |
 | Votre propre point de terminaison Loki (p. ex. `loki.example.com`) | `443` | TCP | Optionnel. Nécessaire uniquement si vous fournissez votre propre instance Loki vers laquelle la stack doit envoyer les logs (Alloy → Loki) |
 | Serveur de mise à jour d'Alpine, AlmaLinux, etc. | `80` | TCP | Divers serveurs de mise à jour |
-| Serveurs de courrier de destination | `25` | TCP | Livraison des courriels sortants (via recherche MX)
-**Exploitation sur Microsoft Azure**
-Pour la connexion SMTP Relay du HIN Gateway à Exchange Online, le trafic sortant via le port TCP 25 doit être autorisé.
-
-Microsoft Azure bloque les connexions sortantes via le port 25 pour la plupart des modèles d'abonnement. HIN n'a aucune influence sur la disponibilité ou l'activation de ce port par Microsoft. L'exploitation du HIN Gateway sur Azure ne constitue donc pas un scénario de déploiement pris en charge par défaut. Des exceptions existent notamment pour [certains abonnements Entreprise de Microsoft](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Vérifiez donc avant toute installation sur Azure si votre abonnement autorise le trafic SMTP sortant via le port TCP 25.
-
-Si vous avez des questions concernant la variante d'exploitation appropriée, veuillez contacter suffisament tôt votre personne de contact chez HIN. |
+| Serveurs de courrier de destination | `25` | TCP | Livraison des courriels sortants (via recherche MX) |
 | Serveurs DNS | `53` | UDP+TCP | Sortant vers les serveurs DNS publics |
 | Serveurs NTP | `123` | UDP | NTP synchronise les horloges des ordinateurs, serveurs, équipements réseau et machines virtuelles avec des sources de temps précises |
 | Pairs WireGuard (réseau HIN) | `19818` | UDP+TCP | WireGuard - tunnel crypté pour la communication agent-à-agent |
 | `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | Pool de témoins KERI de HIN - requis pour la vérification des identités des agents (idagent / watcher) |
 | `app.hin.ch` | `443` | TCP | Liste des membres / domaines de messagerie HIN (mxengine) |
 | `apisix.verify-mail.hin-infra.ch` | `443` | TCP | Enregistrement de la passerelle HIN lors de l'intégration (tableau de bord) |
+
+
+??? note "Remarque importante concernant l'exploitation sur Microsoft Azure"
+
+    **Exploitation sur Microsoft Azure** 
+    
+    Pour la connexion SMTP Relay du HIN Gateway à Exchange Online, le trafic sortant via le port TCP 25 doit être autorisé. 
+    
+    Microsoft Azure bloque les connexions sortantes via le port 25 pour la plupart des modèles d'abonnement. HIN n'a aucune influence sur la disponibilité ou l'activation de ce port par Microsoft. L'exploitation du HIN Gateway sur Azure ne constitue donc pas un scénario de déploiement pris en charge par défaut. Des exceptions existent notamment pour [certains abonnements Entreprise de Microsoft](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Vérifiez donc avant toute installation sur Azure si votre abonnement autorise le trafic SMTP sortant via le port TCP 25. 
+    
+    Si vous avez des questions concernant la variante d'exploitation appropriée, veuillez contacter suffisament tôt votre personne de contact chez HIN.
+
+ 
+
 
 ??? tip "Remarque concernant le pare-feu"
 
