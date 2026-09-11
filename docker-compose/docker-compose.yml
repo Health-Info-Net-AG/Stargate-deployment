@@ -1161,7 +1161,7 @@ services:
 
   loki:
     # renovate: datasource=docker depName=grafana/loki
-    image: grafana/loki:3.7.6
+    image: grafana/loki:3.7.7
     container_name: stargate-loki
     restart: unless-stopped
     logging:
