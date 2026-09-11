@@ -346,7 +346,6 @@ services:
   # ===================
 
   smimekeys-client:
-    # renovate: datasource=docker depName=healthinfonetag/smimekeys
     image: healthinfonetag/smimekeys:v0.0.28
     container_name: stargate-smimekeys-client
     restart: unless-stopped
@@ -416,7 +415,6 @@ services:
       - autoheal=true
 
   policy:
-    # renovate: datasource=docker depName=healthinfonetag/policy
     image: healthinfonetag/policy:v0.0.12
     container_name: stargate-policy
     restart: unless-stopped
@@ -463,7 +461,6 @@ services:
       - autoheal=true
 
   irisagent:
-    # renovate: datasource=docker depName=healthinfonetag/irisagent
     image: healthinfonetag/irisagent:v0.0.13
     container_name: stargate-irisagent
     restart: unless-stopped
@@ -545,7 +542,6 @@ services:
       - autoheal=true
 
   mxengine:
-    # renovate: datasource=docker depName=healthinfonetag/mxengine
     image: healthinfonetag/mxengine:v0.0.54
     container_name: stargate-mxengine
     restart: unless-stopped
@@ -664,7 +660,6 @@ services:
       - autoheal=true
 
   idagent:
-    # renovate: datasource=docker depName=healthinfonetag/idagent
     image: healthinfonetag/idagent:v0.0.1
     container_name: stargate-idagent
     restart: unless-stopped
@@ -724,7 +719,6 @@ services:
       - autoheal=true
 
   mailauth:
-    # renovate: datasource=docker depName=healthinfonetag/mailauth
     image: healthinfonetag/mailauth:v0.0.6
     container_name: stargate-mailauth
     restart: unless-stopped
@@ -780,7 +774,6 @@ services:
   # (3) set idagent's KERI_WATCHER_OOBI to this watcher's OOBI. Image built from a
   # pinned keriox commit (see the keriox-tools repo).
   watcher:
-    # renovate: datasource=docker depName=healthinfonetag/keriox-watcher
     image: healthinfonetag/keriox-watcher:v0.0.1
     container_name: stargate-watcher
     profiles: ["keri-watcher"]
@@ -840,7 +833,6 @@ services:
       - autoheal=true
 
   dashboard:
-    # renovate: datasource=docker depName=healthinfonetag/dashboard
     image: healthinfonetag/dashboard:v0.0.118
     container_name: stargate-dashboard
     restart: unless-stopped
@@ -1123,7 +1115,6 @@ services:
       - stargate-network
 
   mtaconf:
-    # renovate: datasource=docker depName=healthinfonetag/mtaconf
     image: healthinfonetag/mtaconf:v0.0.8
     container_name: stargate-mtaconf
     restart: unless-stopped
@@ -1227,7 +1218,6 @@ services:
   # Policy sync service - syncs policies from Git repository to database
   # Automatically syncs policies when POLICY_SYNC_REPO_URL is configured
   policy-sync:
-    # renovate: datasource=docker depName=healthinfonetag/policy-sync
     image: healthinfonetag/policy-sync:v0.0.12
     container_name: stargate-policy-sync
     restart: unless-stopped
@@ -1258,7 +1248,6 @@ services:
 
   # Ops Agent - executes infrastructure commands (updates, restarts) from dashboard via NATS
   ops-agent:
-    # renovate: datasource=docker depName=healthinfonetag/stargate-ops
     image: healthinfonetag/stargate-ops:v0.0.9
     container_name: stargate-ops-agent
     restart: unless-stopped
