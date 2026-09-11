@@ -655,6 +655,7 @@ if [ -f "$KEYS_FILE" ]; then
   # On boot (rc.local) an existing install is the normal steady state -- the
   # systemd unit brings the stack up -- so exit quietly with no output. Only a
   # human running this on the console gets the banner and the error guidance.
+  enable_greenboot
   if [ "$INTERACTIVE" = "1" ]; then
     echo "============================================"
     echo "  Stargate Installation"
@@ -888,3 +889,4 @@ echo "  Recommended after onboarding:"
 echo "    - SPF / DKIM / DMARC for your sending domains"
 echo "    - Microsoft 365 / Exchange Online relay-back connectors"
 echo ""
+enable_greenboot
