@@ -140,7 +140,7 @@ services:
   # SeaweedFS bucket initialization
   seaweedfs-init:
     # renovate: datasource=docker depName=amazon/aws-cli
-    image: amazon/aws-cli:2.27.31
+    image: amazon/aws-cli:2.36.43
     container_name: stargate-seaweedfs-init
     logging:
       driver: json-file
