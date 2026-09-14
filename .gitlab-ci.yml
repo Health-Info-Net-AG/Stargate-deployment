@@ -70,8 +70,9 @@ generate_manifest:
   tags:
     - linux
   rules:
-    # Release tags only. A -test/-dev tag is a QA image build and skips the release side of the pipeline.
-    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG !~ /-(test|dev)/'
+    # Manifest generation disabled, the manifest was used by update.sh's git-checkout update path, which cannot run on a bootc appliance's read-only /usr.
+    # - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG !~ /-(test|dev)/'
+    - when: never
   script:
     - |
       # Image versions now live in docker-compose.yml (pinned per git tag), not in
@@ -178,8 +179,8 @@ release_milestone:
   stage: release
   tags:
     - linux
-  needs:
-    - generate_manifest
+  # needs:
+  #   - generate_manifest
   variables:
     GIT_DEPTH: 0
   rules:
@@ -202,18 +203,18 @@ release_milestone:
         409) echo "Release ${CI_COMMIT_TAG} already exists, skipping."; cat response.json ;;
         *)   echo "Release creation failed with HTTP ${HTTP_STATUS}:"; cat response.json; exit 1 ;;
       esac
-    - |
-      echo "Uploading manifest.json as release asset..."
-      curl --silent --show-error \
-        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
-        --upload-file manifest.json \
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/manifest/${CI_COMMIT_TAG}/manifest.json"
-      curl --silent --show-error \
-        --request POST \
-        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
-        --data "name=manifest.json" \
-        --data "url=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/manifest/${CI_COMMIT_TAG}/manifest.json" \
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"
+    # - |
+    #   echo "Uploading manifest.json as release asset..."
+    #   curl --silent --show-error \
+    #     --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+    #     --upload-file manifest.json \
+    #     "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/manifest/${CI_COMMIT_TAG}/manifest.json"
+    #   curl --silent --show-error \
+    #     --request POST \
+    #     --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+    #     --data "name=manifest.json" \
+    #     --data "url=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/manifest/${CI_COMMIT_TAG}/manifest.json" \
+    #     "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"
 
 # needs: [] — builds from $CI_COMMIT_TAG alone, so it starts at pipeline creation and runs
 # alongside execute_script instead of after it. A failed execute_script no longer blocks it.
