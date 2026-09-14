@@ -45,12 +45,6 @@ Mail-Domains, der Mail-Hostname, S/MIME-Zertifikate und WireGuard-Peers werden a
 
 Mail-Domains und der Stalwart-Hostname werden zur Laufzeit über die `/mail`-Seite des Dashboards konfiguriert; sie sind nicht Teil von `customer-config.sh`.
 
-**Automatisch abgeleitete Einstellungen – leer lassen, es sei denn, Sie müssen sie überschreiben:**
-
-| Einstellung | Abgeleitet von | Standard |
-|---------|-------------|---------|
-| `MXENGINE_PUBLIC_ADDRESS` | `SERVER_STATIC_IP` | `http://<SERVER_STATIC_IP>:8084` |
-
 **S/MIME-Zertifikatseinstellungen:**
 
 | Einstellung | Beschreibung | Standard |

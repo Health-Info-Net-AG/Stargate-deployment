@@ -41,12 +41,6 @@ I domini di posta, il nome host di posta, i certificati S/MIME e i peer WireGuar
 !!! note "Dietro NAT o un IP flottante?"
     Il rilevamento automatico utilizza l'IP dell'interfaccia principale del server. Se il server è raggiungibile tramite un IP pubblico o flottante *diverso* (comune con il NAT), impostare `SERVER_STATIC_IP` su quell'IP pubblico in `customer-config.sh` prima dell'installazione, in modo che gli URL della dashboard e di login di Keycloak puntino all'indirizzo raggiungibile. In caso contrario, lasciarlo vuoto.
 
-**Impostazioni auto-derivate — lasciare vuote a meno che non sia necessario sovrascriverle:**
-
-| Impostazione | Derivata da | Predefinito |
-|---------|-------------|---------|
-| `MXENGINE_PUBLIC_ADDRESS` | `SERVER_STATIC_IP` | `http://<SERVER_STATIC_IP>:8084` |
-
 **Impostazioni del certificato S/MIME:**
 
 | Impostazione | Descrizione | Predefinito |

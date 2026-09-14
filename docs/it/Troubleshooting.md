@@ -138,7 +138,7 @@ docker logs stargate-postgres --tail 50
     ```
 
     Se la porta `25` è bloccata, bisogna richiedere un'eccezione al proprio provider.
-- **Posta in uscita / sealing**: segue il percorso Stalwart → **mxengine** (`:8084` callback di blocco, SMTP `:1587`): `docker logs stargate-mxengine`.
+- **Posta in uscita / sealing**: segue il percorso Stalwart → **mxengine** (`:8084` HTTP, SMTP `:1587`): `docker logs stargate-mxengine`.
 - **I loop di posta** si manifestano con la ripetizione dello stesso messaggio - verificare che il record MX del proprio dominio non venga risolto nell'indirizzo IP di questa stessa appliance.
 - Vedere **[Configurazione relay di posta](Mail-relay-setup.md)** e **[Configurazione DNS](DNS-setup.md)** per il routing previsto.
 

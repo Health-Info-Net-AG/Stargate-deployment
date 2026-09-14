@@ -148,7 +148,7 @@ MXENGINE_VERSION=v0.0.35
 MTACONF_VERSION=dev
 
 ## Percorso posta in uscita
-MXENGINE_PUBLIC_ADDRESS=http://203.0.113.50:8084
+MXENGINE_PUBLIC_ADDRESS=http://localhost:8084
 OUTBOUND_SEALER_MX_DOMAIN=hintest.ch
 
 ## WireGuard
@@ -337,8 +337,6 @@ Server di posta di destinazione (tramite ricerca MX)
 ```
 
 **Scansione antivirus:** La posta in entrata viene scansionata da **ClamAV** (`stargate-clamav`), collegato a Stalwart come milter nella fase SMTP DATA sia sul listener pubblico (`:25`) che su quello di reiniezione (`:10026`). La posta infetta viene respinta a livello SMTP; se ClamAV non è raggiungibile, il messaggio viene rinviato piuttosto che consegnato non scansionato (fail-closed). Il database delle firme di ClamAV risiede nel volume `clamav_data` e viene mantenuto aggiornato da freshclam in background.
-
-**Flusso di callback di sigillatura (in entrata):** Quando un sigillatore remoto deve consegnare un messaggio sigillato, chiama `MXENGINE_PUBLIC_ADDRESS` (predefinito: `http://<SERVER_STATIC_IP>:8084`). Il protocollo `http://` è corretto - TLS non è richiesto perché il payload del sigillo è già crittografato.
 
 ### Configurazione del relay di posta
 

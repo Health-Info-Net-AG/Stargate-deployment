@@ -138,7 +138,7 @@ docker logs stargate-postgres --tail 50
     ```
 
     Falls `25` blockiert ist, beantragen Sie eine Ausnahmegenehmigung bei Ihrem Anbieter.
-- **Ausgehend/Sealing** läuft über Stalwart → **mxengine** (`:8084` Seal-Callback, SMTP `:1587`): `docker logs stargate-mxengine`.
+- **Ausgehend/Sealing** läuft über Stalwart → **mxengine** (`:8084` HTTP, SMTP `:1587`): `docker logs stargate-mxengine`.
 - **Mail-Schleifen** zeigen sich als dieselbe, immer wiederkehrende Nachricht - stellen Sie sicher, dass der MX-Eintrag Ihrer Domain nicht auf die eigene IP-Adresse dieser Appliance verweist.
 - Siehe **[Mail-Relay-Einrichtung](Mail-relay-setup.md)** und **[DNS-Einrichtung](DNS-setup.md)** für das vorgesehene Routing.
 
