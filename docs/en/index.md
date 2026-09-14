@@ -137,16 +137,15 @@ The following items must be available or confirmed before the installation:
 | `apisix.verify-mail.hin-infra.ch` | `443` | TCP | HIN gateway registration during onboarding (dashboard) |
 
 
+
 !!! note "Important note regarding operation on Microsoft Azure"
-        **Operation on Microsoft Azure** 
-        For the SMTP relay connection between the HIN Gateway and Exchange Online, outgoing data traffic via TCP port 25 must be permitted. 
-        
-        Microsoft Azure blocks outbound connections via port 25 for most subscription models. HIN has no control over the availability or activation of this port by Microsoft. Operating the HIN Gateway on Azure is therefore **not a standard supported deployment scenario**. Exceptions apply in particular to [certain Microsoft Enterprise subscriptions](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Before installing on Azure, please check whether your subscription permits outbound SMTP traffic via TCP port 25.
-        
-        If you have any questions regarding the appropriate deployment option, please contact your HIN contact person at an early stage.
+    **Operation on Microsoft Azure**
+    For the SMTP relay connection between the HIN Gateway and Exchange Online, outgoing data traffic via TCP port 25 must be permitted.
 
+    Microsoft Azure blocks outbound connections via port 25 for most subscription models. HIN has no control over the availability or activation of this port by Microsoft. Operating the HIN Gateway on Azure is therefore **not a standard supported deployment scenario**. Exceptions apply in particular to [certain Microsoft Enterprise subscriptions](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Before installing on Azure, please check whether your subscription permits outbound SMTP traffic via TCP port 25. 
+    
+    If you have any questions regarding the appropriate deployment option, please contact your HIN contact person at an early stage.
 
- 
 
 
 ??? tip "Firewall note"

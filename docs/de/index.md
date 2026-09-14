@@ -137,14 +137,12 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
 
 
 !!! note "Wichtiger Hinweis zum Betrieb auf Microsoft Azure"
-        **Betrieb auf Microsoft Azure** 
-        Für die SMTP-Relay-Anbindung des HIN Gateways an Exchange Online muss ausgehender Datenverkehr über TCP-Port 25 möglich sein. 
-        
-        Microsoft Azure blockiert ausgehende Verbindungen über Port 25 bei den meisten Subscription-Modellen. HIN kann die Verfügbarkeit oder Freischaltung dieses Ports durch Microsoft nicht beeinflussen. Der Betrieb des HIN Gateways auf Azure ist deshalb **kein standardmässig unterstütztes Deployment-Szenario**. Ausnahmen bestehen insbesondere für [bestimmte Enterprise-Subscriptions von Microsoft](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Prüfen Sie deshalb vor einer Installation auf Azure, ob Ihre Subscription ausgehenden SMTP-Verkehr über TCP-Port 25 erlaubt.
-        
-        Bei Fragen zur geeigneten Betriebsvariante wenden Sie sich bitte frühzeitig an Ihre HIN Ansprechperson.
+    **Betrieb auf Microsoft Azure**
+    Für die SMTP-Relay-Anbindung des HIN Gateways an Exchange Online muss ausgehender Datenverkehr über TCP-Port 25 möglich sein.
 
+    Microsoft Azure blockiert ausgehende Verbindungen über Port 25 bei den meisten Subscription-Modellen. HIN kann die Verfügbarkeit oder Freischaltung dieses Ports durch Microsoft nicht beeinflussen. Der Betrieb des HIN Gateways auf Azure ist deshalb **kein standardmässig unterstütztes Deployment-Szenario**. Ausnahmen bestehen insbesondere für [bestimmte Enterprise-Subscriptions von Microsoft](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Prüfen Sie deshalb vor einer Installation auf Azure, ob Ihre Subscription ausgehenden SMTP-Verkehr über TCP-Port 25 erlaubt.
 
+    Bei Fragen zur geeigneten Betriebsvariante wenden Sie sich bitte frühzeitig an Ihre HIN Ansprechperson.
 
 
 
