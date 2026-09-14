@@ -146,7 +146,7 @@ docker logs stargate-postgres --tail 50
     ```
 
     If `25` is blocked, request an exception from your provider.
-- **Outbound / sealing** goes Stalwart → **mxengine** (`:8084` seal callback, SMTP `:1587`): `docker logs stargate-mxengine`.
+- **Outbound / sealing** goes Stalwart → **mxengine** (`:8084` HTTP, SMTP `:1587`): `docker logs stargate-mxengine`.
 - **Mail loops** show as the same message cycling - check that your domain's MX does not resolve back to this appliance's own IP.
 - See **[Mail relay setup](Mail-relay-setup.md)** and **[DNS setup](DNS-setup.md)** for the expected routing.
 

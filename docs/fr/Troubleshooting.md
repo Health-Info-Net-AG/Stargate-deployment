@@ -146,7 +146,7 @@ docker logs stargate-postgres --tail 50
     ```
 
     Si le port `25` est bloqué, demandez une dérogation à votre fournisseur.
-- Les e-mails **sortants et le scellement** passent par Stalwart → **mxengine** (`:8084` callback de scellement, SMTP `:1587`) : `docker logs stargate-mxengine`.
+- Les e-mails **sortants et le scellement** passent par Stalwart → **mxengine** (`:8084` HTTP, SMTP `:1587`) : `docker logs stargate-mxengine`.
 - Les **boucles de messagerie** se manifestent par un même message qui circule en boucle. Vérifiez que l’enregistrement MX de votre domaine ne renvoie pas vers l’adresse IP de cette appliance elle-même.
 - Le routage attendu est décrit dans **[Configuration du relais de messagerie](Mail-relay-setup.md)** et **[Configuration DNS](DNS-setup.md)**.
 
