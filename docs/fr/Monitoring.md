@@ -134,7 +134,9 @@ Remplacez `<IP_STARGATE>` par l'IP publique ou privée du serveur et `<nom>` par
 
 ### Exigences de pare-feu
 
-Les ports de métriques (2113-2116, 9100) doivent être accessibles depuis votre serveur Prometheus. Si vous restreignez l'accès par IP, ajoutez l'IP de votre serveur de surveillance aux règles de pare-feu.
+Les ports de métriques (`2113`-`2116`, `9091`, `9100`) ne comportent aucune authentification. Restreignez-les afin qu'ils soient accessibles **uniquement** depuis votre serveur Prometheus, et jamais depuis Internet.
+
+Si vous autorisez l'accès par IP, ajoutez uniquement l'IP de votre serveur de surveillance.
 
 ---
 

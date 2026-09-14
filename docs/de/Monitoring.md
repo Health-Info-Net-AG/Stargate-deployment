@@ -134,7 +134,9 @@ Ersetzen Sie `<STARGATE_IP>` durch die öffentliche oder private IP des Servers 
 
 ### Firewall-Anforderungen
 
-Die Metrik-Ports (2113-2116, 9100) müssen von Ihrem Prometheus-Server aus erreichbar sein. Wenn Sie den Zugriff nach IP einschränken, fügen Sie die IP Ihres Überwachungsservers zu den Firewall-Regeln hinzu.
+Die Metrik-Ports (`2113`-`2116`, `9091`, `9100`) verfügen über keine Authentifizierung. Beschränken Sie sie so, dass sie **nur** von Ihrem Prometheus-Server aus erreichbar sind und niemals aus dem Internet.
+
+Wenn Sie den Zugriff nach IP freigeben, fügen Sie nur die IP Ihres Überwachungsservers hinzu.
 
 ---
 

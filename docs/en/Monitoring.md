@@ -134,7 +134,9 @@ Replace `<STARGATE_IP>` with the server's public or private IP and `<name>` with
 
 ### Firewall requirements
 
-The metrics ports (2113-2116, 9100) must be reachable from your Prometheus server. If you restrict access by IP, add your monitoring server's IP to the firewall rules.
+The metrics ports (`2113`-`2116`, `9091`, `9100`) carry no authentication. Restrict them so they are reachable **only** from your Prometheus server, and never from the internet.
+
+If you allow access by IP, add your monitoring server's IP and nothing else.
 
 ---
 

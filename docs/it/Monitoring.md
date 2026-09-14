@@ -134,7 +134,9 @@ Sostituisci `<IP_STARGATE>` con l'IP pubblico o privato del server e `<nome>` co
 
 ### Requisiti firewall
 
-Le porte delle metriche (2113-2116, 9100) devono essere raggiungibili dal server Prometheus. Se limiti l'accesso per IP, aggiungi l'IP del server di monitoraggio alle regole del firewall.
+Le porte delle metriche (`2113`-`2116`, `9091`, `9100`) non prevedono alcuna autenticazione. Limitarle in modo che siano raggiungibili **esclusivamente** dal server Prometheus e mai da Internet.
+
+Se si consente l'accesso per IP, aggiungere esclusivamente l'IP del server di monitoraggio.
 
 ---
 
