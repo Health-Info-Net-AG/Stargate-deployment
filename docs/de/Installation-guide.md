@@ -499,7 +499,7 @@ Konfigurieren Sie auf diesem Bildschirm Ihre Grundeinstellungen:
 ![Bildschirm für die Ersteinrichtung](assets/installation-guide/step13-initial-setup2.png)
 
 | Einstellung | Beschreibung |
-|---------|-------------|
+| --------- | ------------- |
 | **Hostname des Mail-Servers** | Der FQDN dieser Mail-Gateway-Instanz (z. B. `mail.example.com`). |
 | **IP-Adressen des Mail-Servers** | Die öffentliche(n) IP-Adresse(n) dieses Servers. Fügen Sie weitere IP-Adressen hinzu, falls der Server über mehrere Adressen erreichbar ist. |
 | **DNS** | DNS des Hosts, der zur Auflösung von MX- und anderen DNS-Einträgen verwendet wird. |
@@ -527,7 +527,7 @@ Im Menü **Domains** können Sie für jede verfügbare Domäne eine spezifische 
 ![Bildschirm für die Domänen-Transportkonfiguration](assets/installation-guide/step14-domain-mail-transport.png)
 
 | Einstellung | Beschreibung |
-|---------|-------------|
+| --------- | ------------- |
 | **Inbound relay** | Der SMTP-Relay für die eingehende Zustellung der ausgewählten Domäne. |
 | **Outbound relay** | Der SMTP-Relay für die ausgehende Zustellung der ausgewählten Domäne. Diese Einstellung entspricht der Einstellung `Forwarding server` des alten MGW. |
 | **Trusted networks** | Zusätzliche Netzwerke, denen die Weiterleitung über dieses Gateway gestattet ist. Weitere Informationen finden Sie unter "Schritt 18 - Mailserver konfigurieren". |
@@ -583,7 +583,7 @@ Konfigurieren Sie auf dieser Seite im Menü `Settings` Ihre globalen E-Mail-Tran
 Die folgenden Einstellungen stehen im Menü `Settings` zur Verfügung:
 
 | Einstellung | Beschreibung |
-|---------|-------------|
+| --------- | ------------- |
 | **Mail server host name** | Der FQDN dieser Mail-Gateway-Instanz (z. B. `mail.example.com`). |
 | **Mail server IP addresses** | Die öffentliche(n) IP-Adresse(n) dieses Servers. Fügen Sie weitere IP-Adressen hinzu, falls der Server über mehrere Adressen erreichbar ist. |
 | **DNS** | DNS des Hosts, der zur Auflösung von MX- und anderen DNS-Einträgen verwendet wird. |
@@ -651,7 +651,7 @@ Siehe [Exchange-Integration](Exchange-integration.md) für detaillierte Anweisun
 Im Menü **Domains** können Sie für jede verfügbare Domäne eine spezifische Transportroute konfigurieren:
 
 | Einstellung | Beschreibung |
-|---------|-------------|
+| --------- | ------------- |
 | **Inbound relay** | Der SMTP-Relay für die eingehende Zustellung der ausgewählten Domäne. |
 | **Outbound relay** | Der SMTP-Relay für die ausgehende Zustellung der ausgewählten Domäne. Diese Einstellung entspricht der Einstellung `Forwarding server` des alten MGW. |
 | **Trusted networks** | Zusätzliche Netzwerke, denen die Weiterleitung über dieses Gateway gestattet ist. Weitere Informationen finden Sie unter "Schritt 18 - Mailserver konfigurieren". |
@@ -692,7 +692,7 @@ Konfigurieren Sie auf dieser Seite im Menü `Settings` Ihre globalen E-Mail-Tran
 Die folgenden Einstellungen stehen im Menü `Settings` zur Verfügung:
 
 | Einstellung | Beschreibung |
-|---------|-------------|
+| --------- | ------------- |
 | **Mail server host name** | Der FQDN dieser Mail-Gateway-Instanz (z. B. `mail.example.com`). |
 | **Mail server IP addresses** | Die öffentliche(n) IP-Adresse(n) dieses Servers. Fügen Sie weitere IP-Adressen hinzu, falls der Server über mehrere Adressen erreichbar ist. |
 | **DNS** | DNS des Hosts, der zur Auflösung von MX- und anderen DNS-Einträgen verwendet wird. |

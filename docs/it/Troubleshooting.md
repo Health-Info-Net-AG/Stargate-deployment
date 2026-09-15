@@ -37,7 +37,7 @@ Segnala «superato / non superato» per: **container** (in esecuzione / integri)
 ## 2. Posizione dei log
 
 | Livello | Comando | Visualizzazione |
-|-------|---------|---------------|
+| ------- | --------- | --------------- |
 | Avvio / prima installazione / avvio automatico | `sudo journalctl -u stargate -n 200 --no-pager` | Il servizio systemd che esegue `start.sh` all'avvio e durante l'installazione al primo avvio |
 | Aggiornamenti | `cat ../update.log` (cartella root di deployment, un livello sopra `docker-compose/`) | Output dell'ultimo `update.sh` avviato da dashboard/host |
 | Un unico servizio | `docker logs stargate-<service> --tail 100` | ad es. `stargate-dashboard`, `stargate-mxengine`, `stargate-keycloak` |
@@ -62,7 +62,7 @@ docker compose ps -a --format 'table {{.Service}}\t{{.Status}}'
 Leggere la colonna `Status`:
 
 | Status | Significato | Azione |
-|--------|---------|--------|
+| -------- | --------- | -------- |
 | `Up ... (healthy)` | In esecuzione, correttamente | - |
 | `Up ...` (senza controllo dell'integrità) | In esecuzione; nessun controllo dell'integrità definito | Verificare i `docker logs` se si sospetta un problema |
 | `Restarting` | Crash-looping | `docker logs stargate-<svc>` - correggere l'errore alla radice (config, secret, dipendenza) |
@@ -214,7 +214,7 @@ for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 ```
 
 | Porta | Servizio | Direzione |
-|------|---------|-----------|
+| ------ | --------- | ----------- |
 | `25` | Stalwart SMTP (posta in entrata) | in entrata |
 | `443` | Dashboard (HTTPS) | in entrata |
 | `8180` | Keycloak | in entrata |

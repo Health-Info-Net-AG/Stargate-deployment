@@ -77,7 +77,7 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
 
 ### Server-Anforderungen
 
-|      | Minimum | Empfohlen |
+| | Minimum | Empfohlen |
 | :--- | :-----: | :---------: |
 | CPU, Kerne | 4 | 6 |
 | RAM, GB | 8 | 12 |

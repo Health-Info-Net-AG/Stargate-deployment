@@ -37,7 +37,7 @@ Dieser meldet den Status «bestanden»/«nicht bestanden» (pass/fail) für: **C
 ## 2. Wo sich die Logs befinden
 
 | Ebene | Befehl | Was es anzeigt |
-|-------|---------|---------------|
+| ------- | --------- | --------------- |
 | Start / Erstinstallation / Autostart | `sudo journalctl -u stargate -n 200 --no-pager` | Den systemd-Dienst, der `start.sh` beim Start und bei der Erstinstallation ausführt |
 | Updates | `cat ../update.log` (Bereitstellungsstammverzeichnis, eine Ebene über `docker-compose/`) | Ausgabe des letzten Dashboard-/Host-ausgelösten `update.sh` |
 | Ein einzelner Dienst | `docker logs stargate-<service> --tail 100` | z. B. `stargate-dashboard`, `stargate-mxengine`, `stargate-keycloak` |
@@ -62,7 +62,7 @@ docker compose ps -a --format 'table {{.Service}}\t{{.Status}}'
 Lesen Sie die Spalte `Status`:
 
 | Status | Bedeutung | Massnahme |
-|--------|---------|--------|
+| -------- | --------- | -------- |
 | `Up ... (healthy)` | Läuft einwandfrei | - |
 | `Up ...` (no health) | Läuft; kein Health Check definiert | Überprüfen Sie die `docker logs`, wenn Sie Probleme vermuten |
 | `Restarting` | Crash-Looping | `docker logs stargate-<svc>` - beheben Sie den Root-Fehler (config, secret, dependency) |
@@ -214,7 +214,7 @@ for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 ```
 
 | Port | Dienst | Richtung |
-|------|---------|-----------|
+| ------ | --------- | ----------- |
 | `25` | Stalwart SMTP (eingehende E-Mails) | eingehend |
 | `443` | Dashboard (HTTPS) | eingehend |
 | `8180` | Keycloak | eingehend |

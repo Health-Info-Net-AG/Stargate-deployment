@@ -499,7 +499,7 @@ In questa schermata, configura le tue impostazioni iniziali:
 ![Schermata di configurazione](assets/installation-guide/step13-initial-setup2.png)
 
 | Impostazione | Descrizione |
-|---------|-------------|
+| --------- | ------------- |
 | **Mail server host name** | Il FQDN di questa istanza del gateway di posta (es. `mail.example.com`). |
 | **Mail server IP addresses** | Gli indirizzi IP pubblici di questo server. Aggiungi IP aggiuntivi se il server è raggiungibile su più indirizzi. |
 | **DNS** | Il DNS dell'host che verrà utilizzato per risolvere i record MX e altri record DNS |
@@ -527,11 +527,11 @@ Nel menu **Domains**, per ogni dominio disponibile puoi configurare una rotta di
 ![Domain transport configuration screen](assets/installation-guide/step14-domain-mail-transport.png)
 
 | Impostazione | Descrizione |
-|---------|-------------|
+| --------- | ------------- |
 | **Inbound relay** | Il relay SMTP per la consegna in entrata per il dominio selezionato |
 | **Outbound relay** | Il relay SMTP per la consegna in uscita per il dominio selezionato. Questa impostazione corrisponde all'impostazione `Forwarding server` del vecchio MGW |
-| **Trusted networks** | Reti aggiuntive autorizzate a fare relay tramite questo gateway. Per maggiori informazioni consulta il "Passo 18 - Configurazione del server di posta"|
-| **Configure TLS** | Impostazioni del certificato TLS per le connessioni SMTP; dal pulsante `Generate TLS certificate` puoi generare un certificato TLS|
+| **Trusted networks** | Reti aggiuntive autorizzate a fare relay tramite questo gateway. Per maggiori informazioni consulta il "Passo 18 - Configurazione del server di posta" |
+| **Configure TLS** | Impostazioni del certificato TLS per le connessioni SMTP; dal pulsante `Generate TLS certificate` puoi generare un certificato TLS |
 | **Email authentication** | Per tutte le impostazioni della sezione `Email authentication` fai riferimento alla sezione [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) |
 
 ??? tip "Come testare una connessione TLS?"
@@ -583,7 +583,7 @@ In questa pagina, nel menu `Settings`, configura le impostazioni globali di tras
 Nel menu `Settings` sono disponibili le seguenti impostazioni:
 
 | Impostazione | Descrizione |
-|---------|-------------|
+| --------- | ------------- |
 | **Mail server host name** | Il FQDN di questa istanza del gateway di posta (es. `mail.example.com`). |
 | **Mail server IP addresses** | Gli indirizzi IP pubblici di questo server. Aggiungi IP aggiuntivi se il server è raggiungibile su più indirizzi. |
 | **DNS** | Il DNS dell'host che verrà utilizzato per risolvere i record MX e altri record DNS |
@@ -651,11 +651,11 @@ Consulta [Integrazione con Exchange](Exchange-integration.md) per istruzioni det
 Nel menu **Domains**, per ogni dominio disponibile puoi configurare una rotta di trasporto specifica:
 
 | Impostazione | Descrizione |
-|---------|-------------|
+| --------- | ------------- |
 | **Inbound relay** | Il relay SMTP per la consegna in entrata per il dominio selezionato |
 | **Outbound relay** | Il relay SMTP per la consegna in uscita per il dominio selezionato. Questa impostazione corrisponde all'impostazione `Forwarding server` del vecchio MGW |
-| **Trusted networks** | Reti aggiuntive autorizzate a fare relay tramite questo gateway. Per maggiori informazioni consulta il "Passo 18 - Configurazione del server di posta"|
-| **Configure TLS** | Impostazioni del certificato TLS per le connessioni SMTP; dal pulsante `Generate TLS certificate` puoi generare un certificato TLS|
+| **Trusted networks** | Reti aggiuntive autorizzate a fare relay tramite questo gateway. Per maggiori informazioni consulta il "Passo 18 - Configurazione del server di posta" |
+| **Configure TLS** | Impostazioni del certificato TLS per le connessioni SMTP; dal pulsante `Generate TLS certificate` puoi generare un certificato TLS |
 | **Email authentication** | Per tutte le impostazioni della sezione `Email authentication` fai riferimento alla sezione [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) |
 
 - **Nota per lo scenario di migrazione:** vai alla pagina di ogni dominio e aggiungi un **Outbound host** utilizzando il valore registrato dal campo `Forwarding server` del MGW nel "Passo 1.2 - Backup del MGW esistente".
@@ -692,7 +692,7 @@ In questa pagina, nel menu `Settings`, configura le impostazioni globali di tras
 Nel menu `Settings` sono disponibili le seguenti impostazioni:
 
 | Impostazione | Descrizione |
-|---------|-------------|
+| --------- | ------------- |
 | **Mail server host name** | Il FQDN di questa istanza del gateway di posta (es. `mail.example.com`). |
 | **Mail server IP addresses** | Gli indirizzi IP pubblici di questo server. Aggiungi IP aggiuntivi se il server è raggiungibile su più indirizzi. |
 | **DNS** | Il DNS dell'host che verrà utilizzato per risolvere i record MX e altri record DNS |

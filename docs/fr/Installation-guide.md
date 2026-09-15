@@ -499,7 +499,7 @@ Sur cet écran, configurez vos paramètres initiaux:
 ![Setup screen](assets/installation-guide/step13-initial-setup2.png)
 
 | Paramètre | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Nom d'hôte du serveur de messagerie** | Le FQDN de cette instance de passerelle de messagerie (par exemple, `mail.example.com`). |
 | **Adresses IP du serveur de messagerie** | La ou les adresses IP publiques de ce serveur. Ajoutez des adresses IP supplémentaires si le serveur est accessible via plusieurs adresses. |
 | **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS |
@@ -527,11 +527,11 @@ Dans le menu **Domains**, pour chaque domaine disponible, vous pouvez configurer
 ![Domain transport configuration screen](assets/installation-guide/step14-domain-mail-transport.png)
 
 | Paramètre | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Inbound relay** | Le relais SMTP pour la livraison entrante du domaine sélectionné |
 | **Outbound relay** | Le relais SMTP pour la livraison sortante du domaine sélectionné. Ce paramètre correspond au paramètre `Forwarding server` de l'ancien MGW |
-| **Trusted networks** | Réseaux supplémentaires autorisés à relayer via cette passerelle. Pour plus d'informations, consultez l'"Étape 18 - Configurer le serveur de messagerie"|
-| **Configure TLS** | Paramètres du certificat TLS pour les connexions SMTP ; le bouton `Generate TLS certificate` permet de générer un certificat TLS|
+| **Trusted networks** | Réseaux supplémentaires autorisés à relayer via cette passerelle. Pour plus d'informations, consultez l'"Étape 18 - Configurer le serveur de messagerie" |
+| **Configure TLS** | Paramètres du certificat TLS pour les connexions SMTP ; le bouton `Generate TLS certificate` permet de générer un certificat TLS |
 | **Email authentication** | Pour tous les paramètres de la section `Email authentication`, veuillez consulter la section [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) |
 
 ??? tip "Comment tester une connexion TLS ?"
@@ -583,7 +583,7 @@ Sur cette page, dans le menu `Settings`, configurez les paramètres globaux de t
 Les paramètres suivants sont disponibles dans le menu `Settings`:
 
 | Paramètre | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Nom d'hôte du serveur de messagerie** | Le FQDN de cette instance de passerelle de messagerie (par exemple, `mail.example.com`). |
 | **Adresses IP du serveur de messagerie** | La ou les adresses IP publiques de ce serveur. Ajoutez des adresses IP supplémentaires si le serveur est accessible via plusieurs adresses. |
 | **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS |
@@ -651,11 +651,11 @@ Voir [Intégration à Exchange](Exchange-integration.md) pour obtenir des instru
 Dans le menu **Domains**, pour chaque domaine disponible, vous pouvez configurer une route de transport spécifique:
 
 | Paramètre | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Inbound relay** | Le relais SMTP pour la livraison entrante du domaine sélectionné |
 | **Outbound relay** | Le relais SMTP pour la livraison sortante du domaine sélectionné. Ce paramètre correspond au paramètre `Forwarding server` de l'ancien MGW |
-| **Trusted networks** | Réseaux supplémentaires autorisés à relayer via cette passerelle. Pour plus d'informations, consultez l'"Étape 18 - Configurer le serveur de messagerie"|
-| **Configure TLS** | Paramètres du certificat TLS pour les connexions SMTP ; le bouton `Generate TLS certificate` permet de générer un certificat TLS|
+| **Trusted networks** | Réseaux supplémentaires autorisés à relayer via cette passerelle. Pour plus d'informations, consultez l'"Étape 18 - Configurer le serveur de messagerie" |
+| **Configure TLS** | Paramètres du certificat TLS pour les connexions SMTP ; le bouton `Generate TLS certificate` permet de générer un certificat TLS |
 | **Email authentication** | Pour tous les paramètres de la section `Email authentication`, veuillez consulter la section [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) |
 
 - **Note : pour un scénario de migration :** Accédez à la page de chaque domaine et ajoutez un **Outbound host** en utilisant la valeur relevée dans le champ `Forwarding server` du MGW à l'"Étape 1.2 - Sauvegarde du MGW existant".
@@ -692,7 +692,7 @@ Sur cette page, dans le menu `Settings`, configurez les paramètres globaux de t
 Les paramètres suivants sont disponibles dans le menu `Settings`:
 
 | Paramètre | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Nom d'hôte du serveur de messagerie** | Le FQDN de cette instance de passerelle de messagerie (par exemple, `mail.example.com`). |
 | **Adresses IP du serveur de messagerie** | La ou les adresses IP publiques de ce serveur. Ajoutez des adresses IP supplémentaires si le serveur est accessible via plusieurs adresses. |
 | **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS |

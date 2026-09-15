@@ -500,7 +500,7 @@ On this screen, configure your initial settings:
 ![Setup screen](assets/installation-guide/step13-initial-setup2.png)
 
 | Setting | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
 | **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
@@ -527,11 +527,11 @@ Under the **Domains** menu, for each available domain you can configure specific
 ![Domain transport configuration screen](assets/installation-guide/step14-domain-mail-transport.png)
 
 | Setting | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Inbound relay** | The  SMTP relay for inbound delivery for selected domain |
 | **Outbound relay** | The SMTP relay for outbound delivery for selected domain. This setting correspond to `Forwarding server` setting from old MGW |
-| **Trusted networks** | Additional networks allowed to relay through this gateway. For more information please check on "Step 18 - Configure mail server"|
-| **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate|
+| **Trusted networks** | Additional networks allowed to relay through this gateway. For more information please check on "Step 18 - Configure mail server" |
+| **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate |
 | **Email authentication** | For all settings under `Email authentication` section please refer to [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) section |
 
 ??? tip "How to test TLS connection?"
@@ -583,7 +583,7 @@ On this page under `Settings` menu, configure your global mail transport setting
 The following settings are available `Settings` menu:
 
 | Setting | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
 | **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
@@ -651,11 +651,11 @@ See [Exchange Integration](Exchange-integration.md) for detailed instructions.
 Under the **Domains** menu, for each available domain you can configure specific transport route:
 
 | Setting | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Inbound relay** | The  SMTP relay for inbound delivery for selected domain |
 | **Outbound relay** | The SMTP relay for outbound delivery for selected domain. This setting correspond to `Forwarding server` setting from old MGW |
-| **Trusted networks** | Additional networks allowed to relay through this gateway. For more information please check on "Step 18 - Configure mail server"|
-| **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate|
+| **Trusted networks** | Additional networks allowed to relay through this gateway. For more information please check on "Step 18 - Configure mail server" |
+| **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate |
 | **Email authentication** | For all settings under `Email authentication` section please refer to [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) section |
 
 - **Note: for migration scenario:** Go to the page for each domain, add a **Outbound host** using the value you recorded from the MGW's `Forwarding server` field in "Step 1.2 - Backing up the existing MGW".
@@ -692,7 +692,7 @@ On this page under `Settings` menu, configure your global mail transport setting
 The following settings are available `Settings` menu:
 
 | Setting | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
 | **DNS** | DNS of the host which will be used to resolve MX and other DNS records |

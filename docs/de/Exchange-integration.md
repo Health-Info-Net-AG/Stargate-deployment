@@ -164,7 +164,7 @@ Dieser Connector akzeptiert E-Mails vom Stargate-Relay-Server in Exchange Online
 Nach der Erstellung beider Connectors sollte die Connectors-Seite Folgendes anzeigen:
 
 | Status | Name | Von | An |
-|--------|------|------|-----|
+| -------- | ------ | ------ | ----- |
 | Ein | E-Mails vom Stargate-Relay-Server empfangen | Ihre Org | O365 |
 | Ein | Von Office 365 zum Stargate-Relay-Server | O365 | Ihre Org |
 
@@ -394,13 +394,13 @@ Die Validierung des ausgehenden Connectors erfordert:
 ## Kurzreferenz
 
 | Komponente | Exchange Online-Ort | Zweck |
-|-----------|--------------------------|---------|
+| ----------- | -------------------------- | --------- |
 | Ausgehender Connector | Admin Center → Mailfluss → Connectors | Ausgehende E-Mails an Stargate leiten |
 | Eingehender Connector | Admin Center → Mailfluss → Connectors | E-Mails von Stargate akzeptieren |
 | Transportregel | Admin Center → Mailfluss → Regeln | Ausgehenden Connector für externe Empfänger auslösen |
 
 | DNS-Eintrag | Beispiel | Zweck |
-|------------|---------|---------|
+| ------------ | --------- | --------- |
 | A | `mail IN A <STARGATE_IP>` | Hostnamen auf Stargate verweisen |
 | MX (Stargate) | `@ IN MX 15 mail.<YOUR_DOMAIN>.` | Eingehende E-Mails treffen zuerst auf Stargate |
 | MX (Exchange) | `@ IN MX 20 <DOMAIN>.mail.protection.outlook.com.` | Fallback / Zustellziel |

@@ -78,7 +78,7 @@ The following items must be available or confirmed before the installation:
 
 ### Server Requirements
 
-|      | Minimum | Recommended |
+|   | Minimum | Recommended |
 | :--- | :-----: | :---------: |
 | CPU, Cores | 4 | 6 |
 | RAM, GB | 8 | 12 |

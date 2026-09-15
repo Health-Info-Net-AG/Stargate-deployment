@@ -78,7 +78,7 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
 
 ### Exigences du serveur
 
-|      | Minimum | Recommandé |
+|   | Minimum | Recommandé |
 | :--- | :-----: | :--------: |
 | CPU, Cœurs | 4 | 6 |
 | RAM, GB | 8 | 12 |

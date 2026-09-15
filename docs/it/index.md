@@ -78,7 +78,7 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
 
 ### Requisiti del server
 
-|      | Minimo | Consigliato |
+|   | Minimo | Consigliato |
 | :--- | :-----: | :--------: |
 | CPU, Core | 4 | 6 |
 | RAM, GB | 8 | 12 |

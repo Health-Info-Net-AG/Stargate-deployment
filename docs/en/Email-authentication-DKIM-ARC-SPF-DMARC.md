@@ -30,9 +30,9 @@ Changes are only applied after clicking **Save** button at the bottom of the pag
 ### what each protocol does
 
 | Protocol | Direction | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | **DKIM** (DomainKeys Identified Mail) | Outbound signing / Inbound verification | Cryptographically signs outgoing messages with a private key, tied to a DNS-published public key, so receivers can confirm the message wasn't altered in transit and genuinely originated from this domain |
-| **ARC** (Authenticated Received Chain) | Signing inbound verification for next relay| Preserves the original DKIM/SPF authentication results as a message passes through intermediaries (e.g. mailing lists, forwarding services) that would otherwise break DKIM signatures |
+| **ARC** (Authenticated Received Chain) | Signing inbound verification for next relay | Preserves the original DKIM/SPF authentication results as a message passes through intermediaries (e.g. mailing lists, forwarding services) that would otherwise break DKIM signatures |
 | **SPF** (Sender Policy Framework) | Inbound verification | Checks that the sending mail server's IP address is authorized to send mail for the sender's domain, based on a DNS record published by that domain |
 | **DMARC** (Domain-based Message Authentication, Reporting & Conformance) | Inbound verification | Ties DKIM and SPF results together and tells receiving servers what to do |
 
@@ -43,8 +43,8 @@ Getting DKIM and DMARC right for **your own domain** protects your deliverabilit
 ### DKIM
 
 | Field | Description |
-|---|---|
-| **Enable DKIM signing**  | When Active, the gateway signs all outbound mail from this domain with the configured private key. Turn this on before publishing the DKIM DNS record |
+| --- | --- |
+| **Enable DKIM signing** | When Active, the gateway signs all outbound mail from this domain with the configured private key. Turn this on before publishing the DKIM DNS record |
 | **Generate DKIM key** (button, top right) | Generates a new RSA-2048 key pair for this domain and populates the Private key (PEM) field |
 | **DKIM verification** | Controls how strictly ан еmail is checked against the sender's published DKIM record |
 | **Selector** | The DKIM selector (e.g. `s1`) used to publish and look up the public key at `<selector>._domainkey.<domain>`. Change this only if you need to run multiple keys in parallel (e.g. during a key rotation) — each selector needs its own DNS TXT record |
@@ -69,7 +69,7 @@ Getting DKIM and DMARC right for **your own domain** protects your deliverabilit
 ### ARC
 
 | Field | Description |
-|---|---|
+| --- | --- |
 | **ARC verification** (dropdown) | Controls how strictly inbound ARC chains are validated |
 | **Enable ARC signing** | When Active, the gateway adds an ARC seal to forwarded mail, preserving authentication results if the message is later relayed through another system |
 | **Reuse DKIM key** (toggle) | When Active, ARC signing uses the same RSA key configured in the DKIM section above instead of requiring a separate key. Recommended unless you have a specific need to keep the two signatures cryptographically separate |
@@ -79,8 +79,8 @@ Getting DKIM and DMARC right for **your own domain** protects your deliverabilit
 ### SPF
 
 | Field | Description |
-|---|---|
-| **SPF verification**  | Controls how strictly inbound mail is checked against the sending domain's published SPF record |
+| --- | --- |
+| **SPF verification** | Controls how strictly inbound mail is checked against the sending domain's published SPF record |
 
 > **Note:** This panel only controls *verification* of inbound SPF — it does not generate an outbound SPF TXT record for your own domain (no SPF entry appears in §7 "DNS records to publish"). If this domain sends mail through an external relay (e.g. Microsoft 365, as configured in **Mail routing → Outbound relay**), make sure that provider's SPF `include:` mechanism is already published in your domain's own SPF record at your DNS provider, independently of this gateway.
 
@@ -89,13 +89,13 @@ Getting DKIM and DMARC right for **your own domain** protects your deliverabilit
 ### DMARC
 
 | Field | Description |
-|---|---|
+| --- | --- |
 | **DMARC verification** | Controls how strictly inbound mail is checked against the sender's DMARC policy |
 
 ### Verification value
 
 | UI label | value | Behavior |
-|---|---|---|
+| --- | --- | --- |
 | **Disabled** | `disable` | Not checked at all. Mechanism doesn't run |
 | **Optional** | `relaxed` | Verified and **reported** in `Authentication-Results`. Message is **always accepted**, pass or fail |
 | **Required** | `strict` | Verified and reported, and the message is **rejected** if it hard-fails. Otherwise accepted |
@@ -119,7 +119,7 @@ Two important notes:
 This box shows the exact TXT records you must create at your domain's DNS provider so external mail servers can verify mail from this domain. Records shown update automatically based on your DKIM selector and DMARC policy settings above.
 
 | Record | Host | Type | Value |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | DKIM public key | `<selector>._domainkey.<domain>` (e.g. `s1._domainkey.vrgnservices.eu`) | TXT | `v=DKIM1; k=rsa; p=<public key>` |
 | DMARC policy | `_dmarc.<domain>` (e.g. `_dmarc.vrgnservices.eu`) | TXT | `v=DMARC1; p=<policy>` (e.g. `p=none`) |
 
@@ -138,7 +138,7 @@ None of the settings above take effect until you click the orange **Save** butto
 ##  Troubleshooting
 
 | Symptom | Likely cause |
-|---|---|
+| --- | --- |
 | Outbound mail fails DKIM at receiving servers | DKIM signing enabled but DNS TXT record not yet published/propagated, or selector mismatch between gateway and DNS. |
 | ARC seal missing on forwarded mail | **Enable ARC signing** is off, or **Reuse DKIM key** is off with no separate ARC key configured. |
 | Can't see the DKIM private key to copy it elsewhere | By design — once saved, the key is masked (`<hidden>`) and cannot be re-displayed. Use **Replace key** to issue a new one if you need to move it to a system that doesn't already have a copy. |
