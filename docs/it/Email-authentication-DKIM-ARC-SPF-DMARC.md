@@ -92,9 +92,7 @@ Configurare correttamente DKIM e DMARC per il **proprio dominio** protegge la de
 |---|---|
 | **DMARC verification** | Controlla con quale rigore la posta in entrata viene verificata rispetto alla policy DMARC del mittente |
 
-
 ### Valore di verifica
-
 
 | Etichetta interfaccia | Valore | Comportamento |
 |---|---|---|
@@ -113,7 +111,6 @@ Cosa costituisce un "fallimento definitivo" per Required (per meccanismo):
 Due note importanti:
 - **DKIM viene sempre eseguito internamente** perché DMARC ne ha bisogno. L'impostazione DKIM controlla solo se viene registrato un risultato `dkim=` e se un fallimento DKIM può causare un rifiuto; non modifica mai il verdetto DMARC.
 - Ogni meccanismo è indipendente, quindi è possibile ad esempio impostare **DMARC = Required** mantenendo **DKIM/SPF = Optional**: la posta problematica viene rifiutata in base al verdetto DMARC, e si ottengono comunque righe `dkim=`/`spf=` individuali nell'header per una migliore visibilità.
-
 
 ---
 

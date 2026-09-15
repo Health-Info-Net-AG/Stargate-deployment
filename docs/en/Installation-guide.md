@@ -6,7 +6,7 @@ This document provides a comprehensive guide to the technical installation of, a
 
 The guide is intended for HIN customers, IT administrators, and system engineers who are responsible for deploying and configuring the new HIN Gateway and, where applicable, migrating from the existing Mail Gateway (MGW) to the new solution.
 
-The HIN Gateway is a secure email gateway solution that enables trusted, encrypted, and policy-driven communication within the HIN Trust Circle. It acts as a central intermediary between internal email infrastructures and external communication partners, ensuring that email traffic is transmitted securely, complies with the organisation’s policies, and meets HIN’s security standards.
+The HIN Gateway is a secure email gateway solution that enables trusted, encrypted, and policy-driven communication within the HIN Trust Circle. It acts as a central intermediary between internal email infrastructures and external communication partners, ensuring that email traffic is transmitted securely, complies with the organizations policies, and meets HIN’s security standards.
 
 ## Overview of the mail flow
 
@@ -29,12 +29,10 @@ The structured, step-by-step procedure described in this document covers both ne
     HIN's objective is to ensure a secure, smooth and fully validated deployment with minimal disruption to operations and uninterrupted continuity of email services.
      In migration scenarios, the existing MGW should remain available as a fallback option until the HIN Gateway has been successfully validated in production. It should only be decommissioned once the migration has been completed and stable operation has been confirmed.
 
-
 ## Frequently asked questions
 
 !!! question "Can I perform the installation or migration on my own?"
-    Yes, the installation or migration can be completed entirely by the customer. 
-
+    Yes, the installation or migration can be completed entirely by the customer.
 
     For migration scenario the only exceptions is **"Step 1.3 - Export private key(s)"**. For security reasons and to keep your private key safe, you must contact HIN Support or join the planned migration call to receive the code required to export the private key from the currently operating Mail Gateway.
 
@@ -42,15 +40,12 @@ The structured, step-by-step procedure described in this document covers both ne
     If the installation or migration cannot be completed successfully, please join the planned support call with our engineers.
 
 !!! question "Will there be any outage in email delivery during the setup process?"
-    **Migration:** Between **"Step 1.5 - Shutdown existing MGW VM"** and **"Step 18 - Configure mail server"**, all emails will be queued on the mail server. Once "Step 18 - Configure mail server" has been completed, the queued emails will be sent out or delivered to the mailbox. 
+    **Migration:** Between **"Step 1.5 - Shutdown existing MGW VM"** and **"Step 18 - Configure mail server"**, all emails will be queued on the mail server. Once "Step 18 - Configure mail server" has been completed, the queued emails will be sent out or delivered to the mailbox.
 
-
-    **New instalation:** While you are configuring the email flow rules, all emails will be queued on the mail server. Once "Step 18 - Configure mail server" has been completed, the queued emails will be sent out or delivered to the mailbox. 
-
-
+    **New installation:** While you are configuring the email flow rules, all emails will be queued on the mail server. Once "Step 18 - Configure mail server" has been completed, the queued emails will be sent out or delivered to the mailbox. 
 
 !!! question "Will any emails be lost during the installation and migration?"
-    No, no emails will be lost during the installation and migration. Some emails might be delaied. 
+    No, no emails will be lost during the installation and migration. Some emails might be delayed.
 
 ## Overview of the installation steps
 
@@ -99,7 +94,7 @@ The following items must be available or confirmed before the installation:
     - Keycloak credential
     - Activation code
 
-- **Export of private key** 
+- **Export of private key**
     **Note:** Applicable only for migration case
     - If you are working on a Windows machine that has access to the Mail Gateway VM via port 22, we can support you during the call in enabling the private key export from the MGW.
     - If you do not have access to such a machine, please contact HIN Support by email or phone (<support@hin.ch> / 0848 830 740) to help you establish a support connection via System Administration → Support Connection → Connect.
@@ -121,7 +116,7 @@ The following items must be available or confirmed before the installation:
             - Dozzle port `8190`
                 - Incoming and outgoing traffic
 - **DHCP access** should be available for "[Step 5 - Network connection to the VM](#step-5-network-connection-to-the-vm)" (recommended).
-- **Backup requirements** - see "Annex 1 - Backing up and restoring the appliance settings". **Note:** Applicable only for migration case 
+- **Backup requirements** - see "Annex 1 - Backing up and restoring the appliance settings". **Note:** Applicable only for migration case
 - Note: Applicable only for migration case - Confirmation that the existing MGW will **not** be deleted until acceptance has been completed.
 - Access to DNS, mail server connectors, transport rules, and relay settings.
 
@@ -154,7 +149,7 @@ Test mail flow in both directions:
 
 - From the HIN trusted domain to the external email address
 - From the external email address to the HIN Community
- 
+
 Verify that all test emails are delivered successfully and that the subject, message content, and attachments (if applicable) are received correctly.
 
 ### Step 1.2 - Backing up the existing MGW
@@ -184,7 +179,7 @@ Create a backup of the existing MGW appliance and ensure that the VM is retained
 
 !!! info Applicable for migration case
     This step applies only for single and multi domain migrations
-    
+
     For multi-domain migration perform the operation for each domain
     
 
@@ -304,7 +299,7 @@ Add an IP address on Linux:
     ```
 
 ??? tip "Cloud-init overrides VM network settings after reboot"
-    
+
     **This applies to the legacy image only.** The bootc appliance - now the default - does not use cloud-init to manage networking, so it is not affected and does not ship the `cloud-init-net-*` aliases used below.
 
     On the legacy image (typically on VMware/ESXi) cloud-init has no datasource, falls back to "DHCP the first NIC", and re-renders the network config on every boot - so a static address set with `nmtui` reverts after a reboot. An alias fixes this in one step by disabling only cloud-init's network rendering, so an address you then set on the existing profile persists:
@@ -350,11 +345,10 @@ Add an IP address on Linux:
 
         [Click here to send an Email](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-
 !!! note "Important note regarding operation on Microsoft Azure"
-        Outgoing SMTP communication via TCP port 25 is required for the SMTP relay connection between the HIN Gateway and Exchange Online. 
+        Outgoing SMTP communication via TCP port 25 is required for the SMTP relay connection between the HIN Gateway and Exchange Online.
         Microsoft Azure blocks outbound connections via port 25 for most subscription models. [For standard Enterprise Agreement (EA) and Microsoft Customer Agreement for Enterprise (MCA-E) subscriptions](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity), port 25 is generally available, according to Microsoft. Special conditions apply to certain other enterprise configurations.
-        
+
         As these restrictions and any activations are determined exclusively by Microsoft, operating the HIN Gateway on Azure is not a standard supported deployment scenario. HIN has no control over the availability or activation of this port by Microsoft. 
         
         Recommended action: Are you planning a migration or an infrastructure change involving Azure? Before installation, you must check whether your Azure subscription permits outbound SMTP communication via TCP port 25. Contact your HIN contact person at an early stage to coordinate the operating option that is suitable for you.
@@ -414,14 +408,14 @@ Confirm that the values are correct and click "Next".
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-The system will now establish the secure mesh network connection. This step connects the HIN Gateway to the mesh network and synchronises certificates.
+The system will now establish the secure mesh network connection. This step connects the HIN Gateway to the mesh network and synchronies certificates.
 
 Wait until the process completes. The status indicators will show "Up" when the connection is successfully established. Click "Finish".
 
 ![Establishing secure mesh network](assets/installation-guide/step9-mesh-connecting.png)
 
 !!! failure "If the connection fails"
-    If the `Iris Agent` or certificate synchronisation status remains "Down":
+    If the `Iris Agent` or certificate synchronization status remains "Down":
 
     - Verify that port `19818` (TCP/UDP) is open in your firewall (see "Step 2 - WireGuard").
     - Verify that the IP address in "Step 8 - Mesh network setup" is correct and reachable from the internet.
@@ -450,7 +444,7 @@ Once the mesh network is established, you will be redirected to the Keycloak log
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-On first login, you will be prompted to change your password. Enter a new secure password and confirm it. 
+On first login, you will be prompted to change your password. Enter a new secure password and confirm it.
 
 Please make sure you remember the password!
 
@@ -469,7 +463,7 @@ Complete your account profile by entering your first name and last name. The ema
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
 !!! info Multi-domain migration note
-    For multi-domain migration perform the operation for each domain domain you are activating at that moment. 
+    For multi-domain migration perform the operation for each domain domain you are activating at that moment.
 
 On this screen, configure your initial settings:
 
@@ -496,12 +490,12 @@ On this screen, configure your initial settings:
 
 !!! warning
     - At least one domain must be **Enabled** to continue with the onboarding process. The "Save configuration" button will only become active once this requirement is met.
-    - If you notice that not all trusted domains are displayed or that the organisational information is incorrect, please contact HIN Support by email or phone (**<support@hin.ch>** / **0848 830 740**).
+    - If you notice that not all trusted domains are displayed or that the organization information is incorrect, please contact HIN Support by email or phone (**<support@hin.ch>** / **0848 830 740**).
 
 !!! danger "Import your existing private key"
-    Note: applicable for migration scenario! 
-    
-    If you do **not** import the private key from your existing MGW, a new key will be issued. This may result in messages not being decryptable for up to **6 hours**, which could lead to **data loss**.
+    Note: applicable for migration scenario!
+
+    If you do **not** import the private key from your existing MGW, a new key will be issued. This may result in messages not being decrypted for up to **6 hours**, which could lead to **data loss**.
 
 ![Setup screen](assets/installation-guide/step13-initial-setup2.png)
 
@@ -511,11 +505,9 @@ On this screen, configure your initial settings:
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
 | **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
 
-
 !!! warning "Multi-domain gradual migration scenario"
-    
+
     During the migration support session, HIN engineers will assist the customer with the migration of one domain. Once the first domain has been successfully migrated, the customer is responsible for migrating any remaining domains independently.
-    
 
 ### Step 14 - Configure mail transport
 
@@ -525,11 +517,10 @@ You will be logged at the HIN gateway dashboard at `Domains` page
 
  <br> ![Screenshot](assets/installation-guide/step14-dashboard-domains.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-
 #### Domains page
 
 !!! info Multi-domain migration note
-    For multi-domain migration perform the operation for each active domain. 
+    For multi-domain migration perform the operation for each active domain.
 
 Under the **Domains** menu, for each available domain you can configure specific transport route:
 
@@ -538,7 +529,7 @@ Under the **Domains** menu, for each available domain you can configure specific
 | Setting | Description |
 |---------|-------------|
 | **Inbound relay** | The  SMTP relay for inbound delivery for selected domain |
-| **Outbound relay** | The SMTP relay for outbound delivery for selected domain. This setting corespond to `Forwarding server` setting from old MGW |
+| **Outbound relay** | The SMTP relay for outbound delivery for selected domain. This setting correspond to `Forwarding server` setting from old MGW |
 | **Trusted networks** | Additional networks allowed to relay through this gateway. For more information please check on "Step 18 - Configure mail server"|
 | **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate|
 | **Email authentication** | For all settings under `Email authentication` section please refer to [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) section |
@@ -575,8 +566,8 @@ Under the **Domains** menu, for each available domain you can configure specific
 
 Additional actions:
 
-- Add additional domains by clicking "Add domain", if required. 
-    - if domain is not not HIN secured, it will apper in the `Domains` list as Type: Routed - which mean it can be managed only locally 
+- Add additional domains by clicking "Add domain", if required.
+    - if domain is not not HIN secured, it will appear in the `Domains` list as Type: Routed - which mean it can be managed only locally
 
 !!! note
     Ensure that all relay host and domain configurations are correct before proceeding.
@@ -599,13 +590,12 @@ The following settings are available `Settings` menu:
 | **Default inbound relay** | The default SMTP relay for inbound delivery |
 | **Default outbound relay** | The default SMTP relay for outbound delivery |
 
-
 ### Step 15 - Configure whitelist headers
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
 !!! info Multi-domain note
-    For multi-domain perform the operation for each active domain. 
+    For multi-domain perform the operation for each active domain.
 
 Click **"Domains"** -> "Select domain", then select **"Whitelist headers"**.
 
@@ -619,7 +609,7 @@ Enter the key exactly as configured in the mail server.
 
 Peer certificates are issued by the HIN Certification Authority (HIN CA) for enabled domains.
 
-Once the onboarding is complete, navigate to the **Peer certificates** section in the dashboard and click the **"Sync certificates"** button to synchronise your peer certificates from the HIN CA.
+Once the onboarding is complete, navigate to the **Peer certificates** section in the dashboard and click the **"Sync certificates"** button to synchronize your peer certificates from the HIN CA.
 
 ![Peer certificates screen](assets/installation-guide/step15-peer-certificates.png)
 
@@ -656,19 +646,19 @@ See [Exchange Integration](Exchange-integration.md) for detailed instructions.
 #### Domains page
 
 !!! info Multi-domain migration note
-    For multi-domain migration perform the operation for each active domain. 
+    For multi-domain migration perform the operation for each active domain.
 
 Under the **Domains** menu, for each available domain you can configure specific transport route:
 
 | Setting | Description |
 |---------|-------------|
 | **Inbound relay** | The  SMTP relay for inbound delivery for selected domain |
-| **Outbound relay** | The SMTP relay for outbound delivery for selected domain. This setting corespond to `Forwarding server` setting from old MGW |
+| **Outbound relay** | The SMTP relay for outbound delivery for selected domain. This setting correspond to `Forwarding server` setting from old MGW |
 | **Trusted networks** | Additional networks allowed to relay through this gateway. For more information please check on "Step 18 - Configure mail server"|
 | **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate|
 | **Email authentication** | For all settings under `Email authentication` section please refer to [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) section |
 
-- **Note: for migration scenarion:** Go to the page for each domain, add a **Outbound host** using the value you recorded from the MGW's `Forwarding server` field in "Step 1.2 - Backing up the existing MGW".
+- **Note: for migration scenario:** Go to the page for each domain, add a **Outbound host** using the value you recorded from the MGW's `Forwarding server` field in "Step 1.2 - Backing up the existing MGW".
 
   <br> ![domain-relay-host](assets/installation-guide/step18-add-domain-relay.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
@@ -693,8 +683,6 @@ Under the **Domains** menu, for each available domain you can configure specific
 
   <br> ![domain-relay-host](assets/installation-guide/step14-domain-mail-transport.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-
-
 #### Settings page
 
 On this page under `Settings` menu, configure your global mail transport settings for the secure mail relay setup which are common for the whole instance. Detailed configuration for each domain can be performed under `Domains` -> `$domain`
@@ -712,7 +700,6 @@ The following settings are available `Settings` menu:
 | **Default outbound relay** | The default SMTP relay for outbound delivery |
 
 <br> ![domain-relay-host](assets/installation-guide/step14-mail-transport2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-
 
 ### Step 19 - Test and validate
 

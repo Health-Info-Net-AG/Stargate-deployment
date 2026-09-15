@@ -2,7 +2,6 @@
 
 *MGW → HIN Gateway – architettura del flusso di posta, implementazione graduale e piano di rollback*
 
-
 ## Fase 1: Avvio – situazione iniziale (tutti i domini su MGW)
 
 **Stato iniziale**

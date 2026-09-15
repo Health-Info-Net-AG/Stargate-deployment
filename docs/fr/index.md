@@ -39,7 +39,6 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
     Veuillez contacter le support HIN pour obtenir le code de déverrouillage nécessaire à l'exportation des clés privées.
     
 
-
 - **Téléchargez la dernière version** de l'[image VM](vm/VM-Catalog.md)
 - Exigences **pare-feu** pour WireGuard.
   Configurez le port WireGuard 19818 (TCP/UDP) dans votre pare-feu :
@@ -136,7 +135,6 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
 | `app.hin.ch` | `443` | TCP | Liste des membres / domaines de messagerie HIN (mxengine) |
 | `apisix.verify-mail.hin-infra.ch` | `443` | TCP | Enregistrement de la passerelle HIN lors de l'intégration (tableau de bord) |
 
-
 ??? note "Remarque importante concernant l'exploitation sur Microsoft Azure"
 
     **Exploitation sur Microsoft Azure** 
@@ -146,9 +144,6 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
     Microsoft Azure bloque les connexions sortantes via le port 25 pour la plupart des modèles d'abonnement. HIN n'a aucune influence sur la disponibilité ou l'activation de ce port par Microsoft. L'exploitation du HIN Gateway sur Azure ne constitue donc pas un scénario de déploiement pris en charge par défaut. Des exceptions existent notamment pour [certains abonnements Entreprise de Microsoft](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Vérifiez donc avant toute installation sur Azure si votre abonnement autorise le trafic SMTP sortant via le port TCP 25. 
     
     Si vous avez des questions concernant la variante d'exploitation appropriée, veuillez contacter suffisament tôt votre personne de contact chez HIN.
-
- 
-
 
 ??? tip "Remarque concernant le pare-feu"
 

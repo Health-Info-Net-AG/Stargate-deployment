@@ -113,7 +113,7 @@ git reset --hard origin/main
 ```
 
 !!! note
-    Your `customer-config.sh`, `.env`, and `secrets/` directory live under `/var/data/vereign/`, outside this repository checkout entirely, so a `git reset --hard` never touches them - your configuration and credentials are preserved. Always put customisation in `customer-config.sh`, never by editing tracked files such as `docker-compose.yml`: a hard reset - and the automatic updates triggered from the dashboard - will revert any tracked-file edits. This is intentional; keeping every deployment identical to the repository is what lets updates apply reliably and without manual conflict resolution.
+    Your `customer-config.sh`, `.env`, and `secrets/` directory live under `/var/data/vereign/`, outside this repository checkout entirely, so a `git reset --hard` never touches them - your configuration and credentials are preserved. Always put customization in `customer-config.sh`, never by editing tracked files such as `docker-compose.yml`: a hard reset - and the automatic updates triggered from the dashboard - will revert any tracked-file edits. This is intentional; keeping every deployment identical to the repository is what lets updates apply reliably and without manual conflict resolution.
 
 If the update includes changes to the config template, compare it with your existing config to see if new variables were added:
 

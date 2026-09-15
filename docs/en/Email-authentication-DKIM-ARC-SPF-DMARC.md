@@ -1,7 +1,7 @@
 # Email Authentication (DKIM / ARC / SPF / DMARC)
 
 **Module:** HIN Mail Gateway → Domains → *[domain]* → Email authentication
-**Applies to:** Domain administrators configuring outbound signing and inbound verification for a mail domain 
+**Applies to:** Domain administrators configuring outbound signing and inbound verification for a mail domain
 
 ---
 
@@ -40,7 +40,7 @@ Getting DKIM and DMARC right for **your own domain** protects your deliverabilit
 
 ---
 
-### DKIM 
+### DKIM
 
 | Field | Description |
 |---|---|
@@ -92,9 +92,7 @@ Getting DKIM and DMARC right for **your own domain** protects your deliverabilit
 |---|---|
 | **DMARC verification** | Controls how strictly inbound mail is checked against the sender's DMARC policy |
 
-
 ### Verification value
-
 
 | UI label | value | Behavior |
 |---|---|---|
@@ -113,7 +111,6 @@ What counts as a "hard failure" for Required (per mechanism):
 Two important notes:
 - **DKIM always runs internally** because DMARC needs it. The DKIM setting only controls whether a `dkim=` result is stamped and whether DKIM failure can reject — it never changes the DMARC verdict.
 - Each mechanism is independent, so you can e.g. run **DMARC = Required** while **DKIM/SPF = Optional**: bad mail gets rejected on the DMARC verdict, and you still get individual `dkim=`/`spf=` lines in the header for visibility.
-
 
 ---
 

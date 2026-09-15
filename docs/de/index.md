@@ -28,8 +28,8 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
     - Falls Sie keinen Zugriff auf einen solchen Rechner haben, wenden Sie sich bitte per E-Mail oder Telefon an den HIN Support (support@hin.ch / 0848 830 740), um eine Support-Verbindung über System Administration → Support Connection → Connect herzustellen.
 
 !!! danger "Für Kunden mit mehreren Domains"
-    Hinweis: gilt für alle Multi-Domain-Migrationsszenarien! 
-    
+    Hinweis: gilt für alle Multi-Domain-Migrationsszenarien!
+
     Um den für die Migration benötigten Zeitaufwand zu reduzieren, empfehlen wir Kunden, die folgenden Schritte bereits vor dem geplanten Migrationstermin und der Sitzung durchzuführen: 
     
     * Exportieren Sie den privaten Schlüssel für jede Domain.
@@ -37,7 +37,6 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
     
     Bitte wenden Sie sich an den HIN Support, um den Freischaltcode zu erhalten, der für den Export der privaten Schlüssel benötigt wird.
     
-
 
 - **Neueste Version herunterladen** des [VM-Images](vm/VM-Catalog.md)
 - **Firewall**-Anforderungen für WireGuard.
@@ -135,18 +134,13 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
 | `app.hin.ch` | `443` | TCP | HIN Mitglieder- / Maildomain-Liste (mxengine) |
 | `apisix.verify-mail.hin-infra.ch` | `443` | TCP | Registrierung des HIN Gateways beim Onboarding (Dashboard) |
 
-
 !!! note "Wichtiger Hinweis zum Betrieb auf Microsoft Azure"
-        **Betrieb auf Microsoft Azure** 
-        Für die SMTP-Relay-Anbindung des HIN Gateways an Exchange Online muss ausgehender Datenverkehr über TCP-Port 25 möglich sein. 
-        
+        **Betrieb auf Microsoft Azure**
+        Für die SMTP-Relay-Anbindung des HIN Gateways an Exchange Online muss ausgehender Datenverkehr über TCP-Port 25 möglich sein.
+
         Microsoft Azure blockiert ausgehende Verbindungen über Port 25 bei den meisten Subscription-Modellen. HIN kann die Verfügbarkeit oder Freischaltung dieses Ports durch Microsoft nicht beeinflussen. Der Betrieb des HIN Gateways auf Azure ist deshalb **kein standardmässig unterstütztes Deployment-Szenario**. Ausnahmen bestehen insbesondere für [bestimmte Enterprise-Subscriptions von Microsoft](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Prüfen Sie deshalb vor einer Installation auf Azure, ob Ihre Subscription ausgehenden SMTP-Verkehr über TCP-Port 25 erlaubt.
         
         Bei Fragen zur geeigneten Betriebsvariante wenden Sie sich bitte frühzeitig an Ihre HIN Ansprechperson.
-
-
-
-
 
 ??? tip "Firewall-Hinweis"
 

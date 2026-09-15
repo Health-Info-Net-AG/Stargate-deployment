@@ -92,9 +92,7 @@ Wenn DKIM und DMARC für **Ihre eigene Domain** korrekt eingerichtet sind, schü
 |---|---|
 | **DMARC verification** | Steuert, wie streng eingehende Mail gegen die DMARC-Richtlinie des Absenders geprüft wird |
 
-
 ### Verifizierungswert
-
 
 | UI-Bezeichnung | Wert | Verhalten |
 |---|---|---|
@@ -113,7 +111,6 @@ Was als "Hard Failure" für Required gilt (pro Mechanismus):
 Zwei wichtige Hinweise:
 - **DKIM läuft intern immer**, weil DMARC es benötigt. Die DKIM-Einstellung steuert nur, ob ein `dkim=`-Ergebnis vermerkt wird und ob ein DKIM-Fehlschlag zur Ablehnung führen kann; sie ändert nie das DMARC-Ergebnis.
 - Jeder Mechanismus ist unabhängig, sodass Sie z.B. **DMARC = Required** bei **DKIM/SPF = Optional** ausführen können: Schlechte Mail wird anhand des DMARC-Ergebnisses abgelehnt, und Sie erhalten trotzdem einzelne `dkim=`/`spf=`-Zeilen im Header zur besseren Nachvollziehbarkeit.
-
 
 ---
 

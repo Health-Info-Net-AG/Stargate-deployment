@@ -29,12 +29,10 @@ La procedura strutturata e passo-passo descritta in questo documento copre sia l
     L'obiettivo di HIN è garantire un deployment sicuro, fluido e completamente validato, con un impatto minimo sulle operazioni e una continuità ininterrotta dei servizi email.
      Negli scenari di migrazione, il MGW esistente dovrebbe rimanere disponibile come opzione di fallback finché l'HIN Gateway non sia stato validato con successo in produzione. Dovrebbe essere dismesso solo una volta completata la migrazione e confermato un funzionamento stabile.
 
-
 ## Domande frequenti
 
 !!! question "Posso eseguire l'installazione o la migrazione autonomamente?"
     Sì, l'installazione o la migrazione possono essere completate interamente dal cliente.
-
 
     Per lo scenario di migrazione, l'unica eccezione è il **"Passo 1.3 - Esportazione delle chiavi private"**. Per motivi di sicurezza e per mantenere al sicuro la tua chiave privata, devi contattare il Supporto HIN o partecipare alla chiamata di migrazione pianificata per ricevere il codice necessario a esportare la chiave privata dal Mail Gateway attualmente in funzione.
 
@@ -44,10 +42,7 @@ La procedura strutturata e passo-passo descritta in questo documento copre sia l
 !!! question "Ci sarà un'interruzione nella consegna delle email durante il processo di configurazione?"
     **Migrazione:** tra il **"Passo 1.5 - Spegnimento del MGW VM esistente"** e il **"Passo 18 - Configurazione del server di posta"**, tutte le email verranno messe in coda sul server di posta. Una volta completato il "Passo 18 - Configurazione del server di posta", le email in coda verranno inviate o consegnate alla cassetta postale.
 
-
     **Nuova installazione:** durante la configurazione delle regole del flusso email, tutte le email verranno messe in coda sul server di posta. Una volta completato il "Passo 18 - Configurazione del server di posta", le email in coda verranno inviate o consegnate alla cassetta postale.
-
-
 
 !!! question "Verranno perse email durante l'installazione e la migrazione?"
     No, nessuna email andrà persa durante l'installazione e la migrazione. Alcune email potrebbero subire un ritardo.
@@ -186,7 +181,6 @@ Crea un backup dell'appliance MGW esistente e assicurati che la VM venga conserv
     Questo passaggio si applica solo alle migrazioni a dominio singolo e multiplo
 
     Per le migrazioni multi-dominio, esegui l'operazione per ciascun dominio
-
 
 !!! warning "Assistenza HIN richiesta"
     Per questo passaggio è necessario un codice di sblocco. Il codice viene fornito da un HIN Support Engineer.
@@ -350,11 +344,10 @@ Aggiungere un indirizzo IP su Linux:
 
         [Clicca qui per inviare un'email](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-
 !!! note "Avviso importante per l'esercizio su Microsoft Azure"
         Per il collegamento SMTP Relay dell'HIN Gateway a Exchange Online è necessaria la comunicazione SMTP in uscita tramite la porta TCP 25.
         Microsoft Azure blocca le connessioni in uscita tramite la porta 25 nella maggior parte dei modelli di abbonamento. [Per gli abbonamenti standard Enterprise Agreement (EA) e Microsoft Customer Agreement for Enterprise (MCA-E)](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity), secondo Microsoft la porta 25 è in linea di principio disponibile. Per alcune altre configurazioni Enterprise si applicano condizioni particolari.
-        
+
         Poiché queste restrizioni ed eventuali abilitazioni sono stabilite esclusivamente da Microsoft, l'esercizio dell'HIN Gateway su Azure non è uno scenario di implementazione supportato come standard. HIN non può influire sulla disponibilità o sull'attivazione di questa porta da parte di Microsoft.
         
         Raccomandazione: State pianificando una migrazione o una modifica dell'infrastruttura con Azure? Prima dell'installazione, verificate assolutamente se il vostro abbonamento Azure consente la comunicazione SMTP in uscita tramite la porta TCP 25. Contattate tempestivamente il vostro contatto presso HIN per concordare la variante operativa più adatta alle vostre esigenze.
@@ -511,9 +504,8 @@ In questa schermata, configura le tue impostazioni iniziali:
 | **Mail server IP addresses** | Gli indirizzi IP pubblici di questo server. Aggiungi IP aggiuntivi se il server è raggiungibile su più indirizzi. |
 | **DNS** | Il DNS dell'host che verrà utilizzato per risolvere i record MX e altri record DNS |
 
-
 !!! warning "Scenario di migrazione graduale multi-dominio"
-    
+
     Durante la sessione di supporto alla migrazione, gli ingegneri HIN assisteranno il cliente nella migrazione di un dominio. Una volta completata con successo la migrazione del primo dominio, il cliente è responsabile della migrazione dei domini rimanenti in autonomia.
     
 
@@ -524,7 +516,6 @@ In questa schermata, configura le tue impostazioni iniziali:
 Accederai alla dashboard dell'HIN Gateway nella pagina `Domains`
 
  <br> ![Screenshot](assets/installation-guide/step14-dashboard-domains.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-
 
 #### Pagina Domains
 
@@ -598,7 +589,6 @@ Nel menu `Settings` sono disponibili le seguenti impostazioni:
 | **DNS** | Il DNS dell'host che verrà utilizzato per risolvere i record MX e altri record DNS |
 | **Default inbound relay** | Il relay SMTP predefinito per la consegna in entrata |
 | **Default outbound relay** | Il relay SMTP predefinito per la consegna in uscita |
-
 
 ### Passo 15 - Configurazione intestazioni whitelist
 
@@ -693,8 +683,6 @@ Nel menu **Domains**, per ogni dominio disponibile puoi configurare una rotta di
 
   <br> ![domain-relay-host](assets/installation-guide/step14-domain-mail-transport.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-
-
 #### Pagina Settings
 
 In questa pagina, nel menu `Settings`, configura le impostazioni globali di trasporto della posta per il setup del relay di posta sicuro, comuni all'intera istanza. La configurazione dettagliata per ogni dominio può essere effettuata in `Domains` -> `$domain`
@@ -712,7 +700,6 @@ Nel menu `Settings` sono disponibili le seguenti impostazioni:
 | **Default outbound relay** | Il relay SMTP predefinito per la consegna in uscita |
 
 <br> ![domain-relay-host](assets/installation-guide/step14-mail-transport2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-
 
 ### Passo 19 - Test e validazione
 

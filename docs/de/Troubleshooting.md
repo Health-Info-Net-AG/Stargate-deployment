@@ -265,7 +265,6 @@ Die folgenden Anweisungen beschreiben, wie Sie eine Verimesh-Instanz von v0.5.1 
 6. Navigieren Sie zu Settings.
 7. Geben Sie im Abschnitt Update am Seitenende die Zielversion (v0.5.3) ein und starten Sie den Update-Vorgang.
 
-
 ## Aktualisierte Keycloak einrichten
 
 Hinweis: Diese Anleitung gilt, wenn Sie auf VM-Image v0.5.1 laufen und dann auf eine neuere Version aktualisiert haben.

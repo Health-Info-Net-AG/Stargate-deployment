@@ -258,13 +258,12 @@ Le seguenti istruzioni descrivono come aggiornare un'istanza Verimesh dalla vers
 ### Procedura di aggiornamento
 1. Modificare il file .env e aggiornare la versione di ops-agent a v0.0.3.
 2. Modificare la configurazione del cliente e aggiornare anche lì la versione di ops-agent a v0.0.3.
-3. Passare al branch main: `git checkout main` 
-4. Scaricare le ultime modifiche: `git pull` 
-5. Aggiornare il container ops-agent: `docker compose up -d ops-agent` 
+3. Passare al branch main: `git checkout main`
+4. Scaricare le ultime modifiche: `git pull`
+5. Aggiornare il container ops-agent: `docker compose up -d ops-agent`
 6. Accedere alla Dashboard.
 6. Accedere alle Impostazioni.
 7. Nella sezione Update in fondo alla pagina, inserire la versione di destinazione (v0.5.3) e avviare la procedura di aggiornamento.
-
 
 ## Configurazione aggiornata di Keycloak
 
@@ -276,7 +275,7 @@ Per risolvere il problema, occorre completare la seguente configurazione manuale
 
 ### Procedura di risoluzione
 
-1. Aprire Keycloak nell'ambiente e inserire l'URL - `<VM IP address>/admin/master/console/` 
+1. Aprire Keycloak nell'ambiente e inserire l'URL - `<VM IP address>/admin/master/console/`
     Nome utente: Admin
     Password: recuperare la password amministratore dal file .env della macchina (è necessario effettuare l'accesso alla console Linux)
 
