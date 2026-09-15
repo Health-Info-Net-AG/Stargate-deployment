@@ -136,13 +136,11 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
 | `apisix.verify-mail.hin-infra.ch` | `443` | TCP | Enregistrement de la passerelle HIN lors de l'intégration (tableau de bord) |
 
 ??? note "Remarque importante concernant l'exploitation sur Microsoft Azure"
+    **Exploitation sur Microsoft Azure**
+    Pour la connexion SMTP Relay du HIN Gateway à Exchange Online, le trafic sortant via le port TCP 25 doit être autorisé.
 
-    **Exploitation sur Microsoft Azure** 
-    
-    Pour la connexion SMTP Relay du HIN Gateway à Exchange Online, le trafic sortant via le port TCP 25 doit être autorisé. 
-    
-    Microsoft Azure bloque les connexions sortantes via le port 25 pour la plupart des modèles d'abonnement. HIN n'a aucune influence sur la disponibilité ou l'activation de ce port par Microsoft. L'exploitation du HIN Gateway sur Azure ne constitue donc pas un scénario de déploiement pris en charge par défaut. Des exceptions existent notamment pour [certains abonnements Entreprise de Microsoft](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Vérifiez donc avant toute installation sur Azure si votre abonnement autorise le trafic SMTP sortant via le port TCP 25. 
-    
+    Microsoft Azure bloque les connexions sortantes via le port 25 pour la plupart des modèles d'abonnement. HIN n'a aucune influence sur la disponibilité ou l'activation de ce port par Microsoft. L'exploitation du HIN Gateway sur Azure ne constitue donc pas un scénario de déploiement pris en charge par défaut. Des exceptions existent notamment pour [certains abonnements Entreprise de Microsoft](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Vérifiez donc avant toute installation sur Azure si votre abonnement autorise le trafic SMTP sortant via le port TCP 25.
+
     Si vous avez des questions concernant la variante d'exploitation appropriée, veuillez contacter suffisament tôt votre personne de contact chez HIN.
 
 ??? tip "Remarque concernant le pare-feu"

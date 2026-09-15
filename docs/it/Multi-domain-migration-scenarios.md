@@ -52,19 +52,19 @@
 
 ![Phase 3 Final - fully migrated to HIN Gateway](assets/multi-domain-scenario/Phase3-final-fully-migrated.png)
 
-## Confronto tra strategie di migrazione
+## Approccio di migrazione consigliato in base al numero di domini
 
-!!! tip "Consigliata – trasferire tutti i domini in una sola volta"
-    - Non è richiesto alcun indirizzo IP pubblico aggiuntivo
-    - Nessuna modifica temporanea al connettore o alle regole del flusso di posta
-    - Rollback semplice: spegnere Stargate e riaccendere la vecchia VM di MGW
-    - Finestra di cutover più breve – minima probabilità di scostamenti nella configurazione
+!!! tip "Clienti con 3 domini o meno"
+    - HIN consiglia di migrare tutti i domini in una sola volta.
+    - HIN supporterà il cliente nella migrazione con successo del primo dominio.
+    - Una volta migrato con successo il primo dominio, il cliente potrà migrare autonomamente i domini rimanenti.
+    - Questo approccio mantiene la migrazione semplice ed evita la necessità di un ambiente parallelo.
 
-!!! note "Alternativa – graduale, dominio per dominio"
-    - Raggio d’azione ridotto per ogni passaggio – solo un dominio alla volta è a rischio
-    - Richiede un secondo indirizzo IP pubblico e regole/connettori temporanei di split
-    - È necessario gestire le intestazioni specifiche del cliente per ciascun dominio
-    - Il rollback richiede la riproduzione in ordine inverso dell’esatta sequenza delle modifiche
+!!! note "Clienti con più di 3 domini"
+    - HIN consiglia di predisporre un ambiente parallelo accanto all’MGW esistente.
+    - I domini possono quindi essere migrati gradualmente verso il nuovo ambiente.
+    - HIN supporterà il cliente nella migrazione con successo del primo dominio.
+    - Dopo la prima migrazione riuscita, il cliente potrà decidere come e quando spostare i domini rimanenti verso il nuovo ambiente.
 
 ---
 
