@@ -30,7 +30,7 @@ Le modifiche vengono applicate solo dopo aver cliccato sul pulsante **Save** in 
 ### Cosa fa ciascun protocollo
 
 | Protocollo | Direzione | Scopo |
-|---|---|---|
+| --- | --- | --- |
 | **DKIM** (DomainKeys Identified Mail) | Firma in uscita / Verifica in entrata | Firma crittograficamente i messaggi in uscita con una chiave privata, associata a una chiave pubblica pubblicata nel DNS, in modo che i destinatari possano confermare che il messaggio non è stato alterato durante il transito e proviene realmente da questo dominio |
 | **ARC** (Authenticated Received Chain) | Firma della verifica in entrata per il relay successivo | Preserva i risultati di autenticazione DKIM/SPF originali quando un messaggio passa attraverso intermediari (ad es. mailing list, servizi di inoltro) che altrimenti comprometterebbero le firme DKIM |
 | **SPF** (Sender Policy Framework) | Verifica in entrata | Verifica che l'indirizzo IP del server di posta mittente sia autorizzato a inviare posta per il dominio del mittente, sulla base di un record DNS pubblicato da quel dominio |
@@ -43,7 +43,7 @@ Configurare correttamente DKIM e DMARC per il **proprio dominio** protegge la de
 ### DKIM
 
 | Campo | Descrizione |
-|---|---|
+| --- | --- |
 | **Enable DKIM signing** | Quando attivo, il gateway firma tutta la posta in uscita da questo dominio con la chiave privata configurata. Attivare questa opzione prima di pubblicare il record DNS DKIM |
 | **Generate DKIM key** (pulsante, in alto a destra) | Genera una nuova coppia di chiavi RSA-2048 per questo dominio e popola il campo Private key (PEM) |
 | **DKIM verification** | Controlla con quale rigore un'e mail viene verificata rispetto al record DKIM pubblicato del mittente |
@@ -69,7 +69,7 @@ Configurare correttamente DKIM e DMARC per il **proprio dominio** protegge la de
 ### ARC
 
 | Campo | Descrizione |
-|---|---|
+| --- | --- |
 | **ARC verification** (menu a tendina) | Controlla con quale rigore vengono validate le catene ARC in entrata |
 | **Enable ARC signing** | Quando attivo, il gateway aggiunge un sigillo ARC alla posta inoltrata, preservando i risultati di autenticazione se il messaggio viene successivamente inoltrato tramite un altro sistema |
 | **Reuse DKIM key** (interruttore) | Quando attivo, la firma ARC utilizza la stessa chiave RSA configurata nella sezione DKIM sopra, invece di richiederne una separata. Consigliato a meno che non ci sia una necessità specifica di mantenere le due firme crittograficamente separate |
@@ -79,7 +79,7 @@ Configurare correttamente DKIM e DMARC per il **proprio dominio** protegge la de
 ### SPF
 
 | Campo | Descrizione |
-|---|---|
+| --- | --- |
 | **SPF verification** | Controlla con quale rigore la posta in entrata viene verificata rispetto al record SPF pubblicato del dominio mittente |
 
 > **Nota:** Questo pannello controlla solo la *verifica* dell'SPF in entrata; non genera un record SPF TXT in uscita per il proprio dominio (nessuna voce SPF compare nella §7 "DNS records to publish"). Se questo dominio invia posta tramite un relay esterno (ad es. Microsoft 365, configurato in **Mail routing -> Outbound relay**), assicurarsi che il meccanismo `include:` di quel provider sia già pubblicato nel record SPF del proprio dominio presso il proprio provider DNS, indipendentemente da questo gateway.
@@ -89,15 +89,13 @@ Configurare correttamente DKIM e DMARC per il **proprio dominio** protegge la de
 ### DMARC
 
 | Campo | Descrizione |
-|---|---|
+| --- | --- |
 | **DMARC verification** | Controlla con quale rigore la posta in entrata viene verificata rispetto alla policy DMARC del mittente |
-
 
 ### Valore di verifica
 
-
 | Etichetta interfaccia | Valore | Comportamento |
-|---|---|---|
+| --- | --- | --- |
 | **Disabled** | `disable` | Non viene verificato affatto. Il meccanismo non viene eseguito |
 | **Optional** | `relaxed` | Viene verificato e **segnalato** in `Authentication-Results`. Il messaggio viene **sempre accettato**, sia in caso di esito positivo che negativo |
 | **Required** | `strict` | Viene verificato e segnalato, e il messaggio viene **rifiutato** in caso di fallimento definitivo. Altrimenti viene accettato |
@@ -114,7 +112,6 @@ Due note importanti:
 - **DKIM viene sempre eseguito internamente** perché DMARC ne ha bisogno. L'impostazione DKIM controlla solo se viene registrato un risultato `dkim=` e se un fallimento DKIM può causare un rifiuto; non modifica mai il verdetto DMARC.
 - Ogni meccanismo è indipendente, quindi è possibile ad esempio impostare **DMARC = Required** mantenendo **DKIM/SPF = Optional**: la posta problematica viene rifiutata in base al verdetto DMARC, e si ottengono comunque righe `dkim=`/`spf=` individuali nell'header per una migliore visibilità.
 
-
 ---
 
 ### Record DNS da pubblicare
@@ -122,7 +119,7 @@ Due note importanti:
 Questo riquadro mostra i record TXT esatti da creare presso il provider DNS del proprio dominio, affinché i server di posta esterni possano verificare la posta di questo dominio. I record mostrati si aggiornano automaticamente in base al selettore DKIM e alle impostazioni della policy DMARC sopra indicate.
 
 | Record | Host | Tipo | Valore |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Chiave pubblica DKIM | `<selector>._domainkey.<domain>` (ad es. `s1._domainkey.vrgnservices.eu`) | TXT | `v=DKIM1; k=rsa; p=<public key>` |
 | Policy DMARC | `_dmarc.<domain>` (ad es. `_dmarc.vrgnservices.eu`) | TXT | `v=DMARC1; p=<policy>` (ad es. `p=none`) |
 
@@ -141,7 +138,7 @@ Nessuna delle impostazioni sopra ha effetto finché non si clicca sul pulsante a
 ## Risoluzione dei problemi
 
 | Sintomo | Causa probabile |
-|---|---|
+| --- | --- |
 | La posta in uscita fallisce il controllo DKIM presso i server destinatari | La firma DKIM è attiva ma il record DNS TXT non è ancora pubblicato/propagato, oppure c'è una discrepanza di selettore tra gateway e DNS. |
 | Il sigillo ARC manca sulla posta inoltrata | **Enable ARC signing** è disattivato, oppure **Reuse DKIM key** è disattivato senza che sia configurata una chiave ARC separata. |
 | Non è possibile vedere la chiave privata DKIM per copiarla altrove | È voluto: una volta salvata, la chiave viene mascherata (`<hidden>`) e non può essere visualizzata nuovamente. Usare **Replace key** per emetterne una nuova se è necessario spostarla su un sistema che non ne possiede già una copia. |

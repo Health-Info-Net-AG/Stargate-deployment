@@ -39,7 +39,6 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
     Veuillez contacter le support HIN pour obtenir le code de déverrouillage nécessaire à l'exportation des clés privées.
     
 
-
 - **Téléchargez la dernière version** de l'[image VM](vm/VM-Catalog.md)
 - Exigences **pare-feu** pour WireGuard.
   Configurez le port WireGuard 19818 (TCP/UDP) dans votre pare-feu :
@@ -63,23 +62,23 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
 
 ### Options d'installation
 
-* Installation par image VM:
-    * [Installation par image VM Azure](vm/Azure-image-install.md)
-    * [Installation par image VM Windows 11 Pro (Hyper-V)](vm/Windows11pro-image-install.md)
-    * [Installation par image VM VMware](vm/VMware-image-install.md)
-    * [Installation par image VM Proxmox](vm/Proxmox-image-install.md)
-    * [Installation par image VM Cloudscale.ch](vm/Cloudscale-image-install.md)
+- Installation par image VM:
+    - [Installation par image VM Azure](vm/Azure-image-install.md)
+    - [Installation par image VM Windows 11 Pro (Hyper-V)](vm/Windows11pro-image-install.md)
+    - [Installation par image VM VMware](vm/VMware-image-install.md)
+    - [Installation par image VM Proxmox](vm/Proxmox-image-install.md)
+    - [Installation par image VM Cloudscale.ch](vm/Cloudscale-image-install.md)
 
 !!! tip "🖨️"
     Vous pouvez obtenir cette documentation imprimée ou sauvegardée en PDF, veuillez visiter notre [Page d'impression](print_page).
 
 ### Intégration Exchange
 
-* [Intégration Exchange](Exchange-integration.md) - Configurez les connecteurs Microsoft Exchange (Online et On-Premises) et les règles de transport pour acheminer les courriels via Stargate
+- [Intégration Exchange](Exchange-integration.md) - Configurez les connecteurs Microsoft Exchange (Online et On-Premises) et les règles de transport pour acheminer les courriels via Stargate
 
 ### Exigences du serveur
 
-|      | Minimum | Recommandé |
+|   | Minimum | Recommandé |
 | :--- | :-----: | :--------: |
 | CPU, Cœurs | 4 | 6 |
 | RAM, GB | 8 | 12 |
@@ -87,17 +86,17 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
 
 #### Exigences communes
 
-* **Accès root**: Doit être exécuté en tant que root ou avec `sudo`
-* Distributions prises en charge:
-    * Distributions compatibles RHEL 8, 9 et 10 telles que Alma Linux, Rocky Linux, CentOS Stream
-    * Ubuntu 22 et 24
-    * Debian 11, 12 et 13
-* **Adresse IPv4 réelle**
-* **Enregistrements DNS valides**. Votre domaine doit avoir:
-    * Des enregistrements MX pointant vers vos serveurs de courrier
-    * Un enregistrement SPF définissant les réseaux d'envoi autorisés
-    * Le serveur doit être capable de résoudre le DNS (enregistrements MX, SPF, A)
-    * Utilisé pour le routage du courrier et la liste d'autorisation réseau basée sur SPF
+- **Accès root**: Doit être exécuté en tant que root ou avec `sudo`
+- Distributions prises en charge:
+    - Distributions compatibles RHEL 8, 9 et 10 telles que Alma Linux, Rocky Linux, CentOS Stream
+    - Ubuntu 22 et 24
+    - Debian 11, 12 et 13
+- **Adresse IPv4 réelle**
+- **Enregistrements DNS valides**. Votre domaine doit avoir:
+    - Des enregistrements MX pointant vers vos serveurs de courrier
+    - Un enregistrement SPF définissant les réseaux d'envoi autorisés
+    - Le serveur doit être capable de résoudre le DNS (enregistrements MX, SPF, A)
+    - Utilisé pour le routage du courrier et la liste d'autorisation réseau basée sur SPF
 
 #### Accès réseau entrant (le pare-feu doit autoriser)
 
@@ -136,7 +135,6 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
 | `app.hin.ch` | `443` | TCP | Liste des membres / domaines de messagerie HIN (mxengine) |
 | `apisix.verify-mail.hin-infra.ch` | `443` | TCP | Enregistrement de la passerelle HIN lors de l'intégration (tableau de bord) |
 
-
 ??? note "Remarque importante concernant l'exploitation sur Microsoft Azure"
 
     **Exploitation sur Microsoft Azure** 
@@ -146,9 +144,6 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
     Microsoft Azure bloque les connexions sortantes via le port 25 pour la plupart des modèles d'abonnement. HIN n'a aucune influence sur la disponibilité ou l'activation de ce port par Microsoft. L'exploitation du HIN Gateway sur Azure ne constitue donc pas un scénario de déploiement pris en charge par défaut. Des exceptions existent notamment pour [certains abonnements Entreprise de Microsoft](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Vérifiez donc avant toute installation sur Azure si votre abonnement autorise le trafic SMTP sortant via le port TCP 25. 
     
     Si vous avez des questions concernant la variante d'exploitation appropriée, veuillez contacter suffisament tôt votre personne de contact chez HIN.
-
- 
-
 
 ??? tip "Remarque concernant le pare-feu"
 

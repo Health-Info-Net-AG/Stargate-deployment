@@ -2,7 +2,6 @@
 
 *MGW → HIN Gateway – Architektur des E-Mail-Flusses, schrittweiser Umzug und Rollback-Plan*
 
-
 ## Phase 1 Start – Ausgangslage (alle Domains auf MGW)
 
 **Ausgangszustand**

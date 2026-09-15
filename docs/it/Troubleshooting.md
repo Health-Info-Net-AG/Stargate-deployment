@@ -37,7 +37,7 @@ Segnala «superato / non superato» per: **container** (in esecuzione / integri)
 ## 2. Posizione dei log
 
 | Livello | Comando | Visualizzazione |
-|-------|---------|---------------|
+| ------- | --------- | --------------- |
 | Avvio / prima installazione / avvio automatico | `sudo journalctl -u stargate -n 200 --no-pager` | Il servizio systemd che esegue `start.sh` all'avvio e durante l'installazione al primo avvio |
 | Aggiornamenti | `cat ../update.log` (cartella root di deployment, un livello sopra `docker-compose/`) | Output dell'ultimo `update.sh` avviato da dashboard/host |
 | Un unico servizio | `docker logs stargate-<service> --tail 100` | ad es. `stargate-dashboard`, `stargate-mxengine`, `stargate-keycloak` |
@@ -62,7 +62,7 @@ docker compose ps -a --format 'table {{.Service}}\t{{.Status}}'
 Leggere la colonna `Status`:
 
 | Status | Significato | Azione |
-|--------|---------|--------|
+| -------- | --------- | -------- |
 | `Up ... (healthy)` | In esecuzione, correttamente | - |
 | `Up ...` (senza controllo dell'integrità) | In esecuzione; nessun controllo dell'integrità definito | Verificare i `docker logs` se si sospetta un problema |
 | `Restarting` | Crash-looping | `docker logs stargate-<svc>` - correggere l'errore alla radice (config, secret, dipendenza) |
@@ -214,7 +214,7 @@ for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 ```
 
 | Porta | Servizio | Direzione |
-|------|---------|-----------|
+| ------ | --------- | ----------- |
 | `25` | Stalwart SMTP (posta in entrata) | in entrata |
 | `443` | Dashboard (HTTPS) | in entrata |
 | `8180` | Keycloak | in entrata |
@@ -258,13 +258,12 @@ Le seguenti istruzioni descrivono come aggiornare un'istanza Verimesh dalla vers
 ### Procedura di aggiornamento
 1. Modificare il file .env e aggiornare la versione di ops-agent a v0.0.3.
 2. Modificare la configurazione del cliente e aggiornare anche lì la versione di ops-agent a v0.0.3.
-3. Passare al branch main: `git checkout main` 
-4. Scaricare le ultime modifiche: `git pull` 
-5. Aggiornare il container ops-agent: `docker compose up -d ops-agent` 
+3. Passare al branch main: `git checkout main`
+4. Scaricare le ultime modifiche: `git pull`
+5. Aggiornare il container ops-agent: `docker compose up -d ops-agent`
 6. Accedere alla Dashboard.
 6. Accedere alle Impostazioni.
 7. Nella sezione Update in fondo alla pagina, inserire la versione di destinazione (v0.5.3) e avviare la procedura di aggiornamento.
-
 
 ## Configurazione aggiornata di Keycloak
 
@@ -276,7 +275,7 @@ Per risolvere il problema, occorre completare la seguente configurazione manuale
 
 ### Procedura di risoluzione
 
-1. Aprire Keycloak nell'ambiente e inserire l'URL - `<VM IP address>/admin/master/console/` 
+1. Aprire Keycloak nell'ambiente e inserire l'URL - `<VM IP address>/admin/master/console/`
     Nome utente: Admin
     Password: recuperare la password amministratore dal file .env della macchina (è necessario effettuare l'accesso alla console Linux)
 
@@ -285,12 +284,12 @@ Per risolvere il problema, occorre completare la seguente configurazione manuale
 4. Accedere alla scheda Client scopes → cliccare su dashboard-dedicated
 5. Selezionare Configure a new mapper → Audience
 6. Impostare le seguenti configurazioni:
-    * Name: apisix-audience
-    * Included client audience: apisix (selezionare dal menu a tendina)
-    * Included custom audience: (lasciare vuoto)
-    * Add to access token: On
-    * Add to token introspection: On
-    * Add to ID token / lightweight token: Off
+    - Name: apisix-audience
+    - Included client audience: apisix (selezionare dal menu a tendina)
+    - Included custom audience: (lasciare vuoto)
+    - Add to access token: On
+    - Add to token introspection: On
+    - Add to ID token / lightweight token: Off
 
 7. Cliccare su Save
 

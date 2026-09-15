@@ -29,12 +29,10 @@ La procédure structurée, étape par étape, décrite dans ce document couvre �
     L'objectif de HIN est d'assurer un déploiement sécurisé, fluide et entièrement validé, avec une perturbation minimale des opérations et une continuité ininterrompue des services de messagerie.
      Dans les scénarios de migration, le MGW existant doit rester disponible en tant qu'option de repli jusqu'à ce que le HIN Gateway ait été validé avec succès en production. Il ne doit être mis hors service qu'une fois la migration terminée et le fonctionnement stable confirmé.
 
-
 ## Foire aux questions
 
 !!! question "Puis-je effectuer l'installation ou la migration moi-même?"
     Oui, l'installation ou la migration peuvent être entièrement réalisées par le client.
-
 
     Pour un scénario de migration, la seule exception concerne l'"Étape 1.3 - Exporter la ou les clés privées". Pour des raisons de sécurité et afin de préserver la sécurité de votre clé privée, vous devez contacter le support HIN ou participer à la réunion de migration prévue afin de recevoir le code nécessaire à l'exportation de la clé privée depuis le Mail Gateway actuellement en service.
 
@@ -44,10 +42,7 @@ La procédure structurée, étape par étape, décrite dans ce document couvre �
 !!! question "Y aura-t-il une interruption de la distribution des e-mails pendant le processus d'installation?"
     **Migration:** Entre l'"Étape 1.5 - Arrêt de la machine virtuelle MGW existante" et l'"Étape 18 - Configurer le serveur de messagerie", tous les e-mails seront mis en file d'attente sur le serveur de messagerie. Une fois l'"Étape 18 - Configurer le serveur de messagerie" terminée, les e-mails en file d'attente seront envoyés ou remis dans la boîte de réception.
 
-
     **Nouvelle installation:** Pendant que vous configurez les règles de flux de messagerie, tous les e-mails seront mis en file d'attente sur le serveur de messagerie. Une fois l'"Étape 18 - Configurer le serveur de messagerie" terminée, les e-mails en file d'attente seront envoyés ou remis dans la boîte de réception.
-
-
 
 !!! question "Des e-mails seront-ils perdus pendant l'installation et la migration?"
     Non, aucun e-mail ne sera perdu pendant l'installation et la migration. Certains e-mails pourraient être retardés.
@@ -145,7 +140,7 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
 
 Envoyez des e-mails de test aux destinataires suivants, en utilisant des boîtes aux lettres auxquelles vous avez accès afin de pouvoir vérifier que la remise a été effectuée avec succès:
 
-- une adresse e-mail HIN ou une adresse e-mail au sein de votre domaine de la communauté HIN, par exemple: user@hin.ch
+- une adresse e-mail HIN ou une adresse e-mail au sein de votre domaine de la communauté HIN, par exemple: `user@hin.ch`
 - une adresse e-mail externe en dehors de la communauté HIN, par exemple: Bluewin, Gmail, Yahoo ou GMX
 
 Pour le destinataire externe, envoyez un e-mail depuis la communauté HIN avec **la mention (confidentiel) dans l'objet**.
@@ -187,7 +182,6 @@ Effectuez une sauvegarde de l'appliance MGW existante et assurez-vous que la mac
 
     Pour une migration à domaines multiples, effectuez l'opération pour chaque domaine
 
-
 !!! warning "Assistance HIN requise"
     Un code de déverrouillage est requis pour cette étape. Ce code est fourni par un ingénieur du support HIN.
 
@@ -220,7 +214,7 @@ Si vous souhaitez poursuivre l'installation par vous-même, veuillez contacter l
 1. Arrêtez le nouveau HIN Gateway.
 2. Démarrez le MGW existant.
 3. Vérifiez que le trafic de messagerie entrant et sortant fonctionne correctement via le MGW existant.
-    * Pour une migration à domaines multiples, effectuez l'opération de vérification pour chaque domaine
+    - Pour une migration à domaines multiples, effectuez l'opération de vérification pour chaque domaine
 
 ### Étape 1.5 - Arrêt de la machine virtuelle MGW existante
 
@@ -350,11 +344,10 @@ Ajouter une adresse IP sous Linux:
 
         [Cliquez ici pour envoyer un e-mail](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-
 !!! note "Remarque importante concernant l'exploitation sur Microsoft Azure"
         La connexion SMTP Relay du HIN Gateway à Exchange Online nécessite une communication SMTP sortante via le port TCP 25.
         Microsoft Azure bloque les connexions sortantes via le port 25 pour la plupart des modèles d'abonnement. [Pour les abonnements standard Enterprise Agreement (EA) et Microsoft Customer Agreement for Enterprise Subscriptions (MCA-E)](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity), le port 25 est généralement disponible, selon Microsoft. Des conditions particulières s'appliquent à certaines autres configurations d'entreprise.
-        
+
         Étant donné que ces restrictions et les éventuelles activations sont définies exclusivement par Microsoft, l'exploitation du HIN Gateway sur Azure ne constitue pas un scénario de déploiement pris en charge par défaut. HIN n'a aucune influence sur la disponibilité ou l'activation de ce port par Microsoft.
         
         Recommandation : Vous prévoyez une migration ou une modification de votre infrastructure avec Azure ? Avant l'installation, vérifiez impérativement si votre abonnement Azure autorise la communication SMTP sortante via le port TCP 25. Contactez suffisament tôt votre personne de contact chez HIN afin de déterminer ensemble la variante d'exploitation qui vous convient.
@@ -506,14 +499,13 @@ Sur cet écran, configurez vos paramètres initiaux:
 ![Setup screen](assets/installation-guide/step13-initial-setup2.png)
 
 | Paramètre | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Nom d'hôte du serveur de messagerie** | Le FQDN de cette instance de passerelle de messagerie (par exemple, `mail.example.com`). |
 | **Adresses IP du serveur de messagerie** | La ou les adresses IP publiques de ce serveur. Ajoutez des adresses IP supplémentaires si le serveur est accessible via plusieurs adresses. |
 | **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS |
 
-
 !!! warning "Scénario de migration progressive multi-domaine"
-    
+
     Pendant la session de support à la migration, les ingénieurs HIN aideront le client à migrer un domaine. Une fois le premier domaine migré avec succès, le client est responsable de la migration des domaines restants de manière autonome.
     
 
@@ -525,7 +517,6 @@ Vous serez connecté au tableau de bord du HIN Gateway sur la page `Domains`
 
  <br> ![Screenshot](assets/installation-guide/step14-dashboard-domains.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-
 #### Page Domains
 
 !!! info Note sur la migration à domaines multiples
@@ -536,11 +527,11 @@ Dans le menu **Domains**, pour chaque domaine disponible, vous pouvez configurer
 ![Domain transport configuration screen](assets/installation-guide/step14-domain-mail-transport.png)
 
 | Paramètre | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Inbound relay** | Le relais SMTP pour la livraison entrante du domaine sélectionné |
 | **Outbound relay** | Le relais SMTP pour la livraison sortante du domaine sélectionné. Ce paramètre correspond au paramètre `Forwarding server` de l'ancien MGW |
-| **Trusted networks** | Réseaux supplémentaires autorisés à relayer via cette passerelle. Pour plus d'informations, consultez l'"Étape 18 - Configurer le serveur de messagerie"|
-| **Configure TLS** | Paramètres du certificat TLS pour les connexions SMTP ; le bouton `Generate TLS certificate` permet de générer un certificat TLS|
+| **Trusted networks** | Réseaux supplémentaires autorisés à relayer via cette passerelle. Pour plus d'informations, consultez l'"Étape 18 - Configurer le serveur de messagerie" |
+| **Configure TLS** | Paramètres du certificat TLS pour les connexions SMTP ; le bouton `Generate TLS certificate` permet de générer un certificat TLS |
 | **Email authentication** | Pour tous les paramètres de la section `Email authentication`, veuillez consulter la section [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) |
 
 ??? tip "Comment tester une connexion TLS ?"
@@ -592,13 +583,12 @@ Sur cette page, dans le menu `Settings`, configurez les paramètres globaux de t
 Les paramètres suivants sont disponibles dans le menu `Settings`:
 
 | Paramètre | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Nom d'hôte du serveur de messagerie** | Le FQDN de cette instance de passerelle de messagerie (par exemple, `mail.example.com`). |
 | **Adresses IP du serveur de messagerie** | La ou les adresses IP publiques de ce serveur. Ajoutez des adresses IP supplémentaires si le serveur est accessible via plusieurs adresses. |
 | **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS |
 | **Default inbound relay** | Le relais SMTP par défaut pour la livraison entrante |
 | **Default outbound relay** | Le relais SMTP par défaut pour la livraison sortante |
-
 
 ### Étape 15 - Configurer les whitelist headers
 
@@ -661,11 +651,11 @@ Voir [Intégration à Exchange](Exchange-integration.md) pour obtenir des instru
 Dans le menu **Domains**, pour chaque domaine disponible, vous pouvez configurer une route de transport spécifique:
 
 | Paramètre | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Inbound relay** | Le relais SMTP pour la livraison entrante du domaine sélectionné |
 | **Outbound relay** | Le relais SMTP pour la livraison sortante du domaine sélectionné. Ce paramètre correspond au paramètre `Forwarding server` de l'ancien MGW |
-| **Trusted networks** | Réseaux supplémentaires autorisés à relayer via cette passerelle. Pour plus d'informations, consultez l'"Étape 18 - Configurer le serveur de messagerie"|
-| **Configure TLS** | Paramètres du certificat TLS pour les connexions SMTP ; le bouton `Generate TLS certificate` permet de générer un certificat TLS|
+| **Trusted networks** | Réseaux supplémentaires autorisés à relayer via cette passerelle. Pour plus d'informations, consultez l'"Étape 18 - Configurer le serveur de messagerie" |
+| **Configure TLS** | Paramètres du certificat TLS pour les connexions SMTP ; le bouton `Generate TLS certificate` permet de générer un certificat TLS |
 | **Email authentication** | Pour tous les paramètres de la section `Email authentication`, veuillez consulter la section [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) |
 
 - **Note : pour un scénario de migration :** Accédez à la page de chaque domaine et ajoutez un **Outbound host** en utilisant la valeur relevée dans le champ `Forwarding server` du MGW à l'"Étape 1.2 - Sauvegarde du MGW existant".
@@ -693,8 +683,6 @@ Dans le menu **Domains**, pour chaque domaine disponible, vous pouvez configurer
 
   <br> ![domain-relay-host](assets/installation-guide/step14-domain-mail-transport.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
-
-
 #### Page Settings
 
 Sur cette page, dans le menu `Settings`, configurez les paramètres globaux de transport du courrier pour la mise en place du relais de messagerie sécurisé, communs à toute l'instance. La configuration détaillée de chaque domaine peut être effectuée sous `Domains` -> `$domain`
@@ -704,7 +692,7 @@ Sur cette page, dans le menu `Settings`, configurez les paramètres globaux de t
 Les paramètres suivants sont disponibles dans le menu `Settings`:
 
 | Paramètre | Description |
-|---------|-------------|
+| --------- | ------------- |
 | **Nom d'hôte du serveur de messagerie** | Le FQDN de cette instance de passerelle de messagerie (par exemple, `mail.example.com`). |
 | **Adresses IP du serveur de messagerie** | La ou les adresses IP publiques de ce serveur. Ajoutez des adresses IP supplémentaires si le serveur est accessible via plusieurs adresses. |
 | **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS |
@@ -712,7 +700,6 @@ Les paramètres suivants sont disponibles dans le menu `Settings`:
 | **Default outbound relay** | Le relais SMTP par défaut pour la livraison sortante |
 
 <br> ![domain-relay-host](assets/installation-guide/step14-mail-transport2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-
 
 ### Étape 19 - Tester et valider
 
