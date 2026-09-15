@@ -140,7 +140,7 @@ The following items must be available or confirmed before the installation:
 
 Send test emails to the following recipients, using mailboxes to which you have access so that successful delivery can be verified:
 
-- An HIN email address or an email address within your HIN Community domain, for example: user@hin.ch
+- An HIN email address or an email address within your HIN Community domain, for example: `user@hin.ch`
 - An external email address outside the HIN Community, for example: Bluewin, Gmail, Yahoo, or GMX
 
 For the external recipient, send an email from the HIN Community with **(confidential) included in the subject line**.

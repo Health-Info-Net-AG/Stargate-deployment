@@ -140,7 +140,7 @@ Die folgenden Punkte müssen vor der Installation verfügbar sein oder bestätig
 
 Senden Sie Test-E-Mails an die folgenden Empfänger und verwenden Sie dabei Postfächer, auf die Sie Zugriff haben, damit die erfolgreiche Zustellung überprüft werden kann:
 
-- eine HIN E-Mail-Adresse oder eine E-Mail-Adresse innerhalb Ihrer HIN Community-Domain, zum Beispiel: user@hin.ch
+- eine HIN E-Mail-Adresse oder eine E-Mail-Adresse innerhalb Ihrer HIN Community-Domain, zum Beispiel: `user@hin.ch`
 - eine externe E-Mail-Adresse ausserhalb der HIN Community, zum Beispiel: Bluewin, Gmail, Yahoo oder GMX
 
 Senden Sie für den externen Empfänger eine E-Mail aus der HIN Community mit **dem Vermerk (vertraulich) in der Betreffzeile**.

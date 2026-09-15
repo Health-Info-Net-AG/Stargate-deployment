@@ -140,7 +140,7 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
 
 Envoyez des e-mails de test aux destinataires suivants, en utilisant des boîtes aux lettres auxquelles vous avez accès afin de pouvoir vérifier que la remise a été effectuée avec succès:
 
-- une adresse e-mail HIN ou une adresse e-mail au sein de votre domaine de la communauté HIN, par exemple: user@hin.ch
+- une adresse e-mail HIN ou une adresse e-mail au sein de votre domaine de la communauté HIN, par exemple: `user@hin.ch`
 - une adresse e-mail externe en dehors de la communauté HIN, par exemple: Bluewin, Gmail, Yahoo ou GMX
 
 Pour le destinataire externe, envoyez un e-mail depuis la communauté HIN avec **la mention (confidentiel) dans l'objet**.
