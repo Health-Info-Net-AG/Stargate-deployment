@@ -62,19 +62,19 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
 
 ### Options d'installation
 
-* Installation par image VM:
-    * [Installation par image VM Azure](vm/Azure-image-install.md)
-    * [Installation par image VM Windows 11 Pro (Hyper-V)](vm/Windows11pro-image-install.md)
-    * [Installation par image VM VMware](vm/VMware-image-install.md)
-    * [Installation par image VM Proxmox](vm/Proxmox-image-install.md)
-    * [Installation par image VM Cloudscale.ch](vm/Cloudscale-image-install.md)
+- Installation par image VM:
+    - [Installation par image VM Azure](vm/Azure-image-install.md)
+    - [Installation par image VM Windows 11 Pro (Hyper-V)](vm/Windows11pro-image-install.md)
+    - [Installation par image VM VMware](vm/VMware-image-install.md)
+    - [Installation par image VM Proxmox](vm/Proxmox-image-install.md)
+    - [Installation par image VM Cloudscale.ch](vm/Cloudscale-image-install.md)
 
 !!! tip "🖨️"
     Vous pouvez obtenir cette documentation imprimée ou sauvegardée en PDF, veuillez visiter notre [Page d'impression](print_page).
 
 ### Intégration Exchange
 
-* [Intégration Exchange](Exchange-integration.md) - Configurez les connecteurs Microsoft Exchange (Online et On-Premises) et les règles de transport pour acheminer les courriels via Stargate
+- [Intégration Exchange](Exchange-integration.md) - Configurez les connecteurs Microsoft Exchange (Online et On-Premises) et les règles de transport pour acheminer les courriels via Stargate
 
 ### Exigences du serveur
 
@@ -86,17 +86,17 @@ Les éléments suivants doivent être disponibles ou confirmés avant l'installa
 
 #### Exigences communes
 
-* **Accès root**: Doit être exécuté en tant que root ou avec `sudo`
-* Distributions prises en charge:
-    * Distributions compatibles RHEL 8, 9 et 10 telles que Alma Linux, Rocky Linux, CentOS Stream
-    * Ubuntu 22 et 24
-    * Debian 11, 12 et 13
-* **Adresse IPv4 réelle**
-* **Enregistrements DNS valides**. Votre domaine doit avoir:
-    * Des enregistrements MX pointant vers vos serveurs de courrier
-    * Un enregistrement SPF définissant les réseaux d'envoi autorisés
-    * Le serveur doit être capable de résoudre le DNS (enregistrements MX, SPF, A)
-    * Utilisé pour le routage du courrier et la liste d'autorisation réseau basée sur SPF
+- **Accès root**: Doit être exécuté en tant que root ou avec `sudo`
+- Distributions prises en charge:
+    - Distributions compatibles RHEL 8, 9 et 10 telles que Alma Linux, Rocky Linux, CentOS Stream
+    - Ubuntu 22 et 24
+    - Debian 11, 12 et 13
+- **Adresse IPv4 réelle**
+- **Enregistrements DNS valides**. Votre domaine doit avoir:
+    - Des enregistrements MX pointant vers vos serveurs de courrier
+    - Un enregistrement SPF définissant les réseaux d'envoi autorisés
+    - Le serveur doit être capable de résoudre le DNS (enregistrements MX, SPF, A)
+    - Utilisé pour le routage du courrier et la liste d'autorisation réseau basée sur SPF
 
 #### Accès réseau entrant (le pare-feu doit autoriser)
 

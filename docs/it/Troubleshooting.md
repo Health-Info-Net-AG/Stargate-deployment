@@ -284,12 +284,12 @@ Per risolvere il problema, occorre completare la seguente configurazione manuale
 4. Accedere alla scheda Client scopes → cliccare su dashboard-dedicated
 5. Selezionare Configure a new mapper → Audience
 6. Impostare le seguenti configurazioni:
-    * Name: apisix-audience
-    * Included client audience: apisix (selezionare dal menu a tendina)
-    * Included custom audience: (lasciare vuoto)
-    * Add to access token: On
-    * Add to token introspection: On
-    * Add to ID token / lightweight token: Off
+    - Name: apisix-audience
+    - Included client audience: apisix (selezionare dal menu a tendina)
+    - Included custom audience: (lasciare vuoto)
+    - Add to access token: On
+    - Add to token introspection: On
+    - Add to ID token / lightweight token: Off
 
 7. Cliccare su Save
 

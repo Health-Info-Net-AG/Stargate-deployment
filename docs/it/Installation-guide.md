@@ -214,7 +214,7 @@ Se desideri continuare l'installazione autonomamente, contatta il Supporto HIN p
 1. Arresta il nuovo HIN Gateway.
 2. Accendi il MGW esistente.
 3. Verifica che il traffico email in entrata e in uscita funzioni correttamente tramite il MGW esistente.
-    * Per le migrazioni multi-dominio, esegui l'operazione di verifica per ciascun dominio
+    - Per le migrazioni multi-dominio, esegui l'operazione di verifica per ciascun dominio
 
 ### Passo 1.5 - Spegnimento del MGW VM esistente
 

@@ -61,19 +61,19 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
 
 ### Installationsoptionen
 
-* VM-Image-Installation:
-    * [Azure VM-Image-Installation](vm/Azure-image-install.md)
-    * [Windows 11 Pro (Hyper-V) Image-Installation](vm/Windows11pro-image-install.md)
-    * [VMware-Image-Installation](vm/VMware-image-install.md)
-    * [Proxmox-Image-Installation](vm/Proxmox-image-install.md)
-    * [Cloudscale.ch Image-Installation](vm/Cloudscale-image-install.md)
+- VM-Image-Installation:
+    - [Azure VM-Image-Installation](vm/Azure-image-install.md)
+    - [Windows 11 Pro (Hyper-V) Image-Installation](vm/Windows11pro-image-install.md)
+    - [VMware-Image-Installation](vm/VMware-image-install.md)
+    - [Proxmox-Image-Installation](vm/Proxmox-image-install.md)
+    - [Cloudscale.ch Image-Installation](vm/Cloudscale-image-install.md)
 
 !!! tip "🖨️"
     Sie können diese Dokumentation ausdrucken oder als PDF speichern. Besuchen Sie unsere [Druckseitenansicht](print_page).
 
 ### Exchange-Integration
 
-* [Exchange-Integration](Exchange-integration.md) – Konfigurieren Sie Microsoft Exchange (Online und On-Premises)-Connectors und Transportregeln, um E-Mails über Stargate zu leiten
+- [Exchange-Integration](Exchange-integration.md) – Konfigurieren Sie Microsoft Exchange (Online und On-Premises)-Connectors und Transportregeln, um E-Mails über Stargate zu leiten
 
 ### Server-Anforderungen
 
@@ -85,17 +85,17 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
 
 #### Allgemeine Anforderungen
 
-* **Root-Zugriff**: Muss als Root oder mit `sudo` ausgeführt werden
-* Unterstützte Distributionen:
-    * RHEL 8, 9 und 10 kompatible Distributionen wie Alma Linux, Rocky Linux, CentOS Stream
-    * Ubuntu 22 und 24
-    * Debian 11, 12 und 13
-* **Reale IPv4-Adresse**
-* **Gültige DNS-Einträge**. Ihre Domain muss Folgendes haben:
-    * MX-Einträge, die auf Ihre Mailserver verweisen
-    * SPF-Eintrag, der die erlaubten sendenden Netzwerke definiert
-    * Der Server muss in der Lage sein, DNS aufzulösen (MX, SPF, A-Einträge)
-    * Wird für das Mail-Routing und die SPF-basierte Netzwerk-Allowlist verwendet
+- **Root-Zugriff**: Muss als Root oder mit `sudo` ausgeführt werden
+- Unterstützte Distributionen:
+    - RHEL 8, 9 und 10 kompatible Distributionen wie Alma Linux, Rocky Linux, CentOS Stream
+    - Ubuntu 22 und 24
+    - Debian 11, 12 und 13
+- **Reale IPv4-Adresse**
+- **Gültige DNS-Einträge**. Ihre Domain muss Folgendes haben:
+    - MX-Einträge, die auf Ihre Mailserver verweisen
+    - SPF-Eintrag, der die erlaubten sendenden Netzwerke definiert
+    - Der Server muss in der Lage sein, DNS aufzulösen (MX, SPF, A-Einträge)
+    - Wird für das Mail-Routing und die SPF-basierte Netzwerk-Allowlist verwendet
 
 #### Eingehender Netzwerkzugriff (Firewall muss erlauben)
 

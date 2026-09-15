@@ -214,7 +214,7 @@ Si vous souhaitez poursuivre l'installation par vous-même, veuillez contacter l
 1. Arrêtez le nouveau HIN Gateway.
 2. Démarrez le MGW existant.
 3. Vérifiez que le trafic de messagerie entrant et sortant fonctionne correctement via le MGW existant.
-    * Pour une migration à domaines multiples, effectuez l'opération de vérification pour chaque domaine
+    - Pour une migration à domaines multiples, effectuez l'opération de vérification pour chaque domaine
 
 ### Étape 1.5 - Arrêt de la machine virtuelle MGW existante
 

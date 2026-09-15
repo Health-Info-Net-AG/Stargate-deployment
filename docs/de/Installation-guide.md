@@ -214,7 +214,7 @@ Wenn Sie die Installation selbstständig fortsetzen möchten, kontaktieren Sie b
 1. Das neue HIN Gateway anhalten.
 2. Schalten Sie das bestehende MGW ein.
 3. Überprüfen Sie, ob der eingehende und ausgehende E-Mail-Verkehr über das bestehende MGW korrekt funktioniert.
-    * Führen Sie die Überprüfung bei einer Multi-Domain-Migration für jede Domäne durch
+    - Führen Sie die Überprüfung bei einer Multi-Domain-Migration für jede Domäne durch
 
 ### Schritt 1.5 - Bestehende MGW-VM abschalten
 

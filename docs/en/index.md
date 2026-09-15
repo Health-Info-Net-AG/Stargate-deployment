@@ -62,19 +62,19 @@ The following items must be available or confirmed before the installation:
 
 ### Installation Options
 
-* VM image installation:
-    * [Azure VM image installation](vm/Azure-image-install.md)
-    * [Windows 11 Pro (Hyper-V) image installation](vm/Windows11pro-image-install.md)
-    * [VMware image installation](vm/VMware-image-install.md)
-    * [Proxmox image installation](vm/Proxmox-image-install.md)
-    * [Cloudscale.ch image installation](vm/Cloudscale-image-install.md)
+- VM image installation:
+    - [Azure VM image installation](vm/Azure-image-install.md)
+    - [Windows 11 Pro (Hyper-V) image installation](vm/Windows11pro-image-install.md)
+    - [VMware image installation](vm/VMware-image-install.md)
+    - [Proxmox image installation](vm/Proxmox-image-install.md)
+    - [Cloudscale.ch image installation](vm/Cloudscale-image-install.md)
 
 !!! tip "🖨️"
     You can get this documentation printed or saved as PDF, please visit our [Print page view](print_page).
 
 ### Exchange Integration
 
-* [Exchange integration](Exchange-integration.md) - Configure Microsoft Exchange (Online and On-Premises) connectors and transport rules to route mail through Stargate
+- [Exchange integration](Exchange-integration.md) - Configure Microsoft Exchange (Online and On-Premises) connectors and transport rules to route mail through Stargate
 
 ### Server Requirements
 
@@ -86,17 +86,17 @@ The following items must be available or confirmed before the installation:
 
 #### Common Requirements
 
-* **Root access**: Must be run as root or with `sudo`
-* Supported distributions:
-    * RHEL 8, 9 and 10 compatible distributions such as Alma Linux, Rocky Linux, CentOS Stream
-    * Ubuntu 22 and 24
-    * Debian 11, 12 and 13
-* **Real IPv4 address**
-* **Valid DNS records**. Your domain must have:
-    * MX records pointing to your mail servers
-    * SPF record defining allowed sending networks
-    * Server must be able to resolve DNS (MX, SPF, A records)
-    * Used for mail routing and SPF-based network allowlisting
+- **Root access**: Must be run as root or with `sudo`
+- Supported distributions:
+    - RHEL 8, 9 and 10 compatible distributions such as Alma Linux, Rocky Linux, CentOS Stream
+    - Ubuntu 22 and 24
+    - Debian 11, 12 and 13
+- **Real IPv4 address**
+- **Valid DNS records**. Your domain must have:
+    - MX records pointing to your mail servers
+    - SPF record defining allowed sending networks
+    - Server must be able to resolve DNS (MX, SPF, A records)
+    - Used for mail routing and SPF-based network allowlisting
 
 #### Inbound Network Access (firewall must allow)
 

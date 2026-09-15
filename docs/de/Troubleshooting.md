@@ -284,12 +284,12 @@ Zur Behebung muss die folgende manuelle Konfiguration in der *Keycloak-UI* vorge
 4. Zur Registerkarte Client scopes wechseln → auf dashboard-dedicated klicken
 5. Configure a new mapper wählen → Audience
 6. Folgende Einstellungen vornehmen:
-    * Name: apisix-audience
-    * Included client audience: apisix (aus dem Dropdown auswählen)
-    * Included custom audience: (leer lassen)
-    * Add to access token: On
-    * Add to token introspection: On
-    * Add to ID token / lightweight token: Off
+    - Name: apisix-audience
+    - Included client audience: apisix (aus dem Dropdown auswählen)
+    - Included custom audience: (leer lassen)
+    - Add to access token: On
+    - Add to token introspection: On
+    - Add to ID token / lightweight token: Off
 
 7. Auf Save klicken
 

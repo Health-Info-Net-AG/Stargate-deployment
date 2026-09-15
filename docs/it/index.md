@@ -62,19 +62,19 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
 
 ### Opzioni di installazione
 
-* Installazione tramite immagine VM:
-    * [Installazione tramite immagine VM Azure](vm/Azure-image-install.md)
-    * [Installazione tramite immagine VM Windows 11 Pro (Hyper-V)](vm/Windows11pro-image-install.md)
-    * [Installazione tramite immagine VM VMware](vm/VMware-image-install.md)
-    * [Installazione tramite immagine VM Proxmox](vm/Proxmox-image-install.md)
-    * [Cloudscale.ch](vm/Cloudscale-image-install.md)
+- Installazione tramite immagine VM:
+    - [Installazione tramite immagine VM Azure](vm/Azure-image-install.md)
+    - [Installazione tramite immagine VM Windows 11 Pro (Hyper-V)](vm/Windows11pro-image-install.md)
+    - [Installazione tramite immagine VM VMware](vm/VMware-image-install.md)
+    - [Installazione tramite immagine VM Proxmox](vm/Proxmox-image-install.md)
+    - [Cloudscale.ch](vm/Cloudscale-image-install.md)
 
 !!! tip "🖨️"
     Puoi ottenere questa documentazione stampata o salvata come PDF, visita la nostra [Visualizzazione pagina stampa](print_page).
 
 ### Integrazione con Exchange
 
-* [Integrazione con Exchange](Exchange-integration.md) - Configura i connettori e le regole di trasporto di Microsoft Exchange (Online e On-Premises) per instradare la posta attraverso Stargate
+- [Integrazione con Exchange](Exchange-integration.md) - Configura i connettori e le regole di trasporto di Microsoft Exchange (Online e On-Premises) per instradare la posta attraverso Stargate
 
 ### Requisiti del server
 
@@ -86,17 +86,17 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
 
 #### Requisiti comuni
 
-* **Accesso root**: Deve essere eseguito come root o con `sudo`
-* Distribuzioni supportate:
-    * Distribuzioni compatibili con RHEL 8, 9 e 10 come Alma Linux, Rocky Linux, CentOS Stream
-    * Ubuntu 22 e 24
-    * Debian 11, 12 e 13
-* **Indirizzo IPv4 reale**
-* **Record DNS validi**. Il dominio deve avere:
-    * Record MX che puntano ai server di posta
-    * Record SPF che definisce le reti di invio consentite
-    * Il server deve essere in grado di risolvere il DNS (record MX, SPF, A)
-    * Utilizzato per il routing della posta e l'inserimento nella whitelist delle reti basato su SPF
+- **Accesso root**: Deve essere eseguito come root o con `sudo`
+- Distribuzioni supportate:
+    - Distribuzioni compatibili con RHEL 8, 9 e 10 come Alma Linux, Rocky Linux, CentOS Stream
+    - Ubuntu 22 e 24
+    - Debian 11, 12 e 13
+- **Indirizzo IPv4 reale**
+- **Record DNS validi**. Il dominio deve avere:
+    - Record MX che puntano ai server di posta
+    - Record SPF che definisce le reti di invio consentite
+    - Il server deve essere in grado di risolvere il DNS (record MX, SPF, A)
+    - Utilizzato per il routing della posta e l'inserimento nella whitelist delle reti basato su SPF
 
 #### Accesso di rete in entrata (il firewall deve consentire)
 
