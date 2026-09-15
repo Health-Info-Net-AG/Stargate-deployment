@@ -5,7 +5,7 @@
 All writable state - generated config, secrets, backups, logs, and every service's own data - lives under **`/var/data`**, not inside the `docker-compose/` checkout:
 
 | Path | Contents |
-|------|----------|
+| ------ | ---------- |
 | `/var/data/vereign/.env` | Generated environment file (do not edit by hand) |
 | `/var/data/vereign/customer-config.sh` | Your install-time settings (copied from `customer-config-prod.example.sh`) |
 | `/var/data/vereign/secrets/` | Vault unseal keys, WireGuard private key, S/MIME CSR |
@@ -113,7 +113,7 @@ git reset --hard origin/main
 ```
 
 !!! note
-    Your `customer-config.sh`, `.env`, and `secrets/` directory live under `/var/data/vereign/`, outside this repository checkout entirely, so a `git reset --hard` never touches them - your configuration and credentials are preserved. Always put customisation in `customer-config.sh`, never by editing tracked files such as `docker-compose.yml`: a hard reset - and the automatic updates triggered from the dashboard - will revert any tracked-file edits. This is intentional; keeping every deployment identical to the repository is what lets updates apply reliably and without manual conflict resolution.
+    Your `customer-config.sh`, `.env`, and `secrets/` directory live under `/var/data/vereign/`, outside this repository checkout entirely, so a `git reset --hard` never touches them - your configuration and credentials are preserved. Always put customization in `customer-config.sh`, never by editing tracked files such as `docker-compose.yml`: a hard reset - and the automatic updates triggered from the dashboard - will revert any tracked-file edits. This is intentional; keeping every deployment identical to the repository is what lets updates apply reliably and without manual conflict resolution.
 
 If the update includes changes to the config template, compare it with your existing config to see if new variables were added:
 
@@ -180,7 +180,7 @@ WG_TRANSPORT_MODE=tcp
 ## Service URLs
 
 | Service | URL/Port |
-|---------|----------|
+| --------- | ---------- |
 | Dashboard | <https://localhost> |
 | smimekeys-client | <http://localhost:8081> |
 | policy | <http://localhost:8082> |
@@ -208,7 +208,7 @@ curl http://localhost:8084/liveness  # mxengine
 All application services expose Prometheus metrics on port 2112 (internally), mapped to different host ports:
 
 | Service | Metrics Port | Metrics URL |
-|---------|--------------|-------------|
+| --------- | -------------- | ------------- |
 | smimekeys-client | `2113` | <http://localhost:2113/metrics> |
 | irisagent | `2114` | <http://localhost:2114/metrics> |
 | policy | `2115` | <http://localhost:2115/metrics> |
@@ -394,7 +394,7 @@ For relay-back through M365 / Exchange Online, configure per-domain relay target
 ### Ports
 
 | Port | Purpose |
-|------|---------|
+| ------ | --------- |
 | `25` | Main SMTP listener (external connections) |
 | `10026` | Reinjection port (mxengine → stalwart, internal only) |
 | `1587` | MXEngine SMTP input (stalwart → mxengine, internal only) |

@@ -39,7 +39,6 @@ The following items must be available or confirmed before the installation:
     Please contact HIN Support to obtain the unlock code required to export the private keys.
     
 
-
 - **Download latest** version of [VM image](vm/VM-Catalog.md)
 - **Firewall** requirements for WireGuard.
   Configure the WireGuard port 19818 (TCP/UDP) in your firewall:
@@ -63,23 +62,23 @@ The following items must be available or confirmed before the installation:
 
 ### Installation Options
 
-* VM image installation:
-    * [Azure VM image installation](vm/Azure-image-install.md)
-    * [Windows 11 Pro (Hyper-V) image installation](vm/Windows11pro-image-install.md)
-    * [VMware image installation](vm/VMware-image-install.md)
-    * [Proxmox image installation](vm/Proxmox-image-install.md)
-    * [Cloudscale.ch image installation](vm/Cloudscale-image-install.md)
+- VM image installation:
+    - [Azure VM image installation](vm/Azure-image-install.md)
+    - [Windows 11 Pro (Hyper-V) image installation](vm/Windows11pro-image-install.md)
+    - [VMware image installation](vm/VMware-image-install.md)
+    - [Proxmox image installation](vm/Proxmox-image-install.md)
+    - [Cloudscale.ch image installation](vm/Cloudscale-image-install.md)
 
 !!! tip "🖨️"
     You can get this documentation printed or saved as PDF, please visit our [Print page view](print_page).
 
 ### Exchange Integration
 
-* [Exchange integration](Exchange-integration.md) - Configure Microsoft Exchange (Online and On-Premises) connectors and transport rules to route mail through Stargate
+- [Exchange integration](Exchange-integration.md) - Configure Microsoft Exchange (Online and On-Premises) connectors and transport rules to route mail through Stargate
 
 ### Server Requirements
 
-|      | Minimum | Recommended |
+|   | Minimum | Recommended |
 | :--- | :-----: | :---------: |
 | CPU, Cores | 4 | 6 |
 | RAM, GB | 8 | 12 |
@@ -87,17 +86,17 @@ The following items must be available or confirmed before the installation:
 
 #### Common Requirements
 
-* **Root access**: Must be run as root or with `sudo`
-* Supported distributions:
-    * RHEL 8, 9 and 10 compatible distributions such as Alma Linux, Rocky Linux, CentOS Stream
-    * Ubuntu 22 and 24
-    * Debian 11, 12 and 13
-* **Real IPv4 address**
-* **Valid DNS records**. Your domain must have:
-    * MX records pointing to your mail servers
-    * SPF record defining allowed sending networks
-    * Server must be able to resolve DNS (MX, SPF, A records)
-    * Used for mail routing and SPF-based network allowlisting
+- **Root access**: Must be run as root or with `sudo`
+- Supported distributions:
+    - RHEL 8, 9 and 10 compatible distributions such as Alma Linux, Rocky Linux, CentOS Stream
+    - Ubuntu 22 and 24
+    - Debian 11, 12 and 13
+- **Real IPv4 address**
+- **Valid DNS records**. Your domain must have:
+    - MX records pointing to your mail servers
+    - SPF record defining allowed sending networks
+    - Server must be able to resolve DNS (MX, SPF, A records)
+    - Used for mail routing and SPF-based network allowlisting
 
 #### Inbound Network Access (firewall must allow)
 
@@ -126,7 +125,7 @@ The following items must be available or confirmed before the installation:
 | `registry-1.docker.io`, `auth.docker.io`, `production.cloudflare.docker.com` | `443` | TCP | Docker Hub image registry |
 | `quay.io` | `443` | TCP | Container registry (Keycloak, oauth2-proxy) |
 | `github.com` | `443` | TCP | Policy repository (policy-sync) |
-| Your own Loki endpoint (e.g. loki.example.com) | 443 | TCP | Optional. Only needed if you provide your own Loki instance the stack should ship logs to (Alloy → Loki) |
+| Your own Loki endpoint (e.g. loki.example.com) | `443` | TCP | Optional. Only needed if you provide your own Loki instance the stack should ship logs to (Alloy → Loki) |
 | Update Server of alpine, almalinux, etc. | `80` | TCP | Various Update servers |
 | Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
 | Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
@@ -136,17 +135,13 @@ The following items must be available or confirmed before the installation:
 | `app.hin.ch` | `443` | TCP | HIN member / mail-domain list (mxengine) |
 | `apisix.verify-mail.hin-infra.ch` | `443` | TCP | HIN gateway registration during onboarding (dashboard) |
 
-
-
 !!! note "Important note regarding operation on Microsoft Azure"
-    **Operation on Microsoft Azure**
-    For the SMTP relay connection between the HIN Gateway and Exchange Online, outgoing data traffic via TCP port 25 must be permitted.
+        **Operation on Microsoft Azure**
+        For the SMTP relay connection between the HIN Gateway and Exchange Online, outgoing data traffic via TCP port 25 must be permitted.
 
-    Microsoft Azure blocks outbound connections via port 25 for most subscription models. HIN has no control over the availability or activation of this port by Microsoft. Operating the HIN Gateway on Azure is therefore **not a standard supported deployment scenario**. Exceptions apply in particular to [certain Microsoft Enterprise subscriptions](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Before installing on Azure, please check whether your subscription permits outbound SMTP traffic via TCP port 25. 
-    
-    If you have any questions regarding the appropriate deployment option, please contact your HIN contact person at an early stage.
-
-
+        Microsoft Azure blocks outbound connections via port 25 for most subscription models. HIN has no control over the availability or activation of this port by Microsoft. Operating the HIN Gateway on Azure is therefore **not a standard supported deployment scenario**. Exceptions apply in particular to [certain Microsoft Enterprise subscriptions](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Before installing on Azure, please check whether your subscription permits outbound SMTP traffic via TCP port 25.
+        
+        If you have any questions regarding the appropriate deployment option, please contact your HIN contact person at an early stage.
 
 ??? tip "Firewall note"
 

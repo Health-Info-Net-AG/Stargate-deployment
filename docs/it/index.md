@@ -39,7 +39,6 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
     Contatta il Supporto HIN per ottenere il codice di sblocco necessario per esportare le chiavi private.
     
 
-
 - **Scarica l'ultima versione** dell'[immagine VM](vm/VM-Catalog.md)
 - Requisiti **firewall** per WireGuard.
   Configura la porta WireGuard 19818 (TCP/UDP) nel tuo firewall:
@@ -63,23 +62,23 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
 
 ### Opzioni di installazione
 
-* Installazione tramite immagine VM:
-    * [Installazione tramite immagine VM Azure](vm/Azure-image-install.md)
-    * [Installazione tramite immagine VM Windows 11 Pro (Hyper-V)](vm/Windows11pro-image-install.md)
-    * [Installazione tramite immagine VM VMware](vm/VMware-image-install.md)
-    * [Installazione tramite immagine VM Proxmox](vm/Proxmox-image-install.md)
-    * [Cloudscale.ch](vm/Cloudscale-image-install.md)
+- Installazione tramite immagine VM:
+    - [Installazione tramite immagine VM Azure](vm/Azure-image-install.md)
+    - [Installazione tramite immagine VM Windows 11 Pro (Hyper-V)](vm/Windows11pro-image-install.md)
+    - [Installazione tramite immagine VM VMware](vm/VMware-image-install.md)
+    - [Installazione tramite immagine VM Proxmox](vm/Proxmox-image-install.md)
+    - [Cloudscale.ch](vm/Cloudscale-image-install.md)
 
 !!! tip "🖨️"
     Puoi ottenere questa documentazione stampata o salvata come PDF, visita la nostra [Visualizzazione pagina stampa](print_page).
 
 ### Integrazione con Exchange
 
-* [Integrazione con Exchange](Exchange-integration.md) - Configura i connettori e le regole di trasporto di Microsoft Exchange (Online e On-Premises) per instradare la posta attraverso Stargate
+- [Integrazione con Exchange](Exchange-integration.md) - Configura i connettori e le regole di trasporto di Microsoft Exchange (Online e On-Premises) per instradare la posta attraverso Stargate
 
 ### Requisiti del server
 
-|      | Minimo | Consigliato |
+|   | Minimo | Consigliato |
 | :--- | :-----: | :--------: |
 | CPU, Core | 4 | 6 |
 | RAM, GB | 8 | 12 |
@@ -87,17 +86,17 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
 
 #### Requisiti comuni
 
-* **Accesso root**: Deve essere eseguito come root o con `sudo`
-* Distribuzioni supportate:
-    * Distribuzioni compatibili con RHEL 8, 9 e 10 come Alma Linux, Rocky Linux, CentOS Stream
-    * Ubuntu 22 e 24
-    * Debian 11, 12 e 13
-* **Indirizzo IPv4 reale**
-* **Record DNS validi**. Il dominio deve avere:
-    * Record MX che puntano ai server di posta
-    * Record SPF che definisce le reti di invio consentite
-    * Il server deve essere in grado di risolvere il DNS (record MX, SPF, A)
-    * Utilizzato per il routing della posta e l'inserimento nella whitelist delle reti basato su SPF
+- **Accesso root**: Deve essere eseguito come root o con `sudo`
+- Distribuzioni supportate:
+    - Distribuzioni compatibili con RHEL 8, 9 e 10 come Alma Linux, Rocky Linux, CentOS Stream
+    - Ubuntu 22 e 24
+    - Debian 11, 12 e 13
+- **Indirizzo IPv4 reale**
+- **Record DNS validi**. Il dominio deve avere:
+    - Record MX che puntano ai server di posta
+    - Record SPF che definisce le reti di invio consentite
+    - Il server deve essere in grado di risolvere il DNS (record MX, SPF, A)
+    - Utilizzato per il routing della posta e l'inserimento nella whitelist delle reti basato su SPF
 
 #### Accesso di rete in entrata (il firewall deve consentire)
 
@@ -136,7 +135,6 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
 | `app.hin.ch` | `443` | TCP | Elenco membri / domini di posta HIN (mxengine) |
 | `apisix.verify-mail.hin-infra.ch` | `443` | TCP | Registrazione del gateway HIN durante l'onboarding (dashboard) |
 
-
 ??? note "Avviso importante per l'esercizio su Microsoft Azure"
     **Esercizio su Microsoft Azure**
     Per il collegamento SMTP Relay dell'HIN Gateway a Exchange Online, deve essere possibile il traffico in uscita tramite la porta TCP 25.
@@ -144,7 +142,6 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
     Microsoft Azure blocca le connessioni in uscita tramite la porta 25 nella maggior parte dei modelli di abbonamento. HIN non può influire sulla disponibilità o sull'attivazione di questa porta da parte di Microsoft. L'esercizio dell'HIN Gateway su Azure non è quindi uno scenario di implementazione supportato come standard. Esistono eccezioni, in particolare per [alcuni abbonamenti Enterprise di Microsoft](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Verificate quindi, prima di procedere all'installazione su Azure, se il vostro abbonamento consente il traffico SMTP in uscita tramite la porta TCP 25.
 
     In caso di domande sulla variante operativa più adatta, si prega di contattare tempestivamente il vostro contatto presso HIN..
-
 
 ??? tip "Nota sul firewall"
 
