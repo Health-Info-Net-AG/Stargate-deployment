@@ -838,7 +838,7 @@ services:
       - autoheal=true
 
   dashboard:
-    image: healthinfonetag/dashboard:v0.0.118
+    image: healthinfonetag/dashboard:v0.0.137-test
     container_name: stargate-dashboard
     restart: unless-stopped
     logging:
