@@ -910,7 +910,12 @@ services:
       - ALL
     healthcheck:
       test:
-        ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/liveness"]
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/liveness').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
