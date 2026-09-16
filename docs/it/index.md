@@ -183,6 +183,20 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
     iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT
     ```
 
+## Approccio di migrazione consigliato in base al numero di domini
+
+!!! tip "Clienti con 3 domini o meno"
+    - HIN consiglia di migrare tutti i domini in una sola volta.
+    - HIN supporterà il cliente nella migrazione con successo del primo dominio.
+    - Una volta migrato con successo il primo dominio, il cliente potrà migrare autonomamente i domini rimanenti.
+    - Questo approccio mantiene la migrazione semplice ed evita la necessità di un ambiente parallelo.
+
+!!! note "Clienti con più di 3 domini"
+    - HIN consiglia di predisporre un ambiente parallelo accanto all’MGW esistente.
+    - I domini possono quindi essere migrati gradualmente verso il nuovo ambiente.
+    - HIN supporterà il cliente nella migrazione con successo del primo dominio.
+    - Dopo la prima migrazione riuscita, il cliente potrà decidere come e quando spostare i domini rimanenti verso il nuovo ambiente.
+
 ## Contattaci
 
 !!! tip "Supporto"

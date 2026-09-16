@@ -182,6 +182,18 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
     iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT
     ```
 
+!!! tip "Kunden mit 3 oder weniger Domains"
+    - HIN empfiehlt, alle Domains auf einmal zu migrieren.
+    - HIN unterstützt den Kunden bei der erfolgreichen Migration der ersten Domain.
+    - Sobald die erste Domain erfolgreich migriert wurde, kann der Kunde die übrigen Domains eigenständig migrieren.
+    - Dieser Ansatz hält die Migration einfach und vermeidet die Notwendigkeit einer parallelen Umgebung.
+
+!!! note "Kunden mit mehr als 3 Domains"
+    - HIN empfiehlt, eine parallele Umgebung neben dem bestehenden MGW einzurichten.
+    - Die Domains können anschliessend schrittweise in die neue Umgebung migriert werden.
+    - HIN unterstützt den Kunden bei der erfolgreichen Migration der ersten Domain.
+    - Nach der ersten erfolgreichen Migration kann der Kunde entscheiden, wie und wann die übrigen Domains in die neue Umgebung verschoben werden.
+
 ## Kontaktieren Sie uns
 
 !!! tip "Support"
