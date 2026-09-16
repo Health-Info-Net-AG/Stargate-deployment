@@ -324,8 +324,9 @@ services:
       options:
         max-size: "100m"
         max-file: "5"
+    # https://hub.docker.com/r/willfarrell/autoheal
     # renovate: datasource=docker depName=willfarrell/autoheal
-    image: willfarrell/autoheal:1.2.0
+    image: willfarrell/autoheal:latest@sha256:0e783376714f96bde403dd919dde7416cc3ad07418366677d33d758b204d5025
     network_mode: none
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -910,7 +911,12 @@ services:
       - ALL
     healthcheck:
       test:
-        ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/liveness"]
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/liveness').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
