@@ -241,7 +241,7 @@ services:
   # configured value fails), the script exits cleanly without touching anything.
   keycloak-init:
     # renovate: datasource=docker depName=alpine
-    image: alpine:3.22
+    image: alpine:3.24
     container_name: stargate-keycloak-init
     logging:
       driver: json-file
@@ -264,7 +264,7 @@ services:
   # substituting KEYCLOAK_APISIX_CLIENT_SECRET with envsubst.
   apisix-init:
     # renovate: datasource=docker depName=alpine
-    image: alpine:3.22
+    image: alpine:3.24
     container_name: stargate-apisix-init
     logging:
       driver: json-file
@@ -983,7 +983,7 @@ services:
   # Collects app versions from /liveness endpoints for node-exporter
   version-collector:
     # renovate: datasource=docker depName=alpine
-    image: alpine:3.22
+    image: alpine:3.24
     container_name: stargate-version-collector
     restart: unless-stopped
     logging:
