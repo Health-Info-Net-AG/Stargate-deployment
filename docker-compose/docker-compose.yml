@@ -838,7 +838,7 @@ services:
       - autoheal=true
 
   dashboard:
-    image: healthinfonetag/dashboard:v0.0.118
+    image: healthinfonetag/dashboard:v0.0.126
     container_name: stargate-dashboard
     restart: unless-stopped
     logging:
@@ -1259,7 +1259,7 @@ services:
 
   # Ops Agent - executes infrastructure commands (updates, restarts) from dashboard via NATS
   ops-agent:
-    image: healthinfonetag/stargate-ops:v0.0.9
+    image: healthinfonetag/stargate-ops:v0.0.11
     container_name: stargate-ops-agent
     restart: unless-stopped
     logging:
