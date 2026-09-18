@@ -78,15 +78,27 @@ S3_BUCKET_NAME="stargate-bucket"
 # ==============================================================================
 # Local-only by default (empty witnesses / threshold 0 = today's behavior).
 #
-# KERI_WITNESSES: a JSON ARRAY of the shared witness pool's OOBI objects,
-# SINGLE-quoted so the inner double-quotes survive in .env. Each element is a
-# FULL OOBI object {eid, scheme, url} - not a bare URL. Example:
-#   KERI_WITNESSES='[{"eid":"BJq7...","scheme":"http","url":"http://witness-1-host:3232/"}]'
-# KERI_WITNESS_THRESHOLD: receipts required at inception; must be <= the number
-# of witnesses. IMPORTANT: with threshold > 0 the pool MUST be reachable before
-# idagent's FIRST start, or inception fails without receipts.
-KERI_WITNESSES='[]'
-KERI_WITNESS_THRESHOLD="0"
+# KERI_WITNESSES: a JSON ARRAY of the pool's OOBI objects, SINGLE-quoted so the inner
+# double-quotes survive in .env. Each element is a FULL OOBI object {eid, scheme, url}
+# - not a bare URL. `scheme` must match the scheme the witness advertises in its
+# /loc/scheme reply: idagent looks the OOBI up by the (eid, scheme) pair, so an entry
+# whose scheme differs from the witness's own resolves to "No oobi" and inception fails.
+# KERI_WITNESS_THRESHOLD: receipts required at inception; must be <= the number of
+# witnesses. IMPORTANT: with threshold > 0 the pool MUST be reachable before idagent's
+# FIRST start, or inception fails without receipts and the container will not come up.
+#
+# LEAVE BOTH EMPTY unless this site needs a topology of its own. Empty means "use the
+# default pinned in docker-compose.yml", which is the shared HIN production pool at
+# threshold 2 - so an ordinary appliance needs no entry here at all. Pinning a copy of
+# today's pool into this file would freeze it: the site would keep these witnesses for
+# good and never pick up a pool change shipped in a later image.
+#
+# Set them ONLY to depart from that default - '[]' with threshold "0" for a local-only
+# deployment with no witnesses, or an explicit array for a different pool, e.g.:
+#   KERI_WITNESSES='[{"eid":"BMGbBCw5I-zLanhgJdRXQ-EU4G61P7M8jTpFrstK5ArZ","scheme":"https","url":"https://witness-1.verify-mail.hin-infra.ch/"}]'
+#   KERI_WITNESS_THRESHOLD="1"
+KERI_WITNESSES=''
+KERI_WITNESS_THRESHOLD=""
 #
 # KERI_WATCHER_OOBI: a SINGLE watcher OOBI object (one {eid, scheme, url}, NOT an
 # array), SINGLE-quoted. Only needed to verify OTHER orgs' anchors - enable the

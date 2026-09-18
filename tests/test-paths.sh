@@ -12,5 +12,7 @@ STARGATE_DATA_DIR=/tmp/sg-paths-test
 [ "$SECRETS_DIR" = /tmp/sg-paths-test/vereign/secrets ] || { echo "SECRETS_DIR wrong"; exit 1; }
 [ "$BACKUP_DIR" = /tmp/sg-paths-test/backups ] || { echo "BACKUP_DIR wrong"; exit 1; }
 [ "$UPDATE_LOG" = /tmp/sg-paths-test/vereign/update.log ] || { echo "UPDATE_LOG wrong"; exit 1; }
+[ "$CHRONY_DIR" = /tmp/sg-paths-test/vereign/chrony ] || { echo "CHRONY_DIR wrong: $CHRONY_DIR"; exit 1; }
+[ "$CHRONY_SOURCES_FILE" = /tmp/sg-paths-test/vereign/chrony/ntp.sources ] || { echo "CHRONY_SOURCES_FILE wrong: $CHRONY_SOURCES_FILE"; exit 1; }
 type compose >/dev/null || { echo "compose() not defined"; exit 1; }
 echo "PASS"

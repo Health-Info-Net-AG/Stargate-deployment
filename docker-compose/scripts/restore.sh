@@ -243,6 +243,23 @@ cp "$BACKUP_CONTENT/config/customer-config.sh" "$CONFIG_FILE"
 chmod 600 "$CONFIG_FILE"  # holds VAULT_TOKEN, WG private key, passwords
 echo "  ✓ customer-config.sh restored"
 
+# Custom NTP servers, if the source deployment had any. Restored before the stack
+# comes up: several services (S/MIME and TLS validation, KERI event timestamps,
+# Keycloak token windows) misbehave in confusing ways under clock skew. World-readable
+# on purpose -- chronyd re-reads it after dropping privileges to the chrony user.
+if [ -f "$BACKUP_CONTENT/config/ntp.sources" ]; then
+  # No mkdir: init_data_layout ran near the top of this script and creates CHRONY_DIR.
+  cp "$BACKUP_CONTENT/config/ntp.sources" "$CHRONY_SOURCES_FILE"
+  chmod 644 "$CHRONY_SOURCES_FILE"
+  # Non-fatal: a restore onto a host without chrony, or with chronyd not yet up, must
+  # not abort the restore -- the sources are picked up at the next chronyd start anyway.
+  if chronyc reload sources >/dev/null 2>&1; then
+    echo "  ✓ ntp.sources restored and reloaded"
+  else
+    echo "  ✓ ntp.sources restored (applies at next chronyd start)"
+  fi
+fi
+
 # Source the restored config
 source "$CONFIG_FILE"
 
@@ -397,6 +414,18 @@ S3_BUCKET_NAME=$S3_BUCKET_NAME
 # Deployment
 CUSTOMER_NAME=$CUSTOMER_NAME
 DEPLOYMENT_NAME=$DEPLOYMENT_NAME
+
+# KERI topology for idagent, carried over verbatim from the restored customer-config.sh.
+# These MUST be written even when empty. docker-compose.yml reads them as
+# \${KERI_WITNESSES:-<HIN pool>}, so omitting the keys is not neutral -- it silently
+# hands a restored deployment the default witness pool at threshold 2. For a site that
+# was deliberately local-only that is wrong and unrecoverable in place: its AID is
+# already incepted without witnesses, and inception parameters cannot be changed
+# without a KERI rotation. An empty value restores the compose default on purpose;
+# a '[]' restores local-only. Both are meaningful and both must survive a restore.
+KERI_WITNESSES='${KERI_WITNESSES:-}'
+KERI_WITNESS_THRESHOLD="${KERI_WITNESS_THRESHOLD:-}"
+KERI_WATCHER_OOBI='${KERI_WATCHER_OOBI:-}'
 
 # Stalwart MTA
 STALWART_ADMIN_PASSWORD=$STALWART_ADMIN_PASSWORD

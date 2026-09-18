@@ -38,6 +38,9 @@ bash "$SCRIPTS_DIR/init-data-layout.sh"
 printf 'VAULT_TOKEN="t"\nPOSTGRES_PASSWORD="p"\nWG_PRIVATE_KEY="k"\n' > "$root/vereign/customer-config.sh"
 printf 'POSTGRES_USER=postgres\nPOSTGRES_PASSWORD=p\n' > "$root/vereign/.env"
 echo dummy > "$root/vereign/secrets/vault-keys.json"
+# A site NTP override lives on the Data Disk precisely so it travels in the archive --
+# nothing under /etc does. init-data-layout.sh created the directory above.
+printf 'pool ntp.test.local iburst\n' > "$root/vereign/chrony/ntp.sources"
 
 echo "Starting throwaway $PG_CONTAINER container..."
 docker run -d --name "$PG_CONTAINER" \
@@ -83,5 +86,7 @@ grep -q 'POSTGRES_USER=postgres' "$CONTENT_DIR/config/.env" \
   || { echo "archived .env does not match \$STARGATE_DATA_DIR/vereign/.env"; exit 1; }
 [ -f "$CONTENT_DIR/secrets/vault-keys.json" ] \
   || { echo "vault-keys.json missing from archive"; exit 1; }
+grep -q 'pool ntp.test.local iburst' "$CONTENT_DIR/config/ntp.sources" \
+  || { echo "ntp.sources missing from archive -- a site's NTP override would not survive a rebuild"; exit 1; }
 
 echo "PASS"

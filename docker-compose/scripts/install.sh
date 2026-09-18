@@ -201,8 +201,15 @@ load_customer_config() {
   # a deployment's versions travel with its git tag. See docker-compose.yml.
 
   # KERI topology for idagent (runtime config, not a version).
-  KERI_WITNESSES="${KERI_WITNESSES:-[]}"
-  KERI_WITNESS_THRESHOLD="${KERI_WITNESS_THRESHOLD:-0}"
+  #
+  # The fallbacks are EMPTY, deliberately -- not '[]' / "0". These land in .env, and
+  # docker-compose.yml reads them as ${KERI_WITNESSES:-<pool>}, whose default fires only
+  # when the value is unset OR empty. A literal '[]' is a non-empty string, so it would
+  # silently shadow the compose default and leave idagent with no witnesses. Empty here
+  # means a customer-config.sh predating these keys inherits the compose default instead
+  # of being pinned to a witness-less topology.
+  KERI_WITNESSES="${KERI_WITNESSES:-}"
+  KERI_WITNESS_THRESHOLD="${KERI_WITNESS_THRESHOLD:-}"
   KERI_WATCHER_OOBI="${KERI_WATCHER_OOBI:-}"
 
   # Derive WG_LOCAL_IP and MXENGINE_PUBLIC_ADDRESS from SERVER_STATIC_IP
