@@ -46,10 +46,10 @@ HOSTNAME="mail.${DOMAIN}"
 RETRIES="${STALWART_READY_RETRIES:-60}"
 
 AUSER="${STALWART_RECOVERY_ADMIN%%:*}"
-APW="${STALWART_RECOVERY_ADMIN#*:}"
+export STALWART_PASSWORD="${STALWART_RECOVERY_ADMIN#*:}"
 EMAIL="${SVC}@${DOMAIN}"
 
-cli() { "$CLI" --url "$URL" --user "$AUSER" --password "$APW" "$@"; }
+cli() { "$CLI" --url "$URL" --user "$AUSER" "$@"; }
 log() { echo "[provision] $*"; }
 
 # =============================================================================

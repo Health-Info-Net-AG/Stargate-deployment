@@ -75,7 +75,7 @@ else
   INIT_ARGS="-address=http://vault:8200 -key-shares=5 -key-threshold=3 -format=json"
   
   # Initialize Vault with 5 key shares and 3 key threshold
-  vault operator init $INIT_ARGS > "$KEYS_FILE"
+  ( umask 077; vault operator init $INIT_ARGS > "$KEYS_FILE" )
   
   chmod 600 "$KEYS_FILE"
   
