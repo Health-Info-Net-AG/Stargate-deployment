@@ -95,12 +95,15 @@ else
   exit 1
 fi
 
-# Must precede `compose up -d` -- see lib/vault-tokens.sh.
+# Must precede `compose up -d` -- see lib/vault-tokens.sh. A failure here is not
+# fatal to the unit: the services that need no token still come up, which keeps
+# the box diagnosable and stops a transient fault becoming a greenboot rollback.
 echo ""
 echo "Provisioning per-service Vault tokens..."
 if ! ensure_service_tokens; then
-  echo "ERROR: could not provision per-service Vault tokens; not starting services." >&2
-  exit 1
+  echo "WARNING: could not provision per-service Vault tokens." >&2
+  echo "  Vault-backed services will fail to start until this is resolved." >&2
+  echo "  Check: docker compose logs vault-init" >&2
 fi
 
 # Start application services
