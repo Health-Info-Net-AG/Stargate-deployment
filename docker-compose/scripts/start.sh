@@ -7,6 +7,7 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 KEYS_FILE="$SECRETS_DIR/vault-keys.json"
 
 . "$SCRIPT_DIR/lib/env.sh"
+. "$SCRIPT_DIR/lib/vault-tokens.sh"
 
 cd "$PROJECT_DIR"
 
@@ -38,16 +39,6 @@ if ! command -v jq &> /dev/null; then
   echo "ERROR: jq is not installed."
   echo "Please install jq (e.g. 'sudo dnf install jq' or 'sudo apt install jq')."
   exit 1
-fi
-
-# Extract and update token in .env
-ROOT_TOKEN=$(jq -r '.root_token' "$KEYS_FILE")
-if grep -q "^VAULT_TOKEN=" "$ENV_FILE" 2>/dev/null; then
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' "s/^VAULT_TOKEN=.*/VAULT_TOKEN=\"$ROOT_TOKEN\"/" "$ENV_FILE"
-  else
-    sed -i "s/^VAULT_TOKEN=.*/VAULT_TOKEN=\"$ROOT_TOKEN\"/" "$ENV_FILE"
-  fi
 fi
 
 # Start infrastructure first
@@ -82,11 +73,10 @@ while [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]; do
     break
   fi
 
-  # Attempt unseal
   echo "  Unsealing Vault (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
-  docker exec stargate-vault vault operator unseal "$UNSEAL_KEY_1" > /dev/null 2>&1 || true
-  docker exec stargate-vault vault operator unseal "$UNSEAL_KEY_2" > /dev/null 2>&1 || true
-  docker exec stargate-vault vault operator unseal "$UNSEAL_KEY_3" > /dev/null 2>&1 || true
+  printf '%s' "$UNSEAL_KEY_1" | docker exec -i stargate-vault vault operator unseal - > /dev/null 2>&1 || true
+  printf '%s' "$UNSEAL_KEY_2" | docker exec -i stargate-vault vault operator unseal - > /dev/null 2>&1 || true
+  printf '%s' "$UNSEAL_KEY_3" | docker exec -i stargate-vault vault operator unseal - > /dev/null 2>&1 || true
 
   # Verify unseal succeeded
   if docker exec stargate-vault vault status 2>/dev/null | grep -q "Sealed.*false"; then
@@ -105,7 +95,16 @@ else
   exit 1
 fi
 
+# Must precede `compose up -d` -- see lib/vault-tokens.sh.
+echo ""
+echo "Provisioning per-service Vault tokens..."
+if ! ensure_service_tokens; then
+  echo "ERROR: could not provision per-service Vault tokens; not starting services." >&2
+  exit 1
+fi
+
 # Start application services
+echo ""
 echo "Starting application services..."
 compose up -d
 

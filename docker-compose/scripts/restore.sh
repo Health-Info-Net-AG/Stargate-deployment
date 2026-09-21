@@ -10,6 +10,7 @@ INVOCATION_DIR="$PWD"  # caller's working directory, captured before the cd belo
 . "$SCRIPT_DIR/lib/systemd.sh"
 . "$SCRIPT_DIR/lib/docker.sh"
 . "$SCRIPT_DIR/lib/env.sh"
+. "$SCRIPT_DIR/lib/vault-tokens.sh"  # needs SECRETS_DIR/ENV_FILE from paths.sh
 . "$SCRIPT_DIR/init-data-layout.sh"   # defines init_data_layout (does not auto-run when sourced)
 
 # Detect distribution / package manager (sets DIST_ID, PKGMGR).
@@ -282,11 +283,9 @@ mkdir -p "$SECRETS_DIR"
 if [ -f "$BACKUP_CONTENT/secrets/vault-keys.json" ]; then
   cp "$BACKUP_CONTENT/secrets/vault-keys.json" "$SECRETS_DIR/"
   echo "  ✓ vault-keys.json restored"
-  ROOT_TOKEN=$(jq -r '.root_token' "$SECRETS_DIR/vault-keys.json")
 else
   echo "  ✗ WARNING: vault-keys.json not in backup"
   echo "    Vault will need to be reinitialized!"
-  ROOT_TOKEN=""
 fi
 
 # Restore CSR
@@ -403,8 +402,7 @@ cat > "$ENV_FILE" << EOF
 POSTGRES_USER=$POSTGRES_USER
 POSTGRES_PASSWORD=$POSTGRES_PASSWORD
 
-# Vault
-VAULT_TOKEN=${ROOT_TOKEN:-}
+# Vault: per-service tokens are appended after vault-init runs.
 
 # S3 (SeaweedFS)
 S3_ACCESS_KEY=$S3_ACCESS_KEY
@@ -593,18 +591,21 @@ if [ ! -f "$SECRETS_DIR/vault-keys.json" ]; then
   exit 1
 fi
 
-# vault-init may have generated a fresh token (fresh VM) or kept the restored
-# one; sync whatever is current into .env and customer-config.sh.
-ROOT_TOKEN=$(jq -r '.root_token' "$SECRETS_DIR/vault-keys.json")
 echo "  ✓ Vault ready"
-sed -i "s/^VAULT_TOKEN=.*/VAULT_TOKEN=\"$ROOT_TOKEN\"/" "$ENV_FILE"
-if grep -q '^VAULT_TOKEN=' "$CONFIG_FILE"; then
-  sed -i "s|^VAULT_TOKEN=.*|VAULT_TOKEN=\"$ROOT_TOKEN\"|" "$CONFIG_FILE"
-else
-  echo "" >> "$CONFIG_FILE"
-  echo "VAULT_TOKEN=\"$ROOT_TOKEN\"" >> "$CONFIG_FILE"
+
+# Sync before any service starts.
+if ! sync_service_tokens_to_env; then
+  echo "  ✗ ERROR: could not sync per-service Vault tokens"
+  exit 1
 fi
-echo "  ✓ Vault token synced to .env and customer-config.sh"
+purge_root_token_from_config
+
+VAULT_TOKEN=$(service_token VAULT_TOKEN_BACKUP 2>/dev/null || echo "")
+export VAULT_TOKEN
+if [ -z "$VAULT_TOKEN" ]; then
+  echo "  ✗ ERROR: no backup token available; cannot restore Vault secrets"
+  exit 1
+fi
 
 # -----------------------------------------------------------------
 # Restore Vault KV secrets from backup (runs on every path)
@@ -622,7 +623,7 @@ if [ -d "$BACKUP_CONTENT/vault" ]; then
       key_name=$(basename "$secret_file" .json)
       SECRET_DATA=$(jq -r '.data.data // empty' "$secret_file" 2>/dev/null)
       if [ -n "$SECRET_DATA" ]; then
-        if echo "$SECRET_DATA" | docker exec -i -e VAULT_TOKEN="$ROOT_TOKEN" stargate-vault \
+        if echo "$SECRET_DATA" | docker exec -i -e VAULT_TOKEN stargate-vault \
           vault kv put -address=http://127.0.0.1:8200 "$mount_name/$key_name" - > /dev/null 2>&1; then
           echo "      ✓ $key_name"
           ((RESTORED_SECRETS++)) || true

@@ -40,11 +40,12 @@ BACKUP_SUBDIR="$BACKUP_DIR/$BACKUP_NAME"
 # .env values may be unquoted and would break `source` under `set -e`). We only
 # need POSTGRES_USER, POSTGRES_PASSWORD and VAULT_TOKEN here.
 . "$SCRIPT_DIR/lib/env.sh"
+. "$SCRIPT_DIR/lib/vault-tokens.sh"  # needs SECRETS_DIR/ENV_FILE from paths.sh
 
 if [ -f "$ENV_FILE" ]; then
   POSTGRES_USER=$(read_env_var POSTGRES_USER "$ENV_FILE")
   POSTGRES_PASSWORD=$(read_env_var POSTGRES_PASSWORD "$ENV_FILE")
-  VAULT_TOKEN=$(read_env_var VAULT_TOKEN "$ENV_FILE")
+  VAULT_TOKEN=$(read_env_var VAULT_TOKEN_BACKUP "$ENV_FILE")
   S3_ACCESS_KEY=$(read_env_var S3_ACCESS_KEY "$ENV_FILE")
   S3_SECRET_KEY=$(read_env_var S3_SECRET_KEY "$ENV_FILE")
   S3_BUCKET_NAME=$(read_env_var S3_BUCKET_NAME "$ENV_FILE")
@@ -222,11 +223,12 @@ echo ""
 
 mkdir -p "$BACKUP_SUBDIR/vault"
 
-# Check if Vault is running and we have a token
+# The backup token covers the secret-* mounts.
 VAULT_TOKEN="${VAULT_TOKEN:-}"
-if [ -z "$VAULT_TOKEN" ] && [ -f "$SECRETS_DIR/vault-keys.json" ]; then
-  VAULT_TOKEN=$(jq -r '.root_token' "$SECRETS_DIR/vault-keys.json" 2>/dev/null || echo "")
+if [ -z "$VAULT_TOKEN" ]; then
+  VAULT_TOKEN=$(service_token VAULT_TOKEN_BACKUP 2>/dev/null || echo "")
 fi
+export VAULT_TOKEN
 
 if [ -z "$VAULT_TOKEN" ]; then
   echo "  ✗ WARNING: No Vault token available!"
@@ -248,7 +250,7 @@ else
       echo "  Backing up: $mount..."
       
       # List all keys in the mount
-      KEYS=$(docker exec -e VAULT_TOKEN="$VAULT_TOKEN" stargate-vault \
+      KEYS=$(docker exec -e VAULT_TOKEN stargate-vault \
         vault kv list -address=http://127.0.0.1:8200 -format=json "$mount" 2>/dev/null || echo "[]")
       
       if [ "$KEYS" = "[]" ] || [ -z "$KEYS" ]; then
@@ -267,7 +269,7 @@ else
         fi
         
         # Get the secret data
-        SECRET_DATA=$(docker exec -e VAULT_TOKEN="$VAULT_TOKEN" stargate-vault \
+        SECRET_DATA=$(docker exec -e VAULT_TOKEN stargate-vault \
           vault kv get -address=http://127.0.0.1:8200 -format=json "$mount/$key" 2>/dev/null || echo "{}")
         
         if [ -n "$SECRET_DATA" ] && [ "$SECRET_DATA" != "{}" ]; then

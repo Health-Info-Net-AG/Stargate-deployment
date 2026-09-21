@@ -8,6 +8,7 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 . "$SCRIPT_DIR/lib/docker.sh"
 . "$SCRIPT_DIR/lib/env.sh"
 . "$SCRIPT_DIR/lib/paths.sh"
+. "$SCRIPT_DIR/lib/vault-tokens.sh"  # needs SECRETS_DIR/ENV_FILE from paths.sh
 . "$SCRIPT_DIR/lib/config-sync.sh"    # defines sync_customer_config / detect_example_file
 . "$SCRIPT_DIR/init-data-layout.sh"   # defines init_data_layout (does not auto-run when sourced)
 
@@ -22,21 +23,7 @@ KEYS_FILE="$SECRETS_DIR/vault-keys.json"
 
 # check_dependencies() is provided by lib/docker.sh (sourced above).
 
-# Function to update .env file with vault token
-update_env_token() {
-  local token="$1"
-  if grep -q "^VAULT_TOKEN=" "$ENV_FILE"; then
-      sed -i "s/^VAULT_TOKEN=.*/VAULT_TOKEN=\"$token\"/" "$ENV_FILE"
-  else
-    # Ensure a trailing newline first so the append can't merge onto the
-    # last existing line (see persist_secret).
-    if [ -s "$ENV_FILE" ] && [ "$(tail -c1 "$ENV_FILE")" != "" ]; then
-      echo "" >> "$ENV_FILE"
-    fi
-    echo "VAULT_TOKEN=\"$token\"" >> "$ENV_FILE"
-  fi
-  echo "Updated VAULT_TOKEN in .env file"
-}
+# Per-service tokens come from init-vault.sh via lib/vault-tokens.sh.
 
 # Generate a random password
 generate_password() {
@@ -333,8 +320,7 @@ DEPLOYMENT_NAME="$DEPLOYMENT_NAME"
 POSTGRES_USER="$POSTGRES_USER"
 POSTGRES_PASSWORD="$POSTGRES_PASSWORD"
 
-# Vault (auto-populated after initialization)
-VAULT_TOKEN=
+# Vault: per-service tokens are appended after initialization.
 
 # S3 (SeaweedFS)
 S3_ACCESS_KEY="$S3_ACCESS_KEY"
@@ -525,33 +511,19 @@ EOF
   echo "Daily backup scheduled at 2:00 AM ($cron_file)"
 }
 
-# Function to save Vault token to customer-config.sh for persistence
-save_vault_token_to_config() {
-  local token="$1"
+# Drops the legacy VAULT_TOKEN entry; restore.sh uses vault-keys.json instead.
+purge_root_token_from_config() {
+  [ -f "$CONFIG_FILE" ] || return 0
+  grep -q '^VAULT_TOKEN=' "$CONFIG_FILE" || return 0
 
-  echo ""
-  echo "============================================"
-  echo "  Saving Vault Token to Config"
-  echo "============================================"
-  echo ""
-
-  # Check if VAULT_TOKEN is empty or missing in customer-config.sh
-  if grep -q '^VAULT_TOKEN=""' "$CONFIG_FILE" || grep -q '^VAULT_TOKEN=$' "$CONFIG_FILE" || ! grep -q '^VAULT_TOKEN=' "$CONFIG_FILE"; then
-    # Update or add the token
-    if grep -q '^VAULT_TOKEN=' "$CONFIG_FILE"; then
-      sed -i "s|^VAULT_TOKEN=.*|VAULT_TOKEN=\"$token\"|" "$CONFIG_FILE"
-    else
-      # Add to file if not present
-      echo "" >> "$CONFIG_FILE"
-      echo "VAULT_TOKEN=\"$token\"" >> "$CONFIG_FILE"
-    fi
-    echo "Vault token saved to customer-config.sh"
-    echo ""
-    echo "  IMPORTANT: Back up customer-config.sh before recreating the VM!"
-    echo "  The same token will be used on restore."
-  else
-    echo "Vault token already configured in customer-config.sh"
-  fi
+  local tmp="${CONFIG_FILE}.notoken.$$"
+  (
+    umask 077
+    grep -v '^VAULT_TOKEN=' "$CONFIG_FILE" > "$tmp"
+  ) || { rm -f "$tmp"; return 1; }
+  mv "$tmp" "$CONFIG_FILE"
+  chmod 600 "$CONFIG_FILE"
+  echo "  ✓ Removed the legacy VAULT_TOKEN entry from customer-config.sh"
 }
 
 # Function to extract WireGuard key from Vault and save to customer-config.sh
@@ -566,8 +538,9 @@ save_wireguard_key_to_config() {
   echo "Waiting for IRISAgent to initialize WireGuard key..."
   sleep 5
 
-  # Extract the WireGuard private key from Vault
-  WG_KEY=$(docker exec -e VAULT_TOKEN="$ROOT_TOKEN" stargate-vault \
+  local irisagent_token
+  irisagent_token=$(service_token VAULT_TOKEN_IRISAGENT || echo "")
+  WG_KEY=$(VAULT_TOKEN="$irisagent_token" docker exec -e VAULT_TOKEN stargate-vault \
     vault kv get -address=http://127.0.0.1:8200 -field=wg_private_key secret-irisagent/wg_private_key 2>/dev/null || echo "")
 
   if [ -z "$WG_KEY" ]; then
@@ -738,9 +711,6 @@ fi
 
 # Check if keys were generated
 if [ -f "$KEYS_FILE" ]; then
-  ROOT_TOKEN=$(jq -r '.root_token' "$KEYS_FILE")
-  update_env_token "$ROOT_TOKEN"
-
   echo ""
   echo "============================================"
   echo "  Vault initialized successfully!"
@@ -753,11 +723,16 @@ if [ -f "$KEYS_FILE" ]; then
   echo "IMPORTANT: Back up this file securely!"
   echo ""
 
-  # Save Vault token to customer-config.sh for persistence across VM recreations
-  save_vault_token_to_config "$ROOT_TOKEN"
+  purge_root_token_from_config
 
-  # Now start all services - VAULT_TOKEN is set in .env so application
-  # services will have the correct token from the start.
+  # Must precede `compose up -d` -- see lib/vault-tokens.sh.
+  echo ""
+  echo "Provisioning per-service Vault tokens..."
+  if ! sync_service_tokens_to_env; then
+    echo "ERROR: could not sync per-service Vault tokens; not starting services." >&2
+    exit 1
+  fi
+
   echo "Starting all services..."
   compose up -d
   echo "All services started."
