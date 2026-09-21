@@ -168,7 +168,7 @@ load_customer_config() {
 
   sync_customer_config "$BASE_CONFIG" "$CONFIG_FILE"
   source "$CONFIG_FILE"
-  chmod 600 "$CONFIG_FILE"  # holds VAULT_TOKEN, WG private key, passwords
+  chmod 600 "$CONFIG_FILE"  # holds the WG private key and generated passwords
 
   # Sensible defaults for identification fields. Customer can override in
   # customer-config.sh; if left empty, derive from the system hostname so

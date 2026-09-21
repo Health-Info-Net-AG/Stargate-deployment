@@ -9,7 +9,7 @@ set -eo pipefail
 #
 # Use cases:
 #   - Update mail domains, WireGuard config, or any other customer settings
-#   - Change passwords or credentials (except VAULT_TOKEN, which is preserved)
+#   - Change passwords or credentials
 #   - Jump straight to a released version, including installs several
 #     versions behind: --release <tag> (image versions are pinned in that
 #     release's docker-compose.yml, not in this config)

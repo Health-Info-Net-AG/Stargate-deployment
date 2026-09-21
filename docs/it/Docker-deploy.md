@@ -34,7 +34,7 @@ cp customer-config-prod.example.sh customer-config.sh
 | `SERVER_STATIC_IP` | Rilevato automaticamente dall'interfaccia di rete principale del server. |
 | `CUSTOMER_NAME` | Per impostazione predefinita, il nome host del sistema. |
 | `DEPLOYMENT_NAME` | Derivato da `CUSTOMER_NAME` (utilizzato nelle etichette dei log e nel nome host di Alloy). |
-| Password e chiavi (`POSTGRES_PASSWORD`, `S3_SECRET_KEY`, `VAULT_TOKEN`, `WG_PRIVATE_KEY`) | Generate in modo sicuro al primo avvio e riscritte in `customer-config.sh`. |
+| Password e chiavi (`POSTGRES_PASSWORD`, `S3_SECRET_KEY`, `WG_PRIVATE_KEY`) | Generate in modo sicuro al primo avvio e riscritte in `customer-config.sh`. |
 
 I domini di posta, il nome host di posta, i certificati S/MIME e i peer WireGuard sono tutti configurati in fase di esecuzione tramite la dashboard dopo l'avvio dello stack - non fanno parte di `customer-config.sh`.
 
@@ -77,7 +77,6 @@ I domini di posta, il nome host di posta, i certificati S/MIME e i peer WireGuar
 
 **Auto-generati (non impostare manualmente):**
 
-* `VAULT_TOKEN` — Generato da Vault durante la prima inizializzazione, salvato in `customer-config.sh`
 * `WG_PRIVATE_KEY` — Generato da IRISAgent al primo avvio, salvato in `customer-config.sh`
 
 ## Passo 2: Deploy su un server

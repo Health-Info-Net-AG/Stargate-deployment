@@ -129,6 +129,8 @@ fi
 # already-initialized Vault (a box that predates a newly added service) still gets the new mounts --
 # otherwise idagent/mailauth come up with no secret-idagent/secret-mailauth. All idempotent: `enable`
 # on an existing path just logs "already exists".
+# secret-policy has no reader or writer left, but stays: disabling a KV-v2 mount
+# destroys the data under it, and existing boxes may hold some.
 VAULT_MOUNTS="secret-smimekeys-client secret-policy secret-irisagent secret-mxengine secret-mtaconf secret-idagent secret-mailauth"
 
 if [ -n "${VAULT_TOKEN:-}" ]; then
@@ -138,37 +140,50 @@ if [ -n "${VAULT_TOKEN:-}" ]; then
   done
 fi
 
-# One token per service, scoped to its own mount. Outside the first-init branch,
-# like the mount loop above, so an existing Vault provisions on restart.
+# One token per service, scoped to the mounts it uses (comma-separated). Outside
+# the first-init branch, like the mount loop above, so an existing Vault
+# provisions on restart. The dashboard writes TLS keys to secret-mtaconf and
+# DKIM/ARC keys to secret-mailauth.
 SERVICE_SPECS="smimekeys-client:secret-smimekeys-client:rw
 irisagent:secret-irisagent:rw
 mxengine:secret-mxengine:rw
 idagent:secret-idagent:rw
 mtaconf:secret-mtaconf:rw
 mailauth:secret-mailauth:ro
-dashboard:secret-mtaconf:wo"
+dashboard:secret-mtaconf,secret-mailauth:wo"
 
 TOKENS_FILE="$SECRETS_DIR/service-tokens.env"
 
 # Catches a server still on the 768h default.
 MIN_TOKEN_TTL_SECONDS=31536000 # 1 year
 
-# $1 = mount, $2 = kind. rw needs config: the Go clients POST it at startup.
+# $1 = comma-separated mounts, $2 = kind. rw needs config: the Go clients POST
+# it at startup.
 policy_hcl() {
-  case "$2" in
-    rw)
-      printf 'path "%s/config" { capabilities = ["create", "read", "update"] }\n' "$1"
-      printf 'path "%s/data/*" { capabilities = ["create", "read", "update", "delete"] }\n' "$1"
-      printf 'path "%s/metadata/*" { capabilities = ["read", "list", "delete"] }\n' "$1"
-      ;;
-    ro)
-      printf 'path "%s/data/*" { capabilities = ["read"] }\n' "$1"
-      printf 'path "%s/metadata/*" { capabilities = ["read", "list"] }\n' "$1"
-      ;;
-    wo)
-      printf 'path "%s/data/*" { capabilities = ["create", "update"] }\n' "$1"
-      ;;
-  esac
+  for m in $(echo "$1" | tr ',' ' '); do
+    case "$2" in
+      rw)
+        printf 'path "%s/config" { capabilities = ["create", "read", "update"] }\n' "$m"
+        printf 'path "%s/data/*" { capabilities = ["create", "read", "update", "delete"] }\n' "$m"
+        printf 'path "%s/metadata/*" { capabilities = ["read", "list", "delete"] }\n' "$m"
+        ;;
+      ro)
+        printf 'path "%s/data/*" { capabilities = ["read"] }\n' "$m"
+        printf 'path "%s/metadata/*" { capabilities = ["read", "list"] }\n' "$m"
+        ;;
+      wo)
+        printf 'path "%s/data/*" { capabilities = ["create", "update"] }\n' "$m"
+        ;;
+      backup)
+        printf 'path "%s/data/*" { capabilities = ["read"] }\n' "$m"
+        printf 'path "%s/metadata/*" { capabilities = ["read", "list"] }\n' "$m"
+        ;;
+      restore)
+        printf 'path "%s/data/*" { capabilities = ["create", "read", "update"] }\n' "$m"
+        printf 'path "%s/metadata/*" { capabilities = ["read", "list"] }\n' "$m"
+        ;;
+    esac
+  done
 }
 
 token_is_valid() {
@@ -195,7 +210,9 @@ if [ -n "${VAULT_TOKEN:-}" ]; then
   ( umask 077; : > "$TOKENS_TMP" )
   PROVISION_FAILED=false
 
-  for spec in $SERVICE_SPECS backup:all:backup; do
+  ALL_MOUNTS=$(echo "$VAULT_MOUNTS" | tr ' ' ',')
+
+  for spec in $SERVICE_SPECS "backup:$ALL_MOUNTS:backup" "restore:$ALL_MOUNTS:restore"; do
     svc=${spec%%:*}
     rest=${spec#*:}
     mount=${rest%%:*}
@@ -204,28 +221,20 @@ if [ -n "${VAULT_TOKEN:-}" ]; then
     var="VAULT_TOKEN_$(echo "$svc" | tr '[:lower:]' '[:upper:]' | tr '-' '_')"
 
     # Rewritten every run so a capability change lands without re-minting.
-    if [ "$kind" = "backup" ]; then
-      for m in $VAULT_MOUNTS; do
-        printf 'path "%s/data/*" { capabilities = ["create", "read", "update"] }\n' "$m"
-        printf 'path "%s/metadata/*" { capabilities = ["read", "list"] }\n' "$m"
-      done | vault policy write -address=http://vault:8200 "$policy" - >/dev/null || {
-        echo "  ERROR: could not write policy $policy" >&2
-        PROVISION_FAILED=true
-        continue
-      }
-    else
-      policy_hcl "$mount" "$kind" \
-        | vault policy write -address=http://vault:8200 "$policy" - >/dev/null || {
-        echo "  ERROR: could not write policy $policy" >&2
-        PROVISION_FAILED=true
-        continue
-      }
-    fi
+    policy_hcl "$mount" "$kind" \
+      | vault policy write -address=http://vault:8200 "$policy" - >/dev/null || {
+      echo "  ERROR: could not write policy $policy" >&2
+      PROVISION_FAILED=true
+      continue
+    }
 
+    # Re-mint when the stored token is invalid OR close enough to expiry that it
+    # would lapse before the next release; this is what rotates them.
     token=$(stored_token "$var" || true)
-    if token_is_valid "$token"; then
+    if token_is_valid "$token" && token_ttl_ok "$token"; then
       echo "  $svc: token present"
     else
+      previous_token="$token"
       token=$(vault token create -address=http://vault:8200 \
         -policy="$policy" -orphan -ttl=87600h \
         -display-name="$svc" -field=token 2>/dev/null || true)
@@ -242,6 +251,10 @@ if [ -n "${VAULT_TOKEN:-}" ]; then
         VAULT_TOKEN="$token" vault token revoke -address=http://vault:8200 -self >/dev/null 2>&1 || true
         PROVISION_FAILED=true
         continue
+      fi
+      if [ -n "$previous_token" ]; then
+        VAULT_TOKEN="$previous_token" vault token revoke -address=http://vault:8200 -self \
+          >/dev/null 2>&1 || true
       fi
       echo "  $svc: token minted"
     fi

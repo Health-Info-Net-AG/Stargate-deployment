@@ -134,7 +134,7 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=<automatisch-generiert>
 
 ## Vault (nach der Initialisierung automatisch ausgefüllt)
-VAULT_TOKEN=<automatisch-generiert>
+VAULT_TOKEN_<SERVICE>=<automatisch generiert, eines pro Dienst>
 
 ## S3 Object Storage (SeaweedFS)
 S3_ACCESS_KEY=minioadmin
@@ -694,13 +694,13 @@ Die folgenden KV-v2-Secret-Engines werden erstellt:
 === "Mounts auflisten"
 
     ```bash
-    docker exec -e VAULT_TOKEN=<token> stargate-vault vault secrets list
+    VAULT_TOKEN=<service token> docker exec -e VAULT_TOKEN stargate-vault vault secrets list
     ```
 
 === "Ein Secret schreiben"
 
     ```bash
-    docker exec -e VAULT_TOKEN=<token> stargate-vault vault kv put secret-smimekeys-client/test key=value
+    VAULT_TOKEN=<service token> docker exec -e VAULT_TOKEN stargate-vault vault kv put secret-smimekeys-client/test key=value
     ```
 
 ## Datenbanken

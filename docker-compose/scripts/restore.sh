@@ -241,7 +241,7 @@ if [ -f "$CONFIG_FILE" ]; then
 fi
 
 cp "$BACKUP_CONTENT/config/customer-config.sh" "$CONFIG_FILE"
-chmod 600 "$CONFIG_FILE"  # holds VAULT_TOKEN, WG private key, passwords
+chmod 600 "$CONFIG_FILE"  # holds the WG private key and generated passwords
 echo "  ✓ customer-config.sh restored"
 
 # Custom NTP servers, if the source deployment had any. Restored before the stack
@@ -600,10 +600,10 @@ if ! sync_service_tokens_to_env; then
 fi
 purge_root_token_from_config
 
-VAULT_TOKEN=$(service_token VAULT_TOKEN_BACKUP 2>/dev/null || echo "")
+VAULT_TOKEN=$(service_token VAULT_TOKEN_RESTORE 2>/dev/null || echo "")
 export VAULT_TOKEN
 if [ -z "$VAULT_TOKEN" ]; then
-  echo "  ✗ ERROR: no backup token available; cannot restore Vault secrets"
+  echo "  ✗ ERROR: no restore token available; cannot restore Vault secrets"
   exit 1
 fi
 

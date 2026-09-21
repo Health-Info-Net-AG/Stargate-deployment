@@ -36,7 +36,7 @@ Sie müssen darin **nichts** bearbeiten - jeder Wert wird entweder automatisch e
 | `SERVER_STATIC_IP` | Automatisch von der primären Netzwerkschnittstelle des Servers erkannt. |
 | `CUSTOMER_NAME` | Standardmäßig der System-Hostname. |
 | `DEPLOYMENT_NAME` | Von `CUSTOMER_NAME` abgeleitet (wird in Log-Labels und im Alloy-Hostname verwendet). |
-| Passwörter & Schlüssel (`POSTGRES_PASSWORD`, `S3_SECRET_KEY`, `VAULT_TOKEN`, `WG_PRIVATE_KEY`) | Werden beim ersten Start sicher generiert und in `customer-config.sh` zurückgeschrieben. |
+| Passwörter & Schlüssel (`POSTGRES_PASSWORD`, `S3_SECRET_KEY`, `WG_PRIVATE_KEY`) | Werden beim ersten Start sicher generiert und in `customer-config.sh` zurückgeschrieben. |
 
 Mail-Domains, der Mail-Hostname, S/MIME-Zertifikate und WireGuard-Peers werden alle zur Laufzeit über das Dashboard konfiguriert, nachdem der Stack läuft - sie sind nicht Teil von `customer-config.sh`.
 
@@ -81,7 +81,6 @@ Mail-Domains und der Stalwart-Hostname werden zur Laufzeit über die `/mail`-Sei
 
 **Automatisch generiert (nicht manuell setzen):**
 
-* `VAULT_TOKEN` — Wird von Vault während der ersten Initialisierung generiert und in `customer-config.sh` gespeichert
 * `WG_PRIVATE_KEY` — Wird von IRISAgent beim ersten Start generiert und in `customer-config.sh` gespeichert
 
 ## Schritt 2: Auf einem Server bereitstellen

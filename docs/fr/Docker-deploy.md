@@ -34,7 +34,7 @@ Vous n'avez **pas** besoin de le modifier - chaque valeur est soit détectée au
 | `SERVER_STATIC_IP` | Détecté automatiquement à partir de l'interface réseau principale du serveur. |
 | `CUSTOMER_NAME` | Par défaut, le nom d'hôte du système. |
 | `DEPLOYMENT_NAME` | Dérivé de `CUSTOMER_NAME` (utilisé dans les étiquettes de logs et le nom d'hôte Alloy). |
-| Mots de passe et clés (`POSTGRES_PASSWORD`, `S3_SECRET_KEY`, `VAULT_TOKEN`, `WG_PRIVATE_KEY`) | Générés de manière sécurisée au premier lancement et réécrits dans `customer-config.sh`. |
+| Mots de passe et clés (`POSTGRES_PASSWORD`, `S3_SECRET_KEY`, `WG_PRIVATE_KEY`) | Générés de manière sécurisée au premier lancement et réécrits dans `customer-config.sh`. |
 
 Les domaines de courrier, le nom d'hôte de messagerie, les certificats S/MIME et les pairs WireGuard sont tous configurés à l'exécution via le tableau de bord une fois la pile démarrée - ils ne font pas partie de `customer-config.sh`.
 
@@ -77,7 +77,6 @@ Les domaines de courrier, le nom d'hôte de messagerie, les certificats S/MIME e
 
 **Auto-générés (ne pas définir manuellement) :**
 
-* `VAULT_TOKEN` — Généré par Vault lors de la première initialisation, sauvegardé dans `customer-config.sh`
 * `WG_PRIVATE_KEY` — Généré par IRISAgent lors de la première exécution, sauvegardé dans `customer-config.sh`
 
 ## Étape 2: Déployer sur un serveur
