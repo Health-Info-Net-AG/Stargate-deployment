@@ -74,9 +74,9 @@ while [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]; do
   fi
 
   echo "  Unsealing Vault (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
-  printf '%s' "$UNSEAL_KEY_1" | docker exec -i stargate-vault vault operator unseal - > /dev/null 2>&1 || true
-  printf '%s' "$UNSEAL_KEY_2" | docker exec -i stargate-vault vault operator unseal - > /dev/null 2>&1 || true
-  printf '%s' "$UNSEAL_KEY_3" | docker exec -i stargate-vault vault operator unseal - > /dev/null 2>&1 || true
+  docker exec stargate-vault vault operator unseal "$UNSEAL_KEY_1" > /dev/null 2>&1 || true
+  docker exec stargate-vault vault operator unseal "$UNSEAL_KEY_2" > /dev/null 2>&1 || true
+  docker exec stargate-vault vault operator unseal "$UNSEAL_KEY_3" > /dev/null 2>&1 || true
 
   # Verify unseal succeeded
   if docker exec stargate-vault vault status 2>/dev/null | grep -q "Sealed.*false"; then
