@@ -186,13 +186,14 @@ policy_hcl() {
   done
 }
 
+# `token lookup` with no argument is the self-lookup; there is no -self flag.
 token_is_valid() {
   [ -n "$1" ] || return 1
-  VAULT_TOKEN="$1" vault token lookup -address=http://vault:8200 -self >/dev/null 2>&1
+  VAULT_TOKEN="$1" vault token lookup -address=http://vault:8200 >/dev/null 2>&1
 }
 
 token_ttl_ok() {
-  ttl=$(VAULT_TOKEN="$1" vault token lookup -address=http://vault:8200 -self -format=json 2>/dev/null \
+  ttl=$(VAULT_TOKEN="$1" vault token lookup -address=http://vault:8200 -format=json 2>/dev/null \
     | jq -r '.data.ttl // 0')
   [ -n "$ttl" ] && [ "$ttl" -ge "$MIN_TOKEN_TTL_SECONDS" ] 2>/dev/null
 }
@@ -265,6 +266,20 @@ if [ -n "${VAULT_TOKEN:-}" ]; then
     rm -f "$TOKENS_TMP"
     echo "ERROR: service token provisioning failed; leaving $TOKENS_FILE untouched." >&2
     exit 1
+  fi
+
+  # Revoke tokens for services that are no longer in SERVICE_SPECS; otherwise a
+  # dropped service leaves a valid credential behind indefinitely.
+  if [ -f "$TOKENS_FILE" ]; then
+    for old_var in $(cut -d= -f1 "$TOKENS_FILE"); do
+      grep -q "^$old_var=" "$TOKENS_TMP" && continue
+      old=$(stored_token "$old_var" || true)
+      if [ -n "$old" ]; then
+        VAULT_TOKEN="$old" vault token revoke -address=http://vault:8200 -self \
+          >/dev/null 2>&1 || true
+        echo "  $old_var: revoked (service removed)"
+      fi
+    done
   fi
 
   mv "$TOKENS_TMP" "$TOKENS_FILE"
