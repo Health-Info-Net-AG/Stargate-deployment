@@ -231,17 +231,21 @@ fi
 export VAULT_TOKEN
 
 VAULT_BACKUP_INCOMPLETE=false
+VAULT_ERR=$(mktemp)
+trap 'rm -f "$VAULT_ERR"' EXIT
 
 if [ -z "$VAULT_TOKEN" ]; then
   echo "  ✗ WARNING: No Vault token available!"
   echo "    Vault secrets will NOT be backed up."
   VAULT_SECRETS_COUNT=0
+  VAULT_BACKUP_INCOMPLETE=true
 else
   # Check if Vault is accessible
   if ! docker exec stargate-vault vault status -address=http://127.0.0.1:8200 > /dev/null 2>&1; then
     echo "  ✗ WARNING: Vault is not accessible!"
     echo "    Vault secrets will NOT be backed up."
     VAULT_SECRETS_COUNT=0
+    VAULT_BACKUP_INCOMPLETE=true
   else
     VAULT_SECRETS_COUNT=0
     
@@ -255,17 +259,15 @@ else
       # for a refusal, so the stderr text is what separates "nothing here" from
       # "not allowed" -- treating the second as the first would silently write an
       # incomplete archive.
-      LIST_ERR=$(mktemp)
+      : > "$VAULT_ERR"
       KEYS=$(docker exec -e VAULT_TOKEN stargate-vault \
-        vault kv list -address=http://127.0.0.1:8200 -format=json "$mount" 2>"$LIST_ERR") || KEYS=""
+        vault kv list -address=http://127.0.0.1:8200 -format=json "$mount" 2>"$VAULT_ERR") || KEYS=""
 
-      if grep -qiE 'permission denied|403' "$LIST_ERR"; then
+      if grep -qiE 'permission denied|403' "$VAULT_ERR"; then
         echo "    ✗ ERROR: permission denied listing $mount"
         VAULT_BACKUP_INCOMPLETE=true
-        rm -f "$LIST_ERR"
         continue
       fi
-      rm -f "$LIST_ERR"
 
       if [ "$KEYS" = "[]" ] || [ -z "$KEYS" ]; then
         echo "    - No secrets found"
@@ -283,25 +285,26 @@ else
         fi
         
         # Get the secret data
-        GET_ERR=$(mktemp)
+        : > "$VAULT_ERR"
         SECRET_DATA=$(docker exec -e VAULT_TOKEN stargate-vault \
-          vault kv get -address=http://127.0.0.1:8200 -format=json "$mount/$key" 2>"$GET_ERR") || SECRET_DATA=""
+          vault kv get -address=http://127.0.0.1:8200 -format=json "$mount/$key" 2>"$VAULT_ERR") || SECRET_DATA=""
 
-        if grep -qiE 'permission denied|403' "$GET_ERR"; then
+        if grep -qiE 'permission denied|403' "$VAULT_ERR"; then
           echo "    ✗ ERROR: permission denied reading $mount/$key"
           VAULT_BACKUP_INCOMPLETE=true
-          rm -f "$GET_ERR"
           continue
         fi
-        rm -f "$GET_ERR"
 
         if [ -n "$SECRET_DATA" ] && [ "$SECRET_DATA" != "{}" ]; then
           echo "$SECRET_DATA" > "$BACKUP_SUBDIR/vault/$mount/${key}.json"
           echo "    ✓ $key"
           ((VAULT_SECRETS_COUNT++)) || true
-        else
+        elif [ -s "$VAULT_ERR" ]; then
           echo "    ✗ ERROR: could not read $mount/$key"
           VAULT_BACKUP_INCOMPLETE=true
+        else
+          # Listed but no current version: a soft-deleted key, not a failure.
+          echo "    - $key (no current version)"
         fi
       done
     done
@@ -436,11 +439,11 @@ find "$BACKUP_DIR" -name "*.tar.gz" -type f -mtime +7 -delete 2>/dev/null || tru
 echo "Done."
 echo ""
 
-# A reachable Vault that refused a read means secrets are missing from an archive
-# that otherwise looks complete. The archive is kept, but the exit code has to
-# say so, or cron reports success over missing keys.
+# Secrets are missing from an archive that otherwise looks complete. It is kept
+# -- a partial backup still beats none -- but the exit code has to say so, or
+# cron reports success over missing keys.
 if [ "$VAULT_BACKUP_INCOMPLETE" = true ]; then
-  echo "ERROR: Vault refused at least one read; this archive is INCOMPLETE." >&2
+  echo "ERROR: the Vault section of this archive is INCOMPLETE (see above)." >&2
   echo "  $ARCHIVE_PATH exists but must not be relied on for recovery." >&2
   exit 1
 fi
