@@ -114,7 +114,7 @@
       "credentials": [
         {
           "type": "password",
-          "value": "StargateLogin",
+          "value": "${SG_ADMIN_PASSWORD}",
           "temporary": true
         }
       ]

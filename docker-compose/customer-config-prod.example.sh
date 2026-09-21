@@ -154,6 +154,12 @@ KEYCLOAK_DASHBOARD_CLIENT_SECRET="" # Auto-generated if empty
 KEYCLOAK_DOZZLE_CLIENT_SECRET=""    # Auto-generated if empty (Dozzle login via oauth2-proxy)
 OAUTH2_PROXY_COOKIE_SECRET=""       # Auto-generated if empty (oauth2-proxy session cookie)
 
+# Initial password for the sg-admin gateway login in the "stargate" realm.
+# Auto-generated if empty. Set it here to hand a known credential to the customer;
+# a generated one is readable on the appliance in this file. Seeded only on a
+# realm import, so changing it later has no effect on an existing deployment.
+SG_ADMIN_PASSWORD=""
+
 # Public-facing URLs (must be reachable from the end-user's browser)
 KEYCLOAK_PUBLIC_URL=""      # Default: https://<SERVER_STATIC_IP>:8180
 DASHBOARD_PUBLIC_URL=""     # Default: https://<SERVER_STATIC_IP>
