@@ -17,10 +17,16 @@
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPTS_DIR="$(cd "$here/../docker-compose/scripts" && pwd)"
-root=/tmp/sg-br-test; rm -rf "$root"
-export STARGATE_DATA_DIR="$root"
 
 PG_CONTAINER="stargate-postgres"
+
+if docker ps -a --format '{{.Names}}' | grep -qx "$PG_CONTAINER"; then
+  echo "ERROR: a container named $PG_CONTAINER already exists -- refusing to touch it. Remove it and re-run." >&2
+  exit 1
+fi
+
+root=/tmp/sg-br-test; rm -rf "$root"
+export STARGATE_DATA_DIR="$root"
 
 extract_dir=""
 cleanup() {
@@ -28,11 +34,6 @@ cleanup() {
   rm -rf "$root" "${extract_dir:-}" 2>/dev/null || true
 }
 trap cleanup EXIT
-
-if docker ps -a --format '{{.Names}}' | grep -qx "$PG_CONTAINER"; then
-  echo "ERROR: a container named $PG_CONTAINER already exists -- refusing to touch it. Remove it and re-run." >&2
-  exit 1
-fi
 
 bash "$SCRIPTS_DIR/init-data-layout.sh"
 printf 'VAULT_TOKEN="t"\nPOSTGRES_PASSWORD="p"\nWG_PRIVATE_KEY="k"\n' > "$root/vereign/customer-config.sh"
