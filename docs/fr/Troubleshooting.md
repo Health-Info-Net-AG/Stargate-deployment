@@ -295,3 +295,15 @@ Pour résoudre ce problème, la configuration manuelle suivante doit être effec
 7. Cliquez sur Save
 
  <br> ![keycloak-console](assets/troubleshooting/keycloak-update.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+
+# Demander un code d'activation
+
+Si vous souhaitez installer ou réinstaller une instance HIN Gateway, vous aurez besoin d'un code d'activation, qui peut être fourni par le support HIN.
+
+
+!!! warning "Réinitialiser le code d'activation interrompt la connexion peer"
+    La réinitialisation du code d'activation d'une instance active supprime la connexion peer WireGuard du client.
+
+    Si vous demandez cette réinitialisation pour la mauvaise instance client, cela supprimera et interrompra la connexion de cette instance active. Avant de demander une réinitialisation, vérifiez soigneusement l'instance exacte et confirmez tous les domaines qui y sont hébergés.
+

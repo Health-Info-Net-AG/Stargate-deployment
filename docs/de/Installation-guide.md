@@ -502,7 +502,7 @@ Konfigurieren Sie auf diesem Bildschirm Ihre Grundeinstellungen:
 | --------- | ------------- |
 | **Hostname des Mail-Servers** | Der FQDN dieser Mail-Gateway-Instanz (z. B. `mail.example.com`). |
 | **IP-Adressen des Mail-Servers** | Die öffentliche(n) IP-Adresse(n) dieses Servers. Fügen Sie weitere IP-Adressen hinzu, falls der Server über mehrere Adressen erreichbar ist. |
-| **DNS** | DNS des Hosts, der zur Auflösung von MX- und anderen DNS-Einträgen verwendet wird. |
+| **DNS** | DNS des Hosts, der zur Auflösung von MX- und anderen DNS-Einträgen verwendet wird. Bitte stellen Sie sicher, dass der eingegebene DNS-Server von der HIN Gateway VM aus erreichbar ist |
 
 !!! warning "Migrationsszenario für schrittweise Multi-Domain-Migration"
 

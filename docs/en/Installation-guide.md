@@ -503,7 +503,7 @@ On this screen, configure your initial settings:
 | --------- | ------------- |
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
-| **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
+| **DNS** | DNS of the host which will be used to resolve MX and other DNS records. Please make sure that the entered DNS server is reachable from the Stargate VM. |
 
 !!! warning "Multi-domain gradual migration scenario"
 

@@ -294,3 +294,15 @@ Per risolvere il problema, occorre completare la seguente configurazione manuale
 7. Cliccare su Save
 
  <br> ![keycloak-console](assets/troubleshooting/keycloak-update.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+
+# Richiesta del codice di attivazione
+
+Se si desidera installare o reinstallare un'istanza HIN Gateway, sarà necessario un codice di attivazione, che può essere fornito dal supporto HIN.
+
+
+!!! warning "Il ripristino del codice di attivazione interrompe la connessione peer"
+    Il ripristino del codice di attivazione per un'istanza attiva cancella la connessione peer WireGuard del cliente.
+
+    Se si richiede questo ripristino per l'istanza cliente sbagliata, la connessione attiva di tale istanza verrà eliminata e interrotta. Prima di richiedere un ripristino, verificare attentamente l'istanza esatta e confermare tutti i domini ospitati su di essa.
+

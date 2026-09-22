@@ -502,7 +502,7 @@ In questa schermata, configura le tue impostazioni iniziali:
 | --------- | ------------- |
 | **Mail server host name** | Il FQDN di questa istanza del gateway di posta (es. `mail.example.com`). |
 | **Mail server IP addresses** | Gli indirizzi IP pubblici di questo server. Aggiungi IP aggiuntivi se il server è raggiungibile su più indirizzi. |
-| **DNS** | Il DNS dell'host che verrà utilizzato per risolvere i record MX e altri record DNS |
+| **DNS** | Il DNS dell'host che verrà utilizzato per risolvere i record MX e altri record DNS. Assicurati che il server DNS inserito sia raggiungibile dalla VM HIN Gateway. |
 
 !!! warning "Scenario di migrazione graduale multi-dominio"
 

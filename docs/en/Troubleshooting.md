@@ -376,3 +376,15 @@ Follow the steps below to reset the password of a Stargate user through the Keyc
    
 **Do not change or reset the Keycloak administrator password as part of this procedure.**
 Any changes of admin password can lead to potention lockdown of keyclaok without anyone be able to access it!
+
+
+# Request Activation code
+
+In case you want to install or re-install HIN Gateway instance you will need Activation code , which can be provided by HIN Support
+
+
+!!! warning "Reset Activation code breaks peer connection"
+    Resetting the activation code for an active instance clears the customer WireGuard peer connection. 
+
+    If you request this reset for the wrong customer instance, it will delete and break that active instance connection. Before requesting a reset, double-check the exact instance and confirm all domains hosted on it.
+

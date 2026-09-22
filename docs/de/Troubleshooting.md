@@ -294,3 +294,15 @@ Zur Behebung muss die folgende manuelle Konfiguration in der *Keycloak-UI* vorge
 7. Auf Save klicken
 
  <br> ![keycloak-console](assets/troubleshooting/keycloak-update.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
+
+
+# Aktivierungscode anfordern
+
+Wenn Sie eine HIN Gateway-Instanz installieren oder neu installieren möchten, benötigen Sie einen Aktivierungscode, den Sie beim HIN Support anfordern können.
+
+
+!!! warning "Zurücksetzen des Aktivierungscodes unterbricht die Peer-Verbindung"
+    Das Zurücksetzen des Aktivierungscodes für eine aktive Instanz löscht die WireGuard-Peer-Verbindung des Kunden.
+
+    Wenn Sie diesen Reset für die falsche Kundeninstanz anfordern, wird die aktive Verbindung dieser Instanz gelöscht und unterbrochen. Prüfen Sie vor der Anforderung eines Resets sorgfältig die genaue Instanz und bestätigen Sie alle darauf gehosteten Domains.
+
