@@ -63,3 +63,18 @@ ensure_service_tokens() {
   sync_service_tokens_to_env || return 1
   return 0
 }
+
+# Drops the legacy VAULT_TOKEN entry; restore.sh uses vault-keys.json instead.
+purge_root_token_from_config() {
+  [ -f "$CONFIG_FILE" ] || return 0
+  grep -q '^VAULT_TOKEN=' "$CONFIG_FILE" || return 0
+
+  local tmp="${CONFIG_FILE}.notoken.$$"
+  (
+    umask 077
+    grep -v '^VAULT_TOKEN=' "$CONFIG_FILE" > "$tmp"
+  ) || { rm -f "$tmp"; return 1; }
+  mv "$tmp" "$CONFIG_FILE"
+  chmod 600 "$CONFIG_FILE"
+  echo "  ✓ Removed the legacy VAULT_TOKEN entry from customer-config.sh"
+}
