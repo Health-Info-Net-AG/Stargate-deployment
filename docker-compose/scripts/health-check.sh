@@ -221,7 +221,7 @@ fi
 
 # Check the SMTP listeners. The stalwart image has no ss/netstat, so read
 # /proc/net/tcp{,6} inside the container (always present) and look for a socket
-# in LISTEN state (st=0A) on the port in hex. 25=0x0019, 587=0x024B, 10026=0x272A.
+# in LISTEN state (st=0A) on the port in hex. 25=0x0019, 10026=0x272A.
 stalwart_listening() {  # $1 = decimal port
   local hexport
   hexport=$(printf ':%04X' "$1")
