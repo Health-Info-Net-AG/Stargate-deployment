@@ -1080,6 +1080,13 @@ services:
       # rule for :10026 accepts any sender→any recipient as "trusted
       # internal" traffic).
       - "25:25"
+      # :587 is the authenticated submission listener. AUTH is mandatory there
+      # and Stalwart only offers password mechanisms once STARTTLS is up, so a
+      # credential can never cross the wire in the clear. mtaconf denies :587
+      # outright unless a submission credential matches, so the port refuses
+      # everyone until credentials are created in the dashboard. Set
+      # SUBMISSION_BIND_ADDR to a LAN address to keep it off the internet.
+      - "${SUBMISSION_BIND_ADDR:-0.0.0.0}:587:587"
     networks:
       - stargate-network
     healthcheck:

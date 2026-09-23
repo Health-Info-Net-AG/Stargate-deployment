@@ -73,17 +73,20 @@ log "Stalwart reachable"
 create_listener() {
   local name="$1" bind="$2" protocol="$3" tls="${4:-false}"
 
-  if cli query NetworkListener 2>/dev/null | grep -Fq "$name"; then
+  # Exact match on the Name column, not a substring: Stalwart ships a built-in
+  # listener called `submissions` (:465), and `grep -F submission` matches it,
+  # which would silently skip creating our `submission` listener on :587.
+  if cli query NetworkListener 2>/dev/null | awk -v n="$name" 'NR > 1 && $2 == n { found = 1 } END { exit !found }'; then
     log "listener '$name' already exists"
     return 0
   fi
 
-  log "creating listener: $name (${protocol} on ${bind}, tls=${tls})"
+  log "creating listener: $name (${protocol} on ${bind}, implicit tls=${tls})"
   cli create NetworkListener \
     --field "name=${name}" \
     --field "bind={\"${bind}\": true}" \
     --field "protocol=${protocol}" \
-    --field "useTls=${tls}"
+    --field "tlsImplicit=${tls}"
 }
 
 # Content-filtering scope for the two SMTP listeners ('smtp' :25, 'reinject'
@@ -91,7 +94,7 @@ create_listener() {
 # on a match, else "false". NOTE: 'match' is a Stalwart List, patched as an
 # integer-keyed object ({"0": ...}) and NOT a JSON array -- an array is rejected
 # with `invalidPatch: Invalid value for object property`.
-SMTP_LISTENER_COND="listener == 'smtp' || listener == 'reinject'"
+SMTP_LISTENER_COND="listener == 'smtp' || listener == 'reinject' || listener == 'submission'"
 SMTP_LISTENERS="{\"match\":{\"0\":{\"if\":\"${SMTP_LISTENER_COND}\",\"then\":\"true\"}},\"else\":\"false\"}"
 
 create_milter() {
@@ -160,6 +163,12 @@ create_listener "smtp" "0.0.0.0:25" "smtp" "false"
 
 # Reinject (port 10026) - mxengine sends processed mail back here
 create_listener "reinject" "0.0.0.0:10026" "smtp" "false"
+
+# Submission (port 587) - authenticated clients hand us mail to send.
+# AUTH is mandatory here (MtaStageAuth.require, set by mtaconf) and mtaconf's
+# allowRelaying denies :587 outright unless a submission credential matches,
+# so an unprovisioned installation exposes an open port that refuses everyone.
+create_listener "submission" "0.0.0.0:587" "smtp" "false"
 
 # Management HTTP (port 8080) - already provided by recovery mode, but ensure
 # it persists if recovery mode is ever disabled

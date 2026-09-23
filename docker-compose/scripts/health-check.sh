@@ -221,7 +221,7 @@ fi
 
 # Check the SMTP listeners. The stalwart image has no ss/netstat, so read
 # /proc/net/tcp{,6} inside the container (always present) and look for a socket
-# in LISTEN state (st=0A) on the port in hex. 25=0x0019, 10026=0x272A.
+# in LISTEN state (st=0A) on the port in hex. 25=0x0019, 587=0x024B, 10026=0x272A.
 stalwart_listening() {  # $1 = decimal port
   local hexport
   hexport=$(printf ':%04X' "$1")
@@ -239,6 +239,12 @@ if stalwart_listening 10026; then
   pass "Port 10026 (reinjection) listening"
 else
   fail "Port 10026 (reinjection) not listening (provision may not have run yet)"
+fi
+
+if stalwart_listening 587; then
+  pass "Port 587 (submission) listening"
+else
+  fail "Port 587 (submission) not listening (stalwart needs one restart after provisioning creates the listener)"
 fi
 
 echo ""

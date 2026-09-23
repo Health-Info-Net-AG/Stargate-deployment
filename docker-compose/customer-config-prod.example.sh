@@ -119,6 +119,12 @@ OUTBOUND_SMTP_HOST=""
 # External SMTP port for outbound delivery (default: 10026)
 OUTBOUND_SMTP_PORT=""
 
+# Host address the authenticated submission listener (:587) binds to.
+# Default 0.0.0.0 publishes it on every interface, which is what remote
+# submitters need. Set to a LAN address (e.g. "10.0.0.5") to keep submission
+# off the internet when every submitting system is on-premise.
+SUBMISSION_BIND_ADDR=""
+
 # ==============================================================================
 # OPTIONAL: Policy Sync Configuration
 # ==============================================================================
