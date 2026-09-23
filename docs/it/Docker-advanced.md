@@ -134,7 +134,7 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=<auto-generato>
 
 ## Vault (auto-populato dopo l'inizializzazione)
-VAULT_TOKEN=<auto-generato>
+VAULT_TOKEN_<SERVICE>=<auto-generato, uno per servizio>
 
 ## Storage di oggetti S3 (SeaweedFS)
 S3_ACCESS_KEY=minioadmin
@@ -685,6 +685,8 @@ I seguenti motori di segreti KV-v2 vengono creati:
 
 ### Operazioni manuali Vault
 
+Ogni servizio ha un proprio token in `/var/data/vereign/secrets/service-tokens.env`, limitato al montaggio di quel servizio. I comandi amministrativi, come l'elenco dei montaggi, richiedono il token root di `vault-keys.json` nella stessa directory. Gli esempi leggono il token dal file, quindi non compare né nella riga di comando né nella cronologia della shell.
+
 === "Controllare lo stato"
 
     ```bash
@@ -694,13 +696,15 @@ I seguenti motori di segreti KV-v2 vengono creati:
 === "Elencare i montaggi"
 
     ```bash
-    docker exec -e VAULT_TOKEN=<token> stargate-vault vault secrets list
+    VAULT_TOKEN=$(jq -r .root_token /var/data/vereign/secrets/vault-keys.json) \
+      docker exec -e VAULT_TOKEN stargate-vault vault secrets list
     ```
 
 === "Scrivere un segreto"
 
     ```bash
-    docker exec -e VAULT_TOKEN=<token> stargate-vault vault kv put secret-smimekeys-client/test key=valore
+    VAULT_TOKEN=$(sed -n 's/^VAULT_TOKEN_SMIMEKEYS_CLIENT="\(.*\)"$/\1/p' /var/data/vereign/secrets/service-tokens.env) \
+      docker exec -e VAULT_TOKEN stargate-vault vault kv put secret-smimekeys-client/test key=valore
     ```
 
 ## Database

@@ -47,14 +47,10 @@ MXENGINE_PUBLIC_ADDRESS=""
 CERT_CA_IRISAGENT_DOMAIN="hin"
 
 # ==============================================================================
-# AUTO-GENERATED: Vault Configuration
+# Vault Configuration
 # ==============================================================================
-# The Vault root token is auto-generated during first installation.
-# After install.sh runs, this value will be populated automatically.
-# DO NOT set this manually - Vault 1.19+ does not support custom root tokens.
-# The token is saved here so it persists across VM recreations.
-
-VAULT_TOKEN=""
+# Nothing to set here. Each service gets its own token, provisioned by
+# init-vault.sh into secrets/service-tokens.env and synced to .env.
 
 # ==============================================================================
 # OPTIONAL: Database Configuration

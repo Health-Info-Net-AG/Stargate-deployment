@@ -7,6 +7,9 @@ set -eo pipefail
 #                  jump so the backup is identifiable at a glance). Sanitized
 #                  to filesystem-safe characters. Purely cosmetic -- restore.sh
 #                  treats the archive name as an opaque path either way.
+#
+# Exit codes: 0 complete; 3 archive written but its Vault section is incomplete;
+# anything else, no usable archive.
 LABEL=""
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -40,11 +43,12 @@ BACKUP_SUBDIR="$BACKUP_DIR/$BACKUP_NAME"
 # .env values may be unquoted and would break `source` under `set -e`). We only
 # need POSTGRES_USER, POSTGRES_PASSWORD and VAULT_TOKEN here.
 . "$SCRIPT_DIR/lib/env.sh"
+. "$SCRIPT_DIR/lib/vault-tokens.sh"  # needs SECRETS_DIR/ENV_FILE from paths.sh
 
 if [ -f "$ENV_FILE" ]; then
   POSTGRES_USER=$(read_env_var POSTGRES_USER "$ENV_FILE")
   POSTGRES_PASSWORD=$(read_env_var POSTGRES_PASSWORD "$ENV_FILE")
-  VAULT_TOKEN=$(read_env_var VAULT_TOKEN "$ENV_FILE")
+  VAULT_TOKEN=$(read_env_var VAULT_TOKEN_BACKUP "$ENV_FILE")
   S3_ACCESS_KEY=$(read_env_var S3_ACCESS_KEY "$ENV_FILE")
   S3_SECRET_KEY=$(read_env_var S3_SECRET_KEY "$ENV_FILE")
   S3_BUCKET_NAME=$(read_env_var S3_BUCKET_NAME "$ENV_FILE")
@@ -222,22 +226,29 @@ echo ""
 
 mkdir -p "$BACKUP_SUBDIR/vault"
 
-# Check if Vault is running and we have a token
+# The backup token covers the secret-* mounts.
 VAULT_TOKEN="${VAULT_TOKEN:-}"
-if [ -z "$VAULT_TOKEN" ] && [ -f "$SECRETS_DIR/vault-keys.json" ]; then
-  VAULT_TOKEN=$(jq -r '.root_token' "$SECRETS_DIR/vault-keys.json" 2>/dev/null || echo "")
+if [ -z "$VAULT_TOKEN" ]; then
+  VAULT_TOKEN=$(service_token VAULT_TOKEN_BACKUP 2>/dev/null || echo "")
 fi
+export VAULT_TOKEN
+
+VAULT_BACKUP_INCOMPLETE=false
+VAULT_ERR=$(mktemp)
+trap 'rm -f "$VAULT_ERR"' EXIT
 
 if [ -z "$VAULT_TOKEN" ]; then
   echo "  ✗ WARNING: No Vault token available!"
   echo "    Vault secrets will NOT be backed up."
   VAULT_SECRETS_COUNT=0
+  VAULT_BACKUP_INCOMPLETE=true
 else
   # Check if Vault is accessible
   if ! docker exec stargate-vault vault status -address=http://127.0.0.1:8200 > /dev/null 2>&1; then
     echo "  ✗ WARNING: Vault is not accessible!"
     echo "    Vault secrets will NOT be backed up."
     VAULT_SECRETS_COUNT=0
+    VAULT_BACKUP_INCOMPLETE=true
   else
     VAULT_SECRETS_COUNT=0
     
@@ -247,10 +258,19 @@ else
     for mount in "${VAULT_MOUNTS[@]}"; do
       echo "  Backing up: $mount..."
       
-      # List all keys in the mount
-      KEYS=$(docker exec -e VAULT_TOKEN="$VAULT_TOKEN" stargate-vault \
-        vault kv list -address=http://127.0.0.1:8200 -format=json "$mount" 2>/dev/null || echo "[]")
-      
+      # List all keys in the mount. `kv list` exits 2 both for an empty mount and
+      # for a failure (refused, sealed, unreachable), so stderr is what separates
+      # them: with -format=json an empty mount writes nothing there.
+      : > "$VAULT_ERR"
+      KEYS=$(docker exec -e VAULT_TOKEN stargate-vault \
+        vault kv list -address=http://127.0.0.1:8200 -format=json "$mount" 2>"$VAULT_ERR") || KEYS=""
+
+      if [ -s "$VAULT_ERR" ]; then
+        echo "    ✗ ERROR: could not list $mount: $(grep -m1 -E '^\* ' "$VAULT_ERR" || head -1 "$VAULT_ERR")"
+        VAULT_BACKUP_INCOMPLETE=true
+        continue
+      fi
+
       if [ "$KEYS" = "[]" ] || [ -z "$KEYS" ]; then
         echo "    - No secrets found"
         continue
@@ -261,19 +281,35 @@ else
       
       # Export each secret
       for key in $(echo "$KEYS" | jq -r '.[]' 2>/dev/null); do
-        # Skip directory entries (ending with /)
+        # Nested paths are not walked yet (#3568), so the secrets under them are
+        # missing from the archive -- the dashboard writes most of its keys there.
         if [[ "$key" == */ ]]; then
+          echo "    ✗ ERROR: nested path $mount/$key not backed up (#3568)"
+          VAULT_BACKUP_INCOMPLETE=true
           continue
         fi
         
         # Get the secret data
-        SECRET_DATA=$(docker exec -e VAULT_TOKEN="$VAULT_TOKEN" stargate-vault \
-          vault kv get -address=http://127.0.0.1:8200 -format=json "$mount/$key" 2>/dev/null || echo "{}")
-        
+        : > "$VAULT_ERR"
+        SECRET_DATA=$(docker exec -e VAULT_TOKEN stargate-vault \
+          vault kv get -address=http://127.0.0.1:8200 -format=json "$mount/$key" 2>"$VAULT_ERR") || SECRET_DATA=""
+
+        if grep -qiE 'permission denied|403' "$VAULT_ERR"; then
+          echo "    ✗ ERROR: permission denied reading $mount/$key"
+          VAULT_BACKUP_INCOMPLETE=true
+          continue
+        fi
+
         if [ -n "$SECRET_DATA" ] && [ "$SECRET_DATA" != "{}" ]; then
           echo "$SECRET_DATA" > "$BACKUP_SUBDIR/vault/$mount/${key}.json"
           echo "    ✓ $key"
           ((VAULT_SECRETS_COUNT++)) || true
+        elif [ -s "$VAULT_ERR" ]; then
+          echo "    ✗ ERROR: could not read $mount/$key"
+          VAULT_BACKUP_INCOMPLETE=true
+        else
+          # Listed but no current version: a soft-deleted key, not a failure.
+          echo "    - $key (no current version)"
         fi
       done
     done
@@ -407,3 +443,13 @@ echo "Cleaning up backups older than 7 days..."
 find "$BACKUP_DIR" -name "*.tar.gz" -type f -mtime +7 -delete 2>/dev/null || true
 echo "Done."
 echo ""
+
+# Secrets are missing from an archive that otherwise looks complete. It is kept
+# -- a partial backup still beats none -- but the exit code has to say so, or
+# cron reports success over missing keys. A distinct code lets update.sh tell
+# this apart from a backup that produced nothing.
+if [ "$VAULT_BACKUP_INCOMPLETE" = true ]; then
+  echo "ERROR: the Vault section of this archive is INCOMPLETE (see above)." >&2
+  echo "  $ARCHIVE_PATH exists but must not be relied on for recovery." >&2
+  exit 3
+fi

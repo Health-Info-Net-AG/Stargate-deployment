@@ -379,7 +379,7 @@ services:
       # Vault
       PRIVATE_KEY_STORE: "vault"
       VAULT_ADDRESS: "http://vault:8200"
-      VAULT_TOKEN: "${VAULT_TOKEN}"
+      VAULT_TOKEN: "${VAULT_TOKEN_SMIMEKEYS_CLIENT}"
       VAULT_MOUNT_PATH: "secret-smimekeys-client"
       VAULT_KV2_MAX_VERSIONS: "2"
       VAULT_KV2_CAS_REQUIRED: "false"
@@ -443,9 +443,7 @@ services:
       DB_NOTIFIER_MAX_RETRY_ATTEMPTS: "10"
 
       # Vault
-      VAULT_ADDRESS: "http://vault:8200"
-      VAULT_TOKEN: "${VAULT_TOKEN}"
-      VAULT_MOUNT_PATH: "secret-policy"
+      # No Vault configuration: policy has no Vault client.
 
       # Metrics
       METRICS_ADDR: ":2112"
@@ -493,7 +491,7 @@ services:
 
       # Vault
       VAULT_ADDRESS: "http://vault:8200"
-      VAULT_TOKEN: "${VAULT_TOKEN}"
+      VAULT_TOKEN: "${VAULT_TOKEN_IRISAGENT}"
       VAULT_MOUNT_PATH: "secret-irisagent"
       VAULT_KV2_MAX_VERSIONS: "2"
       VAULT_KV2_CAS_REQUIRED: "false"
@@ -599,7 +597,7 @@ services:
 
       # Vault
       VAULT_ADDRESS: "http://vault:8200"
-      VAULT_TOKEN: "${VAULT_TOKEN}"
+      VAULT_TOKEN: "${VAULT_TOKEN_MXENGINE}"
       VAULT_MOUNT_PATH: "secret-mxengine"
 
       #Smimekeys
@@ -689,7 +687,7 @@ services:
 
       # Vault (Ed25519 seed storage)
       VAULT_ADDRESS: "http://vault:8200"
-      VAULT_TOKEN: "${VAULT_TOKEN}"
+      VAULT_TOKEN: "${VAULT_TOKEN_IDAGENT}"
       VAULT_MOUNT_PATH: "secret-idagent"
       VAULT_KV2_MAX_VERSIONS: "2"
       VAULT_KV2_CAS_REQUIRED: "false"
@@ -740,7 +738,7 @@ services:
 
       # Vault (reads DKIM/ARC private keys per request)
       MAILAUTH_VAULT_ADDRESS: "http://vault:8200"
-      MAILAUTH_VAULT_TOKEN: "${VAULT_TOKEN}"
+      MAILAUTH_VAULT_TOKEN: "${VAULT_TOKEN_MAILAUTH}"
       MAILAUTH_VAULT_MOUNT_PATH: "secret-mailauth"
 
       # Per-domain config from the dashboard (falls back to POST /config)
@@ -883,7 +881,7 @@ services:
       NATS_URL: "nats://nats:4222"
 
       VAULT_ADDRESS: "http://vault:8200"
-      VAULT_TOKEN: "${VAULT_TOKEN}"
+      VAULT_TOKEN: "${VAULT_TOKEN_DASHBOARD}"
       # TLS private keys (mtaconf reads these back)
       VAULT_MOUNT_PATH: "secret-mtaconf"
       # DKIM/ARC private keys the dashboard writes for mailauth to read back;
@@ -1144,7 +1142,7 @@ services:
       STALWART_PASSWORD: "${MTACONF_SVC_PASSWORD}"
       STALWART_CLI_PATH: "/opt/stalwart-cli"
       VAULT_ADDRESS: "http://vault:8200"
-      VAULT_TOKEN: "${VAULT_TOKEN}"
+      VAULT_TOKEN: "${VAULT_TOKEN_MTACONF}"
       VAULT_MOUNT_PATH: "secret-mtaconf"
       HTTP_ADDR: ":8080"
       HTTP_WRITE_TIMEOUT: "60s"

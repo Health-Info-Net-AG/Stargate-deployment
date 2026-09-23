@@ -9,7 +9,7 @@ set -eo pipefail
 #
 # Use cases:
 #   - Update mail domains, WireGuard config, or any other customer settings
-#   - Change passwords or credentials (except VAULT_TOKEN, which is preserved)
+#   - Change passwords or credentials
 #   - Jump straight to a released version, including installs several
 #     versions behind: --release <tag> (image versions are pinned in that
 #     release's docker-compose.yml, not in this config)
@@ -150,7 +150,16 @@ if [ -n "$RELEASE_TAG" ]; then
     echo "=== Skipping backup (--skip-backup) ==="
   else
     echo "=== Backing up before update (this can take a few minutes) ==="
-    "$SCRIPT_DIR/backup.sh" --label "${CURRENT_VERSION}-pre_update"
+    # Exit 3: the archive exists but its Vault section is incomplete. An update
+    # does not modify KV data, so the rollback point is still usable.
+    BACKUP_RC=0
+    "$SCRIPT_DIR/backup.sh" --label "${CURRENT_VERSION}-pre_update" || BACKUP_RC=$?
+    if [ "$BACKUP_RC" -eq 3 ]; then
+      echo "WARNING: pre-update backup is missing Vault secrets; continuing." >&2
+    elif [ "$BACKUP_RC" -ne 0 ]; then
+      echo "ERROR: pre-update backup failed (exit $BACKUP_RC); aborting." >&2
+      exit "$BACKUP_RC"
+    fi
   fi
   echo ""
 
@@ -207,25 +216,10 @@ fi
 echo "============================================"
 echo ""
 
-# Preserve VAULT_TOKEN from current .env (tied to Vault unseal state)
-EXISTING_VAULT_TOKEN=""
-if [ -f "$ENV_FILE" ]; then
-  EXISTING_VAULT_TOKEN=$(read_env_var VAULT_TOKEN "$ENV_FILE")
-fi
-
-# Fall back to vault-keys.json if .env has no token. KEYS_FILE is already set
-# (from the sourced install.sh) to "$SECRETS_DIR/vault-keys.json".
-if [ -z "$EXISTING_VAULT_TOKEN" ] && [ -f "$KEYS_FILE" ]; then
-  EXISTING_VAULT_TOKEN=$(jq -r '.root_token' "$KEYS_FILE" 2>/dev/null || true)
-  if [ -n "$EXISTING_VAULT_TOKEN" ]; then
-    echo "Recovered VAULT_TOKEN from vault-keys.json"
-    echo ""
-  fi
-fi
-
-if [ -z "$EXISTING_VAULT_TOKEN" ]; then
-  echo "ERROR: No VAULT_TOKEN found in .env or vault-keys.json."
-  echo "  Run init-vault.sh first, or re-run install.sh."
+# KEYS_FILE comes from the sourced install.sh.
+if [ ! -f "$KEYS_FILE" ]; then
+  echo "ERROR: $KEYS_FILE not found -- Vault has never been initialized here."
+  echo "  Run ./scripts/install.sh."
   exit 1
 fi
 
@@ -247,12 +241,13 @@ load_customer_config
 # Regenerate .env
 generate_env_file
 
-# Restore VAULT_TOKEN (generate_env_file writes it blank)
-if [ -n "$EXISTING_VAULT_TOKEN" ]; then
-  sed -i "s|^VAULT_TOKEN=.*|VAULT_TOKEN=\"$EXISTING_VAULT_TOKEN\"|" "$ENV_FILE"
-  echo "Preserved VAULT_TOKEN from previous .env"
-  echo ""
+# generate_env_file drops the tokens; restore the provisioned ones at once so an
+# --env-only run or a failed pull below does not leave .env without them.
+if [ -f "$SERVICE_TOKENS_FILE" ]; then
+  sync_service_tokens_to_env
 fi
+
+purge_root_token_from_config
 
 # Re-assert permissions on the rendered realm file (older installs left it 0644
 # with live client secrets). Mode only -- the file is not re-rendered here.
@@ -271,6 +266,19 @@ fi
 # silent multi-minute block here reads as a hang.
 echo "=== Pulling images ==="
 compose pull
+
+# vault.hcl is a bind mount, so a plain `up -d` would keep the old process.
+echo ""
+echo "=== Recreating Vault (picks up config/vault/vault.hcl) ==="
+compose up -d --force-recreate vault
+
+# Must precede the app services -- see lib/vault-tokens.sh. Also unseals Vault.
+echo ""
+echo "=== Provisioning per-service Vault tokens ==="
+if ! ensure_service_tokens; then
+  echo "ERROR: could not provision per-service Vault tokens; services not recreated." >&2
+  exit 1
+fi
 
 echo ""
 echo "=== Recreating services ==="
