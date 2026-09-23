@@ -109,16 +109,10 @@ fi
 echo "Starting application services..."
 compose up -d
 
-# Stalwart binds network listeners only at process start, and stalwart-provision
-# creates them through the management API after Stalwart is already healthy, so
-# a listener added by a newer provision.sh exists in the settings DB but has no
-# socket until Stalwart restarts. Wait for provisioning to finish, then restart
-# only when an expected listener is missing -- an unconditional restart would
-# interrupt mail on every boot. Ports: 25 mx, 587 submission, 10026 reinject.
 echo "Waiting for Stalwart provisioning to complete..."
 docker wait stargate-stalwart-provision >/dev/null 2>&1 || true
 
-stalwart_listening() {  # $1 = decimal port
+stalwart_listening() {
   local hexport
   hexport=$(printf ':%04X' "$1")
   docker exec stargate-stalwart sh -c 'cat /proc/net/tcp /proc/net/tcp6 2>/dev/null' 2>/dev/null \
