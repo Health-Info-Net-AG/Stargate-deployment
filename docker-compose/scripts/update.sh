@@ -150,7 +150,16 @@ if [ -n "$RELEASE_TAG" ]; then
     echo "=== Skipping backup (--skip-backup) ==="
   else
     echo "=== Backing up before update (this can take a few minutes) ==="
-    "$SCRIPT_DIR/backup.sh" --label "${CURRENT_VERSION}-pre_update"
+    # Exit 3: the archive exists but its Vault section is incomplete. An update
+    # does not modify KV data, so the rollback point is still usable.
+    BACKUP_RC=0
+    "$SCRIPT_DIR/backup.sh" --label "${CURRENT_VERSION}-pre_update" || BACKUP_RC=$?
+    if [ "$BACKUP_RC" -eq 3 ]; then
+      echo "WARNING: pre-update backup is missing Vault secrets; continuing." >&2
+    elif [ "$BACKUP_RC" -ne 0 ]; then
+      echo "ERROR: pre-update backup failed (exit $BACKUP_RC); aborting." >&2
+      exit "$BACKUP_RC"
+    fi
   fi
   echo ""
 
@@ -231,6 +240,12 @@ load_customer_config
 
 # Regenerate .env
 generate_env_file
+
+# generate_env_file drops the tokens; restore the provisioned ones at once so an
+# --env-only run or a failed pull below does not leave .env without them.
+if [ -f "$SERVICE_TOKENS_FILE" ]; then
+  sync_service_tokens_to_env
+fi
 
 purge_root_token_from_config
 

@@ -73,15 +73,14 @@ while [ "$ATTEMPT" -lt "$MAX_ATTEMPTS" ]; do
     break
   fi
 
-  # Key is forwarded by name, not as an argument: `vault operator unseal -` does
-  # not read stdin (the `-` becomes the key) and the no-argument form needs a TTY.
+  # Keys go in on stdin (`key=-`), so no process argv carries one -- neither
+  # `docker exec` nor the vault CLI inside the container. `vault operator unseal`
+  # has no stdin form: `-` is taken as the key itself.
   echo "  Unsealing Vault (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
-  UNSEAL_KEY="$UNSEAL_KEY_1" docker exec -e UNSEAL_KEY stargate-vault \
-    sh -c 'vault operator unseal "$UNSEAL_KEY"' > /dev/null 2>&1 || true
-  UNSEAL_KEY="$UNSEAL_KEY_2" docker exec -e UNSEAL_KEY stargate-vault \
-    sh -c 'vault operator unseal "$UNSEAL_KEY"' > /dev/null 2>&1 || true
-  UNSEAL_KEY="$UNSEAL_KEY_3" docker exec -e UNSEAL_KEY stargate-vault \
-    sh -c 'vault operator unseal "$UNSEAL_KEY"' > /dev/null 2>&1 || true
+  for key in "$UNSEAL_KEY_1" "$UNSEAL_KEY_2" "$UNSEAL_KEY_3"; do
+    printf '%s' "$key" | docker exec -i stargate-vault \
+      vault write sys/unseal key=- > /dev/null 2>&1 || true
+  done
 
   # Verify unseal succeeded
   if docker exec stargate-vault vault status 2>/dev/null | grep -q "Sealed.*false"; then

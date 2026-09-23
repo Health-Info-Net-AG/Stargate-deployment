@@ -7,6 +7,9 @@ set -eo pipefail
 #                  jump so the backup is identifiable at a glance). Sanitized
 #                  to filesystem-safe characters. Purely cosmetic -- restore.sh
 #                  treats the archive name as an opaque path either way.
+#
+# Exit codes: 0 complete; 3 archive written but its Vault section is incomplete;
+# anything else, no usable archive.
 LABEL=""
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -256,15 +259,14 @@ else
       echo "  Backing up: $mount..."
       
       # List all keys in the mount. `kv list` exits 2 both for an empty mount and
-      # for a refusal, so the stderr text is what separates "nothing here" from
-      # "not allowed" -- treating the second as the first would silently write an
-      # incomplete archive.
+      # for a failure (refused, sealed, unreachable), so stderr is what separates
+      # them: with -format=json an empty mount writes nothing there.
       : > "$VAULT_ERR"
       KEYS=$(docker exec -e VAULT_TOKEN stargate-vault \
         vault kv list -address=http://127.0.0.1:8200 -format=json "$mount" 2>"$VAULT_ERR") || KEYS=""
 
-      if grep -qiE 'permission denied|403' "$VAULT_ERR"; then
-        echo "    ✗ ERROR: permission denied listing $mount"
+      if [ -s "$VAULT_ERR" ]; then
+        echo "    ✗ ERROR: could not list $mount: $(grep -m1 -E '^\* ' "$VAULT_ERR" || head -1 "$VAULT_ERR")"
         VAULT_BACKUP_INCOMPLETE=true
         continue
       fi
@@ -444,9 +446,10 @@ echo ""
 
 # Secrets are missing from an archive that otherwise looks complete. It is kept
 # -- a partial backup still beats none -- but the exit code has to say so, or
-# cron reports success over missing keys.
+# cron reports success over missing keys. A distinct code lets update.sh tell
+# this apart from a backup that produced nothing.
 if [ "$VAULT_BACKUP_INCOMPLETE" = true ]; then
   echo "ERROR: the Vault section of this archive is INCOMPLETE (see above)." >&2
   echo "  $ARCHIVE_PATH exists but must not be relied on for recovery." >&2
-  exit 1
+  exit 3
 fi

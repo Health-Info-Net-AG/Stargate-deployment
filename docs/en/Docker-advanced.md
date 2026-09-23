@@ -703,6 +703,8 @@ The following KV-v2 secret engines are created:
 
 ### Manual Vault Operations
 
+Each service has its own token in `/var/data/vereign/secrets/service-tokens.env`, limited to that service's mount. Administrative commands such as listing mounts need the root token from `vault-keys.json` in the same directory. The examples read the token from the file, so it does not appear on the command line or in the shell history.
+
 === "Check status"
 
     ```bash
@@ -712,13 +714,15 @@ The following KV-v2 secret engines are created:
 === "List mounts"
 
     ```bash
-    VAULT_TOKEN=<service token> docker exec -e VAULT_TOKEN stargate-vault vault secrets list
+    VAULT_TOKEN=$(jq -r .root_token /var/data/vereign/secrets/vault-keys.json) \
+      docker exec -e VAULT_TOKEN stargate-vault vault secrets list
     ```
 
 === "Write a secret"
 
     ```bash
-    VAULT_TOKEN=<service token> docker exec -e VAULT_TOKEN stargate-vault vault kv put secret-smimekeys-client/test key=value
+    VAULT_TOKEN=$(sed -n 's/^VAULT_TOKEN_SMIMEKEYS_CLIENT="\(.*\)"$/\1/p' /var/data/vereign/secrets/service-tokens.env) \
+      docker exec -e VAULT_TOKEN stargate-vault vault kv put secret-smimekeys-client/test key=value
     ```
 
 ## Databases

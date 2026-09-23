@@ -20,6 +20,15 @@ until vault status -address=http://vault:8200 2>/dev/null | grep -q "Initialized
   sleep 2
 done
 
+# Keys go in on stdin (`key=-`), so no process argv carries one; `vault
+# operator unseal` has no stdin form. sys/unseal needs no token.
+unseal_from_keys_file() {
+  for i in 0 1 2; do
+    jq -r ".unseal_keys_b64[$i]" "$KEYS_FILE" \
+      | vault write -address=http://vault:8200 sys/unseal key=- >/dev/null
+  done
+}
+
 # Helper: validate vault-keys.json exists and is valid JSON
 validate_keys_file() {
   if [ ! -f "$KEYS_FILE" ]; then
@@ -28,10 +37,7 @@ validate_keys_file() {
     return 1
   fi
   if ! jq empty "$KEYS_FILE" 2>/dev/null; then
-    echo "ERROR: $KEYS_FILE is not valid JSON."
-    echo "File contents (first 5 lines):"
-    head -5 "$KEYS_FILE"
-    echo ""
+    echo "ERROR: $KEYS_FILE is not valid JSON ($(wc -c < "$KEYS_FILE") bytes)."
     echo "The file may have been created by a manual 'vault operator init' without -format=json."
     echo "Please re-create it or fix it manually."
     return 1
@@ -52,15 +58,7 @@ if [ "$INITIALIZED" = "true" ]; then
     echo "Vault is sealed. Attempting to unseal..."
     
     if validate_keys_file; then
-      # Unseal with stored keys
-      UNSEAL_KEY_1=$(jq -r '.unseal_keys_b64[0]' "$KEYS_FILE")
-      UNSEAL_KEY_2=$(jq -r '.unseal_keys_b64[1]' "$KEYS_FILE")
-      UNSEAL_KEY_3=$(jq -r '.unseal_keys_b64[2]' "$KEYS_FILE")
-      
-      vault operator unseal -address=http://vault:8200 "$UNSEAL_KEY_1"
-      vault operator unseal -address=http://vault:8200 "$UNSEAL_KEY_2"
-      vault operator unseal -address=http://vault:8200 "$UNSEAL_KEY_3"
-      
+      unseal_from_keys_file
       echo "Vault unsealed successfully!"
     else
       exit 1
@@ -93,16 +91,10 @@ else
   echo "=========================================="
   echo ""
   
-  # Extract keys and unseal
-  UNSEAL_KEY_1=$(jq -r '.unseal_keys_b64[0]' "$KEYS_FILE")
-  UNSEAL_KEY_2=$(jq -r '.unseal_keys_b64[1]' "$KEYS_FILE")
-  UNSEAL_KEY_3=$(jq -r '.unseal_keys_b64[2]' "$KEYS_FILE")
   ROOT_TOKEN=$(jq -r '.root_token' "$KEYS_FILE")
-  
+
   echo "Unsealing Vault..."
-  vault operator unseal -address=http://vault:8200 "$UNSEAL_KEY_1"
-  vault operator unseal -address=http://vault:8200 "$UNSEAL_KEY_2"
-  vault operator unseal -address=http://vault:8200 "$UNSEAL_KEY_3"
+  unseal_from_keys_file
   
   echo "Vault unsealed!"
   
@@ -186,6 +178,14 @@ policy_hcl() {
   done
 }
 
+# $1 = file with one token per line.
+revoke_tokens_in() {
+  while read -r t; do
+    [ -n "$t" ] || continue
+    VAULT_TOKEN="$t" vault token revoke -address=http://vault:8200 -self >/dev/null 2>&1 || true
+  done < "$1"
+}
+
 # `token lookup` with no argument is the self-lookup; there is no -self flag.
 token_is_valid() {
   [ -n "$1" ] || return 1
@@ -208,7 +208,11 @@ if [ -n "${VAULT_TOKEN:-}" ]; then
   echo "Ensuring per-service Vault policies and tokens..."
 
   TOKENS_TMP="$SECRETS_DIR/.service-tokens.env.$$"
-  ( umask 077; : > "$TOKENS_TMP" )
+  # Revocation waits for the batch outcome: on success the replaced tokens go,
+  # on failure the new ones do, so $TOKENS_FILE never names a revoked token.
+  REPLACED_TMP="$SECRETS_DIR/.tokens-replaced.$$"
+  MINTED_TMP="$SECRETS_DIR/.tokens-minted.$$"
+  ( umask 077; : > "$TOKENS_TMP"; : > "$REPLACED_TMP"; : > "$MINTED_TMP" )
   PROVISION_FAILED=false
 
   ALL_MOUNTS=$(echo "$VAULT_MOUNTS" | tr ' ' ',')
@@ -256,9 +260,9 @@ if [ -n "${VAULT_TOKEN:-}" ]; then
         PROVISION_FAILED=true
         continue
       fi
+      printf '%s\n' "$token" >> "$MINTED_TMP"
       if [ -n "$previous_token" ]; then
-        VAULT_TOKEN="$previous_token" vault token revoke -address=http://vault:8200 -self \
-          >/dev/null 2>&1 || true
+        printf '%s\n' "$previous_token" >> "$REPLACED_TMP"
       fi
       echo "  $svc: token minted"
     fi
@@ -266,7 +270,8 @@ if [ -n "${VAULT_TOKEN:-}" ]; then
   done
 
   if [ "$PROVISION_FAILED" = "true" ]; then
-    rm -f "$TOKENS_TMP"
+    revoke_tokens_in "$MINTED_TMP"
+    rm -f "$TOKENS_TMP" "$REPLACED_TMP" "$MINTED_TMP"
     echo "ERROR: service token provisioning failed; leaving $TOKENS_FILE untouched." >&2
     exit 1
   fi
@@ -288,6 +293,8 @@ if [ -n "${VAULT_TOKEN:-}" ]; then
   mv "$TOKENS_TMP" "$TOKENS_FILE"
   chmod 600 "$TOKENS_FILE"
   echo "Service tokens written to $TOKENS_FILE (mode 600)."
+  revoke_tokens_in "$REPLACED_TMP"
+  rm -f "$REPLACED_TMP" "$MINTED_TMP"
 fi
 
 # Write the pre-configured WireGuard private key on first init ONLY, now that
@@ -298,7 +305,8 @@ fi
 if [ "${FRESH_INIT:-false}" = "true" ]; then
   if [ -n "$WG_PRIVATE_KEY" ]; then
     echo "Writing pre-configured WireGuard private key to Vault..."
-    vault kv put -address=http://vault:8200 secret-irisagent/wg_private_key wg_private_key="$WG_PRIVATE_KEY"
+    printf '%s' "$WG_PRIVATE_KEY" \
+      | vault kv put -address=http://vault:8200 secret-irisagent/wg_private_key wg_private_key=- >/dev/null
     echo "WireGuard private key written to Vault!"
   else
     echo "No WG_PRIVATE_KEY provided - irisagent will generate a new key on first start."
