@@ -337,7 +337,6 @@ To resolve this, the following manual configuration must be completed in the *Ke
  <br> ![keycloak-console](assets/troubleshooting/keycloak-update.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
  
- ## Keycloak Reset Password 
 
 # Resetting a Stargate User Password in Keycloak
 
@@ -375,7 +374,7 @@ Follow the steps below to reset the password of a Stargate user through the Keyc
    * Enter the new password and confirm the change.
    
 **Do not change or reset the Keycloak administrator password as part of this procedure.**
-Any changes of admin password can lead to potention lockdown of keyclaok without anyone be able to access it!
+Any changes of admin password can lead to potention lockdown of Keycloak without anyone be able to access it!
 
 
 # Request Activation code
