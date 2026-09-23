@@ -184,6 +184,7 @@ nav:
       - Configuration DNS: DNS-setup.md
       - Authentification des e-mails (DKIM ARC SPF DMARC): Email-authentication-DKIM-ARC-SPF-DMARC.md
       - Mise à jour et retour à une version antérieure de HIN Gateway: update-hin-gateway.md
+      - Gestion des domaines routés dans HIN Gateway: Routed-domains.md
   - Installation serveur:
       - Conteneur:
           - Installation avec Docker: Docker-deploy.md

@@ -502,7 +502,7 @@ Sur cet écran, configurez vos paramètres initiaux:
 | --------- | ------------- |
 | **Nom d'hôte du serveur de messagerie** | Le FQDN de cette instance de passerelle de messagerie (par exemple, `mail.example.com`). |
 | **Adresses IP du serveur de messagerie** | La ou les adresses IP publiques de ce serveur. Ajoutez des adresses IP supplémentaires si le serveur est accessible via plusieurs adresses. |
-| **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS |
+| **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS. Veuillez vous assurer que le serveur DNS saisi est accessible depuis la VM HIN Gateway. |
 
 !!! warning "Scénario de migration progressive multi-domaine"
 
