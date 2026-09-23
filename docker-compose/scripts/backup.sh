@@ -279,8 +279,11 @@ else
       
       # Export each secret
       for key in $(echo "$KEYS" | jq -r '.[]' 2>/dev/null); do
-        # Skip directory entries (ending with /)
+        # Nested paths are not walked yet (#3568), so the secrets under them are
+        # missing from the archive -- the dashboard writes most of its keys there.
         if [[ "$key" == */ ]]; then
+          echo "    ✗ ERROR: nested path $mount/$key not backed up (#3568)"
+          VAULT_BACKUP_INCOMPLETE=true
           continue
         fi
         

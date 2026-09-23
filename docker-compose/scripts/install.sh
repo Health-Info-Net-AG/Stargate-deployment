@@ -511,21 +511,6 @@ EOF
   echo "Daily backup scheduled at 2:00 AM ($cron_file)"
 }
 
-# Drops the legacy VAULT_TOKEN entry; restore.sh uses vault-keys.json instead.
-purge_root_token_from_config() {
-  [ -f "$CONFIG_FILE" ] || return 0
-  grep -q '^VAULT_TOKEN=' "$CONFIG_FILE" || return 0
-
-  local tmp="${CONFIG_FILE}.notoken.$$"
-  (
-    umask 077
-    grep -v '^VAULT_TOKEN=' "$CONFIG_FILE" > "$tmp"
-  ) || { rm -f "$tmp"; return 1; }
-  mv "$tmp" "$CONFIG_FILE"
-  chmod 600 "$CONFIG_FILE"
-  echo "  ✓ Removed the legacy VAULT_TOKEN entry from customer-config.sh"
-}
-
 # Function to extract WireGuard key from Vault and save to customer-config.sh
 save_wireguard_key_to_config() {
   echo ""

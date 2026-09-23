@@ -52,5 +52,15 @@ grep -qx 'VAULT_TOKEN_BACKUP="tok-bk"' "$ENV_FILE" || fail "backup token missing
 [ "$(service_token VAULT_TOKEN_MXENGINE)" = "tok-mx" ] || fail "service_token returned the wrong value"
 service_token VAULT_TOKEN_NOPE 2>/dev/null && fail "service_token succeeded for an unknown key"
 
+# --- purge_root_token_from_config (restore.sh reaches it via this lib only) ---
+printf 'FOO=bar\nVAULT_TOKEN="root-leftover"\n' > "$CONFIG_FILE"
+purge_root_token_from_config >/dev/null || fail "purge failed"
+grep -q '^VAULT_TOKEN=' "$CONFIG_FILE" && fail "legacy VAULT_TOKEN survived the purge"
+grep -qx 'FOO=bar' "$CONFIG_FILE" || fail "purge dropped an unrelated key"
+[ "$(stat -c %a "$CONFIG_FILE")" = 600 ] || fail "customer-config.sh is not 600 after purge"
+purge_root_token_from_config >/dev/null || fail "purge failed with nothing to remove"
+rm -f "$CONFIG_FILE"
+purge_root_token_from_config >/dev/null || fail "purge failed with no config file"
+
 rm -rf "$STARGATE_DATA_DIR"
 echo "PASS"

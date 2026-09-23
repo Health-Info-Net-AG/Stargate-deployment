@@ -6,6 +6,7 @@
 # init-vault.sh writes the tokens to $SERVICE_TOKENS_FILE; these helpers move
 # them into .env. Compose substitutes ${VAULT_TOKEN_*} at parse time, so
 # callers must run ensure_service_tokens() before `compose up -d`.
+# restore.sh does not source install.sh, so every helper it calls lives here.
 # =============================================================================
 
 SERVICE_TOKENS_FILE="$SECRETS_DIR/service-tokens.env"
@@ -62,4 +63,19 @@ ensure_service_tokens() {
   run_vault_init || return 1
   sync_service_tokens_to_env || return 1
   return 0
+}
+
+# Drops the legacy VAULT_TOKEN entry; restore.sh uses vault-keys.json instead.
+purge_root_token_from_config() {
+  [ -f "$CONFIG_FILE" ] || return 0
+  grep -q '^VAULT_TOKEN=' "$CONFIG_FILE" || return 0
+
+  local tmp="${CONFIG_FILE}.notoken.$$"
+  (
+    umask 077
+    grep -v '^VAULT_TOKEN=' "$CONFIG_FILE" > "$tmp"
+  ) || { rm -f "$tmp"; return 1; }
+  mv "$tmp" "$CONFIG_FILE"
+  chmod 600 "$CONFIG_FILE"
+  echo "  ✓ Removed the legacy VAULT_TOKEN entry from customer-config.sh"
 }

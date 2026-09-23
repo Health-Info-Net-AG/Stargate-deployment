@@ -236,6 +236,9 @@ if [ -n "${VAULT_TOKEN:-}" ]; then
       echo "  $svc: token present"
     else
       previous_token="$token"
+      # Keep the built-in default policy (no -no-default-policy): it grants
+      # sys/internal/ui/mounts/*, which every `vault kv` command reads to detect
+      # KV-v2. Without it backup.sh and restore.sh fail on their first kv call.
       token=$(vault token create -address=http://vault:8200 \
         -policy="$policy" -orphan -ttl=87600h \
         -display-name="$svc" -field=token 2>/dev/null || true)
