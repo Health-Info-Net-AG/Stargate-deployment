@@ -1080,7 +1080,7 @@ services:
       # rule for :10026 accepts any sender→any recipient as "trusted
       # internal" traffic).
       - "25:25"
-      - "${SUBMISSION_BIND_ADDR:-0.0.0.0}:587:587"
+      - "587:587"
     networks:
       - stargate-network
     healthcheck:
