@@ -241,8 +241,22 @@ cli update SenderAuth singleton --json '{"dkimVerify":{"match":{},"else":"disabl
 # here (rather than left unconfigured) so that re-running provision reconciles a
 # previously-enabled install back to disabled: no X-Spam-* tagging and no spam
 # scan at the DATA stage.
+remove_dnsbl_servers() {
+  local ids
+  ids=$(cli query SpamDnsblServer --fields id --json 2>/dev/null \
+        | sed -n 's/.*"id":"\([^"]*\)".*/\1/p') || true
+  if [ -z "$ids" ]; then
+    log "no SpamDnsblServer present; nothing to remove"
+    return 0
+  fi
+  log "removing imported DNSBL servers ($(echo $ids | wc -w))"
+  cli delete SpamDnsblServer --ids "$(echo $ids | tr ' ' ',')" \
+    || log "WARNING: failed to remove DNSBL servers; they may still be queried"
+}
+
 log "disabling built-in spam filter"
-cli update SpamSettings singleton --field "enable=false"
+cli update SpamSettings singleton --json '{"enable":false,"spamFilterRulesUrl":null}'
+remove_dnsbl_servers
 #cli update MtaStageData singleton --field "enableSpamFilter=false"
 
 # =============================================================================
