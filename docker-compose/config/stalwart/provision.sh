@@ -78,12 +78,12 @@ create_listener() {
     return 0
   fi
 
-  log "creating listener: $name (${protocol} on ${bind}, implicit tls=${tls})"
+  log "creating listener: $name (${protocol} on ${bind}, tls=${tls})"
   cli create NetworkListener \
     --field "name=${name}" \
     --field "bind={\"${bind}\": true}" \
     --field "protocol=${protocol}" \
-    --field "tlsImplicit=${tls}"
+    --field "useTls=${tls}"
 }
 
 # Content-filtering scope for the two SMTP listeners ('smtp' :25, 'reinject'
@@ -161,7 +161,7 @@ create_listener "smtp" "0.0.0.0:25" "smtp" "false"
 # Reinject (port 10026) - mxengine sends processed mail back here
 create_listener "reinject" "0.0.0.0:10026" "smtp" "false"
 
-create_listener "submission" "0.0.0.0:587" "smtp" "false"
+create_listener "submission" "0.0.0.0:587" "smtp" "true"
 
 # Management HTTP (port 8080) - already provided by recovery mode, but ensure
 # it persists if recovery mode is ever disabled
