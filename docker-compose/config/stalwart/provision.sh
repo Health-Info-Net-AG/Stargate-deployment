@@ -237,10 +237,6 @@ create_milter "clamav" "${CLAMAV_MILTER_HOST:-clamav}" "${CLAMAV_MILTER_PORT:-73
 log "disabling Stalwart inbound SPF/DKIM/DMARC/ARC/IPRev verification (mailauth owns these)"
 cli update SenderAuth singleton --json '{"dkimVerify":{"match":{},"else":"disable"},"arcVerify":{"match":{},"else":"disable"},"spfEhloVerify":{"match":{},"else":"disable"},"spfFromVerify":{"match":{},"else":"disable"},"dmarcVerify":{"match":{},"else":"disable"},"reverseIpVerify":{"match":{},"else":"disable"}}'
 
-# Anti-spam: disabled. Stalwart's built-in spam filter is explicitly turned off
-# here (rather than left unconfigured) so that re-running provision reconciles a
-# previously-enabled install back to disabled: no X-Spam-* tagging and no spam
-# scan at the DATA stage.
 remove_dnsbl_servers() {
   local ids
   ids=$(cli query SpamDnsblServer --fields id --json 2>/dev/null \
@@ -254,8 +250,13 @@ remove_dnsbl_servers() {
     || log "WARNING: failed to remove DNSBL servers; they may still be queried"
 }
 
+# Anti-spam: disabled. Stalwart's built-in spam filter is explicitly turned off
+# here (rather than left unconfigured) so that re-running provision reconciles a
+# previously-enabled install back to disabled: no X-Spam-* tagging and no spam
+# scan at the DATA stage. Non-fatal: mtaconf gates on this one-shot completing.
 log "disabling built-in spam filter"
-cli update SpamSettings singleton --json '{"enable":false,"spamFilterRulesUrl":null}'
+cli update SpamSettings singleton --json '{"enable":false,"spamFilterRulesUrl":null}' \
+  || log "WARNING: failed to disable built-in spam filter; it may still scan and tag"
 remove_dnsbl_servers
 #cli update MtaStageData singleton --field "enableSpamFilter=false"
 
