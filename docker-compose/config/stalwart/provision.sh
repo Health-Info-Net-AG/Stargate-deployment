@@ -163,6 +163,23 @@ create_listener "reinject" "0.0.0.0:10026" "smtp" "false"
 
 create_listener "submission" "0.0.0.0:587" "smtp" "true"
 
+SUBMISSION_DENY='{"allowRelaying":{"match":{"0":{"if":"local_port == 587","then":"false"}},"else":"!is_empty(authenticated_as)"}}'
+
+rcpt_stage=$(cli get MtaStageRcpt 2>/dev/null) || rcpt_stage=""
+case "$rcpt_stage" in
+  "")
+    log "WARNING: could not read MtaStageRcpt; :587 relays on stock rules until mtaconf applies"
+    ;;
+  *587*)
+    log "MtaStageRcpt already carries a :587 relay clause; leaving it to mtaconf"
+    ;;
+  *)
+    log "seeding deny-by-default relay rule for :587"
+    cli update MtaStageRcpt singleton --json "$SUBMISSION_DENY" \
+      || log "WARNING: could not seed the :587 deny; the port relays on stock rules until mtaconf applies"
+    ;;
+esac
+
 # Management HTTP (port 8080) - already provided by recovery mode, but ensure
 # it persists if recovery mode is ever disabled
 create_listener "mgmt" "0.0.0.0:8080" "http" "false"
