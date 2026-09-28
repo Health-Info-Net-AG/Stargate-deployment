@@ -832,7 +832,7 @@ services:
       - autoheal=true
 
   dashboard:
-    image: healthinfonetag/dashboard:v0.0.143-test
+    image: healthinfonetag/dashboard:v0.0.144-test
     container_name: stargate-dashboard
     restart: unless-stopped
     logging:
@@ -1121,7 +1121,7 @@ services:
       - stargate-network
 
   mtaconf:
-    image: healthinfonetag/mtaconf:v0.0.16-test
+    image: healthinfonetag/mtaconf:v0.0.17-test
     container_name: stargate-mtaconf
     restart: unless-stopped
     logging:
