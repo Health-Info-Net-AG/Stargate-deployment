@@ -165,6 +165,9 @@ policy_hcl() {
         ;;
       wo)
         printf 'path "%s/data/*" { capabilities = ["create", "update"] }\n' "$m"
+        printf 'path "%s/data/stalwart/submission-password/*" { capabilities = ["create", "read", "update"] }\n' "$m"
+        printf 'path "%s/metadata/stalwart/submission-password/*" { capabilities = ["read", "delete"] }\n' "$m"
+        printf 'path "%s/metadata/stalwart/relay-password/*" { capabilities = ["delete"] }\n' "$m"
         ;;
       backup)
         printf 'path "%s/data/*" { capabilities = ["read"] }\n' "$m"
