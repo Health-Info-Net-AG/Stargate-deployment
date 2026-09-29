@@ -68,6 +68,13 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
     - [Proxmox-Image-Installation](vm/Proxmox-image-install.md)
     - [Cloudscale.ch Image-Installation](vm/Cloudscale-image-install.md)
 
+!!! warning "Zweite Festplatte erforderlich: die Data Disk"
+    Die Appliance verwendet **zwei Festplatten**: die OS-Festplatte aus dem Image und eine separate **Data Disk**, auf der sämtliche Konfigurationen, Secrets, E-Mails und Datenbanken gespeichert sind. Dank dieser Trennung kann ein Image-Upgrade das Betriebssystem ersetzen, ohne Ihre Daten anzutasten.
+
+    Im **VMware-OVA-Image ist diese Festplatte bereits enthalten**. Auf allen anderen Plattformen (Proxmox, Hyper-V, Azure, Cloudscale) besteht das Image aus einer einzigen OS-Festplatte. Sie müssen deshalb **vor dem ersten Start eine zweite, leere Festplatte mit mindestens 30 GB anhängen**.
+
+    Formatieren oder partitionieren Sie diese Festplatte nicht selbst. Beim ersten Start formatiert die Appliance die leere Festplatte (Label `VEREIGN-DATA`) und bindet sie unter `/var/data` ein. Fehlt sie, schlägt der Health Check beim ersten Start fehl und es erfolgt ein Rollback.
+
 !!! tip "🖨️"
     Sie können diese Dokumentation ausdrucken oder als PDF speichern. Besuchen Sie unsere [Druckseitenansicht](print_page).
 
@@ -125,7 +132,7 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
 | `quay.io` | `443` | TCP | Container-Registry (Keycloak, oauth2-proxy) |
 | `github.com` | `443` | TCP | Richtlinien-Repository (policy-sync) |
 | Ihr eigener Loki-Endpunkt (z. B. `loki.example.com`) | `443` | TCP | Optional. Nur erforderlich, wenn Sie eine eigene Loki-Instanz bereitstellen, an die der Stack Logs senden soll (Alloy → Loki) |
-| Update-Server von Alpine, AlmaLinux usw. | `80` | TCP | Verschiedene Update-Server |
+| Update-Server von Alpine, AlmaLinux usw. | `80` | TCP | Verschiedene Update-Server - https://hub.docker.com/ |
 | Ziel-Mailserver | `25` | TCP | Zustellung ausgehender E-Mails (via MX-Lookup) |
 | DNS-Server | `53` | UDP+TCP | Ausgehend an öffentliche DNS-Server |
 | `ntp.metas.ch` (Standard-NTP-Server) | `123` | UDP | NTP synchronisiert die Uhren von Computern, Servern, Netzwerkgeräten und virtuellen Maschinen mit präzisen Zeitquellen |

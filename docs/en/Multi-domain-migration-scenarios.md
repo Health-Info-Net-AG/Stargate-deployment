@@ -39,6 +39,10 @@
 
 ## Phase 3 Final - fully migrated to HIN Gateway
 
+!!! warning
+    After successful testing, please keep the new HIN Gateway on Public IP B and do not change this IP address. Changing the public IP will break the secure tunnel, causing the gateway to stop receiving certificate updates.
+
+
 !!! success "End state"
     - All domains now flow through HIN Gateway
     - **MGW** carries no production traffic

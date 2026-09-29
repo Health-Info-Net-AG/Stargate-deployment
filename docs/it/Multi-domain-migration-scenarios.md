@@ -39,6 +39,9 @@
 
 ## Fase 3: Conclusione – migrazione completa a HIN Gateway
 
+!!! warning
+    Dopo un test riuscito, mantenere il nuovo HIN Gateway sull’IP pubblico B e non modificare questo indirizzo IP. La modifica dell’IP pubblico interrompe il tunnel sicuro e il gateway smette di ricevere gli aggiornamenti dei certificati.
+
 !!! success "Stato finale"
     - Tutti i domini passano attraverso HIN Gateway
     - **MGW** non trasporta traffico di produzione

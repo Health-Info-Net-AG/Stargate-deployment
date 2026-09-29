@@ -586,7 +586,7 @@ Nel menu `Settings` sono disponibili le seguenti impostazioni:
 | --------- | ------------- |
 | **Mail server host name** | Il FQDN di questa istanza del gateway di posta (es. `mail.example.com`). |
 | **Mail server IP addresses** | Gli indirizzi IP pubblici di questo server. Aggiungi IP aggiuntivi se il server è raggiungibile su più indirizzi. |
-| **DNS** | Il DNS dell'host che verrà utilizzato per risolvere i record MX e altri record DNS |
+| **DNS server** | Il DNS dell'host che verrà utilizzato per risolvere i record MX e altri record DNS. Assicurati che il server DNS inserito sia raggiungibile dalla VM HIN Gateway. |
 | **Default inbound relay** | Il relay SMTP predefinito per la consegna in entrata |
 | **Default outbound relay** | Il relay SMTP predefinito per la consegna in uscita |
 
@@ -653,7 +653,7 @@ Nel menu **Domains**, per ogni dominio disponibile puoi configurare una rotta di
 | Impostazione | Descrizione |
 | --------- | ------------- |
 | **Inbound relay** | Il relay SMTP per la consegna in entrata per il dominio selezionato |
-| **Outbound relay** | Il relay SMTP per la consegna in uscita per il dominio selezionato. Questa impostazione corrisponde all'impostazione `Forwarding server` del vecchio MGW |
+| **Outbound relay** | Il relay SMTP per la consegna in uscita per il dominio selezionato. Indica il prossimo hop verso cui inviare il messaggio email dopo l'elaborazione. In caso di migrazione: questa impostazione corrisponde all'impostazione `Forwarding server` del vecchio MGW |
 | **Trusted networks** | Reti aggiuntive autorizzate a fare relay tramite questo gateway. Per maggiori informazioni consulta il "Passo 18 - Configurazione del server di posta" |
 | **Configure TLS** | Impostazioni del certificato TLS per le connessioni SMTP; dal pulsante `Generate TLS certificate` puoi generare un certificato TLS |
 | **Email authentication** | Per tutte le impostazioni della sezione `Email authentication` fai riferimento alla sezione [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) |
@@ -695,7 +695,7 @@ Nel menu `Settings` sono disponibili le seguenti impostazioni:
 | --------- | ------------- |
 | **Mail server host name** | Il FQDN di questa istanza del gateway di posta (es. `mail.example.com`). |
 | **Mail server IP addresses** | Gli indirizzi IP pubblici di questo server. Aggiungi IP aggiuntivi se il server è raggiungibile su più indirizzi. |
-| **DNS** | Il DNS dell'host che verrà utilizzato per risolvere i record MX e altri record DNS |
+| **DNS server** | Il DNS dell'host che verrà utilizzato per risolvere i record MX e altri record DNS. Assicurati che il server DNS inserito sia raggiungibile dalla VM HIN Gateway. |
 | **Default inbound relay** | Il relay SMTP predefinito per la consegna in entrata |
 | **Default outbound relay** | Il relay SMTP predefinito per la consegna in uscita |
 

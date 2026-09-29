@@ -69,6 +69,13 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
     - [Installazione tramite immagine VM Proxmox](vm/Proxmox-image-install.md)
     - [Cloudscale.ch](vm/Cloudscale-image-install.md)
 
+!!! warning "Secondo disco obbligatorio: il Data Disk"
+    L'appliance utilizza **due dischi**: il disco del sistema operativo fornito dall'immagine e un **Data Disk** separato che contiene tutta la configurazione, i secret, la posta e i database. Tenerli separati consente a un aggiornamento dell'immagine di sostituire il sistema operativo senza toccare i dati.
+
+    **L'OVA VMware include già** questo disco. Su tutte le altre piattaforme (Proxmox, Hyper-V, Azure, Cloudscale) l'immagine è composta da un unico disco del sistema operativo, quindi è necessario **collegare un secondo disco vuoto di almeno 30 GB prima del primo avvio**.
+
+    Non formattare né partizionare il disco manualmente. Al primo avvio l'appliance formatta il disco vuoto (etichetta `VEREIGN-DATA`) e lo monta in `/var/data`. Senza questo disco, il controllo di integrità (health check) del primo avvio non riesce e viene eseguito il rollback.
+
 !!! tip "🖨️"
     Puoi ottenere questa documentazione stampata o salvata come PDF, visita la nostra [Visualizzazione pagina stampa](print_page).
 
@@ -126,7 +133,7 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
 | `quay.io` | `443` | TCP | Registry dei container (Keycloak, oauth2-proxy) |
 | `github.com` | `443` | TCP | Repository delle policy (policy-sync) |
 | Il proprio endpoint Loki (es. `loki.example.com`) | `443` | TCP | Opzionale. Necessario solo se si fornisce una propria istanza Loki a cui lo stack deve inviare i log (Alloy → Loki) |
-| Server di aggiornamento di Alpine, AlmaLinux, ecc. | `80` | TCP | Vari server di aggiornamento |
+| Server di aggiornamento di Alpine, AlmaLinux, ecc. | `80` | TCP | Vari server di aggiornamento - https://hub.docker.com/ |
 | Server di posta di destinazione | `25` | TCP | Consegna posta in uscita (tramite ricerca MX) |
 | Server DNS | `53` | UDP+TCP | In uscita verso server DNS pubblici |
 | `ntp.metas.ch` (server NTP predefinito) | `123` | UDP | NTP sincronizza gli orologi di computer, server, dispositivi di rete e macchine virtuali con fonti di tempo precise |

@@ -382,3 +382,9 @@ Per installare o reinstallare un'istanza HIN Gateway è necessario un codice di 
     La reimpostazione del codice di attivazione di un'istanza attiva elimina la connessione peer WireGuard del cliente.
 
     Se si richiede la reimpostazione per l'istanza cliente sbagliata, la connessione di quell'istanza attiva verrà eliminata e interrotta. Prima di richiedere una reimpostazione, verificare con attenzione l'istanza esatta e confermare tutti i domini ospitati su di essa.
+
+# Riavvio sulla VM v0.6.1
+
+Tenere presente che, se si riavvia (REBOOT) un’istanza in esecuzione su v0.6.1, questa tornerà alla precedente versione di Stalwart <0.0.23, non funzionante.
+
+Si consiglia di aggiornare l’istanza a una versione più recente dalla sezione Settings->System version!

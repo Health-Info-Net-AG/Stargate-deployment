@@ -382,3 +382,9 @@ Wenn Sie eine HIN Gateway-Instanz installieren oder neu installieren möchten, b
     Wird der Aktivierungscode einer aktiven Instanz zurückgesetzt, wird die WireGuard-Peer-Verbindung des Kunden gelöscht.
 
     Beantragen Sie das Zurücksetzen für die falsche Kundeninstanz, wird die Verbindung dieser aktiven Instanz gelöscht und unterbrochen. Prüfen Sie deshalb vor der Anfrage genau, um welche Instanz es sich handelt, und bestätigen Sie alle darauf gehosteten Domains.
+
+# Neustart auf VM v0.6.1
+
+Bitte beachten Sie: Wenn Sie eine Instanz, die auf v0.6.1 läuft, neu starten (REBOOT), wird sie auf die vorherige, nicht funktionierende Stalwart-Version <0.0.23 zurückgesetzt.
+
+Wir empfehlen, die Instanz im Bereich Settings->System version auf eine neuere Version zu aktualisieren!

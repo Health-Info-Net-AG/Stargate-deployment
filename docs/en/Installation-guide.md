@@ -586,7 +586,7 @@ The following settings are available `Settings` menu:
 | --------- | ------------- |
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
-| **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
+| **DNS server** | DNS of the host which will be used to resolve MX and other DNS records. Please make sure that the entered DNS server is reachable from the HIN Gateway VM. |
 | **Default inbound relay** | The default SMTP relay for inbound delivery |
 | **Default outbound relay** | The default SMTP relay for outbound delivery |
 
@@ -653,7 +653,7 @@ Under the **Domains** menu, for each available domain you can configure specific
 | Setting | Description |
 | --------- | ------------- |
 | **Inbound relay** | The  SMTP relay for inbound delivery for selected domain |
-| **Outbound relay** | The SMTP relay for outbound delivery for selected domain. This setting correspond to `Forwarding server` setting from old MGW |
+| **Outbound relay** | The SMTP relay for outbound delivery for selected domain. It shows where to send as next hop after processing the email message. In case of migration: This setting correspond to `Forwarding server` setting from old MGW |
 | **Trusted networks** | Additional networks allowed to relay through this gateway. For more information please check on "Step 18 - Configure mail server" |
 | **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate |
 | **Email authentication** | For all settings under `Email authentication` section please refer to [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) section |
@@ -695,7 +695,7 @@ The following settings are available `Settings` menu:
 | --------- | ------------- |
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
-| **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
+| **DNS server** | DNS of the host which will be used to resolve MX and other DNS records. Please make sure that the entered DNS server is reachable from the HIN Gateway VM. |
 | **Default inbound relay** | The default SMTP relay for inbound delivery |
 | **Default outbound relay** | The default SMTP relay for outbound delivery |
 
@@ -708,7 +708,7 @@ The following settings are available `Settings` menu:
 **Outgoing:**
 
 - Verify that the mail server is configured to send emails to the HIN Gateway using an SMTP relay or Exchange connector.
-- Verify that the HIN Gateway can send emails to recipients outside the HIN Community.
+- Verify that the HIN Gateway can send emails to recipients outside the HIN Community. 
 - Verify that the HIN Gateway can send emails to recipients inside the HIN Community via WireGuard.
 - Send an email from the HIN Community to an external email address (for example, Bluewin, Gmail, Yahoo, or GMX) with (confidential) included in the subject line, and verify that it is delivered successfully.
 

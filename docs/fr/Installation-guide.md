@@ -586,7 +586,7 @@ Les paramètres suivants sont disponibles dans le menu `Settings`:
 | --------- | ------------- |
 | **Nom d'hôte du serveur de messagerie** | Le FQDN de cette instance de passerelle de messagerie (par exemple, `mail.example.com`). |
 | **Adresses IP du serveur de messagerie** | La ou les adresses IP publiques de ce serveur. Ajoutez des adresses IP supplémentaires si le serveur est accessible via plusieurs adresses. |
-| **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS |
+| **Serveur DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS. Veuillez vous assurer que le serveur DNS saisi est accessible depuis la VM HIN Gateway. |
 | **Default inbound relay** | Le relais SMTP par défaut pour la livraison entrante |
 | **Default outbound relay** | Le relais SMTP par défaut pour la livraison sortante |
 
@@ -653,7 +653,7 @@ Dans le menu **Domains**, pour chaque domaine disponible, vous pouvez configurer
 | Paramètre | Description |
 | --------- | ------------- |
 | **Inbound relay** | Le relais SMTP pour la livraison entrante du domaine sélectionné |
-| **Outbound relay** | Le relais SMTP pour la livraison sortante du domaine sélectionné. Ce paramètre correspond au paramètre `Forwarding server` de l'ancien MGW |
+| **Outbound relay** | Le relais SMTP pour la livraison sortante du domaine sélectionné. Il indique le prochain saut vers lequel l'e-mail est envoyé après son traitement. En cas de migration : ce paramètre correspond au paramètre `Forwarding server` de l'ancien MGW |
 | **Trusted networks** | Réseaux supplémentaires autorisés à relayer via cette passerelle. Pour plus d'informations, consultez l'"Étape 18 - Configurer le serveur de messagerie" |
 | **Configure TLS** | Paramètres du certificat TLS pour les connexions SMTP ; le bouton `Generate TLS certificate` permet de générer un certificat TLS |
 | **Email authentication** | Pour tous les paramètres de la section `Email authentication`, veuillez consulter la section [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) |
@@ -695,7 +695,7 @@ Les paramètres suivants sont disponibles dans le menu `Settings`:
 | --------- | ------------- |
 | **Nom d'hôte du serveur de messagerie** | Le FQDN de cette instance de passerelle de messagerie (par exemple, `mail.example.com`). |
 | **Adresses IP du serveur de messagerie** | La ou les adresses IP publiques de ce serveur. Ajoutez des adresses IP supplémentaires si le serveur est accessible via plusieurs adresses. |
-| **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS |
+| **Serveur DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS. Veuillez vous assurer que le serveur DNS saisi est accessible depuis la VM HIN Gateway. |
 | **Default inbound relay** | Le relais SMTP par défaut pour la livraison entrante |
 | **Default outbound relay** | Le relais SMTP par défaut pour la livraison sortante |
 

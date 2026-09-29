@@ -382,3 +382,9 @@ Pour installer ou réinstaller une instance HIN Gateway, vous avez besoin d’un
     La réinitialisation du code d’activation d’une instance active supprime la connexion du pair WireGuard du client.
 
     Si vous demandez cette réinitialisation pour la mauvaise instance client, la connexion de cette instance active sera supprimée et interrompue. Avant de demander une réinitialisation, vérifiez soigneusement l’instance concernée et confirmez tous les domaines qui y sont hébergés.
+
+# Redémarrage sur la VM v0.6.1
+
+Veuillez noter que si vous redémarrez (REBOOT) une instance qui fonctionne sous v0.6.1, elle reviendra à la version précédente de Stalwart <0.0.23, qui ne fonctionne pas.
+
+Nous vous recommandons de mettre à jour l’instance vers une version plus récente depuis la section Settings->System version !
