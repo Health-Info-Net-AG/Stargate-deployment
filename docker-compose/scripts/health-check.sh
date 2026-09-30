@@ -241,6 +241,12 @@ else
   fail "Port 10026 (reinjection) not listening (provision may not have run yet)"
 fi
 
+if stalwart_listening 587; then
+  pass "Port 587 (submission) listening"
+else
+  fail "Port 587 (submission) not listening (stalwart needs one restart after provisioning creates the listener)"
+fi
+
 echo ""
 
 # ------------------------------------------------------------------

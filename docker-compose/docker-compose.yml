@@ -832,7 +832,7 @@ services:
       - autoheal=true
 
   dashboard:
-    image: healthinfonetag/dashboard:v0.0.126
+    image: healthinfonetag/dashboard:v0.0.139
     container_name: stargate-dashboard
     restart: unless-stopped
     logging:
@@ -1053,7 +1053,7 @@ services:
 
   stalwart:
     # renovate: datasource=docker depName=stalwartlabs/stalwart
-    image: stalwartlabs/stalwart:v0.16
+    image: stalwartlabs/stalwart:v0.16.23
     container_name: stargate-stalwart
     restart: unless-stopped
     logging:
@@ -1077,7 +1077,8 @@ services:
       # exposed on the host, or it becomes an open relay (the MtaStageRcpt
       # rule for :10026 accepts any sender→any recipient as "trusted
       # internal" traffic).
-      - "25:25"
+      - "0.0.0.0:25:25"
+      - "0.0.0.0:587:587"
     networks:
       - stargate-network
     healthcheck:
@@ -1120,7 +1121,7 @@ services:
       - stargate-network
 
   mtaconf:
-    image: healthinfonetag/mtaconf:v0.0.8
+    image: healthinfonetag/mtaconf:v0.0.11
     container_name: stargate-mtaconf
     restart: unless-stopped
     logging:
