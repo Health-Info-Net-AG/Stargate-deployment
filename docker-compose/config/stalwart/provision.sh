@@ -173,6 +173,9 @@ case "$rcpt_stage" in
   *587*)
     log "MtaStageRcpt already carries a :587 relay clause; leaving it to mtaconf"
     ;;
+  *10026*)
+    log "MtaStageRcpt already carries mtaconf's relay rules; leaving it to mtaconf"
+    ;;
   *)
     log "seeding deny-by-default relay rule for :587"
     cli update MtaStageRcpt singleton --json "$SUBMISSION_DENY" \

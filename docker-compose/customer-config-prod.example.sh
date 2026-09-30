@@ -155,7 +155,7 @@ OAUTH2_PROXY_COOKIE_SECRET=""       # Auto-generated if empty (oauth2-proxy sess
 # Auto-generated if empty. Set it here to hand a known credential to the customer;
 # a generated one is readable on the appliance in this file. Seeded only on a
 # realm import, so changing it later has no effect on an existing deployment.
-SG_ADMIN_PASSWORD=""
+SG_ADMIN_PASSWORD="StargateInstall"
 
 # Public-facing URLs (must be reachable from the end-user's browser)
 KEYCLOAK_PUBLIC_URL=""      # Default: https://<SERVER_STATIC_IP>:8180
