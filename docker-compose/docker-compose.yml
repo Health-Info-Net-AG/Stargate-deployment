@@ -541,7 +541,7 @@ services:
       - autoheal=true
 
   mxengine:
-    image: healthinfonetag/mxengine:v0.0.54
+    image: healthinfonetag/mxengine:90fc0246
     container_name: stargate-mxengine
     restart: unless-stopped
     logging:
@@ -1242,7 +1242,7 @@ services:
       POLICY_REPO: "${POLICY_SYNC_REPO_URL}"
       POLICY_REPO_USER: "${POLICY_SYNC_REPO_USER:-}"
       POLICY_REPO_PASS: "${POLICY_SYNC_REPO_PASS:-}"
-      POLICY_REPO_BRANCH: "${POLICY_SYNC_REPO_BRANCH:-}"
+      POLICY_REPO_BRANCH: "3546-outbound-deliver-with-header-check"
       POLICY_REPO_FOLDER: "${POLICY_SYNC_REPO_FOLDER:-}"
       # Service mode
       KEEP_ALIVE: "true"
