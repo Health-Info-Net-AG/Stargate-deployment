@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eo pipefail
 
-# Usage: backup.sh [--label NAME]
+# Usage: backup.sh [--label NAME] [--config-only]
 #   --label NAME   Append NAME to the backup's directory/archive name, e.g.
 #                  "v0.5.0-pre_update" (used by update.sh before a --release
 #                  jump so the backup is identifiable at a glance). Sanitized
@@ -11,15 +11,20 @@ set -eo pipefail
 # Exit codes: 0 complete; 3 archive written but its Vault section is incomplete;
 # anything else, no usable archive.
 LABEL=""
+CONFIG_ONLY=0
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --label)
       LABEL="${2:-}"
       shift 2
       ;;
+    --config-only)
+      CONFIG_ONLY=1
+      shift
+      ;;
     *)
       echo "Unknown option: $1"
-      echo "Usage: $0 [--label NAME]"
+      echo "Usage: $0 [--label NAME] [--config-only]"
       exit 1
       ;;
   esac
@@ -36,7 +41,8 @@ TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 # the working subdirectory and the final archive, so a labeled backup is
 # identifiable by filename alone while still sorting chronologically.
 BACKUP_NAME="$TIMESTAMP"
-[ -n "$LABEL" ] && BACKUP_NAME="${TIMESTAMP}_${LABEL}"
+[ "$CONFIG_ONLY" -eq 1 ] && BACKUP_NAME="${BACKUP_NAME}_config-only"
+[ -n "$LABEL" ] && BACKUP_NAME="${BACKUP_NAME}_${LABEL}"
 BACKUP_SUBDIR="$BACKUP_DIR/$BACKUP_NAME"
 
 # read_env_var() reads one KEY from .env without sourcing the file (Compose
@@ -62,14 +68,94 @@ S3_BUCKET_NAME="${S3_BUCKET_NAME:-stargate-bucket}"
 # Pinned aws-cli image used for S3 object backup/restore.
 AWS_CLI_IMAGE="amazon/aws-cli:2.27.31"
 
+backup_customer_config() {
+  local rc=0
+  if [ -f "$CONFIG_FILE" ]; then
+    cp "$CONFIG_FILE" "$BACKUP_SUBDIR/config/"
+    echo "  ✓ customer-config.sh backed up"
+    if grep -q 'WG_PRIVATE_KEY="[^"]\+"' "$CONFIG_FILE"; then
+      echo "    (includes WireGuard private key)"
+    else
+      echo "    WARNING: WireGuard private key not set in config"
+    fi
+  else
+    echo "  ✗ WARNING: customer-config.sh not found!"
+    rc=1
+  fi
+  if [ -f "$CHRONY_SOURCES_FILE" ]; then
+    cp "$CHRONY_SOURCES_FILE" "$BACKUP_SUBDIR/config/"
+    echo "  ✓ ntp.sources backed up (custom NTP servers)"
+  fi
+  return "$rc"
+}
+
+create_archive() {
+  cd "$BACKUP_DIR"
+  tar -czf "${BACKUP_NAME}.tar.gz" "$BACKUP_NAME"
+  chmod 600 "${BACKUP_NAME}.tar.gz"
+  rm -rf "$BACKUP_NAME"
+  ARCHIVE_PATH="$BACKUP_DIR/${BACKUP_NAME}.tar.gz"
+  ARCHIVE_SIZE=$(du -h "$ARCHIVE_PATH" | cut -f1)
+  echo "  ✓ Archive created"
+}
+
+backup_config_only() {
+  umask 077
+  mkdir -p "$BACKUP_SUBDIR/config"
+  if ! backup_customer_config; then
+    rm -rf "$BACKUP_SUBDIR"
+    echo "ERROR: nothing to back up - $CONFIG_FILE does not exist." >&2
+    exit 1
+  fi
+  cat > "$BACKUP_SUBDIR/manifest.json" << EOF
+{
+  "backup_version": "2.0",
+  "backup_type": "config-only",
+  "timestamp": "$TIMESTAMP",
+  "label": "$LABEL",
+  "created_at": "$(date -Iseconds)",
+  "hostname": "$(hostname)",
+  "source_app_version": "$(detect_app_version "$PROJECT_DIR")",
+  "contents": {
+    "customer_config": true,
+    "ntp_sources": $([ -f "$BACKUP_SUBDIR/config/ntp.sources" ] && echo "true" || echo "false")
+  }
+}
+EOF
+  create_archive
+  echo ""
+  echo "============================================"
+  echo "  Configuration Backup Complete"
+  echo "============================================"
+  echo ""
+  echo "  Archive: $ARCHIVE_PATH"
+  echo "  Size: $ARCHIVE_SIZE"
+  echo ""
+  echo "  It holds customer-config.sh with the generated passwords and the"
+  echo "  WireGuard private key. Keep it private."
+  echo ""
+  echo "  Restore it, for example after purge.sh, with:"
+  echo "    $SCRIPT_DIR/restore.sh --config-only $ARCHIVE_PATH"
+  echo ""
+}
+
 echo "============================================"
-echo "  Stargate Full Backup"
+if [ "$CONFIG_ONLY" -eq 1 ]; then
+  echo "  Stargate Configuration Backup"
+else
+  echo "  Stargate Full Backup"
+fi
 echo "============================================"
 echo ""
 echo "Timestamp: $TIMESTAMP"
 [ -n "$LABEL" ] && echo "Label: $LABEL"
 echo "Backup directory: $BACKUP_SUBDIR"
 echo ""
+
+if [ "$CONFIG_ONLY" -eq 1 ]; then
+  backup_config_only
+  exit 0
+fi
 
 # Check if postgres container is running
 if ! docker ps --format '{{.Names}}' | grep -q "stargate-postgres"; then
@@ -149,32 +235,12 @@ echo "  3. Backing up Customer Configuration"
 echo "============================================"
 echo ""
 
-if [ -f "$CONFIG_FILE" ]; then
-  cp "$CONFIG_FILE" "$BACKUP_SUBDIR/config/"
-  echo "  ✓ customer-config.sh backed up"
-  
-  # Check if WireGuard key is included
-  if grep -q 'WG_PRIVATE_KEY="[^"]\+"' "$CONFIG_FILE"; then
-    echo "    (includes WireGuard private key)"
-  else
-    echo "    WARNING: WireGuard private key not set in config"
-  fi
-else
-  echo "  ✗ WARNING: customer-config.sh not found!"
-fi
+backup_customer_config || true
 
 # Also backup .env for reference (contains generated values)
 if [ -f "$ENV_FILE" ]; then
   cp "$ENV_FILE" "$BACKUP_SUBDIR/config/"
   echo "  ✓ .env backed up (for reference)"
-fi
-
-# Operator NTP sources, if the site overrode the shipped default. Host-level config
-# (chronyd reads it directly), but it lives on the Data Disk precisely so it travels
-# in the backup -- nothing under /etc survives a rebuild.
-if [ -f "$CHRONY_SOURCES_FILE" ]; then
-  cp "$CHRONY_SOURCES_FILE" "$BACKUP_SUBDIR/config/"
-  echo "  ✓ ntp.sources backed up (custom NTP servers)"
 fi
 
 # ==============================================================================
@@ -367,6 +433,7 @@ echo ""
 cat > "$BACKUP_SUBDIR/manifest.json" << EOF
 {
   "backup_version": "2.0",
+  "backup_type": "full",
   "timestamp": "$TIMESTAMP",
   "label": "$LABEL",
   "created_at": "$(date -Iseconds)",
@@ -398,17 +465,7 @@ echo "  8. Creating Compressed Archive"
 echo "============================================"
 echo ""
 
-cd "$BACKUP_DIR"
-tar -czf "${BACKUP_NAME}.tar.gz" "$BACKUP_NAME"
-# The archive contains Vault unseal keys/root token, KV secrets, and the WG
-# private key -- restrict it to the owner (it is not encrypted).
-chmod 600 "${BACKUP_NAME}.tar.gz"
-rm -rf "$BACKUP_NAME"
-
-ARCHIVE_PATH="$BACKUP_DIR/${BACKUP_NAME}.tar.gz"
-ARCHIVE_SIZE=$(du -h "$ARCHIVE_PATH" | cut -f1)
-
-echo "  ✓ Archive created"
+create_archive
 
 # ==============================================================================
 # Summary

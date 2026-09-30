@@ -41,7 +41,7 @@ reset_stateful_storage() {
 # Usage
 # ==============================================================================
 usage() {
-  echo "Usage: $0 [--yes|-y] <backup-file.tar.gz>"
+  echo "Usage: $0 [--yes|-y] [--config-only] <backup-file.tar.gz>"
   echo ""
   echo "Restore Stargate from a backup archive."
   echo ""
@@ -50,10 +50,13 @@ usage() {
   echo ""
   echo "Options:"
   echo "  --yes, -y            Skip the confirmation prompt (non-interactive use)"
+  echo "  --config-only        Restore only customer-config.sh (and custom NTP sources)"
+  echo "                       from any backup archive; nothing else is touched"
   echo ""
   echo "Examples:"
   echo "  $0 backups/20260130_143022.tar.gz"
   echo "  $0 --yes /root/stargate-backup.tar.gz"
+  echo "  $0 --config-only backups/20260130_143022_config-only.tar.gz"
   echo ""
   echo "This script will:"
   echo "  1. Stop any running services"
@@ -73,10 +76,12 @@ usage() {
 
 # Check arguments
 ASSUME_YES=0
+CONFIG_ONLY=0
 BACKUP_FILE=""
 for arg in "$@"; do
   case "$arg" in
     --yes|-y) ASSUME_YES=1 ;;
+    --config-only) CONFIG_ONLY=1 ;;
     -h|--help) usage; exit 0 ;;
     *) BACKUP_FILE="$arg" ;;
   esac
@@ -110,7 +115,7 @@ echo ""
 echo "Backup file: $BACKUP_FILE"
 echo ""
 
-if [ "$ASSUME_YES" -ne 1 ]; then
+if [ "$ASSUME_YES" -ne 1 ] && [ "$CONFIG_ONLY" -ne 1 ]; then
   if [ ! -t 0 ]; then
     echo "ERROR: restore replaces ALL data on this machine and needs confirmation."
     echo "       Re-run with --yes for non-interactive use (e.g. dashboard/automation)."
@@ -127,33 +132,35 @@ fi
 
 # check_dependencies() is provided by lib/docker.sh (sourced above).
 
-# ==============================================================================
-# 1. Stop Running Services
-# ==============================================================================
-echo "============================================"
-echo "  1. Stopping Running Services"
-echo "============================================"
-echo ""
+if [ "$CONFIG_ONLY" -ne 1 ]; then
+  # ============================================================================
+  # 1. Stop Running Services
+  # ============================================================================
+  echo "============================================"
+  echo "  1. Stopping Running Services"
+  echo "============================================"
+  echo ""
 
-if compose ps -q 2>/dev/null | grep -q .; then
-  echo "Stopping existing services..."
-  compose down --remove-orphans 2>/dev/null || true
-  echo "  ✓ Services stopped"
-else
-  echo "  - No running services found"
+  if compose ps -q 2>/dev/null | grep -q .; then
+    echo "Stopping existing services..."
+    compose down --remove-orphans 2>/dev/null || true
+    echo "  ✓ Services stopped"
+  else
+    echo "  - No running services found"
+  fi
+  echo ""
+
+  # ============================================================================
+  # 2. Check Dependencies
+  # ============================================================================
+  echo "============================================"
+  echo "  2. Checking Dependencies"
+  echo "============================================"
+  echo ""
+  check_dependencies
+  echo "  ✓ All dependencies satisfied"
+  echo ""
 fi
-echo ""
-
-# ==============================================================================
-# 2. Check Dependencies
-# ==============================================================================
-echo "============================================"
-echo "  2. Checking Dependencies"
-echo "============================================"
-echo ""
-check_dependencies
-echo "  ✓ All dependencies satisfied"
-echo ""
 
 # ==============================================================================
 # 3. Extract and Validate Backup
@@ -209,10 +216,18 @@ else
   echo "  - No manifest found (older backup format)"
 fi
 
+BACKUP_TYPE=$(jq -r '.backup_type // "full"' "$BACKUP_CONTENT/manifest.json" 2>/dev/null || echo "full")
+if [ "$BACKUP_TYPE" = "config-only" ] && [ "$CONFIG_ONLY" -ne 1 ]; then
+  echo "ERROR: this archive holds only the customer configuration."
+  echo "  Restore it with: $0 --config-only $BACKUP_FILE"
+  rm -rf "$RESTORE_DIR"
+  exit 1
+fi
+
 # Validate required files
 MISSING_FILES=()
 [ ! -f "$BACKUP_CONTENT/config/customer-config.sh" ] && MISSING_FILES+=("customer-config.sh")
-[ ! -f "$BACKUP_CONTENT/database/full_dump.sql" ] && MISSING_FILES+=("full_dump.sql")
+[ "$CONFIG_ONLY" -eq 1 ] || [ -f "$BACKUP_CONTENT/database/full_dump.sql" ] || MISSING_FILES+=("full_dump.sql")
 
 if [ ${#MISSING_FILES[@]} -gt 0 ]; then
   echo "ERROR: Missing required files in backup:"
@@ -268,6 +283,35 @@ echo ""
 echo "  Customer: ${CUSTOMER_NAME:-unknown}"
 echo "  Deployment: ${DEPLOYMENT_NAME:-unknown}"
 echo ""
+
+if [ "$CONFIG_ONLY" -eq 1 ]; then
+  echo "============================================"
+  echo "  Configuration Restore Complete"
+  echo "============================================"
+  echo ""
+  echo "  Restored: $CONFIG_FILE"
+  echo "  A copy that was already there is kept as ${CONFIG_FILE}.bak.<timestamp>."
+  echo ""
+  if [ -f "$SECRETS_DIR/vault-keys.json" ]; then
+    echo "  NOTE: an installation is still present on this machine. The installer skips an"
+    echo "        installed machine, and purge.sh deletes $CONFIG_FILE with everything else."
+    echo "        The order is: backup --config-only, purge.sh, restore --config-only, install."
+  else
+    echo "  Next:"
+    echo "  1. Edit $CONFIG_FILE, e.g. set SERVER_STATIC_IP to the address clients use."
+    case "$PROJECT_DIR" in
+      /usr/*)
+        echo "  2. Reboot. The installer runs at boot with this configuration, and the"
+        echo "     reboot also reloads the container images purge.sh removed."
+        ;;
+      *)
+        echo "  2. Run: $SCRIPT_DIR/install.sh"
+        ;;
+    esac
+  fi
+  echo ""
+  exit 0
+fi
 
 # ==============================================================================
 # 5. Restore Secrets (Vault keys, CSR, certificates)
