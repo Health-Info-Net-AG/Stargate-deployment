@@ -220,16 +220,6 @@ else
   fail "Stalwart management API unreachable"
 fi
 
-# Check the SMTP listeners. The stalwart image has no ss/netstat, so read
-# /proc/net/tcp{,6} inside the container (always present) and look for a socket
-# in LISTEN state (st=0A) on the port in hex. 25=0x0019, 10026=0x272A.
-stalwart_listening() {  # $1 = decimal port
-  local hexport
-  hexport=$(printf ':%04X' "$1")
-  docker exec stargate-stalwart sh -c 'cat /proc/net/tcp /proc/net/tcp6 2>/dev/null' \
-    | awk '$4 == "0A" { print $2 }' | grep -qi "$hexport\$"
-}
-
 if stalwart_listening 25; then
   pass "Port 25 listening"
 else

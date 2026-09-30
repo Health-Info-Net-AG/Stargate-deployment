@@ -8,6 +8,7 @@ KEYS_FILE="$SECRETS_DIR/vault-keys.json"
 
 . "$SCRIPT_DIR/lib/env.sh"
 . "$SCRIPT_DIR/lib/vault-tokens.sh"
+. "$SCRIPT_DIR/lib/network.sh"
 
 cd "$PROJECT_DIR"
 
@@ -117,13 +118,6 @@ compose up -d
 
 echo "Waiting for Stalwart provisioning to complete..."
 docker wait stargate-stalwart-provision >/dev/null 2>&1 || true
-
-stalwart_listening() {
-  local hexport
-  hexport=$(printf ':%04X' "$1")
-  docker exec stargate-stalwart sh -c 'cat /proc/net/tcp /proc/net/tcp6 2>/dev/null' 2>/dev/null \
-    | awk '$4 == "0A" { print $2 }' | grep -qi "$hexport\$"
-}
 
 for port in 25 587 10026; do
   if ! stalwart_listening "$port"; then
