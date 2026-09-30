@@ -145,6 +145,16 @@ Send test emails to the following recipients, using mailboxes to which you have 
 
 For the external recipient, send an email from the HIN Community with **(confidential) included in the subject line**.
 
+!!! warning "(Confidential) messages outside of HIN cmmmunity"
+    If you are using Outlook and one of the following options to send confidential emails outside the HIN community: 
+    * Using a specific email template 
+    * Using the Key Lock symbol
+
+    Please test the mail flow before migration to confirm that the email is processed and securely delivered.
+    
+
+Please test the mail flow before migration to confirm that the email is processed and securely delivered.
+
 Test mail flow in both directions:
 
 - From the HIN trusted domain to the external email address
@@ -528,8 +538,8 @@ Under the **Domains** menu, for each available domain you can configure specific
 
 | Setting | Description |
 | --------- | ------------- |
-| **Inbound relay** | The  SMTP relay for inbound delivery for selected domain |
-| **Outbound relay** | The SMTP relay for outbound delivery for selected domain. This setting correspond to `Forwarding server` setting from old MGW |
+| **Inbound relay** | The SMTP relay that receives inbound mail for the selected domain. You can define routing rules based on the sender's domain (external domain) to control where incoming messages are delivered |
+| **Outbound relay** | The SMTP relay for outbound mail for the selected domain. After the gateway processes a message, it forwards it to this server as the next hop, based on the configured local domain. Migration note: this setting corresponds to Forwarding server in the old MGW. |
 | **Trusted networks** | Additional networks allowed to relay through this gateway. For more information please check on "Step 18 - Configure mail server" |
 | **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate |
 | **Email authentication** | For all settings under `Email authentication` section please refer to [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) section |
@@ -586,9 +596,9 @@ The following settings are available `Settings` menu:
 | --------- | ------------- |
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
-| **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
-| **Default inbound relay** | The default SMTP relay for inbound delivery |
-| **Default outbound relay** | The default SMTP relay for outbound delivery |
+| **DNS server** | DNS of the host which will be used to resolve MX and other DNS records. Please make sure that the entered DNS server is reachable from the HIN Gateway VM. |
+| **Default inbound relay** | The SMTP relay that receives inbound mail for the selected domain. You can define routing rules based on the sender's domain (external domain) to control where incoming messages are delivered |
+| **Default outbound relay** | The SMTP relay for outbound mail for the selected domain. After the gateway processes a message, it forwards it to this server as the next hop, based on the configured local domain. Migration note: this setting corresponds to Forwarding server in the old MGW. |
 
 ### Step 15 - Configure whitelist headers
 
@@ -652,8 +662,8 @@ Under the **Domains** menu, for each available domain you can configure specific
 
 | Setting | Description |
 | --------- | ------------- |
-| **Inbound relay** | The  SMTP relay for inbound delivery for selected domain |
-| **Outbound relay** | The SMTP relay for outbound delivery for selected domain. This setting correspond to `Forwarding server` setting from old MGW |
+| **Inbound relay** | The SMTP relay that receives inbound mail for the selected domain. You can define routing rules based on the sender's domain (external domain) to control where incoming messages are delivered |
+| **Outbound relay** | The SMTP relay for outbound mail for the selected domain. After the gateway processes a message, it forwards it to this server as the next hop, based on the configured local domain. Migration note: this setting corresponds to Forwarding server in the old MGW. |
 | **Trusted networks** | Additional networks allowed to relay through this gateway. For more information please check on "Step 18 - Configure mail server" |
 | **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate |
 | **Email authentication** | For all settings under `Email authentication` section please refer to [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) section |
@@ -695,9 +705,9 @@ The following settings are available `Settings` menu:
 | --------- | ------------- |
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
-| **DNS** | DNS of the host which will be used to resolve MX and other DNS records |
-| **Default inbound relay** | The default SMTP relay for inbound delivery |
-| **Default outbound relay** | The default SMTP relay for outbound delivery |
+| **DNS server** | DNS of the host which will be used to resolve MX and other DNS records. Please make sure that the entered DNS server is reachable from the HIN Gateway VM. |
+| **Default inbound relay** | The default SMTP relay that receives inbound mail for the selected domain. You can define routing rules based on the sender's domain (any external domain) to control where incoming messages are delivered. Its fallback to for all domains. |
+| **Default outbound relay** | The default SMTP relay for outbound mail. After the gateway processes a message, it forwards it to this server as the next hop. Its fallback to for all domains |
 
 <br> ![domain-relay-host](assets/installation-guide/step14-mail-transport2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
@@ -708,9 +718,22 @@ The following settings are available `Settings` menu:
 **Outgoing:**
 
 - Verify that the mail server is configured to send emails to the HIN Gateway using an SMTP relay or Exchange connector.
-- Verify that the HIN Gateway can send emails to recipients outside the HIN Community.
+- Verify that the HIN Gateway can send emails to recipients outside the HIN Community. 
 - Verify that the HIN Gateway can send emails to recipients inside the HIN Community via WireGuard.
 - Send an email from the HIN Community to an external email address (for example, Bluewin, Gmail, Yahoo, or GMX) with (confidential) included in the subject line, and verify that it is delivered successfully.
+
+!!! warning "(Confidential) messages outside of HIN cmmmunity"
+    During the test and validation, if you use Outlook to send confidential emails outside the HIN community using one of the following methods: 
+    * Using a specific email template 
+    * Using the Key Lock symbol
+
+    Please follow the instructions below: 
+    * If you are using a specific email template, please ensure that the template is updated so that secure emails are processed correctly through the HIN Gateway. 
+    * If you are using the Key Lock symbol, please temporarily use “(Confidential)” in the subject field instead.
+
+    HIN is currently developing support for the Outlook integration. This functionality is planned to be made available in a future release.
+    After making the required changes, please test the mail flow again and confirm that the email is processed and delivered successfully after the migration.
+    
 
 **Incoming:**
 

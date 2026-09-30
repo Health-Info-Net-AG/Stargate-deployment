@@ -387,3 +387,9 @@ In case you want to install or re-install HIN Gateway instance you will need Act
 
     If you request this reset for the wrong customer instance, it will delete and break that active instance connection. Before requesting a reset, double-check the exact instance and confirm all domains hosted on it.
 
+# Reboot on VM v0.6.1 
+
+Please keep in mind if you do a REBOOT an instance which is running on v0.6.1 it will revert back to the previous non working Stalwart version <0.0.23.
+
+We recommend to update the instance to newer version from Settings->System version section!  
+ 

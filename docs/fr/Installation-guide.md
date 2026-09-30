@@ -145,6 +145,13 @@ Envoyez des e-mails de test aux destinataires suivants, en utilisant des boîtes
 
 Pour le destinataire externe, envoyez un e-mail depuis la communauté HIN avec **la mention (confidentiel) dans l'objet**.
 
+!!! warning "Messages (Confidentiel) en dehors de la communauté HIN"
+    Si vous utilisez Outlook et l'une des options suivantes pour envoyer des e-mails confidentiels en dehors de la communauté HIN:
+    * Utilisation d'un modèle d'e-mail spécifique
+    * Utilisation du symbole de cadenas (Key Lock)
+
+    Veuillez tester le flux de messagerie avant la migration afin de confirmer que l'e-mail est traité et remis de manière sécurisée.
+
 Testez le flux de messagerie dans les deux sens:
 
 - de la communauté HIN de confiance vers l'adresse e-mail externe
@@ -528,8 +535,8 @@ Dans le menu **Domains**, pour chaque domaine disponible, vous pouvez configurer
 
 | Paramètre | Description |
 | --------- | ------------- |
-| **Inbound relay** | Le relais SMTP pour la livraison entrante du domaine sélectionné |
-| **Outbound relay** | Le relais SMTP pour la livraison sortante du domaine sélectionné. Ce paramètre correspond au paramètre `Forwarding server` de l'ancien MGW |
+| **Inbound relay** | Le relais SMTP qui reçoit les e-mails entrants du domaine sélectionné. Vous pouvez définir des règles de routage basées sur le domaine de l'expéditeur (domaine externe) afin de contrôler où les messages entrants sont livrés |
+| **Outbound relay** | Le relais SMTP pour les e-mails sortants du domaine sélectionné. Après avoir traité un message, la passerelle le transmet à ce serveur comme prochain saut, en fonction du domaine local configuré. Note de migration : ce paramètre correspond à `Forwarding server` dans l'ancien MGW. |
 | **Trusted networks** | Réseaux supplémentaires autorisés à relayer via cette passerelle. Pour plus d'informations, consultez l'"Étape 18 - Configurer le serveur de messagerie" |
 | **Configure TLS** | Paramètres du certificat TLS pour les connexions SMTP ; le bouton `Generate TLS certificate` permet de générer un certificat TLS |
 | **Email authentication** | Pour tous les paramètres de la section `Email authentication`, veuillez consulter la section [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) |
@@ -586,9 +593,9 @@ Les paramètres suivants sont disponibles dans le menu `Settings`:
 | --------- | ------------- |
 | **Nom d'hôte du serveur de messagerie** | Le FQDN de cette instance de passerelle de messagerie (par exemple, `mail.example.com`). |
 | **Adresses IP du serveur de messagerie** | La ou les adresses IP publiques de ce serveur. Ajoutez des adresses IP supplémentaires si le serveur est accessible via plusieurs adresses. |
-| **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS |
-| **Default inbound relay** | Le relais SMTP par défaut pour la livraison entrante |
-| **Default outbound relay** | Le relais SMTP par défaut pour la livraison sortante |
+| **Serveur DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS. Veuillez vous assurer que le serveur DNS saisi est accessible depuis la VM HIN Gateway. |
+| **Default inbound relay** | Le relais SMTP qui reçoit les e-mails entrants du domaine sélectionné. Vous pouvez définir des règles de routage basées sur le domaine de l'expéditeur (domaine externe) afin de contrôler où les messages entrants sont livrés |
+| **Default outbound relay** | Le relais SMTP pour les e-mails sortants du domaine sélectionné. Après avoir traité un message, la passerelle le transmet à ce serveur comme prochain saut, en fonction du domaine local configuré. Note de migration : ce paramètre correspond à `Forwarding server` dans l'ancien MGW. |
 
 ### Étape 15 - Configurer les whitelist headers
 
@@ -652,8 +659,8 @@ Dans le menu **Domains**, pour chaque domaine disponible, vous pouvez configurer
 
 | Paramètre | Description |
 | --------- | ------------- |
-| **Inbound relay** | Le relais SMTP pour la livraison entrante du domaine sélectionné |
-| **Outbound relay** | Le relais SMTP pour la livraison sortante du domaine sélectionné. Ce paramètre correspond au paramètre `Forwarding server` de l'ancien MGW |
+| **Inbound relay** | Le relais SMTP qui reçoit les e-mails entrants du domaine sélectionné. Vous pouvez définir des règles de routage basées sur le domaine de l'expéditeur (domaine externe) afin de contrôler où les messages entrants sont livrés |
+| **Outbound relay** | Le relais SMTP pour les e-mails sortants du domaine sélectionné. Après avoir traité un message, la passerelle le transmet à ce serveur comme prochain saut, en fonction du domaine local configuré. Note de migration : ce paramètre correspond à `Forwarding server` dans l'ancien MGW. |
 | **Trusted networks** | Réseaux supplémentaires autorisés à relayer via cette passerelle. Pour plus d'informations, consultez l'"Étape 18 - Configurer le serveur de messagerie" |
 | **Configure TLS** | Paramètres du certificat TLS pour les connexions SMTP ; le bouton `Generate TLS certificate` permet de générer un certificat TLS |
 | **Email authentication** | Pour tous les paramètres de la section `Email authentication`, veuillez consulter la section [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) |
@@ -695,9 +702,9 @@ Les paramètres suivants sont disponibles dans le menu `Settings`:
 | --------- | ------------- |
 | **Nom d'hôte du serveur de messagerie** | Le FQDN de cette instance de passerelle de messagerie (par exemple, `mail.example.com`). |
 | **Adresses IP du serveur de messagerie** | La ou les adresses IP publiques de ce serveur. Ajoutez des adresses IP supplémentaires si le serveur est accessible via plusieurs adresses. |
-| **DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS |
-| **Default inbound relay** | Le relais SMTP par défaut pour la livraison entrante |
-| **Default outbound relay** | Le relais SMTP par défaut pour la livraison sortante |
+| **Serveur DNS** | Le DNS de l'hôte qui sera utilisé pour résoudre les enregistrements MX et autres enregistrements DNS. Veuillez vous assurer que le serveur DNS saisi est accessible depuis la VM HIN Gateway. |
+| **Default inbound relay** | Le relais SMTP par défaut qui reçoit les e-mails entrants du domaine sélectionné. Vous pouvez définir des règles de routage basées sur le domaine de l'expéditeur (tout domaine externe) afin de contrôler où les messages entrants sont livrés. Il sert de solution de repli pour tous les domaines. |
+| **Default outbound relay** | Le relais SMTP par défaut pour les e-mails sortants. Après avoir traité un message, la passerelle le transmet à ce serveur comme prochain saut. Il sert de solution de repli pour tous les domaines. |
 
 <br> ![domain-relay-host](assets/installation-guide/step14-mail-transport2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
@@ -711,6 +718,18 @@ Les paramètres suivants sont disponibles dans le menu `Settings`:
 - Vérifiez que le HIN Gateway peut envoyer des e-mails à des destinataires situés en dehors de la communauté HIN.
 - Vérifiez que le HIN Gateway peut envoyer des e-mails à des destinataires au sein de la communauté HIN via WireGuard.
 - Envoyez un e-mail depuis la communauté HIN vers une adresse e-mail externe (par exemple Bluewin, Gmail, Yahoo ou GMX) avec la mention (confidentiel) dans l'objet, et vérifiez qu'il est bien remis.
+
+!!! warning "Messages (Confidentiel) en dehors de la communauté HIN"
+    Si, pendant le test et la validation, vous utilisez Outlook pour envoyer des e-mails confidentiels en dehors de la communauté HIN à l'aide de l'une des méthodes suivantes:
+    * Utilisation d'un modèle d'e-mail spécifique
+    * Utilisation du symbole de cadenas (Key Lock)
+
+    Veuillez suivre les instructions ci-dessous:
+    * Si vous utilisez un modèle d'e-mail spécifique, assurez-vous que le modèle est mis à jour afin que les e-mails sécurisés soient correctement traités par le HIN Gateway.
+    * Si vous utilisez le symbole de cadenas (Key Lock), indiquez temporairement « (confidentiel) » dans l'objet à la place.
+
+    HIN développe actuellement la prise en charge de l'intégration Outlook. Cette fonctionnalité devrait être disponible dans une prochaine version.
+    Après avoir effectué les modifications nécessaires, testez à nouveau le flux de messagerie et confirmez que l'e-mail est traité et remis avec succès après la migration.
 
 **Courrier entrant:**
 

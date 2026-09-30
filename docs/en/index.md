@@ -69,6 +69,13 @@ The following items must be available or confirmed before the installation:
     - [Proxmox image installation](vm/Proxmox-image-install.md)
     - [Cloudscale.ch image installation](vm/Cloudscale-image-install.md)
 
+!!! warning "Second disk required: the Data Disk"
+    The appliance uses **two disks**: the OS disk from the image, and a separate **Data Disk** that holds all configuration, secrets, mail, and databases. Keeping them apart lets an image upgrade replace the OS without touching your data.
+
+    The **VMware OVA already includes** this disk. On every other platform (Proxmox, Hyper-V, Azure, Cloudscale) the image is a single OS disk, so you must **attach a second, blank disk of at least 30 GB before the first boot**.
+
+    Do not format or partition it yourself. On first boot the appliance formats the blank disk (label `VEREIGN-DATA`) and mounts it at `/var/data`. Without it, the first boot fails its health check and rolls back.
+
 !!! tip "🖨️"
     You can get this documentation printed or saved as PDF, please visit our [Print page view](print_page).
 
@@ -102,7 +109,7 @@ The following items must be available or confirmed before the installation:
 
 | Port | Protocol | Purpose |
 | :--- | :------: | :------ |
-| `25` | TCP | SMTP - receiving mail from external servers |
+| `25` | TCP | SMTP - receiving mail from external servers or from an MTA installed in front of the HIN Gateway. |
 | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication. Read our [Security Assessment WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
 
 #### Inbound VM Access (your administrative machine to the HIN Gateway VM)
@@ -126,8 +133,8 @@ The following items must be available or confirmed before the installation:
 | `quay.io` | `443` | TCP | Container registry (Keycloak, oauth2-proxy) |
 | `github.com` | `443` | TCP | Policy repository (policy-sync) |
 | Your own Loki endpoint (e.g. loki.example.com) | `443` | TCP | Optional. Only needed if you provide your own Loki instance the stack should ship logs to (Alloy → Loki) |
-| Update Server of alpine, almalinux, etc. | `80` | TCP | Various Update servers |
-| Destination mail servers | `25` | TCP | Outbound mail delivery (via MX lookup) |
+| Update Server of alpine, almalinux, etc. | `80` | TCP | Various Update servers - https://hub.docker.com/ |
+| Destination mail servers | `25` | TCP | Outbound mail delivery via MX lookup, or delivery to the next MTA configured as the outbound server. |
 | Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
 | `ntp.metas.ch` (default NTP server) | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
 | WireGuard peers (HIN network) | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication |
