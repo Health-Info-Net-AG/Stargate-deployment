@@ -165,15 +165,15 @@ create_listener "submission" "0.0.0.0:587" "smtp" "true"
 
 SUBMISSION_DENY='{"allowRelaying":{"match":{"0":{"if":"local_port == 587","then":"false"}},"else":"!is_empty(authenticated_as)"}}'
 
-rcpt_stage=$(cli get MtaStageRcpt 2>/dev/null) || rcpt_stage=""
+rcpt_stage=$(cli get MtaStageRcpt --json 2>/dev/null) || rcpt_stage=""
 case "$rcpt_stage" in
   "")
     log "WARNING: could not read MtaStageRcpt; :587 relays on stock rules until mtaconf applies"
     ;;
-  *587*)
+  *"local_port == 587"*)
     log "MtaStageRcpt already carries a :587 relay clause; leaving it to mtaconf"
     ;;
-  *10026*)
+  *"local_port == 10026"*)
     log "MtaStageRcpt already carries mtaconf's relay rules; leaving it to mtaconf"
     ;;
   *)
