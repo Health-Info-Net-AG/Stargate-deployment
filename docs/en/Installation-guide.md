@@ -538,8 +538,8 @@ Under the **Domains** menu, for each available domain you can configure specific
 
 | Setting | Description |
 | --------- | ------------- |
-| **Inbound relay** | The  SMTP relay for inbound delivery for selected domain |
-| **Outbound relay** | The SMTP relay for outbound delivery for selected domain. This setting correspond to `Forwarding server` setting from old MGW |
+| **Inbound relay** | The SMTP relay that receives inbound mail for the selected domain. You can define routing rules based on the sender's domain (external domain) to control where incoming messages are delivered |
+| **Outbound relay** | The SMTP relay for outbound mail for the selected domain. After the gateway processes a message, it forwards it to this server as the next hop, based on the configured local domain. Migration note: this setting corresponds to Forwarding server in the old MGW. |
 | **Trusted networks** | Additional networks allowed to relay through this gateway. For more information please check on "Step 18 - Configure mail server" |
 | **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate |
 | **Email authentication** | For all settings under `Email authentication` section please refer to [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) section |
@@ -597,8 +597,8 @@ The following settings are available `Settings` menu:
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
 | **DNS server** | DNS of the host which will be used to resolve MX and other DNS records. Please make sure that the entered DNS server is reachable from the HIN Gateway VM. |
-| **Default inbound relay** | The default SMTP relay for inbound delivery |
-| **Default outbound relay** | The default SMTP relay for outbound delivery |
+| **Default inbound relay** | The SMTP relay that receives inbound mail for the selected domain. You can define routing rules based on the sender's domain (external domain) to control where incoming messages are delivered |
+| **Default outbound relay** | The SMTP relay for outbound mail for the selected domain. After the gateway processes a message, it forwards it to this server as the next hop, based on the configured local domain. Migration note: this setting corresponds to Forwarding server in the old MGW. |
 
 ### Step 15 - Configure whitelist headers
 
@@ -662,8 +662,8 @@ Under the **Domains** menu, for each available domain you can configure specific
 
 | Setting | Description |
 | --------- | ------------- |
-| **Inbound relay** | The  SMTP relay for inbound delivery for selected domain |
-| **Outbound relay** | The SMTP relay for outbound delivery for selected domain. It shows where to send as next hop after processing the email message. In case of migration: This setting correspond to `Forwarding server` setting from old MGW |
+| **Inbound relay** | The SMTP relay that receives inbound mail for the selected domain. You can define routing rules based on the sender's domain (external domain) to control where incoming messages are delivered |
+| **Outbound relay** | The SMTP relay for outbound mail for the selected domain. After the gateway processes a message, it forwards it to this server as the next hop, based on the configured local domain. Migration note: this setting corresponds to Forwarding server in the old MGW. |
 | **Trusted networks** | Additional networks allowed to relay through this gateway. For more information please check on "Step 18 - Configure mail server" |
 | **Configure TLS** | TLS certificate settings for SMTP connections and from the `Generate TLS certificate` button you can generate TLS certificate |
 | **Email authentication** | For all settings under `Email authentication` section please refer to [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) section |
@@ -706,8 +706,8 @@ The following settings are available `Settings` menu:
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
 | **DNS server** | DNS of the host which will be used to resolve MX and other DNS records. Please make sure that the entered DNS server is reachable from the HIN Gateway VM. |
-| **Default inbound relay** | The default SMTP relay for inbound delivery |
-| **Default outbound relay** | The default SMTP relay for outbound delivery |
+| **Default inbound relay** | The default SMTP relay that receives inbound mail for the selected domain. You can define routing rules based on the sender's domain (any external domain) to control where incoming messages are delivered. Its fallback to for all domains. |
+| **Default outbound relay** | The default SMTP relay for outbound mail. After the gateway processes a message, it forwards it to this server as the next hop. Its fallback to for all domains |
 
 <br> ![domain-relay-host](assets/installation-guide/step14-mail-transport2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 

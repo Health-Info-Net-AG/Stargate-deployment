@@ -109,7 +109,7 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
 
 | Porta | Protocollo | Scopo |
 | :---- | :--------: | :---- |
-| `25` | TCP | SMTP - ricezione di posta da server esterni |
+| `25` | TCP | SMTP - ricezione di posta da server esterni o da un MTA installato a monte dell'HIN Gateway. |
 | `19818` | UDP+TCP | WireGuard - tunnel crittografato per la comunicazione agente-agente. Leggi la nostra [Valutazione di sicurezza WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
 
 #### Accesso in ingresso alla VM (dal computer di amministrazione alla VM HIN Gateway)
@@ -134,7 +134,7 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
 | `github.com` | `443` | TCP | Repository delle policy (policy-sync) |
 | Il proprio endpoint Loki (es. `loki.example.com`) | `443` | TCP | Opzionale. Necessario solo se si fornisce una propria istanza Loki a cui lo stack deve inviare i log (Alloy → Loki) |
 | Server di aggiornamento di Alpine, AlmaLinux, ecc. | `80` | TCP | Vari server di aggiornamento - https://hub.docker.com/ |
-| Server di posta di destinazione | `25` | TCP | Consegna posta in uscita (tramite ricerca MX) |
+| Server di posta di destinazione | `25` | TCP | Consegna posta in uscita tramite ricerca MX, o consegna all'MTA successivo configurato come server in uscita. |
 | Server DNS | `53` | UDP+TCP | In uscita verso server DNS pubblici |
 | `ntp.metas.ch` (server NTP predefinito) | `123` | UDP | NTP sincronizza gli orologi di computer, server, dispositivi di rete e macchine virtuali con fonti di tempo precise |
 | Peer WireGuard (rete HIN) | `19818` | UDP+TCP | WireGuard - tunnel crittografato per la comunicazione agente-agente |

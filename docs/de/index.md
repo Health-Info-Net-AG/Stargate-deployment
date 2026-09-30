@@ -108,7 +108,7 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
 
 | Port | Protokoll | Zweck |
 | :--- | :-------: | :---- |
-| `25` | TCP | SMTP – Empfangen von E-Mails von externen Servern |
+| `25` | TCP | SMTP - Empfangen von E-Mails von externen Servern oder von einem MTA, der dem HIN Gateway vorgelagert ist. |
 | `19818` | UDP+TCP | WireGuard – Verschlüsselter Tunnel für die Agent-zu-Agent-Kommunikation. Lesen Sie unser [Sicherheitsgutachten zu WireGuard](https://www.hin.ch/files/pdf1/wireguard-tunnel-en.pdf) |
 
 #### Eingehender VM-Zugriff (von Ihrem Administrationsrechner zur HIN Gateway VM)
@@ -133,7 +133,7 @@ Die folgenden Punkte müssen vor der Installation verfügbar oder bestätigt sei
 | `github.com` | `443` | TCP | Richtlinien-Repository (policy-sync) |
 | Ihr eigener Loki-Endpunkt (z. B. `loki.example.com`) | `443` | TCP | Optional. Nur erforderlich, wenn Sie eine eigene Loki-Instanz bereitstellen, an die der Stack Logs senden soll (Alloy → Loki) |
 | Update-Server von Alpine, AlmaLinux usw. | `80` | TCP | Verschiedene Update-Server - https://hub.docker.com/ |
-| Ziel-Mailserver | `25` | TCP | Zustellung ausgehender E-Mails (via MX-Lookup) |
+| Ziel-Mailserver | `25` | TCP | Zustellung ausgehender E-Mails via MX-Lookup oder Zustellung an den nächsten MTA, der als Outbound-Server konfiguriert ist. |
 | DNS-Server | `53` | UDP+TCP | Ausgehend an öffentliche DNS-Server |
 | `ntp.metas.ch` (Standard-NTP-Server) | `123` | UDP | NTP synchronisiert die Uhren von Computern, Servern, Netzwerkgeräten und virtuellen Maschinen mit präzisen Zeitquellen |
 | WireGuard-Peers (HIN-Netzwerk) | `19818` | UDP+TCP | WireGuard – Verschlüsselter Tunnel für die Agent-zu-Agent-Kommunikation |

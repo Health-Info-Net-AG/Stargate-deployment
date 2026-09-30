@@ -145,6 +145,13 @@ Invia email di test ai seguenti destinatari, utilizzando cassette postali a cui 
 
 Per il destinatario esterno, invia una email dalla Comunità HIN con **(confidenziale) inserito nell'oggetto**.
 
+!!! warning "Messaggi (Confidenziale) al di fuori della Comunità HIN"
+    Se utilizzi Outlook e una delle seguenti opzioni per inviare email confidenziali al di fuori della Comunità HIN:
+    * Utilizzo di un modello di email specifico
+    * Utilizzo del simbolo del lucchetto (Key Lock)
+
+    Testa il flusso di posta prima della migrazione per verificare che l'email venga elaborata e consegnata in modo sicuro.
+
 Testa il flusso di posta in entrambe le direzioni:
 
 - Dal dominio HIN affidabile all'indirizzo email esterno
@@ -528,8 +535,8 @@ Nel menu **Domains**, per ogni dominio disponibile puoi configurare una rotta di
 
 | Impostazione | Descrizione |
 | --------- | ------------- |
-| **Inbound relay** | Il relay SMTP per la consegna in entrata per il dominio selezionato |
-| **Outbound relay** | Il relay SMTP per la consegna in uscita per il dominio selezionato. Questa impostazione corrisponde all'impostazione `Forwarding server` del vecchio MGW |
+| **Inbound relay** | Il relay SMTP che riceve la posta in entrata per il dominio selezionato. Puoi definire regole di routing basate sul dominio del mittente (dominio esterno) per controllare dove vengono consegnati i messaggi in entrata |
+| **Outbound relay** | Il relay SMTP per la posta in uscita del dominio selezionato. Dopo che il gateway ha elaborato un messaggio, lo inoltra a questo server come prossimo hop, in base al dominio locale configurato. Nota sulla migrazione: questa impostazione corrisponde a `Forwarding server` nel vecchio MGW. |
 | **Trusted networks** | Reti aggiuntive autorizzate a fare relay tramite questo gateway. Per maggiori informazioni consulta il "Passo 18 - Configurazione del server di posta" |
 | **Configure TLS** | Impostazioni del certificato TLS per le connessioni SMTP; dal pulsante `Generate TLS certificate` puoi generare un certificato TLS |
 | **Email authentication** | Per tutte le impostazioni della sezione `Email authentication` fai riferimento alla sezione [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) |
@@ -587,8 +594,8 @@ Nel menu `Settings` sono disponibili le seguenti impostazioni:
 | **Mail server host name** | Il FQDN di questa istanza del gateway di posta (es. `mail.example.com`). |
 | **Mail server IP addresses** | Gli indirizzi IP pubblici di questo server. Aggiungi IP aggiuntivi se il server è raggiungibile su più indirizzi. |
 | **DNS server** | Il DNS dell'host che verrà utilizzato per risolvere i record MX e altri record DNS. Assicurati che il server DNS inserito sia raggiungibile dalla VM HIN Gateway. |
-| **Default inbound relay** | Il relay SMTP predefinito per la consegna in entrata |
-| **Default outbound relay** | Il relay SMTP predefinito per la consegna in uscita |
+| **Default inbound relay** | Il relay SMTP che riceve la posta in entrata per il dominio selezionato. Puoi definire regole di routing basate sul dominio del mittente (dominio esterno) per controllare dove vengono consegnati i messaggi in entrata |
+| **Default outbound relay** | Il relay SMTP per la posta in uscita del dominio selezionato. Dopo che il gateway ha elaborato un messaggio, lo inoltra a questo server come prossimo hop, in base al dominio locale configurato. Nota sulla migrazione: questa impostazione corrisponde a `Forwarding server` nel vecchio MGW. |
 
 ### Passo 15 - Configurazione intestazioni whitelist
 
@@ -652,8 +659,8 @@ Nel menu **Domains**, per ogni dominio disponibile puoi configurare una rotta di
 
 | Impostazione | Descrizione |
 | --------- | ------------- |
-| **Inbound relay** | Il relay SMTP per la consegna in entrata per il dominio selezionato |
-| **Outbound relay** | Il relay SMTP per la consegna in uscita per il dominio selezionato. Indica il prossimo hop verso cui inviare il messaggio email dopo l'elaborazione. In caso di migrazione: questa impostazione corrisponde all'impostazione `Forwarding server` del vecchio MGW |
+| **Inbound relay** | Il relay SMTP che riceve la posta in entrata per il dominio selezionato. Puoi definire regole di routing basate sul dominio del mittente (dominio esterno) per controllare dove vengono consegnati i messaggi in entrata |
+| **Outbound relay** | Il relay SMTP per la posta in uscita del dominio selezionato. Dopo che il gateway ha elaborato un messaggio, lo inoltra a questo server come prossimo hop, in base al dominio locale configurato. Nota sulla migrazione: questa impostazione corrisponde a `Forwarding server` nel vecchio MGW. |
 | **Trusted networks** | Reti aggiuntive autorizzate a fare relay tramite questo gateway. Per maggiori informazioni consulta il "Passo 18 - Configurazione del server di posta" |
 | **Configure TLS** | Impostazioni del certificato TLS per le connessioni SMTP; dal pulsante `Generate TLS certificate` puoi generare un certificato TLS |
 | **Email authentication** | Per tutte le impostazioni della sezione `Email authentication` fai riferimento alla sezione [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) |
@@ -696,8 +703,8 @@ Nel menu `Settings` sono disponibili le seguenti impostazioni:
 | **Mail server host name** | Il FQDN di questa istanza del gateway di posta (es. `mail.example.com`). |
 | **Mail server IP addresses** | Gli indirizzi IP pubblici di questo server. Aggiungi IP aggiuntivi se il server è raggiungibile su più indirizzi. |
 | **DNS server** | Il DNS dell'host che verrà utilizzato per risolvere i record MX e altri record DNS. Assicurati che il server DNS inserito sia raggiungibile dalla VM HIN Gateway. |
-| **Default inbound relay** | Il relay SMTP predefinito per la consegna in entrata |
-| **Default outbound relay** | Il relay SMTP predefinito per la consegna in uscita |
+| **Default inbound relay** | Il relay SMTP predefinito che riceve la posta in entrata per il dominio selezionato. Puoi definire regole di routing basate sul dominio del mittente (qualsiasi dominio esterno) per controllare dove vengono consegnati i messaggi in entrata. Funge da fallback per tutti i domini. |
+| **Default outbound relay** | Il relay SMTP predefinito per la posta in uscita. Dopo che il gateway ha elaborato un messaggio, lo inoltra a questo server come prossimo hop. Funge da fallback per tutti i domini. |
 
 <br> ![domain-relay-host](assets/installation-guide/step14-mail-transport2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
@@ -711,6 +718,18 @@ Nel menu `Settings` sono disponibili le seguenti impostazioni:
 - Verifica che l'HIN Gateway possa inviare email a destinatari al di fuori della Comunità HIN.
 - Verifica che l'HIN Gateway possa inviare email a destinatari all'interno della Comunità HIN tramite WireGuard.
 - Invia una email dalla Comunità HIN a un indirizzo email esterno (ad esempio Bluewin, Gmail, Yahoo o GMX) con (confidenziale) inserito nell'oggetto, e verifica che venga consegnata con successo.
+
+!!! warning "Messaggi (Confidenziale) al di fuori della Comunità HIN"
+    Se durante il test e la validazione utilizzi Outlook per inviare email confidenziali al di fuori della Comunità HIN con uno dei seguenti metodi:
+    * Utilizzo di un modello di email specifico
+    * Utilizzo del simbolo del lucchetto (Key Lock)
+
+    Segui le istruzioni riportate di seguito:
+    * Se utilizzi un modello di email specifico, assicurati che il modello sia aggiornato in modo che le email sicure vengano elaborate correttamente tramite l'HIN Gateway.
+    * Se utilizzi il simbolo del lucchetto (Key Lock), inserisci temporaneamente «(confidenziale)» nell'oggetto.
+
+    HIN sta attualmente sviluppando il supporto per l'integrazione con Outlook. Questa funzionalità dovrebbe essere resa disponibile in una versione futura.
+    Dopo aver apportato le modifiche necessarie, testa nuovamente il flusso di posta e verifica che l'email venga elaborata e consegnata con successo dopo la migrazione.
 
 **In entrata:**
 

@@ -145,6 +145,13 @@ Senden Sie Test-E-Mails an die folgenden Empfänger und verwenden Sie dabei Post
 
 Senden Sie für den externen Empfänger eine E-Mail aus der HIN Community mit **dem Vermerk (vertraulich) in der Betreffzeile**.
 
+!!! warning "(Vertraulich)-Nachrichten ausserhalb der HIN Community"
+    Wenn Sie Outlook verwenden und vertrauliche E-Mails über eine der folgenden Optionen ausserhalb der HIN Community versenden:
+    * Verwendung einer spezifischen E-Mail-Vorlage
+    * Verwendung des Schlosssymbols (Key Lock)
+
+    Testen Sie den E-Mail-Fluss vor der Migration, um sicherzustellen, dass die E-Mail verarbeitet und sicher zugestellt wird.
+
 Testen Sie den E-Mail-Fluss in beide Richtungen:
 
 - von der vertrauenswürdigen HIN-Domain zur externen E-Mail-Adresse
@@ -528,8 +535,8 @@ Im Menü **Domains** können Sie für jede verfügbare Domäne eine spezifische 
 
 | Einstellung | Beschreibung |
 | --------- | ------------- |
-| **Inbound relay** | Der SMTP-Relay für die eingehende Zustellung der ausgewählten Domäne. |
-| **Outbound relay** | Der SMTP-Relay für die ausgehende Zustellung der ausgewählten Domäne. Diese Einstellung entspricht der Einstellung `Forwarding server` des alten MGW. |
+| **Inbound relay** | Der SMTP-Relay, der eingehende E-Mails für die ausgewählte Domäne empfängt. Sie können Routing-Regeln auf Basis der Absenderdomäne (externe Domäne) definieren, um zu steuern, wohin eingehende Nachrichten zugestellt werden. |
+| **Outbound relay** | Der SMTP-Relay für ausgehende E-Mails der ausgewählten Domäne. Nachdem das Gateway eine Nachricht verarbeitet hat, leitet es sie anhand der konfigurierten lokalen Domäne als nächsten Hop an diesen Server weiter. Hinweis zur Migration: Diese Einstellung entspricht `Forwarding server` im alten MGW. |
 | **Trusted networks** | Zusätzliche Netzwerke, denen die Weiterleitung über dieses Gateway gestattet ist. Weitere Informationen finden Sie unter "Schritt 18 - Mailserver konfigurieren". |
 | **Configure TLS** | TLS-Zertifikateinstellungen für SMTP-Verbindungen; über die Schaltfläche `Generate TLS certificate` können Sie ein TLS-Zertifikat erzeugen. |
 | **Email authentication** | Alle Einstellungen unter dem Abschnitt `Email authentication` sind im Abschnitt [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) beschrieben. |
@@ -587,8 +594,8 @@ Die folgenden Einstellungen stehen im Menü `Settings` zur Verfügung:
 | **Mail server host name** | Der FQDN dieser Mail-Gateway-Instanz (z. B. `mail.example.com`). |
 | **Mail server IP addresses** | Die öffentliche(n) IP-Adresse(n) dieses Servers. Fügen Sie weitere IP-Adressen hinzu, falls der Server über mehrere Adressen erreichbar ist. |
 | **DNS server** | DNS des Hosts, der zur Auflösung von MX- und anderen DNS-Einträgen verwendet wird. Bitte stellen Sie sicher, dass der eingegebene DNS-Server von der HIN Gateway VM aus erreichbar ist. |
-| **Default inbound relay** | Der Standard-SMTP-Relay für die eingehende Zustellung. |
-| **Default outbound relay** | Der Standard-SMTP-Relay für die ausgehende Zustellung. |
+| **Default inbound relay** | Der SMTP-Relay, der eingehende E-Mails für die ausgewählte Domäne empfängt. Sie können Routing-Regeln auf Basis der Absenderdomäne (externe Domäne) definieren, um zu steuern, wohin eingehende Nachrichten zugestellt werden. |
+| **Default outbound relay** | Der SMTP-Relay für ausgehende E-Mails der ausgewählten Domäne. Nachdem das Gateway eine Nachricht verarbeitet hat, leitet es sie anhand der konfigurierten lokalen Domäne als nächsten Hop an diesen Server weiter. Hinweis zur Migration: Diese Einstellung entspricht `Forwarding server` im alten MGW. |
 
 ### Schritt 15 - Whitelist-Header konfigurieren
 
@@ -652,8 +659,8 @@ Im Menü **Domains** können Sie für jede verfügbare Domäne eine spezifische 
 
 | Einstellung | Beschreibung |
 | --------- | ------------- |
-| **Inbound relay** | Der SMTP-Relay für die eingehende Zustellung der ausgewählten Domäne. |
-| **Outbound relay** | Der SMTP-Relay für die ausgehende Zustellung der ausgewählten Domäne. Gibt an, wohin die E-Mail nach der Verarbeitung als nächster Hop gesendet wird. Bei einer Migration: Diese Einstellung entspricht der Einstellung `Forwarding server` des alten MGW. |
+| **Inbound relay** | Der SMTP-Relay, der eingehende E-Mails für die ausgewählte Domäne empfängt. Sie können Routing-Regeln auf Basis der Absenderdomäne (externe Domäne) definieren, um zu steuern, wohin eingehende Nachrichten zugestellt werden. |
+| **Outbound relay** | Der SMTP-Relay für ausgehende E-Mails der ausgewählten Domäne. Nachdem das Gateway eine Nachricht verarbeitet hat, leitet es sie anhand der konfigurierten lokalen Domäne als nächsten Hop an diesen Server weiter. Hinweis zur Migration: Diese Einstellung entspricht `Forwarding server` im alten MGW. |
 | **Trusted networks** | Zusätzliche Netzwerke, denen die Weiterleitung über dieses Gateway gestattet ist. Weitere Informationen finden Sie unter "Schritt 18 - Mailserver konfigurieren". |
 | **Configure TLS** | TLS-Zertifikateinstellungen für SMTP-Verbindungen; über die Schaltfläche `Generate TLS certificate` können Sie ein TLS-Zertifikat erzeugen. |
 | **Email authentication** | Alle Einstellungen unter dem Abschnitt `Email authentication` sind im Abschnitt [Email authentication (DKIM ARC SPF DMARC)](Email-authentication-DKIM-ARC-SPF-DMARC.md) beschrieben. |
@@ -696,8 +703,8 @@ Die folgenden Einstellungen stehen im Menü `Settings` zur Verfügung:
 | **Mail server host name** | Der FQDN dieser Mail-Gateway-Instanz (z. B. `mail.example.com`). |
 | **Mail server IP addresses** | Die öffentliche(n) IP-Adresse(n) dieses Servers. Fügen Sie weitere IP-Adressen hinzu, falls der Server über mehrere Adressen erreichbar ist. |
 | **DNS server** | DNS des Hosts, der zur Auflösung von MX- und anderen DNS-Einträgen verwendet wird. Bitte stellen Sie sicher, dass der eingegebene DNS-Server von der HIN Gateway VM aus erreichbar ist. |
-| **Default inbound relay** | Der Standard-SMTP-Relay für die eingehende Zustellung. |
-| **Default outbound relay** | Der Standard-SMTP-Relay für die ausgehende Zustellung. |
+| **Default inbound relay** | Der Standard-SMTP-Relay, der eingehende E-Mails für die ausgewählte Domäne empfängt. Sie können Routing-Regeln auf Basis der Absenderdomäne (jede externe Domäne) definieren, um zu steuern, wohin eingehende Nachrichten zugestellt werden. Er dient als Fallback für alle Domänen. |
+| **Default outbound relay** | Der Standard-SMTP-Relay für ausgehende E-Mails. Nachdem das Gateway eine Nachricht verarbeitet hat, leitet es sie als nächsten Hop an diesen Server weiter. Er dient als Fallback für alle Domänen. |
 
 <br> ![domain-relay-host](assets/installation-guide/step14-mail-transport2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
@@ -711,6 +718,18 @@ Die folgenden Einstellungen stehen im Menü `Settings` zur Verfügung:
 - Stellen Sie sicher, dass das HIN Gateway E-Mails an Empfänger ausserhalb der HIN Community versenden kann.
 - Stellen Sie sicher, dass das HIN Gateway E-Mails über WireGuard an Empfänger innerhalb der HIN Community senden kann.
 - Senden Sie eine E-Mail aus der HIN Community an eine externe E-Mail-Adresse (zum Beispiel Bluewin, Gmail, Yahoo oder GMX) mit dem Vermerk (vertraulich) in der Betreffzeile und überprüfen Sie, ob sie erfolgreich zugestellt wird.
+
+!!! warning "(Vertraulich)-Nachrichten ausserhalb der HIN Community"
+    Wenn Sie während des Tests und der Validierung vertrauliche E-Mails mit Outlook über eine der folgenden Methoden ausserhalb der HIN Community versenden:
+    * Verwendung einer spezifischen E-Mail-Vorlage
+    * Verwendung des Schlosssymbols (Key Lock)
+
+    Gehen Sie bitte wie folgt vor:
+    * Wenn Sie eine spezifische E-Mail-Vorlage verwenden, stellen Sie sicher, dass die Vorlage angepasst ist, damit sichere E-Mails korrekt über das HIN Gateway verarbeitet werden.
+    * Wenn Sie das Schlosssymbol (Key Lock) verwenden, tragen Sie stattdessen vorübergehend «(vertraulich)» in die Betreffzeile ein.
+
+    HIN entwickelt derzeit die Unterstützung für die Outlook-Integration. Diese Funktion soll in einer künftigen Version verfügbar sein.
+    Testen Sie nach den erforderlichen Anpassungen den E-Mail-Fluss erneut und bestätigen Sie, dass die E-Mail nach der Migration verarbeitet und erfolgreich zugestellt wird.
 
 **Eingehender Verkehr:**
 
