@@ -235,7 +235,7 @@ fi
 if stalwart_listening 587; then
   pass "Port 587 (submission) listening"
 else
-  fail "Port 587 (submission) not listening (stalwart needs one restart after provisioning creates the listener)"
+  fail "Port 587 (submission) not listening (check: docker logs stargate-stalwart-provision)"
 fi
 
 echo ""
