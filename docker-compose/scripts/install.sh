@@ -10,6 +10,7 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 . "$SCRIPT_DIR/lib/paths.sh"
 . "$SCRIPT_DIR/lib/vault-tokens.sh"  # needs SECRETS_DIR/ENV_FILE from paths.sh
 . "$SCRIPT_DIR/lib/config-sync.sh"    # defines sync_customer_config / detect_example_file
+. "$SCRIPT_DIR/lib/network.sh"
 . "$SCRIPT_DIR/init-data-layout.sh"   # defines init_data_layout (does not auto-run when sourced)
 
 KEYS_FILE="$SECRETS_DIR/vault-keys.json"
@@ -183,6 +184,7 @@ load_customer_config() {
   S3_ACCESS_KEY="${S3_ACCESS_KEY:-${MINIO_ROOT_USER:-minioadmin}}"
   S3_SECRET_KEY="$(resolve_secret "${S3_SECRET_KEY:-${MINIO_ROOT_PASSWORD:-}}" S3_SECRET_KEY)"
   S3_BUCKET_NAME="${S3_BUCKET_NAME:-stargate-bucket}"
+  STARGATE_NETWORK_SUBNET="${STARGATE_NETWORK_SUBNET:-172.28.0.0/24}"
 
   # Image versions are pinned directly in docker-compose.yml (not env-driven) so
   # a deployment's versions travel with its git tag. See docker-compose.yml.
@@ -295,6 +297,25 @@ load_customer_config() {
   echo ""
 }
 
+check_network_subnet() {
+  local overlaps
+  if ! valid_ipv4_cidr "$STARGATE_NETWORK_SUBNET"; then
+    echo "ERROR: STARGATE_NETWORK_SUBNET=\"$STARGATE_NETWORK_SUBNET\" is not an IPv4 CIDR (example: 172.28.0.0/24)."
+    echo "  Set it in $CONFIG_FILE and run the installation again."
+    exit 1
+  fi
+  overlaps=$(host_routes_overlapping "$STARGATE_NETWORK_SUBNET")
+  if [ -n "$overlaps" ]; then
+    echo "ERROR: STARGATE_NETWORK_SUBNET=$STARGATE_NETWORK_SUBNET overlaps a network this host already routes:"
+    echo "$overlaps" | sed 's/^/    /'
+    echo "  Containers on that subnet would shadow those addresses. Choose a free range, set"
+    echo "  STARGATE_NETWORK_SUBNET in $CONFIG_FILE and run the installation again."
+    exit 1
+  fi
+  echo "Docker network subnet: $STARGATE_NETWORK_SUBNET (no overlap with host routes)"
+  echo ""
+}
+
 # ==============================================================================
 # Environment File Generation
 # ==============================================================================
@@ -372,6 +393,7 @@ DOZZLE_PUBLIC_URL="$DOZZLE_PUBLIC_URL"
 DASHBOARD_SHOW_DEV_PAGES="$DASHBOARD_SHOW_DEV_PAGES"
 DASHBOARD_ROOT_URL="$DASHBOARD_ROOT_URL"
 DASHBOARD_ROOT_DOMAIN="$DASHBOARD_ROOT_DOMAIN"
+STARGATE_NETWORK_SUBNET="$STARGATE_NETWORK_SUBNET"
 
 # Stargate deployment release tag (refreshed by start.sh on every boot)
 APP_VERSION="$APP_VERSION"
@@ -654,6 +676,7 @@ init_data_layout
 
 # Load and validate customer configuration _after_ /var/data exists
 load_customer_config
+check_network_subnet
 
 # Generate .env file from customer config
 generate_env_file

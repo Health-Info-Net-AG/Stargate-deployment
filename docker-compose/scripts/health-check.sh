@@ -10,6 +10,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 . "$SCRIPT_DIR/lib/paths.sh"
+. "$SCRIPT_DIR/lib/network.sh"
 
 PASS=0
 WARN=0
@@ -391,6 +392,26 @@ else
     if [ -n "$stray" ]; then
       warn "extra source files in $CHRONY_DIR (${stray# }) add to the shipped default instead of replacing it - only ntp.sources replaces it"
     fi
+  fi
+fi
+
+echo ""
+
+echo "--- Docker network ---"
+
+net_id=$(docker network ls -q --filter label=com.docker.compose.network=stargate-network 2>/dev/null | head -1)
+net_subnet=""
+if [ -n "$net_id" ]; then
+  net_subnet=$(docker network inspect "$net_id" -f '{{range .IPAM.Config}}{{.Subnet}}{{"\n"}}{{end}}' 2>/dev/null | grep -v ':' | head -1)
+fi
+if [ -z "$net_subnet" ]; then
+  warn "stargate-network not found (stack not created yet?)"
+else
+  net_overlaps=$(host_routes_overlapping "$net_subnet")
+  if [ -n "$net_overlaps" ]; then
+    fail "stargate-network $net_subnet overlaps host routes: $(echo "$net_overlaps" | paste -sd ';' -) - set STARGATE_NETWORK_SUBNET to a free range"
+  else
+    pass "stargate-network $net_subnet does not overlap any host route"
   fi
 fi
 
