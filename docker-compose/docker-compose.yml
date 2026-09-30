@@ -272,13 +272,15 @@ services:
       - ${STARGATE_DATA_DIR:-/var/data}/vereign/apisix:/output
     environment:
       KEYCLOAK_APISIX_CLIENT_SECRET: ${KEYCLOAK_APISIX_CLIENT_SECRET:-changeme}
+      STARGATE_NETWORK_SUBNET: ${STARGATE_NETWORK_SUBNET:-172.28.0.0/24}
     # Holds a client secret in cleartext. 636 is the apache/apisix image's gid;
     # root-owned + :ro so the gateway can read but not rewrite its own routes.
     command: >
       sh -c "apk add --no-cache gettext &&
-             envsubst '$$KEYCLOAK_APISIX_CLIENT_SECRET' < /templates/apisix.yaml.template > /output/apisix.yaml &&
+             envsubst '$$KEYCLOAK_APISIX_CLIENT_SECRET $$STARGATE_NETWORK_SUBNET' < /templates/apisix.yaml.template > /output/apisix.yaml &&
              chown root:636 /output/apisix.yaml &&
              chmod 640 /output/apisix.yaml &&
+             ! grep -q '[$$]{' /output/apisix.yaml &&
              echo 'APISIX config generated'"
     networks:
       - stargate-network
@@ -818,7 +820,7 @@ services:
       - ./config/apisix/config.yaml:/usr/local/apisix/conf/config.yaml:ro
       - ${STARGATE_DATA_DIR:-/var/data}/vereign/apisix/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro
     ports:
-      - "9080:9080" # Gateway — main entry point for API traffic
+      - "127.0.0.1:9080:9080" # Gateway — main entry point for API traffic
       - "9091:9091" # Prometheus metrics
     healthcheck:
       test: "bash -c \"{ printf >&3 'GET /v1/healthcheck  HTTP/1.0\r\nHost: localhost\r\n\r\n'; cat <&3; } 3<>/dev/tcp/localhost/9090 | head -1 | grep 200\" "
@@ -1389,3 +1391,6 @@ services:
 networks:
   stargate-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: ${STARGATE_NETWORK_SUBNET:-172.28.0.0/24}
