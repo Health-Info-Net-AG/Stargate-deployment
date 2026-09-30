@@ -145,6 +145,16 @@ Send test emails to the following recipients, using mailboxes to which you have 
 
 For the external recipient, send an email from the HIN Community with **(confidential) included in the subject line**.
 
+!!! warning "(Confidential) messages outside of HIN cmmmunity"
+    If you are using Outlook and one of the following options to send confidential emails outside the HIN community: 
+    * Using a specific email template 
+    * Using the Key Lock symbol
+
+    Please test the mail flow before migration to confirm that the email is processed and securely delivered.
+    
+
+Please test the mail flow before migration to confirm that the email is processed and securely delivered.
+
 Test mail flow in both directions:
 
 - From the HIN trusted domain to the external email address
@@ -711,6 +721,19 @@ The following settings are available `Settings` menu:
 - Verify that the HIN Gateway can send emails to recipients outside the HIN Community. 
 - Verify that the HIN Gateway can send emails to recipients inside the HIN Community via WireGuard.
 - Send an email from the HIN Community to an external email address (for example, Bluewin, Gmail, Yahoo, or GMX) with (confidential) included in the subject line, and verify that it is delivered successfully.
+
+!!! warning "(Confidential) messages outside of HIN cmmmunity"
+    During the test and validation, if you use Outlook to send confidential emails outside the HIN community using one of the following methods: 
+    * Using a specific email template 
+    * Using the Key Lock symbol
+
+    Please follow the instructions below: 
+    * If you are using a specific email template, please ensure that the template is updated so that secure emails are processed correctly through the HIN Gateway. 
+    * If you are using the Key Lock symbol, please temporarily use “(Confidential)” in the subject field instead.
+
+    HIN is currently developing support for the Outlook integration. This functionality is planned to be made available in a future release.
+    After making the required changes, please test the mail flow again and confirm that the email is processed and delivered successfully after the migration.
+    
 
 **Incoming:**
 
