@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document provides a comprehensive guide to the technical installation of, and migration to, the new HIN Gateway (“Stargate Appliance”).  
+This document provides a comprehensive guide to the technical installation of, and migration to, the new HIN Gateway (“HIN Gateway Appliance”).  
 
 The guide is intended for HIN customers, IT administrators, and system engineers who are responsible for deploying and configuring the new HIN Gateway and, where applicable, migrating from the existing Mail Gateway (MGW) to the new solution.
 
@@ -338,7 +338,7 @@ Add an IP address on Linux:
     If you used Option C and configured the network manually, you must run the following commands:
 
     ```bash
-    cd /usr/share/stargate-deployment/docker-compose
+    cd /usr/share/HIN Gateway-deployment/docker-compose
     ./scripts/purge.sh
     ./scripts/install.sh
     ```
@@ -513,7 +513,7 @@ On this screen, configure your initial settings:
 | --------- | ------------- |
 | **Mail server host name** | The FQDN of this mail gateway instance (e.g. `mail.example.com`). |
 | **Mail server IP addresses** | The public IP address(es) of this server. Add additional IPs if the server is reachable on multiple addresses. |
-| **DNS** | DNS of the host which will be used to resolve MX and other DNS records. Please make sure that the entered DNS server is reachable from the Stargate VM. |
+| **DNS** | DNS of the host which will be used to resolve MX and other DNS records. Please make sure that the entered DNS server is reachable from the HIN Gateway VM. |
 
 !!! warning "Multi-domain gradual migration scenario"
 
