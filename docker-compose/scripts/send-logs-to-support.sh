@@ -115,7 +115,7 @@ if [ "$FILE_SIZE" -lt "$LIMIT_BYTES" ]; then
     fi
 
 else
-    echo -e "Log file is too big to be uploaded, please try to reduce it by adding additional arguments like\n '--since 1h' all logs since 1 hour, or\n '--tail 500' last 500 lines of logs for each container"
+    echo -e "Log file is too big ($(du -h "$TEMP_FILE" | awk '{print $1}')) to be uploaded (size limit is $LIMIT_MB Mb), please try to reduce it by adding additional arguments like\n '--since 1h' all logs since 1 hour, or\n '--tail 1000' last 1000 lines of logs for each container"
     exit 1
 fi
 
