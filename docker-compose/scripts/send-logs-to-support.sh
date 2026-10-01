@@ -30,6 +30,12 @@ echo "We will collect logs now with following arguments: ${args[*]}"
 
 # Add timestamp when logs were collected, overwrite if file exist
 echo -e "$(date -Ins)\n\n######\n" > "$TEMP_FILE"
+
+# Add original health-check output to the logs
+echo -e "\n# HEALTH CHECK\n" >> "$TEMP_FILE"
+./usr/share/stargate-deployment/docker-compose/scripts/health-check.sh  >> "$TEMP_FILE" || true
+
+echo -e "\n# Docker container statuses\n" >> "$TEMP_FILE"
 # Add Information about current version and containers
 echo "$(docker ps -a)" >> "$TEMP_FILE"
 echo -e "\n######\n" >> "$TEMP_FILE"
@@ -63,7 +69,7 @@ echo -e "\n# RAM\n" >> "$TEMP_FILE"
 free -h >> "$TEMP_FILE"
 
 echo -e "\n# Disk: size and type (rotational=1 means HDD, 0 means SSD)\n" >> "$TEMP_FILE"
-df -hT /  >> "$TEMP_FILE"
+df -hT | grep -v tmpfs  >> "$TEMP_FILE"
 lsblk -d -o NAME,SIZE,ROTA,MODEL  >> "$TEMP_FILE"
 echo -e "\n######\n" >> "$TEMP_FILE"
 
