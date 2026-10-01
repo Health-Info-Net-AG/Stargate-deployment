@@ -22,7 +22,7 @@ else
     args=("$@")
 fi
 
-TEMP_FILE="/tmp/docker_logs.tmp"
+TEMP_FILE="/tmp/hin_gateway_logs.tmp"
 LIMIT_MB=20
 LIMIT_BYTES=$((LIMIT_MB * 1024 * 1024))
 
