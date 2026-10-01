@@ -109,8 +109,7 @@ if [ "$FILE_SIZE" -lt "$LIMIT_BYTES" ]; then
         echo -e "\nPlease provide this URL to support, all logs are saved here."
         rm -f "$TEMP_FILE"
     else
-        echo -e "\nUpload failed. The logs are saved at $TEMP_FILE --" \
-                "please attach that file to your support email." >&2
+        echo -e "\nUpload failed. The logs are saved at $TEMP_FILE -- please attach that file to your support request email." >&2
         exit 1
     fi
 
