@@ -106,10 +106,9 @@ example.ch.    TXT    "v=spf1 ip4:128.140.117.200 ip4:193.247.208.66 include:spf
 
     | Environnement | Hôte du scelleur | IP à ajouter à SPF |
     |-------------|-------------|------------------|
-    | HIN Test (alpha/bêta) | `mx3.hintest.ch` | `193.247.208.66` |
     | HIN Production | À déterminer - demandez la liste canonique à HIN avant la mise en production | À déterminer |
 
-    Si HIN publie plus d'un hôte de scellement (ex. `mx1`, `mx2`, `mx3`), incluez **toutes** leurs IPs. Résolvez-les avec `dig +short mx hintest.ch` suivi de `dig +short A <chaque-mx>`. Jusqu'à ce que vous ayez la liste complète, laissez la politique SPF à `~all` (échec doux) au lieu de `-all` (échec dur) afin que les courriels SCELLÉS légitimes via une IP de scelleur non répertoriée ne soient pas catégoriquement rejetés.
+    Si HIN publie plus d'un hôte de scellement (ex. `mx1`, `mx2`, `mx3`), incluez **toutes** leurs IPs. Résolvez-les avec `dig +short mx hin.ch` suivi de `dig +short A <chaque-mx>`. Jusqu'à ce que vous ayez la liste complète, laissez la politique SPF à `~all` (échec doux) au lieu de `-all` (échec dur) afin que les courriels SCELLÉS légitimes via une IP de scelleur non répertoriée ne soient pas catégoriquement rejetés.
 
 !!! warning "Limite de recherche SPF"
     La chaîne `include:` totale dans un enregistrement SPF doit rester en dessous de **10 recherches DNS**. L'ajout d'entrées `ip4:` ne compte pas dans cette limite. Vérifiez votre nombre avec [MXToolbox SPF lookup](https://mxtoolbox.com/spf.aspx).

@@ -109,7 +109,7 @@ example.ch.    TXT    "v=spf1 ip4:128.140.117.200 ip4:193.247.208.66 include:spf
     | HIN Test (alpha/beta) | `mx3.hintest.ch` | `193.247.208.66` |
     | HIN Production | TBD - request canonical list from HIN before go-live | TBD |
 
-    If HIN publishes more than one sealer host (e.g. `mx1`, `mx2`, `mx3`), include **all** their IPs. Resolve them with `dig +short mx hintest.ch` followed by `dig +short A <each-mx>`. Until you have the full list, leave the SPF policy at `~all` (softfail) instead of `-all` (hardfail) so that legitimate SEAL mail through any unlisted sealer IP is not outright rejected.
+    If HIN publishes more than one sealer host (e.g. `mx1`, `mx2`, `mx3`), include **all** their IPs. Resolve them with `dig +short mx hin.ch` followed by `dig +short A <each-mx>`. Until you have the full list, leave the SPF policy at `~all` (softfail) instead of `-all` (hardfail) so that legitimate SEAL mail through any unlisted sealer IP is not outright rejected.
 
 !!! warning "SPF lookup limit"
     The total `include:` chain in an SPF record must stay under **10 DNS lookups**. Adding `ip4:` entries does not count toward this limit. Check your count with [MXToolbox SPF lookup](https://mxtoolbox.com/spf.aspx).

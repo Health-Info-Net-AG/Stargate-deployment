@@ -106,10 +106,9 @@ example.ch.    TXT    "v=spf1 ip4:128.140.117.200 ip4:193.247.208.66 include:spf
 
     | Ambiente | Host del sigillatore | IP da aggiungere a SPF |
     |-------------|-------------|------------------|
-    | HIN Test (alpha/beta) | `mx3.hintest.ch` | `193.247.208.66` |
     | HIN Produzione | TBD - richiedere lista canonica a HIN prima del go-live | TBD |
 
-    Se HIN pubblica più di un host di sigillatura (es. `mx1`, `mx2`, `mx3`), includere **tutti** i loro IP. Risolverli con `dig +short mx hintest.ch` seguito da `dig +short A <ogni-mx>`. Fino a quando non si ha la lista completa, lasciare la policy SPF a `~all` (softfail) invece di `-all` (hardfail) in modo che le email SIGILLATE legittime attraverso un IP di sigillatore non elencato non vengano immediatamente respinte.
+    Se HIN pubblica più di un host di sigillatura (es. `mx1`, `mx2`, `mx3`), includere **tutti** i loro IP. Risolverli con `dig +short mx hin.ch` seguito da `dig +short A <ogni-mx>`. Fino a quando non si ha la lista completa, lasciare la policy SPF a `~all` (softfail) invece di `-all` (hardfail) in modo che le email SIGILLATE legittime attraverso un IP di sigillatore non elencato non vengano immediatamente respinte.
 
 !!! warning "Limite di ricerca SPF"
     La catena `include:` totale in un record SPF deve rimanere al di sotto di **10 ricerche DNS**. L'aggiunta di voci `ip4:` non conta verso questo limite. Verificare il conteggio con [MXToolbox SPF lookup](https://mxtoolbox.com/spf.aspx).

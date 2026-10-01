@@ -106,10 +106,9 @@ example.ch.    TXT    "v=spf1 ip4:128.140.117.200 ip4:193.247.208.66 include:spf
 
     | Umgebung | Sealer-Host | In SPF aufzunehmende IP |
     |-------------|-------------|------------------|
-    | HIN Test (alpha/beta) | `mx3.hintest.ch` | `193.247.208.66` |
     | HIN Produktion | TBD – vor dem Produktivstart die kanonische Liste von HIN anfordern | TBD |
 
-    Wenn HIN mehr als einen Sealer-Host veröffentlicht (z.B. `mx1`, `mx2`, `mx3`), nehmen Sie **alle** deren IPs auf. Lösen Sie sie mit `dig +short mx hintest.ch` auf, gefolgt von `dig +short A <jeder-mx>`. Bis Sie die vollständige Liste haben, belassen Sie die SPF-Richtlinie auf `~all` (Softfail) anstelle von `-all` (Hardfail), damit legitime SEAL-E-Mails über eine nicht aufgeführte Sealer-IP nicht sofort abgewiesen werden.
+    Wenn HIN mehr als einen Sealer-Host veröffentlicht (z.B. `mx1`, `mx2`, `mx3`), nehmen Sie **alle** deren IPs auf. Lösen Sie sie mit `dig +short mx hin.ch` auf, gefolgt von `dig +short A <jeder-mx>`. Bis Sie die vollständige Liste haben, belassen Sie die SPF-Richtlinie auf `~all` (Softfail) anstelle von `-all` (Hardfail), damit legitime SEAL-E-Mails über eine nicht aufgeführte Sealer-IP nicht sofort abgewiesen werden.
 
 !!! warning "SPF-Lookup-Limit"
     Die gesamte `include:`-Kette in einem SPF-Eintrag darf **10 DNS-Lookups** nicht überschreiten. Das Hinzufügen von `ip4:`-Einträgen zählt nicht zu diesem Limit. Überprüfen Sie Ihre Anzahl mit [MXToolbox SPF-Lookup](https://mxtoolbox.com/spf.aspx).
