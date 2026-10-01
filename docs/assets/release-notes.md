@@ -1,3 +1,21 @@
+## v0.6.2
+
+*Released on 24 September 2026.*
+
+This hot-fix release strengthens HIN Gateway security, corrects Stalwart version and Disable SpamFiltering.
+
+### What’s new and improved
+
+- Ships Stalwart v0.16.23 which works with the latest ruleset for Spam filter
+- Disable the spam ruleset and SpamFilter, so an upstream ruleset release can't break a pinned version.
+
+
+### Fixes
+
+- fix: update spam filter handling in provision script and improve error logging
+- fix: update stalwart image to version v0.16.23 and add DNSBL server removal function
+
+
 ## v0.6.1
 
 *Released on 4 September 2026.*
