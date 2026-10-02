@@ -49,4 +49,12 @@ rw=$(policy_hcl secret-mtaconf rw)
 case "$ro" in *'"read"'*) ;; *) fail "ro lost its read" ;; esac
 case "$rw" in *'"delete"'*) ;; *) fail "rw lost its delete" ;; esac
 
+mailauth_wo=$(policy_hcl secret-mailauth wo)
+case "$mailauth_wo" in
+  *stalwart/*) fail "the stalwart submission rules are granted on secret-mailauth too" ;;
+esac
+dashboard_wo=$(policy_hcl secret-mtaconf,secret-mailauth wo)
+[ "$(echo "$dashboard_wo" | grep -c 'stalwart/')" = 3 ] || fail "the dashboard policy should carry exactly three stalwart rules"
+echo "$dashboard_wo" | grep 'stalwart/' | grep -qv 'secret-mtaconf/' && fail "a stalwart rule is granted outside secret-mtaconf"
+
 echo "PASS"

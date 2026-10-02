@@ -326,8 +326,8 @@ Lo script `start.sh` (e il servizio systemd) scongelano automaticamente Vault ut
 | `update.sh` | Aggiornare le immagini dei servizi (preserva il token Vault, ricrea i container) |
 | `start.sh` | Avviare i servizi e scongelare Vault |
 | `stop.sh` | Arrestare i container (dati preservati) |
-| `backup.sh` | Backup completo (database, chiavi Vault, configurazione, certificati) |
-| `restore.sh` | Ripristinare da archivio di backup (funziona su macchina nuova) |
+| `backup.sh` | Backup completo (database, chiavi Vault, configurazione, certificati); `--config-only` salva solo `customer-config.sh` |
+| `restore.sh` | Ripristinare da archivio di backup (funziona su macchina nuova); `--config-only` ripristina solo `customer-config.sh` |
 | `purge.sh` | :warning: Eliminare TUTTI i dati (richiede conferma) |
 | `health-check.sh` | Health check completo di tutti i servizi (exit 0 = healthy, 1 = fallimenti) |
 | `init-vault.sh` | Inizializzazione Vault (utilizzato dal container `vault-init`, non chiamato direttamente) |

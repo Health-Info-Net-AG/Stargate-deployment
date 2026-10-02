@@ -203,15 +203,19 @@ Wird der Aktivierungscode abgelehnt, prüfen Sie der Reihe nach:
 
 ### Server-IP-Adresse ändern (nur bei der Ersteinrichtung)
 
-War die Server-IP-Adresse beim ersten Start falsch oder nicht gesetzt, setzen Sie das System sauber zurück und installieren Sie es neu:
+War die Server-IP-Adresse beim ersten Start falsch oder nicht gesetzt, setzen Sie das System sauber zurück und installieren Sie es neu. Sichern Sie zuerst die Konfiguration, denn `purge.sh` löscht auch `customer-config.sh`:
 
 ```bash
+/usr/share/stargate-deployment/docker-compose/scripts/backup.sh --config-only  # saves customer-config.sh
 /usr/share/stargate-deployment/docker-compose/scripts/purge.sh                 # destroys ALL data - see warning below
+/usr/share/stargate-deployment/docker-compose/scripts/restore.sh --config-only /var/data/backups/<timestamp>_config-only.tar.gz
 nano /var/data/vereign/customer-config.sh    # set SERVER_STATIC_IP=<NEW IP>
-/usr/share/stargate-deployment/docker-compose/scripts/install.sh
+reboot                                       # installs again with the new IP
 ```
 
-Das TLS-Zertifikat und mehrere Dienst-URLs werden beim ersten Start aus der IP-Adresse abgeleitet. Purge und Neuinstallation erzeugen sie daher für die neue Adresse neu.
+`backup.sh` gibt den genauen Befehl für die Wiederherstellung aus, und das Archiv bleibt in `/var/data/backups`, das `purge.sh` nicht löscht. Der Neustart führt die Installation aus und lädt auch die lokal gebauten Images neu, die `purge.sh` entfernt. Bei einer reinen Docker-Installation führen Sie statt des Neustarts `install.sh` aus.
+
+Das TLS-Zertifikat und mehrere Dienst-URLs werden beim ersten Start aus der IP-Adresse abgeleitet. Purge und Neuinstallation erzeugen sie daher für die neue Adresse neu. Die wiederhergestellte Datei behält die generierten Passwörter und den WireGuard-Schlüssel. Ist das Gateway bereits bei HIN registriert, muss die Registrierung mit der neuen IP-Adresse aktualisiert werden.
 
 !!! danger "Nur vor dem Onboarding"
     `purge.sh` **löscht alle Daten unwiderruflich**: Datenbanken, Vault und die S/MIME-Schlüssel. Dies ist **nur auf einer neuen, noch nicht onboardeten Appliance** sicher. **Führen Sie `purge.sh` niemals aus, um die IP-Adresse eines produktiven oder bereits onboardeten Gateways zu ändern**: Das führt zu Datenverlust und zu E-Mails, die sich nicht mehr entschlüsseln lassen. Für eine IP-Änderung im Produktivbetrieb wenden Sie sich an den Support.
@@ -262,6 +266,37 @@ for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 | `19818` | WireGuard (UDP **und** TCP) | ein- und ausgehend |
 
 Ausgehender Zugriff ist erforderlich auf die Container-Registry, die S/MIME-Zertifizierungsstelle (über den WireGuard-Tunnel) und jede von Ihnen konfigurierte Remote-Loki-Instanz. Die vollständige Port-Tabelle finden Sie auf der **[Startseite](index.md)** und in der **[Anwendungsübersicht](Applications.md)**.
+
+### Das Docker-Netzwerk überschneidet sich mit dem lokalen Netzwerk
+
+Die Dienste kommunizieren über ein internes Docker-Netzwerk. Docker wählt dessen Adressbereich beim Erstellen des Stacks und meidet dabei die Netzwerke, mit denen die VM in diesem Moment direkt verbunden ist. Enthält der Bereich trotzdem Adressen aus Ihrem Netzwerk, kann die Appliance diese Rechner nicht erreichen (zum Beispiel einen Mail- oder DNS-Server), und diese erreichen die Appliance nicht. Der Health Check meldet das unter **Docker network**:
+
+```text
+[FAIL] stargate-network 172.18.0.0/16 overlaps host routes: 172.18.5.0/24 dev ens18 - see Troubleshooting: The Docker network overlaps the local network
+```
+
+- **Die IP-Adresse wurde nach dem ersten Start geändert**: Docker hat den Bereich gewählt, als die VM noch ihre erste Adresse hatte. Auf einem Gateway ohne Onboarding verwenden Sie Purge und Neuinstallation aus *Server-IP-Adresse ändern* oben; Docker wählt dann selbst einen freien Bereich. Auf einem Gateway mit abgeschlossenem Onboarding erstellen Sie das Netzwerk wie unten beschrieben neu.
+- **Das überschneidende Netzwerk liegt hinter einem Router** (eine statische Route oder ein Netzwerk an einem anderen Standort): Docker meidet solche Netzwerke nicht. Der Health Check sieht jede Route auf dem Host, aber keine Netzwerke, die über das Standard-Gateway erreicht werden. Geben Sie Docker zuerst einen freien Bereich: Ergänzen Sie `/etc/docker/daemon.json` wie folgt, behalten Sie vorhandene Einstellungen bei und verwenden Sie einen Bereich, den Ihr Netzwerk nicht nutzt:
+
+    ```json
+    {
+      "default-address-pools": [
+        { "base": "10.200.0.0/16", "size": 24 }
+      ]
+    }
+    ```
+
+    Führen Sie danach `systemctl restart docker` aus und erstellen Sie das Netzwerk wie unten beschrieben neu.
+
+Beim Neuerstellen des Netzwerks bleiben alle Daten in `/var/data` erhalten. Stoppen Sie zuerst den Dienst, sonst hält ein laufendes Dozzle das alte Netzwerk belegt:
+
+```bash
+systemctl stop stargate
+cd /usr/share/stargate-deployment/docker-compose
+docker compose --env-file /var/data/vereign/.env down
+systemctl start stargate
+/usr/share/stargate-deployment/docker-compose/scripts/health-check.sh
+```
 
 ---
 

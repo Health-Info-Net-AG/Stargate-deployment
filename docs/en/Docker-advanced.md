@@ -68,6 +68,21 @@ The restore script will:
 7. Unseal Vault with backed-up keys
 8. Start application services
 
+### Configuration-only backup and restore
+
+To carry only `customer-config.sh` across a purge and reinstall, for example to change the server IP before onboarding (see [Troubleshooting](Troubleshooting.md)):
+
+```bash
+./scripts/backup.sh --config-only
+./scripts/restore.sh --config-only /var/data/backups/20260130_143022_config-only.tar.gz
+```
+
+- `backup.sh --config-only` saves `customer-config.sh` and any custom NTP servers (`ntp.sources`) to `/var/data/backups/<timestamp>_config-only.tar.gz`. It needs no running services, leaves out `.env`, the Vault keys and the databases, and deletes no older backups.
+- `restore.sh --config-only` restores only those two files, from a configuration-only archive or from a full backup. It asks for no confirmation, keeps an existing file as `customer-config.sh.bak.<timestamp>`, and prints the next steps.
+- A full restore of a configuration-only archive is refused.
+
+The archive contains the generated passwords and the WireGuard private key, so treat it as a secret.
+
 ### Partial Restore (single database)
 
 If you only need to restore one database:

@@ -383,9 +383,6 @@ WG_TRANSPORT_MODE="$WG_TRANSPORT_MODE"
 
 # WireGuard Private Key (optional - if set, written to Vault for irisagent)
 WG_PRIVATE_KEY="${WG_PRIVATE_KEY:-}"
-
-# Host install directory (auto-detected, used by ops-agent for git operations)
-HOST_INSTALL_DIR="$(cd "$PROJECT_DIR/.." && pwd)"
 EOF
   chmod 600 "$ENV_FILE"  # holds all generated secrets
 

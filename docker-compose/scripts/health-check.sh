@@ -10,6 +10,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 . "$SCRIPT_DIR/lib/paths.sh"
+. "$SCRIPT_DIR/lib/network.sh"
 
 PASS=0
 WARN=0
@@ -219,16 +220,6 @@ else
   fail "Stalwart management API unreachable"
 fi
 
-# Check the SMTP listeners. The stalwart image has no ss/netstat, so read
-# /proc/net/tcp{,6} inside the container (always present) and look for a socket
-# in LISTEN state (st=0A) on the port in hex. 25=0x0019, 10026=0x272A.
-stalwart_listening() {  # $1 = decimal port
-  local hexport
-  hexport=$(printf ':%04X' "$1")
-  docker exec stargate-stalwart sh -c 'cat /proc/net/tcp /proc/net/tcp6 2>/dev/null' \
-    | awk '$4 == "0A" { print $2 }' | grep -qi "$hexport\$"
-}
-
 if stalwart_listening 25; then
   pass "Port 25 listening"
 else
@@ -244,7 +235,7 @@ fi
 if stalwart_listening 587; then
   pass "Port 587 (submission) listening"
 else
-  fail "Port 587 (submission) not listening (stalwart needs one restart after provisioning creates the listener)"
+  fail "Port 587 (submission) not listening (check: docker logs stargate-stalwart-provision)"
 fi
 
 echo ""
@@ -391,6 +382,26 @@ else
     if [ -n "$stray" ]; then
       warn "extra source files in $CHRONY_DIR (${stray# }) add to the shipped default instead of replacing it - only ntp.sources replaces it"
     fi
+  fi
+fi
+
+echo ""
+
+echo "--- Docker network ---"
+
+net_id=$(docker network ls -q --filter label=com.docker.compose.network=stargate-network 2>/dev/null | head -1)
+net_subnet=""
+if [ -n "$net_id" ]; then
+  net_subnet=$(docker network inspect "$net_id" -f '{{range .IPAM.Config}}{{.Subnet}}{{"\n"}}{{end}}' 2>/dev/null | grep -v ':' | head -1)
+fi
+if [ -z "$net_subnet" ]; then
+  warn "stargate-network not found (stack not created yet?)"
+else
+  net_overlaps=$(host_routes_overlapping "$net_subnet")
+  if [ -n "$net_overlaps" ]; then
+    fail "stargate-network $net_subnet overlaps host routes: $(echo "$net_overlaps" | paste -sd ';' -) - see Troubleshooting: The Docker network overlaps the local network"
+  else
+    pass "stargate-network $net_subnet does not overlap any host route"
   fi
 fi
 

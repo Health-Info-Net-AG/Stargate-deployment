@@ -329,8 +329,8 @@ Das `start.sh`-Skript (und der Systemd-Dienst) entsiegeln Vault automatisch mit 
 | `update.sh` | Service-Images aktualisieren (Vault-Token bleibt erhalten, Container werden neu erstellt) |
 | `start.sh` | Dienste starten und Vault entsiegeln |
 | `stop.sh` | Container anhalten (Daten bleiben erhalten) |
-| `backup.sh` | Vollständiges Backup (Datenbank, Vault-Schlüssel, Konfiguration, Zertifikate) |
-| `restore.sh` | Aus einem Backup-Archiv wiederherstellen (funktioniert auf neuem System) |
+| `backup.sh` | Vollständiges Backup (Datenbank, Vault-Schlüssel, Konfiguration, Zertifikate); `--config-only` sichert nur `customer-config.sh` |
+| `restore.sh` | Aus einem Backup-Archiv wiederherstellen (funktioniert auf neuem System); `--config-only` stellt nur `customer-config.sh` wieder her |
 | `purge.sh` | :warning: ALLE Daten löschen (erfordert Bestätigung) |
 | `health-check.sh` | Umfassende Gesundheitsprüfung aller Dienste (Exit 0 = gesund, 1 = Fehler) |
 | `init-vault.sh` | Vault-Initialisierung (wird vom `vault-init`-Container verwendet, nicht direkt aufrufen) |

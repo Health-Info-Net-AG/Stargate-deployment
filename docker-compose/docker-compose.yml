@@ -6,7 +6,7 @@ services:
 
   postgres:
     # renovate: datasource=docker depName=postgres
-    image: postgres:18-alpine
+    image: postgres:18.6-alpine
     container_name: stargate-postgres
     restart: unless-stopped
     logging:
@@ -237,7 +237,7 @@ services:
   # configured value fails), the script exits cleanly without touching anything.
   keycloak-init:
     # renovate: datasource=docker depName=alpine
-    image: alpine:3.24
+    image: alpine:3.24.2
     container_name: stargate-keycloak-init
     logging:
       driver: json-file
@@ -260,7 +260,7 @@ services:
   # substituting KEYCLOAK_APISIX_CLIENT_SECRET with envsubst.
   apisix-init:
     # renovate: datasource=docker depName=alpine
-    image: alpine:3.24
+    image: alpine:3.24.2
     container_name: stargate-apisix-init
     logging:
       driver: json-file
@@ -276,9 +276,13 @@ services:
     # root-owned + :ro so the gateway can read but not rewrite its own routes.
     command: >
       sh -c "apk add --no-cache gettext &&
-             envsubst '$$KEYCLOAK_APISIX_CLIENT_SECRET' < /templates/apisix.yaml.template > /output/apisix.yaml &&
+             STARGATE_NETWORK_SUBNET=$$(ip -4 route show scope link | cut -d' ' -f1) &&
+             { echo $$STARGATE_NETWORK_SUBNET | grep -qxE '([0-9]{1,3}[.]){3}[0-9]{1,3}/[0-9]{1,2}' || { echo 'apisix-init needs exactly one IPv4 network (stargate-network), found:' $$STARGATE_NETWORK_SUBNET >&2; false; }; } &&
+             export STARGATE_NETWORK_SUBNET &&
+             envsubst '$$KEYCLOAK_APISIX_CLIENT_SECRET $$STARGATE_NETWORK_SUBNET' < /templates/apisix.yaml.template > /output/apisix.yaml &&
              chown root:636 /output/apisix.yaml &&
              chmod 640 /output/apisix.yaml &&
+             ! grep -q '[$$]{' /output/apisix.yaml &&
              echo 'APISIX config generated'"
     networks:
       - stargate-network
@@ -287,7 +291,7 @@ services:
 
   nats:
     # renovate: datasource=docker depName=nats
-    image: nats:2.15-alpine
+    image: nats:2.15.0-alpine
     container_name: stargate-nats
     restart: unless-stopped
     logging:
@@ -347,7 +351,7 @@ services:
   # ===================
 
   smimekeys-client:
-    image: healthinfonetag/smimekeys:v0.0.28
+    image: healthinfonetag/smimekeys:v0.0.29
     container_name: stargate-smimekeys-client
     restart: unless-stopped
     logging:
@@ -416,7 +420,7 @@ services:
       - autoheal=true
 
   policy:
-    image: healthinfonetag/policy:v0.0.12
+    image: healthinfonetag/policy:v0.0.13
     container_name: stargate-policy
     restart: unless-stopped
     logging:
@@ -460,7 +464,7 @@ services:
       - autoheal=true
 
   irisagent:
-    image: healthinfonetag/irisagent:v0.0.13
+    image: healthinfonetag/irisagent:v0.0.14
     container_name: stargate-irisagent
     restart: unless-stopped
     logging:
@@ -541,7 +545,7 @@ services:
       - autoheal=true
 
   mxengine:
-    image: healthinfonetag/mxengine:v0.0.54
+    image: healthinfonetag/mxengine:v0.0.55
     container_name: stargate-mxengine
     restart: unless-stopped
     logging:
@@ -659,7 +663,7 @@ services:
       - autoheal=true
 
   idagent:
-    image: healthinfonetag/idagent:v0.0.1
+    image: healthinfonetag/idagent:v0.0.2
     container_name: stargate-idagent
     restart: unless-stopped
     logging:
@@ -818,7 +822,7 @@ services:
       - ./config/apisix/config.yaml:/usr/local/apisix/conf/config.yaml:ro
       - ${STARGATE_DATA_DIR:-/var/data}/vereign/apisix/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro
     ports:
-      - "9080:9080" # Gateway — main entry point for API traffic
+      - "127.0.0.1:9080:9080" # Gateway — main entry point for API traffic
       - "9091:9091" # Prometheus metrics
     healthcheck:
       test: "bash -c \"{ printf >&3 'GET /v1/healthcheck  HTTP/1.0\r\nHost: localhost\r\n\r\n'; cat <&3; } 3<>/dev/tcp/localhost/9090 | head -1 | grep 200\" "
@@ -832,7 +836,7 @@ services:
       - autoheal=true
 
   dashboard:
-    image: healthinfonetag/dashboard:v0.0.139
+    image: healthinfonetag/dashboard:v0.0.140
     container_name: stargate-dashboard
     restart: unless-stopped
     logging:
@@ -922,7 +926,7 @@ services:
   # dashboard (:443), and redirects plain HTTP (:80) to HTTPS.
   caddy:
     # renovate: datasource=docker depName=caddy
-    image: caddy:2-alpine
+    image: caddy:2.11.4-alpine
     container_name: stargate-caddy
     restart: unless-stopped
     logging:
@@ -983,7 +987,7 @@ services:
   # Collects app versions from /liveness endpoints for node-exporter
   version-collector:
     # renovate: datasource=docker depName=alpine
-    image: alpine:3.24
+    image: alpine:3.24.2
     container_name: stargate-version-collector
     restart: unless-stopped
     logging:
@@ -1254,7 +1258,7 @@ services:
 
   # Ops Agent - executes infrastructure commands (updates, restarts) from dashboard via NATS
   ops-agent:
-    image: healthinfonetag/stargate-ops:v0.0.11
+    image: healthinfonetag/stargate-ops:v0.0.12
     container_name: stargate-ops-agent
     restart: unless-stopped
     logging:
@@ -1264,34 +1268,19 @@ services:
         max-file: "5"
     pid: host
     privileged: true
-    depends_on:
-      nats:
-        condition: service_healthy
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./:/stargate
       # Operator NTP sources, written by the agent's NTP endpoint and read directly by
       # the HOST chronyd (via a sourcedir in /etc/chrony.conf listing this dir first).
       # Just this one directory, not all of /var/data: it is the only writable host
       # state the agent needs. Applying a change is `chronyc reload sources` over nsenter.
       - ${STARGATE_DATA_DIR:-/var/data}/vereign/chrony:/chrony-sources
     environment:
-      NATS_URL: "nats://nats:4222"
-      COMPOSE_PROJECT_DIR: "/stargate"
-      COMPOSE_PROJECT_NAME: "docker-compose"
-      HOST_INSTALL_DIR: "${HOST_INSTALL_DIR:-/root/stargate-deployment}"
       LOG_LEVEL: "info"
       OS_IMAGE: "docker.io/healthinfonetag/vm-bootc"
-      # Version keys the dashboard update flow is allowed to change. Must list
-      # every *_VERSION present in the release manifest, otherwise the ops-agent
-      # rejects the update. App + infra services (overrides the Go default).
-      # Stateful services (POSTGRES/VAULT/KEYCLOAK) are updatable but should be
-      # bumped deliberately - a recreate runs against the existing data volume.
-      ALLOWED_VERSION_KEYS: "SMIMEKEYS_VERSION,POLICY_VERSION,IRISAGENT_VERSION,MXENGINE_VERSION,POLICY_SYNC_VERSION,DASHBOARD_VERSION,MTACONF_VERSION,OPS_AGENT_VERSION,IDAGENT_VERSION,MAILAUTH_VERSION,KERIOX_WATCHER_VERSION,DOZZLE_VERSION,CLAMAV_VERSION,POSTGRES_VERSION,KEYCLOAK_VERSION,VAULT_VERSION,APISIX_VERSION,NATS_VERSION,SEAWEEDFS_VERSION,CADDY_VERSION,LOKI_VERSION,ALLOY_VERSION,NODE_EXPORTER_VERSION,STALWART_VERSION,OAUTH2_PROXY_VERSION"
     networks:
       - stargate-network
     healthcheck:
-      test: ["CMD-SHELL", "test -S /var/run/docker.sock"]
+      test: ["CMD-SHELL", "/bin/busybox wget -q -O- http://127.0.0.1:8080/liveness >/dev/null"]
       interval: 30s
       timeout: 5s
       retries: 3

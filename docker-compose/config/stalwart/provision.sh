@@ -165,13 +165,16 @@ create_listener "submission" "0.0.0.0:587" "smtp" "true"
 
 SUBMISSION_DENY='{"allowRelaying":{"match":{"0":{"if":"local_port == 587","then":"false"}},"else":"!is_empty(authenticated_as)"}}'
 
-rcpt_stage=$(cli get MtaStageRcpt 2>/dev/null) || rcpt_stage=""
+rcpt_stage=$(cli get MtaStageRcpt --json 2>/dev/null) || rcpt_stage=""
 case "$rcpt_stage" in
   "")
     log "WARNING: could not read MtaStageRcpt; :587 relays on stock rules until mtaconf applies"
     ;;
-  *587*)
+  *"local_port == 587"*)
     log "MtaStageRcpt already carries a :587 relay clause; leaving it to mtaconf"
+    ;;
+  *"local_port == 10026"*)
+    log "MtaStageRcpt already carries mtaconf's relay rules; leaving it to mtaconf"
     ;;
   *)
     log "seeding deny-by-default relay rule for :587"
@@ -256,12 +259,27 @@ create_milter "clamav" "${CLAMAV_MILTER_HOST:-clamav}" "${CLAMAV_MILTER_PORT:-73
 log "disabling Stalwart inbound SPF/DKIM/DMARC/ARC/IPRev verification (mailauth owns these)"
 cli update SenderAuth singleton --json '{"dkimVerify":{"match":{},"else":"disable"},"arcVerify":{"match":{},"else":"disable"},"spfEhloVerify":{"match":{},"else":"disable"},"spfFromVerify":{"match":{},"else":"disable"},"dmarcVerify":{"match":{},"else":"disable"},"reverseIpVerify":{"match":{},"else":"disable"}}'
 
+remove_dnsbl_servers() {
+  local ids
+  ids=$(cli query SpamDnsblServer --fields id --json 2>/dev/null \
+        | sed -n 's/.*"id":"\([^"]*\)".*/\1/p') || true
+  if [ -z "$ids" ]; then
+    log "no SpamDnsblServer present; nothing to remove"
+    return 0
+  fi
+  log "removing imported DNSBL servers ($(echo $ids | wc -w))"
+  cli delete SpamDnsblServer --ids "$(echo $ids | tr ' ' ',')" \
+    || log "WARNING: failed to remove DNSBL servers; they may still be queried"
+}
+
 # Anti-spam: disabled. Stalwart's built-in spam filter is explicitly turned off
 # here (rather than left unconfigured) so that re-running provision reconciles a
 # previously-enabled install back to disabled: no X-Spam-* tagging and no spam
-# scan at the DATA stage.
+# scan at the DATA stage. Non-fatal: mtaconf gates on this one-shot completing.
 log "disabling built-in spam filter"
-cli update SpamSettings singleton --field "enable=false"
+cli update SpamSettings singleton --json '{"enable":false,"spamFilterRulesUrl":null}' \
+  || log "WARNING: failed to disable built-in spam filter; it may still scan and tag"
+remove_dnsbl_servers
 #cli update MtaStageData singleton --field "enableSpamFilter=false"
 
 # =============================================================================

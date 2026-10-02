@@ -327,8 +327,8 @@ The `start.sh` script (and the systemd service) automatically unseal Vault using
 | `update.sh` | Update service images (preserves Vault token, recreates containers) |
 | `start.sh` | Start services and unseal Vault |
 | `stop.sh` | Stop containers (data preserved) |
-| `backup.sh` | Full backup (database, Vault keys, config, certificates) |
-| `restore.sh` | Restore from backup archive (works on fresh machine) |
+| `backup.sh` | Full backup (database, Vault keys, config, certificates); `--config-only` saves only `customer-config.sh` |
+| `restore.sh` | Restore from backup archive (works on fresh machine); `--config-only` restores only `customer-config.sh` |
 | `purge.sh` | :warning: Delete ALL data (requires confirmation) |
 | `health-check.sh` | Comprehensive health check of all services (exit 0 = healthy, 1 = failures) |
 | `init-vault.sh` | Vault initialization (used by `vault-init` container, not called directly) |
