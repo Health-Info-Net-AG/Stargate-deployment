@@ -272,11 +272,13 @@ services:
       - ${STARGATE_DATA_DIR:-/var/data}/vereign/apisix:/output
     environment:
       KEYCLOAK_APISIX_CLIENT_SECRET: ${KEYCLOAK_APISIX_CLIENT_SECRET:-changeme}
-      STARGATE_NETWORK_SUBNET: ${STARGATE_NETWORK_SUBNET:-172.28.0.0/24}
     # Holds a client secret in cleartext. 636 is the apache/apisix image's gid;
     # root-owned + :ro so the gateway can read but not rewrite its own routes.
     command: >
       sh -c "apk add --no-cache gettext &&
+             STARGATE_NETWORK_SUBNET=$$(ip -4 route show dev eth0 scope link | head -n1 | cut -d' ' -f1) &&
+             echo $$STARGATE_NETWORK_SUBNET | grep -qE '^([0-9]{1,3}[.]){3}[0-9]{1,3}/[0-9]{1,2}$$' &&
+             export STARGATE_NETWORK_SUBNET &&
              envsubst '$$KEYCLOAK_APISIX_CLIENT_SECRET $$STARGATE_NETWORK_SUBNET' < /templates/apisix.yaml.template > /output/apisix.yaml &&
              chown root:636 /output/apisix.yaml &&
              chmod 640 /output/apisix.yaml &&
@@ -1391,6 +1393,3 @@ services:
 networks:
   stargate-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: ${STARGATE_NETWORK_SUBNET:-172.28.0.0/24}

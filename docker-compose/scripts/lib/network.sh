@@ -19,10 +19,6 @@ cidr_bounds() {
   echo "$(( base & mask )) $(( (base & mask) | (~mask & 0xFFFFFFFF) ))"
 }
 
-valid_ipv4_cidr() {
-  [[ "$1" == */* ]] && cidr_bounds "$1" >/dev/null
-}
-
 cidrs_overlap() {
   local a b
   a=$(cidr_bounds "$1") || return 2

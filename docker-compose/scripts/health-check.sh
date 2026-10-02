@@ -399,7 +399,7 @@ if [ -z "$net_subnet" ]; then
 else
   net_overlaps=$(host_routes_overlapping "$net_subnet")
   if [ -n "$net_overlaps" ]; then
-    fail "stargate-network $net_subnet overlaps host routes: $(echo "$net_overlaps" | paste -sd ';' -) - set STARGATE_NETWORK_SUBNET to a free range"
+    fail "stargate-network $net_subnet overlaps host routes: $(echo "$net_overlaps" | paste -sd ';' -) - see Troubleshooting: The Docker network overlaps the local network"
   else
     pass "stargate-network $net_subnet does not overlap any host route"
   fi

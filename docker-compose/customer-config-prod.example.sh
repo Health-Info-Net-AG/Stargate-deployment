@@ -19,7 +19,6 @@
 #   - Keycloak and Dashboard public URLs
 # Can be a private IP if the VM is behind NAT. Auto-detected if left empty.
 SERVER_STATIC_IP=""
-STARGATE_NETWORK_SUBNET="172.28.0.0/24"
 
 # ==============================================================================
 # REQUIRED: Customer Identification

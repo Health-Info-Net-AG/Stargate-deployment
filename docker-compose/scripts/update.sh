@@ -237,7 +237,6 @@ sync_customer_config "$EXAMPLE_FILE" "$CONFIG_FILE"
 # `source "$CONFIG_FILE"` would overwrite those derived values with the
 # empty strings still in customer-config.sh.
 load_customer_config
-check_network_subnet
 
 # Regenerate .env
 generate_env_file

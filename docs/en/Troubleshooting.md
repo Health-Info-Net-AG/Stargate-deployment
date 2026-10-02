@@ -263,6 +263,35 @@ for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 
 Outbound access is needed to the container registry, the S/MIME CA (over the WireGuard tunnel), and any remote Loki you configured. See the full port table on the **[home page](index.md)** and **[Applications overview](Applications.md)**.
 
+### The Docker network overlaps the local network
+
+The services talk to each other on an internal Docker network. Docker picks its address range when the stack is created, and avoids the networks the VM is directly connected to at that moment. If the range still contains addresses from your network, the appliance cannot reach those machines (for example a mail or DNS server), and they cannot reach it. The health check reports this under **Docker network**:
+
+```text
+[FAIL] stargate-network 172.18.0.0/16 overlaps host routes: 172.18.5.0/24 dev ens18 - see Troubleshooting: The Docker network overlaps the local network
+```
+
+- **The IP was changed after the first boot** - Docker chose the range while the VM still had its first address. On a gateway that is not onboarded yet, use the purge + reinstall from *Changing the server IP address* above; Docker then picks a free range by itself. On an onboarded gateway, recreate the network as shown below.
+- **The overlapping network is behind a router** (a static route, or a network at another site) - Docker cannot see such networks, and the health check only sees static routes. First give Docker a free range: add this to `/etc/docker/daemon.json`, keeping any settings already in the file, and use a range your network does not use:
+
+    ```json
+    {
+      "default-address-pools": [
+        { "base": "10.200.0.0/16", "size": 24 }
+      ]
+    }
+    ```
+
+    Then run `systemctl restart docker` and recreate the network as shown below.
+
+Recreating the network keeps all data in `/var/data`:
+
+```bash
+cd /usr/share/stargate-deployment/docker-compose
+docker compose down
+systemctl restart stargate
+```
+
 ---
 
 ## 8. Recovery actions
