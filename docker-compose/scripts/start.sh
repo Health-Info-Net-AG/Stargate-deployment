@@ -42,9 +42,9 @@ if ! command -v jq &> /dev/null; then
   exit 1
 fi
 
-# Converge the whole project first: a changed network is recreated here, and a
-# partial `up` would leave stopped containers attached to the removed network.
-compose up --no-start
+# Recreate every container before Vault is unsealed. After a network config change
+# compose otherwise keeps stale network IDs and drops service-name DNS aliases.
+compose up --no-start --force-recreate
 
 # Start infrastructure first
 echo "Starting infrastructure services..."
