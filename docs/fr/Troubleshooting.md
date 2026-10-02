@@ -213,7 +213,7 @@ nano /var/data/vereign/customer-config.sh    # set SERVER_STATIC_IP=<NEW IP>
 reboot                                       # installs again with the new IP
 ```
 
-`backup.sh` affiche la commande de restauration exacte, et l’archive reste dans `/var/data/backups`, que `purge.sh` ne supprime pas. Le redémarrage lance l’installation et recharge aussi les images de conteneurs que `purge.sh` supprime. Sur une installation Docker classique, exécutez `install.sh` au lieu de redémarrer.
+`backup.sh` affiche la commande de restauration exacte, et l’archive reste dans `/var/data/backups`, que `purge.sh` ne supprime pas. Le redémarrage lance l’installation et recharge aussi les images construites localement que `purge.sh` supprime. Sur une installation Docker classique, exécutez `install.sh` au lieu de redémarrer.
 
 Le certificat TLS et plusieurs URL de services sont dérivés de l’adresse IP au premier démarrage ; une purge suivie d’une réinstallation les régénère donc pour la nouvelle adresse. Le fichier restauré conserve les mots de passe générés et la clé WireGuard. Si la passerelle est déjà enregistrée auprès de HIN, l’enregistrement doit être mis à jour avec la nouvelle adresse IP.
 
@@ -269,14 +269,14 @@ Un accès sortant est nécessaire vers le registre de conteneurs, l’autorité 
 
 ### Le réseau Docker chevauche le réseau local
 
-Les services communiquent entre eux sur un réseau Docker interne. Docker choisit sa plage d’adresses à la création de la pile et évite les réseaux auxquels la VM est directement connectée à ce moment-là. Si la plage contient malgré tout des adresses de votre réseau, l’appliance ne peut pas joindre ces machines (par exemple un serveur de messagerie ou DNS), et elles ne peuvent pas la joindre. Le contrôle d’état le signale sous **Docker network** :
+Les services communiquent entre eux sur un réseau Docker interne. Docker choisit sa plage d’adresses à la création de la pile et évite les réseaux auxquels la VM est directement connectée à ce moment-là. Si la plage contient malgré tout des adresses de votre réseau, l’appliance ne peut pas joindre ces machines (par exemple un serveur de messagerie ou DNS), et elles ne peuvent pas la joindre. Le contrôle d’état le signale sous **Docker network** :
 
 ```text
 [FAIL] stargate-network 172.18.0.0/16 overlaps host routes: 172.18.5.0/24 dev ens18 - see Troubleshooting: The Docker network overlaps the local network
 ```
 
-- **L’adresse IP a été modifiée après le premier démarrage** : Docker a choisi la plage alors que la VM avait encore sa première adresse. Sur une passerelle pas encore intégrée, utilisez la purge et la réinstallation décrites dans *Modifier l’adresse IP du serveur* ci-dessus ; Docker choisit alors lui-même une plage libre. Sur une passerelle déjà intégrée, recréez le réseau comme indiqué ci-dessous.
-- **Le réseau en conflit se trouve derrière un routeur** (une route statique ou un réseau sur un autre site) : Docker ne voit pas ces réseaux, et le contrôle d’état ne voit que les routes statiques. Donnez d’abord à Docker une plage libre : ajoutez ceci à `/etc/docker/daemon.json`, en conservant les paramètres déjà présents, avec une plage que votre réseau n’utilise pas :
+- **L’adresse IP a été modifiée après le premier démarrage** : Docker a choisi la plage alors que la VM avait encore sa première adresse. Sur une passerelle pas encore intégrée, utilisez la purge et la réinstallation décrites dans *Modifier l’adresse IP du serveur* ci-dessus ; Docker choisit alors lui-même une plage libre. Sur une passerelle déjà intégrée, recréez le réseau comme indiqué ci-dessous.
+- **Le réseau en conflit se trouve derrière un routeur** (une route statique ou un réseau sur un autre site) : Docker n’évite pas ces réseaux. Le contrôle d’état voit toutes les routes de l’hôte, mais pas les réseaux joints via la passerelle par défaut. Donnez d’abord à Docker une plage libre : ajoutez ceci à `/etc/docker/daemon.json`, en conservant les paramètres déjà présents, avec une plage que votre réseau n’utilise pas :
 
     ```json
     {
@@ -288,12 +288,14 @@ Les services communiquent entre eux sur un réseau Docker interne. Docker choisi
 
     Exécutez ensuite `systemctl restart docker` et recréez le réseau comme indiqué ci-dessous.
 
-La recréation du réseau conserve toutes les données dans `/var/data` :
+La recréation du réseau conserve toutes les données dans `/var/data`. Arrêtez d’abord le service, sinon un Dozzle en cours d’exécution garde l’ancien réseau occupé :
 
 ```bash
+systemctl stop stargate
 cd /usr/share/stargate-deployment/docker-compose
-docker compose down
-systemctl restart stargate
+docker compose --env-file /var/data/vereign/.env down
+systemctl start stargate
+/usr/share/stargate-deployment/docker-compose/scripts/health-check.sh
 ```
 
 ---

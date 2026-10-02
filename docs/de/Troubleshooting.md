@@ -213,7 +213,7 @@ nano /var/data/vereign/customer-config.sh    # set SERVER_STATIC_IP=<NEW IP>
 reboot                                       # installs again with the new IP
 ```
 
-`backup.sh` gibt den genauen Befehl für die Wiederherstellung aus, und das Archiv bleibt in `/var/data/backups`, das `purge.sh` nicht löscht. Der Neustart führt die Installation aus und lädt auch die Container-Images neu, die `purge.sh` entfernt. Bei einer reinen Docker-Installation führen Sie statt des Neustarts `install.sh` aus.
+`backup.sh` gibt den genauen Befehl für die Wiederherstellung aus, und das Archiv bleibt in `/var/data/backups`, das `purge.sh` nicht löscht. Der Neustart führt die Installation aus und lädt auch die lokal gebauten Images neu, die `purge.sh` entfernt. Bei einer reinen Docker-Installation führen Sie statt des Neustarts `install.sh` aus.
 
 Das TLS-Zertifikat und mehrere Dienst-URLs werden beim ersten Start aus der IP-Adresse abgeleitet. Purge und Neuinstallation erzeugen sie daher für die neue Adresse neu. Die wiederhergestellte Datei behält die generierten Passwörter und den WireGuard-Schlüssel. Ist das Gateway bereits bei HIN registriert, muss die Registrierung mit der neuen IP-Adresse aktualisiert werden.
 
@@ -276,7 +276,7 @@ Die Dienste kommunizieren über ein internes Docker-Netzwerk. Docker wählt dess
 ```
 
 - **Die IP-Adresse wurde nach dem ersten Start geändert**: Docker hat den Bereich gewählt, als die VM noch ihre erste Adresse hatte. Auf einem Gateway ohne Onboarding verwenden Sie Purge und Neuinstallation aus *Server-IP-Adresse ändern* oben; Docker wählt dann selbst einen freien Bereich. Auf einem Gateway mit abgeschlossenem Onboarding erstellen Sie das Netzwerk wie unten beschrieben neu.
-- **Das überschneidende Netzwerk liegt hinter einem Router** (eine statische Route oder ein Netzwerk an einem anderen Standort): Docker sieht solche Netzwerke nicht, und der Health Check sieht nur statische Routen. Geben Sie Docker zuerst einen freien Bereich: Ergänzen Sie `/etc/docker/daemon.json` wie folgt, behalten Sie vorhandene Einstellungen bei und verwenden Sie einen Bereich, den Ihr Netzwerk nicht nutzt:
+- **Das überschneidende Netzwerk liegt hinter einem Router** (eine statische Route oder ein Netzwerk an einem anderen Standort): Docker meidet solche Netzwerke nicht. Der Health Check sieht jede Route auf dem Host, aber keine Netzwerke, die über das Standard-Gateway erreicht werden. Geben Sie Docker zuerst einen freien Bereich: Ergänzen Sie `/etc/docker/daemon.json` wie folgt, behalten Sie vorhandene Einstellungen bei und verwenden Sie einen Bereich, den Ihr Netzwerk nicht nutzt:
 
     ```json
     {
@@ -288,12 +288,14 @@ Die Dienste kommunizieren über ein internes Docker-Netzwerk. Docker wählt dess
 
     Führen Sie danach `systemctl restart docker` aus und erstellen Sie das Netzwerk wie unten beschrieben neu.
 
-Beim Neuerstellen des Netzwerks bleiben alle Daten in `/var/data` erhalten:
+Beim Neuerstellen des Netzwerks bleiben alle Daten in `/var/data` erhalten. Stoppen Sie zuerst den Dienst, sonst hält ein laufendes Dozzle das alte Netzwerk belegt:
 
 ```bash
+systemctl stop stargate
 cd /usr/share/stargate-deployment/docker-compose
-docker compose down
-systemctl restart stargate
+docker compose --env-file /var/data/vereign/.env down
+systemctl start stargate
+/usr/share/stargate-deployment/docker-compose/scripts/health-check.sh
 ```
 
 ---

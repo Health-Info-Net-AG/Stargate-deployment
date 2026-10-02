@@ -302,7 +302,7 @@ if [ "$CONFIG_ONLY" -eq 1 ]; then
     case "$PROJECT_DIR" in
       /usr/*)
         echo "  2. Reboot. The installer runs at boot with this configuration, and the"
-        echo "     reboot also reloads the container images purge.sh removed."
+        echo "     reboot also reloads the locally built images purge.sh removed."
         ;;
       *)
         echo "  2. Run: $SCRIPT_DIR/install.sh"

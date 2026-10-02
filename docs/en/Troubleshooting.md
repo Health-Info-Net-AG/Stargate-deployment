@@ -213,7 +213,7 @@ nano /var/data/vereign/customer-config.sh    # set SERVER_STATIC_IP=<NEW IP>
 reboot                                       # installs again with the new IP
 ```
 
-`backup.sh` prints the exact restore command, and the archive stays in `/var/data/backups`, which `purge.sh` does not delete. The reboot runs the installation and also reloads the container images that `purge.sh` removes. On a plain Docker installation, run `install.sh` instead of rebooting.
+`backup.sh` prints the exact restore command, and the archive stays in `/var/data/backups`, which `purge.sh` does not delete. The reboot runs the installation and also reloads the locally built images that `purge.sh` removes. On a plain Docker installation, run `install.sh` instead of rebooting.
 
 The TLS certificate and several service URLs are derived from the IP at first boot, so a purge + reinstall regenerates them for the new address. The restored file keeps the generated passwords and the WireGuard key. If the gateway is already registered at HIN, the registration has to be updated with the new IP.
 
@@ -276,7 +276,7 @@ The services talk to each other on an internal Docker network. Docker picks its 
 ```
 
 - **The IP was changed after the first boot** - Docker chose the range while the VM still had its first address. On a gateway that is not onboarded yet, use the purge + reinstall from *Changing the server IP address* above; Docker then picks a free range by itself. On an onboarded gateway, recreate the network as shown below.
-- **The overlapping network is behind a router** (a static route, or a network at another site) - Docker cannot see such networks, and the health check only sees static routes. First give Docker a free range: add this to `/etc/docker/daemon.json`, keeping any settings already in the file, and use a range your network does not use:
+- **The overlapping network is behind a router** (a static route, or a network at another site) - Docker does not avoid such networks. The health check sees every route on the host, but not networks reached through the default gateway. First give Docker a free range: add this to `/etc/docker/daemon.json`, keeping any settings already in the file, and use a range your network does not use:
 
     ```json
     {
@@ -288,12 +288,14 @@ The services talk to each other on an internal Docker network. Docker picks its 
 
     Then run `systemctl restart docker` and recreate the network as shown below.
 
-Recreating the network keeps all data in `/var/data`:
+Recreating the network keeps all data in `/var/data`. Stop the service first, otherwise a running Dozzle keeps the old network in use:
 
 ```bash
+systemctl stop stargate
 cd /usr/share/stargate-deployment/docker-compose
-docker compose down
-systemctl restart stargate
+docker compose --env-file /var/data/vereign/.env down
+systemctl start stargate
+/usr/share/stargate-deployment/docker-compose/scripts/health-check.sh
 ```
 
 ---

@@ -213,7 +213,7 @@ nano /var/data/vereign/customer-config.sh    # set SERVER_STATIC_IP=<NEW IP>
 reboot                                       # installs again with the new IP
 ```
 
-`backup.sh` mostra il comando esatto per il ripristino, e l'archivio resta in `/var/data/backups`, che `purge.sh` non cancella. Il riavvio esegue l'installazione e ricarica anche le immagini dei container che `purge.sh` rimuove. Su un'installazione Docker semplice, eseguire `install.sh` invece di riavviare.
+`backup.sh` mostra il comando esatto per il ripristino, e l'archivio resta in `/var/data/backups`, che `purge.sh` non cancella. Il riavvio esegue l'installazione e ricarica anche le immagini costruite localmente che `purge.sh` rimuove. Su un'installazione Docker semplice, eseguire `install.sh` invece di riavviare.
 
 Il certificato TLS e diversi URL dei servizi vengono derivati dall'IP al primo avvio, quindi un purge seguito da una reinstallazione li rigenera per il nuovo indirizzo. Il file ripristinato mantiene le password generate e la chiave WireGuard. Se il gateway è già registrato presso HIN, la registrazione deve essere aggiornata con il nuovo IP.
 
@@ -276,7 +276,7 @@ I servizi comunicano tra loro su una rete Docker interna. Docker sceglie l'inter
 ```
 
 - **L'IP è stato cambiato dopo il primo avvio**: Docker ha scelto l'intervallo quando la VM aveva ancora il suo primo indirizzo. Su un gateway non ancora sottoposto a onboarding, usare il purge e la reinstallazione descritti in *Modifica dell'indirizzo IP del server* sopra; Docker sceglie poi da solo un intervallo libero. Su un gateway già sottoposto a onboarding, ricreare la rete come indicato sotto.
-- **La rete in conflitto si trova dietro un router** (una route statica o una rete in un'altra sede): Docker non vede queste reti, e il controllo dello stato vede solo le route statiche. Assegnare prima a Docker un intervallo libero: aggiungere quanto segue a `/etc/docker/daemon.json`, mantenendo le impostazioni già presenti e usando un intervallo che la propria rete non utilizza:
+- **La rete in conflitto si trova dietro un router** (una route statica o una rete in un'altra sede): Docker non evita queste reti. Il controllo dello stato vede tutte le route dell'host, ma non le reti raggiunte tramite il gateway predefinito. Assegnare prima a Docker un intervallo libero: aggiungere quanto segue a `/etc/docker/daemon.json`, mantenendo le impostazioni già presenti e usando un intervallo che la propria rete non utilizza:
 
     ```json
     {
@@ -288,12 +288,14 @@ I servizi comunicano tra loro su una rete Docker interna. Docker sceglie l'inter
 
     Eseguire poi `systemctl restart docker` e ricreare la rete come indicato sotto.
 
-La ricreazione della rete conserva tutti i dati in `/var/data`:
+La ricreazione della rete conserva tutti i dati in `/var/data`. Arrestare prima il servizio, altrimenti un Dozzle in esecuzione mantiene occupata la vecchia rete:
 
 ```bash
+systemctl stop stargate
 cd /usr/share/stargate-deployment/docker-compose
-docker compose down
-systemctl restart stargate
+docker compose --env-file /var/data/vereign/.env down
+systemctl start stargate
+/usr/share/stargate-deployment/docker-compose/scripts/health-check.sh
 ```
 
 ---
