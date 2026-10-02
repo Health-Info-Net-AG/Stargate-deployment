@@ -154,7 +154,7 @@ routes:
       ip-restriction:
         whitelist:
           - "127.0.0.1"
-          - "${STARGATE_NETWORK_SUBNET}"
+          - "172.16.0.0/12"
 
   - id: "smimekeys-internal"
     uris:
@@ -169,7 +169,7 @@ routes:
       ip-restriction:
         whitelist:
           - "127.0.0.1"
-          - "${STARGATE_NETWORK_SUBNET}"
+          - "172.16.0.0/12"
 
   # ==================
   # Authenticated routes — Bearer token required via Keycloak OIDC

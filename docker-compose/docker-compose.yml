@@ -276,13 +276,9 @@ services:
     # root-owned + :ro so the gateway can read but not rewrite its own routes.
     command: >
       sh -c "apk add --no-cache gettext &&
-             STARGATE_NETWORK_SUBNET=$$(ip -4 route show scope link | cut -d' ' -f1) &&
-             { echo $$STARGATE_NETWORK_SUBNET | grep -qxE '([0-9]{1,3}[.]){3}[0-9]{1,3}/[0-9]{1,2}' || { echo 'apisix-init needs exactly one IPv4 network (stargate-network), found:' $$STARGATE_NETWORK_SUBNET >&2; false; }; } &&
-             export STARGATE_NETWORK_SUBNET &&
-             envsubst '$$KEYCLOAK_APISIX_CLIENT_SECRET $$STARGATE_NETWORK_SUBNET' < /templates/apisix.yaml.template > /output/apisix.yaml &&
+             envsubst '$$KEYCLOAK_APISIX_CLIENT_SECRET' < /templates/apisix.yaml.template > /output/apisix.yaml &&
              chown root:636 /output/apisix.yaml &&
              chmod 640 /output/apisix.yaml &&
-             ! grep -q '[$$]{' /output/apisix.yaml &&
              echo 'APISIX config generated'"
     networks:
       - stargate-network

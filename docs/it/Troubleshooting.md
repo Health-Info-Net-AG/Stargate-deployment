@@ -267,37 +267,6 @@ for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 
 È necessario l'accesso in uscita al registry dei container, all'autorità di certificazione S/MIME (tramite il tunnel WireGuard) e a qualsiasi istanza Loki remota configurata. La tabella completa delle porte si trova nella **[home page](index.md)** e nella **[panoramica delle applicazioni](Applications.md)**.
 
-### La rete Docker si sovrappone alla rete locale
-
-I servizi comunicano tra loro su una rete Docker interna. Docker sceglie l'intervallo di indirizzi quando lo stack viene creato ed evita le reti a cui la VM è collegata direttamente in quel momento. Se l'intervallo contiene comunque indirizzi della propria rete, l'appliance non può raggiungere quelle macchine (ad esempio un server di posta o DNS), e queste non possono raggiungere l'appliance. Il controllo dello stato lo segnala sotto **Docker network**:
-
-```text
-[FAIL] stargate-network 172.18.0.0/16 overlaps host routes: 172.18.5.0/24 dev ens18 - see Troubleshooting: The Docker network overlaps the local network
-```
-
-- **L'IP è stato cambiato dopo il primo avvio**: Docker ha scelto l'intervallo quando la VM aveva ancora il suo primo indirizzo. Su un gateway non ancora sottoposto a onboarding, usare il purge e la reinstallazione descritti in *Modifica dell'indirizzo IP del server* sopra; Docker sceglie poi da solo un intervallo libero. Su un gateway già sottoposto a onboarding, ricreare la rete come indicato sotto.
-- **La rete in conflitto si trova dietro un router** (una route statica o una rete in un'altra sede): Docker non evita queste reti. Il controllo dello stato vede tutte le route dell'host, ma non le reti raggiunte tramite il gateway predefinito. Assegnare prima a Docker un intervallo libero: aggiungere quanto segue a `/etc/docker/daemon.json`, mantenendo le impostazioni già presenti e usando un intervallo che la propria rete non utilizza:
-
-    ```json
-    {
-      "default-address-pools": [
-        { "base": "10.200.0.0/16", "size": 24 }
-      ]
-    }
-    ```
-
-    Eseguire poi `systemctl restart docker` e ricreare la rete come indicato sotto.
-
-La ricreazione della rete conserva tutti i dati in `/var/data`. Arrestare prima il servizio, altrimenti un Dozzle in esecuzione mantiene occupata la vecchia rete:
-
-```bash
-systemctl stop stargate
-cd /usr/share/stargate-deployment/docker-compose
-docker compose --env-file /var/data/vereign/.env down
-systemctl start stargate
-/usr/share/stargate-deployment/docker-compose/scripts/health-check.sh
-```
-
 ---
 
 ## 8. Azioni di ripristino

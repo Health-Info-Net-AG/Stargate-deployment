@@ -267,37 +267,6 @@ for p in 25 443 8180 8190 19818; do nc -zv <this-server-ip> $p; done
 
 Ausgehender Zugriff ist erforderlich auf die Container-Registry, die S/MIME-Zertifizierungsstelle (über den WireGuard-Tunnel) und jede von Ihnen konfigurierte Remote-Loki-Instanz. Die vollständige Port-Tabelle finden Sie auf der **[Startseite](index.md)** und in der **[Anwendungsübersicht](Applications.md)**.
 
-### Das Docker-Netzwerk überschneidet sich mit dem lokalen Netzwerk
-
-Die Dienste kommunizieren über ein internes Docker-Netzwerk. Docker wählt dessen Adressbereich beim Erstellen des Stacks und meidet dabei die Netzwerke, mit denen die VM in diesem Moment direkt verbunden ist. Enthält der Bereich trotzdem Adressen aus Ihrem Netzwerk, kann die Appliance diese Rechner nicht erreichen (zum Beispiel einen Mail- oder DNS-Server), und diese erreichen die Appliance nicht. Der Health Check meldet das unter **Docker network**:
-
-```text
-[FAIL] stargate-network 172.18.0.0/16 overlaps host routes: 172.18.5.0/24 dev ens18 - see Troubleshooting: The Docker network overlaps the local network
-```
-
-- **Die IP-Adresse wurde nach dem ersten Start geändert**: Docker hat den Bereich gewählt, als die VM noch ihre erste Adresse hatte. Auf einem Gateway ohne Onboarding verwenden Sie Purge und Neuinstallation aus *Server-IP-Adresse ändern* oben; Docker wählt dann selbst einen freien Bereich. Auf einem Gateway mit abgeschlossenem Onboarding erstellen Sie das Netzwerk wie unten beschrieben neu.
-- **Das überschneidende Netzwerk liegt hinter einem Router** (eine statische Route oder ein Netzwerk an einem anderen Standort): Docker meidet solche Netzwerke nicht. Der Health Check sieht jede Route auf dem Host, aber keine Netzwerke, die über das Standard-Gateway erreicht werden. Geben Sie Docker zuerst einen freien Bereich: Ergänzen Sie `/etc/docker/daemon.json` wie folgt, behalten Sie vorhandene Einstellungen bei und verwenden Sie einen Bereich, den Ihr Netzwerk nicht nutzt:
-
-    ```json
-    {
-      "default-address-pools": [
-        { "base": "10.200.0.0/16", "size": 24 }
-      ]
-    }
-    ```
-
-    Führen Sie danach `systemctl restart docker` aus und erstellen Sie das Netzwerk wie unten beschrieben neu.
-
-Beim Neuerstellen des Netzwerks bleiben alle Daten in `/var/data` erhalten. Stoppen Sie zuerst den Dienst, sonst hält ein laufendes Dozzle das alte Netzwerk belegt:
-
-```bash
-systemctl stop stargate
-cd /usr/share/stargate-deployment/docker-compose
-docker compose --env-file /var/data/vereign/.env down
-systemctl start stargate
-/usr/share/stargate-deployment/docker-compose/scripts/health-check.sh
-```
-
 ---
 
 ## 8. Wiederherstellungsmassnahmen

@@ -387,26 +387,6 @@ fi
 
 echo ""
 
-echo "--- Docker network ---"
-
-net_id=$(docker network ls -q --filter label=com.docker.compose.network=stargate-network 2>/dev/null | head -1)
-net_subnet=""
-if [ -n "$net_id" ]; then
-  net_subnet=$(docker network inspect "$net_id" -f '{{range .IPAM.Config}}{{.Subnet}}{{"\n"}}{{end}}' 2>/dev/null | grep -v ':' | head -1)
-fi
-if [ -z "$net_subnet" ]; then
-  warn "stargate-network not found (stack not created yet?)"
-else
-  net_overlaps=$(host_routes_overlapping "$net_subnet")
-  if [ -n "$net_overlaps" ]; then
-    fail "stargate-network $net_subnet overlaps host routes: $(echo "$net_overlaps" | paste -sd ';' -) - see Troubleshooting: The Docker network overlaps the local network"
-  else
-    pass "stargate-network $net_subnet does not overlap any host route"
-  fi
-fi
-
-echo ""
-
 # ------------------------------------------------------------------
 # Summary
 # ------------------------------------------------------------------
