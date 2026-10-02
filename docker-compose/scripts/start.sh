@@ -42,6 +42,10 @@ if ! command -v jq &> /dev/null; then
   exit 1
 fi
 
+# Recreate every container, all profiles included, before Vault is unsealed. After a
+# network config change compose otherwise keeps stale network IDs and drops DNS aliases.
+compose --profile '*' up --no-start --force-recreate
+
 # Start infrastructure first
 echo "Starting infrastructure services..."
 compose up -d postgres vault seaweedfs
