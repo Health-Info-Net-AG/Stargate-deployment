@@ -42,6 +42,10 @@ if ! command -v jq &> /dev/null; then
   exit 1
 fi
 
+# Converge the whole project first: a changed network is recreated here, and a
+# partial `up` would leave stopped containers attached to the removed network.
+compose up --no-start
+
 # Start infrastructure first
 echo "Starting infrastructure services..."
 compose up -d postgres vault seaweedfs

@@ -526,6 +526,9 @@ echo "  7. Starting Infrastructure Services"
 echo "============================================"
 echo ""
 
+# See start.sh: recreate a changed network together with every container on it.
+compose up --no-start
+
 echo "Starting PostgreSQL, Vault, SeaweedFS..."
 compose up -d postgres vault seaweedfs
 
