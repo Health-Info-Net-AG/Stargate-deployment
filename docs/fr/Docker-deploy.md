@@ -326,8 +326,8 @@ Le script `start.sh` (et le service systemd) descellent automatiquement Vault en
 | `update.sh` | Mettre à jour les images des services (préserve le jeton Vault, recrée les conteneurs) |
 | `start.sh` | Démarrer les services et desceller Vault |
 | `stop.sh` | Arrêter les conteneurs (données préservées) |
-| `backup.sh` | Sauvegarde complète (base de données, clés Vault, configuration, certificats) |
-| `restore.sh` | Restaurer à partir d'une archive de sauvegarde (fonctionne sur une nouvelle machine) |
+| `backup.sh` | Sauvegarde complète (base de données, clés Vault, configuration, certificats) ; `--config-only` sauvegarde uniquement `customer-config.sh` |
+| `restore.sh` | Restaurer à partir d'une archive de sauvegarde (fonctionne sur une nouvelle machine) ; `--config-only` restaure uniquement `customer-config.sh` |
 | `purge.sh` | :warning: Supprimer TOUTES les données (nécessite confirmation) |
 | `health-check.sh` | Contrôle de santé complet de tous les services (code de sortie 0 = sain, 1 = échecs) |
 | `init-vault.sh` | Initialisation Vault (utilisé par le conteneur `vault-init`, ne pas appeler directement) |

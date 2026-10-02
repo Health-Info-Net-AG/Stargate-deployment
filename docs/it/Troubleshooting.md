@@ -203,15 +203,19 @@ Se il codice di attivazione viene rifiutato, verificare nell'ordine:
 
 ### Modifica dell'indirizzo IP del server (solo configurazione iniziale)
 
-Se al primo avvio l'IP del server era errato o non impostato, eseguire un reset pulito e reinstallare:
+Se al primo avvio l'IP del server era errato o non impostato, eseguire un reset pulito e reinstallare. Salvare prima la configurazione, perché `purge.sh` cancella anche `customer-config.sh`:
 
 ```bash
+/usr/share/stargate-deployment/docker-compose/scripts/backup.sh --config-only  # saves customer-config.sh
 /usr/share/stargate-deployment/docker-compose/scripts/purge.sh                 # destroys ALL data - see warning below
+/usr/share/stargate-deployment/docker-compose/scripts/restore.sh --config-only /var/data/backups/<timestamp>_config-only.tar.gz
 nano /var/data/vereign/customer-config.sh    # set SERVER_STATIC_IP=<NEW IP>
-/usr/share/stargate-deployment/docker-compose/scripts/install.sh
+reboot                                       # installs again with the new IP
 ```
 
-Il certificato TLS e diversi URL dei servizi vengono derivati dall'IP al primo avvio, quindi un purge seguito da una reinstallazione li rigenera per il nuovo indirizzo.
+`backup.sh` mostra il comando esatto per il ripristino, e l'archivio resta in `/var/data/backups`, che `purge.sh` non cancella. Il riavvio esegue l'installazione e ricarica anche le immagini dei container che `purge.sh` rimuove. Su un'installazione Docker semplice, eseguire `install.sh` invece di riavviare.
+
+Il certificato TLS e diversi URL dei servizi vengono derivati dall'IP al primo avvio, quindi un purge seguito da una reinstallazione li rigenera per il nuovo indirizzo. Il file ripristinato mantiene le password generate e la chiave WireGuard. Se il gateway è già registrato presso HIN, la registrazione deve essere aggiornata con il nuovo IP.
 
 !!! danger "Solo prima dell'onboarding"
     `purge.sh` **elimina definitivamente tutti i dati**: database, Vault e chiavi S/MIME. L'operazione è sicura **solo su un'appliance nuova, non ancora sottoposta a onboarding**. **Non eseguire mai `purge.sh` per cambiare l'IP di un gateway in produzione o già sottoposto a onboarding**: causa la perdita di dati e rende la posta non più decifrabile. Per cambiare l'IP in produzione, contattare l'Assistenza.

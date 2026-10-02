@@ -44,6 +44,21 @@ Le script de restauration va:
 7. Desceller Vault avec les clés sauvegardées
 8. Démarrer les services d'application
 
+### Sauvegarder et restaurer uniquement la configuration
+
+Pour conserver uniquement `customer-config.sh` lors d’une purge suivie d’une réinstallation, par exemple pour changer l’adresse IP du serveur avant l’intégration (voir [Dépannage et diagnostic](Troubleshooting.md)) :
+
+```bash
+./scripts/backup.sh --config-only
+./scripts/restore.sh --config-only /var/data/backups/20260130_143022_config-only.tar.gz
+```
+
+- `backup.sh --config-only` sauvegarde `customer-config.sh` et les éventuels serveurs NTP personnalisés (`ntp.sources`) dans `/var/data/backups/<timestamp>_config-only.tar.gz`. Il ne nécessite aucun service en cours d’exécution, exclut `.env`, les clés Vault et les bases de données, et ne supprime aucune sauvegarde plus ancienne.
+- `restore.sh --config-only` restaure uniquement ces deux fichiers, à partir d’une archive de configuration seule ou d’une sauvegarde complète. Il ne demande aucune confirmation, conserve un fichier existant sous `customer-config.sh.bak.<timestamp>` et affiche les étapes suivantes.
+- Une restauration complète à partir d’une archive de configuration seule est refusée.
+
+L’archive contient les mots de passe générés et la clé privée WireGuard : traitez-la comme un secret.
+
 ### Restauration partielle (base de données unique)
 
 Si vous avez seulement besoin de restaurer une base de données:

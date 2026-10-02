@@ -44,6 +44,21 @@ Lo script di ripristino:
 7. Scongela Vault con le chiavi di backup
 8. Avvia i servizi applicativi
 
+### Backup e ripristino della sola configurazione
+
+Per conservare solo `customer-config.sh` attraverso un purge e una reinstallazione, ad esempio per cambiare l'IP del server prima dell'onboarding (vedere [Troubleshooting e diagnostica](Troubleshooting.md)):
+
+```bash
+./scripts/backup.sh --config-only
+./scripts/restore.sh --config-only /var/data/backups/20260130_143022_config-only.tar.gz
+```
+
+- `backup.sh --config-only` salva `customer-config.sh` ed eventuali server NTP personalizzati (`ntp.sources`) in `/var/data/backups/<timestamp>_config-only.tar.gz`. Non richiede servizi in esecuzione, esclude `.env`, le chiavi Vault e i database, e non cancella backup precedenti.
+- `restore.sh --config-only` ripristina solo questi due file, da un archivio di sola configurazione o da un backup completo. Non chiede conferma, conserva un file esistente come `customer-config.sh.bak.<timestamp>` e mostra i passi successivi.
+- Un ripristino completo da un archivio di sola configurazione viene rifiutato.
+
+L'archivio contiene le password generate e la chiave privata WireGuard: trattarlo come un segreto.
+
 ### Ripristino parziale (database singolo)
 
 Se è necessario ripristinare solo un database:

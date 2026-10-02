@@ -44,6 +44,21 @@ Das Wiederherstellungsskript wird:
 7. Vault mit den gesicherten Schlüsseln entsiegeln
 8. Die Anwendungsdienste starten
 
+### Nur die Konfiguration sichern und wiederherstellen
+
+Um nur `customer-config.sh` über eine Bereinigung und Neuinstallation hinweg zu behalten, zum Beispiel um die Server-IP vor dem Onboarding zu ändern (siehe [Troubleshooting und Diagnose](Troubleshooting.md)):
+
+```bash
+./scripts/backup.sh --config-only
+./scripts/restore.sh --config-only /var/data/backups/20260130_143022_config-only.tar.gz
+```
+
+- `backup.sh --config-only` sichert `customer-config.sh` und eigene NTP-Server (`ntp.sources`) nach `/var/data/backups/<timestamp>_config-only.tar.gz`. Es benötigt keine laufenden Dienste, lässt `.env`, die Vault-Schlüssel und die Datenbanken weg und löscht keine älteren Backups.
+- `restore.sh --config-only` stellt nur diese beiden Dateien wieder her, aus einem Nur-Konfigurations-Archiv oder aus einem vollständigen Backup. Es fragt nicht nach einer Bestätigung, behält eine vorhandene Datei als `customer-config.sh.bak.<timestamp>` und zeigt die nächsten Schritte an.
+- Eine vollständige Wiederherstellung aus einem Nur-Konfigurations-Archiv wird abgelehnt.
+
+Das Archiv enthält die generierten Passwörter und den privaten WireGuard-Schlüssel. Behandeln Sie es als vertraulich.
+
 ### Teilweise Wiederherstellung (einzelne Datenbank)
 
 Wenn Sie nur eine Datenbank wiederherstellen müssen:

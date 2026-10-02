@@ -203,15 +203,19 @@ Wird der Aktivierungscode abgelehnt, prüfen Sie der Reihe nach:
 
 ### Server-IP-Adresse ändern (nur bei der Ersteinrichtung)
 
-War die Server-IP-Adresse beim ersten Start falsch oder nicht gesetzt, setzen Sie das System sauber zurück und installieren Sie es neu:
+War die Server-IP-Adresse beim ersten Start falsch oder nicht gesetzt, setzen Sie das System sauber zurück und installieren Sie es neu. Sichern Sie zuerst die Konfiguration, denn `purge.sh` löscht auch `customer-config.sh`:
 
 ```bash
+/usr/share/stargate-deployment/docker-compose/scripts/backup.sh --config-only  # saves customer-config.sh
 /usr/share/stargate-deployment/docker-compose/scripts/purge.sh                 # destroys ALL data - see warning below
+/usr/share/stargate-deployment/docker-compose/scripts/restore.sh --config-only /var/data/backups/<timestamp>_config-only.tar.gz
 nano /var/data/vereign/customer-config.sh    # set SERVER_STATIC_IP=<NEW IP>
-/usr/share/stargate-deployment/docker-compose/scripts/install.sh
+reboot                                       # installs again with the new IP
 ```
 
-Das TLS-Zertifikat und mehrere Dienst-URLs werden beim ersten Start aus der IP-Adresse abgeleitet. Purge und Neuinstallation erzeugen sie daher für die neue Adresse neu.
+`backup.sh` gibt den genauen Befehl für die Wiederherstellung aus, und das Archiv bleibt in `/var/data/backups`, das `purge.sh` nicht löscht. Der Neustart führt die Installation aus und lädt auch die Container-Images neu, die `purge.sh` entfernt. Bei einer reinen Docker-Installation führen Sie statt des Neustarts `install.sh` aus.
+
+Das TLS-Zertifikat und mehrere Dienst-URLs werden beim ersten Start aus der IP-Adresse abgeleitet. Purge und Neuinstallation erzeugen sie daher für die neue Adresse neu. Die wiederhergestellte Datei behält die generierten Passwörter und den WireGuard-Schlüssel. Ist das Gateway bereits bei HIN registriert, muss die Registrierung mit der neuen IP-Adresse aktualisiert werden.
 
 !!! danger "Nur vor dem Onboarding"
     `purge.sh` **löscht alle Daten unwiderruflich**: Datenbanken, Vault und die S/MIME-Schlüssel. Dies ist **nur auf einer neuen, noch nicht onboardeten Appliance** sicher. **Führen Sie `purge.sh` niemals aus, um die IP-Adresse eines produktiven oder bereits onboardeten Gateways zu ändern**: Das führt zu Datenverlust und zu E-Mails, die sich nicht mehr entschlüsseln lassen. Für eine IP-Änderung im Produktivbetrieb wenden Sie sich an den Support.

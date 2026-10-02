@@ -203,15 +203,19 @@ Si le code d’activation est refusé, vérifiez dans l’ordre :
 
 ### Modifier l’adresse IP du serveur (configuration initiale uniquement)
 
-Si l’adresse IP du serveur était erronée ou non définie au premier démarrage, réinitialisez proprement puis réinstallez :
+Si l’adresse IP du serveur était erronée ou non définie au premier démarrage, réinitialisez proprement puis réinstallez. Sauvegardez d’abord la configuration, car `purge.sh` supprime aussi `customer-config.sh` :
 
 ```bash
+/usr/share/stargate-deployment/docker-compose/scripts/backup.sh --config-only  # saves customer-config.sh
 /usr/share/stargate-deployment/docker-compose/scripts/purge.sh                 # destroys ALL data - see warning below
+/usr/share/stargate-deployment/docker-compose/scripts/restore.sh --config-only /var/data/backups/<timestamp>_config-only.tar.gz
 nano /var/data/vereign/customer-config.sh    # set SERVER_STATIC_IP=<NEW IP>
-/usr/share/stargate-deployment/docker-compose/scripts/install.sh
+reboot                                       # installs again with the new IP
 ```
 
-Le certificat TLS et plusieurs URL de services sont dérivés de l’adresse IP au premier démarrage ; une purge suivie d’une réinstallation les régénère donc pour la nouvelle adresse.
+`backup.sh` affiche la commande de restauration exacte, et l’archive reste dans `/var/data/backups`, que `purge.sh` ne supprime pas. Le redémarrage lance l’installation et recharge aussi les images de conteneurs que `purge.sh` supprime. Sur une installation Docker classique, exécutez `install.sh` au lieu de redémarrer.
+
+Le certificat TLS et plusieurs URL de services sont dérivés de l’adresse IP au premier démarrage ; une purge suivie d’une réinstallation les régénère donc pour la nouvelle adresse. Le fichier restauré conserve les mots de passe générés et la clé WireGuard. Si la passerelle est déjà enregistrée auprès de HIN, l’enregistrement doit être mis à jour avec la nouvelle adresse IP.
 
 !!! danger "Uniquement avant l’intégration"
     `purge.sh` **supprime définitivement toutes les données** : bases de données, Vault et clés S/MIME. Cette opération n’est sûre **que sur une appliance neuve, pas encore intégrée**. **N’exécutez jamais `purge.sh` pour changer l’adresse IP d’une passerelle en production ou déjà intégrée** : cela entraîne une perte de données et des e-mails qui ne peuvent plus être déchiffrés. Pour un changement d’adresse IP en production, contactez le support.

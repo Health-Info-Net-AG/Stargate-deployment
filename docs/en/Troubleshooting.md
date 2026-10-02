@@ -203,15 +203,19 @@ If the activation code is rejected, check in order:
 
 ### Changing the server IP address (initial setup only)
 
-If the server IP was wrong or unset at first boot, reset cleanly and reinstall:
+If the server IP was wrong or unset at first boot, reset cleanly and reinstall. Save the configuration first, because `purge.sh` also deletes `customer-config.sh`:
 
 ```bash
+/usr/share/stargate-deployment/docker-compose/scripts/backup.sh --config-only  # saves customer-config.sh
 /usr/share/stargate-deployment/docker-compose/scripts/purge.sh                 # destroys ALL data - see warning below
+/usr/share/stargate-deployment/docker-compose/scripts/restore.sh --config-only /var/data/backups/<timestamp>_config-only.tar.gz
 nano /var/data/vereign/customer-config.sh    # set SERVER_STATIC_IP=<NEW IP>
-/usr/share/stargate-deployment/docker-compose/scripts/install.sh
+reboot                                       # installs again with the new IP
 ```
 
-The TLS certificate and several service URLs are derived from the IP at first boot, so a purge + reinstall regenerates them for the new address.
+`backup.sh` prints the exact restore command, and the archive stays in `/var/data/backups`, which `purge.sh` does not delete. The reboot runs the installation and also reloads the container images that `purge.sh` removes. On a plain Docker installation, run `install.sh` instead of rebooting.
+
+The TLS certificate and several service URLs are derived from the IP at first boot, so a purge + reinstall regenerates them for the new address. The restored file keeps the generated passwords and the WireGuard key. If the gateway is already registered at HIN, the registration has to be updated with the new IP.
 
 !!! danger "Only before onboarding"
     `purge.sh` **permanently deletes all data** - databases, Vault, and the S/MIME keys. This is safe **only on a fresh, not-yet-onboarded appliance**. **Never run `purge.sh` to change the IP of a live/onboarded gateway** - it causes data loss and mail that can no longer be decrypted. For a production IP change, contact support.
