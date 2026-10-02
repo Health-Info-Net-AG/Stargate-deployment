@@ -42,9 +42,17 @@ if ! command -v jq &> /dev/null; then
   exit 1
 fi
 
+# Bring services up, retrying once with --force-recreate.
+compose_up() {
+  if ! compose up -d "$@"; then
+    echo "Bring-up failed (possibly a stale Docker network after an upgrade); retrying with --force-recreate..." >&2
+    compose up -d --force-recreate "$@"
+  fi
+}
+
 # Start infrastructure first
 echo "Starting infrastructure services..."
-compose up -d postgres vault seaweedfs
+compose_up postgres vault seaweedfs
 
 # Wait for Vault to be ready and unseal it
 echo "Waiting for Vault to start..."
@@ -114,7 +122,7 @@ fi
 # Start application services
 echo ""
 echo "Starting application services..."
-compose up -d
+compose_up
 
 echo "Waiting for Stalwart provisioning to complete..."
 docker wait stargate-stalwart-provision >/dev/null 2>&1 || true
