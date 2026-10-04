@@ -1057,7 +1057,7 @@ services:
 
   stalwart:
     # renovate: datasource=docker depName=stalwartlabs/stalwart
-    image: stalwartlabs/stalwart:v0.16.23
+    image: stalwartlabs/stalwart:v0.16.24
     container_name: stargate-stalwart
     restart: unless-stopped
     logging:
