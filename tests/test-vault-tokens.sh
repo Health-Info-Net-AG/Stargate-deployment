@@ -30,23 +30,32 @@ EOF
 sync_service_tokens_to_env >/dev/null || fail "sync failed on the happy path"
 grep -qx 'FOO=bar' "$ENV_FILE" || fail "unrelated key lost"
 grep -qx 'VAULT_TOKEN_MXENGINE="tok-mx"' "$ENV_FILE" || fail "mxengine token missing"
+grep -qx 'VAULT_TOKEN=' "$ENV_FILE" || fail "empty VAULT_TOKEN line missing"
 [ "$(stat -c %a "$ENV_FILE")" = 600 ] || fail ".env is not 600"
 
-# --- a stale bare VAULT_TOKEN is dropped -------------------------------------
+# --- a stale bare VAULT_TOKEN is blanked -------------------------------------
 printf 'FOO=bar\nVAULT_TOKEN="root-leftover"\n' > "$ENV_FILE"
 sync_service_tokens_to_env >/dev/null || fail "sync failed with a stale VAULT_TOKEN"
-grep -q '^VAULT_TOKEN=' "$ENV_FILE" && fail "stale bare VAULT_TOKEN survived"
+grep -q 'root-leftover' "$ENV_FILE" && fail "root token survived in .env"
+[ "$(grep -c '^VAULT_TOKEN=' "$ENV_FILE")" = 1 ] || fail "VAULT_TOKEN line missing or duplicated"
+grep -qx 'VAULT_TOKEN=' "$ENV_FILE" || fail "VAULT_TOKEN is not empty"
 grep -qx 'FOO=bar' "$ENV_FILE" || fail "unrelated key lost"
+cp "$ENV_FILE" "$ENV_FILE.rollback"
+grep -q '^VAULT_TOKEN=' "$ENV_FILE.rollback" && sed -i 's/^VAULT_TOKEN=.*/VAULT_TOKEN="root-x"/' "$ENV_FILE.rollback"
+grep -qx 'VAULT_TOKEN="root-x"' "$ENV_FILE.rollback" || fail "a v0.6 start.sh could not fill VAULT_TOKEN after a rollback"
+rm -f "$ENV_FILE.rollback"
 
 # --- idempotent: no duplicated keys or headers on a second run ---------------
 sync_service_tokens_to_env >/dev/null || fail "second sync failed"
 [ "$(grep -c '^VAULT_TOKEN_MXENGINE=' "$ENV_FILE")" = 1 ] || fail "token key duplicated"
+[ "$(grep -c '^VAULT_TOKEN=' "$ENV_FILE")" = 1 ] || fail "empty VAULT_TOKEN duplicated"
 [ "$(grep -c '^# Per-service Vault tokens' "$ENV_FILE")" = 1 ] || fail "header duplicated"
 
 # --- missing .env is created -------------------------------------------------
 rm -f "$ENV_FILE"
 sync_service_tokens_to_env >/dev/null || fail "sync failed with no .env"
 grep -qx 'VAULT_TOKEN_BACKUP="tok-bk"' "$ENV_FILE" || fail "backup token missing"
+grep -qx 'VAULT_TOKEN=' "$ENV_FILE" || fail "empty VAULT_TOKEN line missing in a new .env"
 
 # --- service_token ------------------------------------------------------------
 [ "$(service_token VAULT_TOKEN_MXENGINE)" = "tok-mx" ] || fail "service_token returned the wrong value"
