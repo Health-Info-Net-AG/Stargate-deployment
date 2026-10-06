@@ -308,36 +308,11 @@ Add an IP address on Linux:
     sudo systemctl restart NetworkManager
     ```
 
-??? tip "Cloud-init overrides VM network settings after reboot"
-
-    **This applies to the legacy image only.** The bootc appliance - now the default - does not use cloud-init to manage networking, so it is not affected and does not ship the `cloud-init-net-*` aliases used below.
-
-    On the legacy image (typically on VMware/ESXi) cloud-init has no datasource, falls back to "DHCP the first NIC", and re-renders the network config on every boot - so a static address set with `nmtui` reverts after a reboot. An alias fixes this in one step by disabling only cloud-init's network rendering, so an address you then set on the existing profile persists:
-
-    1. Stop cloud-init re-rendering the network each boot:
-    ```bash
-    cloud-init-net-disable
-    ```
-    2. Run `nmtui`, edit the existing **`cloud-init <iface>`** connection, and set the static IP, gateway and DNS there. Do not add a second profile for the same interface - cloud-init's carries a higher autoconnect priority and would win.
-    ```bash
-    nmtui
-    ```
-    3. Reboot and confirm the address survives:
-    ```bash
-    sudo reboot
-    # after the reboot:
-    nmcli device status; ip -4 addr
-    ```
-
-    `cloud-init-net-enable` reverts to the default cloud-init-managed networking. Without the alias, step 1 is the same drop-in by hand:
-    ```bash
-    echo 'network: {config: disabled}' | sudo tee /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
-    ```
-
 !!! tip
     If you used Option C and configured the network manually, you must run the following commands:
 
     ```bash
+    sudo -i
     cd /usr/share/HIN Gateway-deployment/docker-compose
     ./scripts/purge.sh
     ./scripts/install.sh
@@ -377,11 +352,15 @@ Add an IP address on Linux:
 
 ![Responsibility Customer](https://img.shields.io/badge/Responsibility-Customer-success)
 
-Open a browser and enter the IP address configured for the VM. You should see the initial setup screen.
+Open a browser and enteć the IP address configured for the VM. You should see the initial setup screen.
 
 ```plain
 https://<VM IP address>
 ```
+
+!!! note "Reboot the VM"
+        If the machine is not accessible, restart the VM from the console and then try accessing it again through the browser.
+        
 
 ### Step 7 - Enter activation code
 
