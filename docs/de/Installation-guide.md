@@ -305,35 +305,11 @@ Stellen Sie sicher, dass die VM über eine Netzwerkverbindung verfügt und ihr e
     sudo systemctl restart NetworkManager
     ```
 
-??? tip "Cloud-init überschreibt VM-Netzwerkeinstellungen nach einem Neustart"
-    **Dies betrifft nur das Legacy-Image.** Die bootc-Appliance, jetzt der Standard, verwendet kein cloud-init für die Netzwerkverwaltung, ist daher nicht betroffen und enthält die unten verwendeten `cloud-init-net-*`-Aliase nicht.
-
-    Auf dem Legacy-Image (typischerweise auf VMware/ESXi) hat cloud-init keine Datenquelle, fällt auf „DHCP für die erste NIC" zurück und rendert die Netzwerkkonfiguration bei jedem Boot neu, weshalb eine mit `nmtui` gesetzte statische Adresse nach einem Neustart zurückgesetzt wird. Ein Alias behebt dies in einem Schritt, indem er nur das Netzwerk-Rendering von cloud-init deaktiviert, sodass eine anschliessend am bestehenden Profil gesetzte Adresse erhalten bleibt:
-
-    1. Cloud-init daran hindern, das Netzwerk bei jedem Boot neu zu rendern:
-    ```bash
-    cloud-init-net-disable
-    ```
-    2. Führen Sie `nmtui` aus, bearbeiten Sie die bestehende Verbindung **`cloud-init <iface>`** und setzen Sie dort die statische IP, das Gateway und den DNS. Fügen Sie kein zweites Profil für dieselbe Schnittstelle hinzu. Das von cloud-init hat eine höhere Autoconnect-Priorität und würde gewinnen.
-    ```bash
-    nmtui
-    ```
-    3. Starten Sie neu und prüfen Sie, ob die Adresse erhalten bleibt:
-    ```bash
-    sudo reboot
-    # nach dem Neustart:
-    nmcli device status; ip -4 addr
-    ```
-
-    `cloud-init-net-enable` stellt das standardmässige, von cloud-init verwaltete Netzwerk wieder her. Ohne den Alias ist Schritt 1 dasselbe Drop-in von Hand:
-    ```bash
-    echo 'network: {config: disabled}' | sudo tee /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
-    ```
-
 !!! tip
     Wenn Sie Option C verwendet und das Netzwerk manuell konfiguriert haben, müssen Sie die folgenden Befehle ausführen:
 
     ```bash
+    sudo -i
     cd /usr/share/stargate-deployment/docker-compose
     ./scripts/purge.sh
     ./scripts/install.sh
@@ -378,6 +354,9 @@ Stellen Sie sicher, dass die VM über eine Netzwerkverbindung verfügt und ihr e
 ```plain
 https://<IP-Adresse der VM>
 ```
+
+!!! note "VM neu starten"
+        Falls die Maschine nicht erreichbar ist, starten Sie die VM über die Konsole neu und versuchen Sie anschliessend erneut, über den Browser darauf zuzugreifen.
 
 ### Schritt 7 - Aktivierungscode eingeben
 

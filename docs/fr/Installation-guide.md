@@ -304,36 +304,11 @@ Ajouter une adresse IP sous Linux:
     sudo systemctl restart NetworkManager
     ```
 
-??? tip "Cloud-init remplace les paramètres réseau de la VM après un redémarrage"
-
-    **Ceci s'applique uniquement à l'image legacy.** L'appliance bootc (désormais l'option par défaut) n'utilise pas cloud-init pour gérer le réseau ; elle n'est donc pas concernée et ne fournit pas les alias `cloud-init-net-*` utilisés ci-dessous.
-
-    Sur l'image legacy (généralement sur VMware/ESXi), cloud-init n'a pas de source de données, se rabat sur "DHCP sur la première carte réseau" et régénère la configuration réseau à chaque démarrage, une adresse statique définie avec `nmtui` est donc réinitialisée après un redémarrage. Un alias corrige cela en une étape en désactivant uniquement la génération du réseau par cloud-init, de sorte qu'une adresse ensuite définie sur le profil existant persiste :
-
-    1. Empêcher cloud-init de régénérer le réseau à chaque démarrage :
-    ```bash
-    cloud-init-net-disable
-    ```
-    2. Exécutez `nmtui`, modifiez la connexion existante **`cloud-init <iface>`** et définissez-y l'IP statique, la passerelle et le DNS. N'ajoutez pas un second profil pour la même interface, celui de cloud-init a une priorité d'autoconnexion plus élevée et l'emporterait.
-    ```bash
-    nmtui
-    ```
-    3. Redémarrez et vérifiez que l'adresse persiste :
-    ```bash
-    sudo reboot
-    # après le redémarrage :
-    nmcli device status; ip -4 addr
-    ```
-
-    `cloud-init-net-enable` rétablit le réseau géré par cloud-init par défaut. Sans l'alias, l'étape 1 est le même dépôt de fichier à la main :
-    ```bash
-    echo 'network: {config: disabled}' | sudo tee /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
-    ```
-
 !!! tip
     Si vous avez utilisé l'option C et configuré le réseau manuellement, vous devez exécuter les commandes suivantes:
 
     ```bash
+    sudo -i
     cd /usr/share/stargate-deployment/docker-compose
     ./scripts/purge.sh
     ./scripts/install.sh
@@ -378,6 +353,9 @@ Ouvrez un navigateur et saisissez l'adresse IP configurée pour la machine virtu
 ```plain
 https://<adresse IP de la machine virtuelle>
 ```
+
+!!! note "Redémarrer la VM"
+        Si la machine n'est pas accessible, redémarrez la VM depuis la console, puis réessayez d'y accéder via le navigateur.
 
 ### Étape 7 - Saisissez le code d'activation
 
