@@ -648,11 +648,6 @@ services:
       # Metrics
       METRICS_ADDR: ":2112"
     ports:
-      # Bind to loopback only: the /v1 REST API has no authentication of its own
-      # (message status, config and customer endpoints included). External access
-      # goes through APISIX (/mxengine/*, oidc-bearer). Publishing this on 0.0.0.0
-      # exposed it to the internet AND to every WireGuard peer; localhost keeps
-      # health-check.sh working.
       - "127.0.0.1:8084:8080"
       - "2116:2112"
     tmpfs:
