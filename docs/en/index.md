@@ -137,7 +137,7 @@ The following items must be available or confirmed before the installation:
 | Destination mail servers | `25` | TCP | Outbound mail delivery via MX lookup, or delivery to the next MTA configured as the outbound server. |
 | Standard DNS queries and responses | `53` | UDP + TCP | DNS resolve |
 | `ntp.metas.ch` (default NTP server) | `123` | UDP | NTP synchronizes the clocks of computers, servers, network devices, and virtual machines with accurate time sources |
-| WireGuard peers (HIN network) | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication |
+| WireGuard peers (HIN network) | `19818` | UDP+TCP | WireGuard - encrypted tunnel for agent-to-agent communication <br> Currently, HIN Central Stargate uses the following IPv4 address: `185.98.123.16`. Under unlikely circumstances, it could use any of the IP addresses listed in the [Cloudscale ASN](https://www.ip2location.com/as59414). |
 | `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | HIN KERI witness pool - required for agent identity verification (idagent / watcher) |
 | `app.hin.ch` | `443` | TCP | HIN member / mail-domain list (mxengine) |
 | `apisix.verify-mail.hin-infra.ch` | `443` | TCP | HIN gateway registration during onboarding (dashboard) |
@@ -167,14 +167,13 @@ The following items must be available or confirmed before the installation:
     Accurate time is not optional. If the clock drifts, certificate validation, message
     signing and sign-in sessions all begin to fail in ways that are hard to diagnose.
 
-
 !!! note "Important note regarding operation on Microsoft Azure"
-        **Operation on Microsoft Azure**
-        For the SMTP relay connection between the HIN Gateway and Exchange Online, outgoing data traffic via TCP port 25 must be permitted.
+    **Operation on Microsoft Azure**
+    For the SMTP relay connection between the HIN Gateway and Exchange Online, outgoing data traffic via TCP port 25 must be permitted.
 
-        Microsoft Azure blocks outbound connections via port 25 for most subscription models. HIN has no control over the availability or activation of this port by Microsoft. Operating the HIN Gateway on Azure is therefore **not a standard supported deployment scenario**. Exceptions apply in particular to [certain Microsoft Enterprise subscriptions](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Before installing on Azure, please check whether your subscription permits outbound SMTP traffic via TCP port 25.
-        
-        If you have any questions regarding the appropriate deployment option, please contact your HIN contact person at an early stage.
+    Microsoft Azure blocks outbound connections via port 25 for most subscription models. HIN has no control over the availability or activation of this port by Microsoft. Operating the HIN Gateway on Azure is therefore **not a standard supported deployment scenario**. Exceptions apply in particular to [certain Microsoft Enterprise subscriptions](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-network/troubleshoot-outbound-smtp-connectivity). Before installing on Azure, please check whether your subscription permits outbound SMTP traffic via TCP port 25.
+    
+    If you have any questions regarding the appropriate deployment option, please contact your HIN contact person at an early stage.
 
 ??? tip "Firewall note"
 
