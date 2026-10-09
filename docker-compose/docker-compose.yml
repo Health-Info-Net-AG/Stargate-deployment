@@ -722,7 +722,7 @@ services:
       - autoheal=true
 
   mailauth:
-    image: healthinfonetag/mailauth:v0.0.6
+    image: healthinfonetag/mailauth:v0.0.7-test
     container_name: stargate-mailauth
     restart: unless-stopped
     logging:
