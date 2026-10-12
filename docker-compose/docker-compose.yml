@@ -136,7 +136,7 @@ services:
   # SeaweedFS bucket initialization
   seaweedfs-init:
     # renovate: datasource=docker depName=amazon/aws-cli
-    image: amazon/aws-cli:2.37.3
+    image: amazon/aws-cli:2.37.11
     container_name: stargate-seaweedfs-init
     logging:
       driver: json-file
@@ -187,7 +187,7 @@ services:
 
   keycloak:
     # renovate: datasource=docker depName=quay.io/keycloak/keycloak
-    image: quay.io/keycloak/keycloak:26.7.4
+    image: quay.io/keycloak/keycloak:26.8.0
     container_name: stargate-keycloak
     restart: unless-stopped
     logging:
@@ -801,7 +801,7 @@ services:
 
   apisix:
     # renovate: datasource=docker depName=apache/apisix
-    image: apache/apisix:3.18.0-debian
+    image: apache/apisix:3.19.0-debian
     container_name: stargate-apisix
     restart: unless-stopped
     logging:
@@ -922,7 +922,7 @@ services:
   # dashboard (:443), and redirects plain HTTP (:80) to HTTPS.
   caddy:
     # renovate: datasource=docker depName=caddy
-    image: caddy:2.11.4-alpine
+    image: caddy:2.11.7-alpine
     container_name: stargate-caddy
     restart: unless-stopped
     logging:
@@ -1052,7 +1052,7 @@ services:
 
   stalwart:
     # renovate: datasource=docker depName=stalwartlabs/stalwart
-    image: stalwartlabs/stalwart:v0.16.23
+    image: stalwartlabs/stalwart:v0.16.25
     container_name: stargate-stalwart
     restart: unless-stopped
     logging:
@@ -1184,7 +1184,7 @@ services:
 
   alloy:
     # renovate: datasource=docker depName=grafana/alloy
-    image: grafana/alloy:v1.19.2
+    image: grafana/alloy:v1.20.1
     container_name: stargate-alloy
     restart: unless-stopped
     logging:
@@ -1287,7 +1287,7 @@ services:
   # Access at: http://localhost:8090
   dozzle:
     # renovate: datasource=docker depName=amir20/dozzle
-    image: amir20/dozzle:v11.1.2
+    image: amir20/dozzle:v11.3.1
     container_name: stargate-dozzle
     restart: unless-stopped
     profiles: [dozzle]
@@ -1328,7 +1328,7 @@ services:
   # Any authenticated realm user is allowed (no email-domain restriction).
   oauth2-proxy:
     # renovate: datasource=docker depName=quay.io/oauth2-proxy/oauth2-proxy
-    image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.4
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.5
     container_name: stargate-oauth2-proxy
     restart: unless-stopped
     profiles: [dozzle]
