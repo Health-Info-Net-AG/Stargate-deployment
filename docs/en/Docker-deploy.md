@@ -41,12 +41,6 @@ Mail domains, the mail hostname, S/MIME certificates, and WireGuard peers are al
 !!! note "Behind NAT or a floating IP?"
     Auto-detection uses the IP of the server's primary interface. If your server is reached on a *different* public or floating IP (common with NAT), set `SERVER_STATIC_IP` to that public IP in `customer-config.sh` before installing, so the dashboard and Keycloak login URLs point at the reachable address. Otherwise leave it empty.
 
-**Auto-derived settings — leave empty unless you need to override:**
-
-| Setting | Derived from | Default |
-|---------|-------------|---------|
-| `MXENGINE_PUBLIC_ADDRESS` | `SERVER_STATIC_IP` | `http://<SERVER_STATIC_IP>:8084` |
-
 **S/MIME certificate settings:**
 
 | Setting | Description | Default |
