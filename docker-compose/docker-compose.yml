@@ -660,6 +660,7 @@ services:
   idagent:
     image: healthinfonetag/idagent:v0.0.2
     container_name: stargate-idagent
+    profiles: ["keri-idagent"]
     restart: unless-stopped
     logging:
       driver: json-file
@@ -995,7 +996,6 @@ services:
       - policy
       - irisagent
       - mxengine
-      - idagent
       - mailauth
     volumes:
       - ./scripts/gather-app-versions.sh:/scripts/gather-app-versions.sh:ro

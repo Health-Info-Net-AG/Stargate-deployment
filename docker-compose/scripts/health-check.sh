@@ -49,7 +49,6 @@ EXPECTED_RUNNING=(
   stargate-policy
   stargate-irisagent
   stargate-mxengine
-  stargate-idagent
   stargate-mailauth
   stargate-stalwart
   stargate-mtaconf
@@ -86,8 +85,15 @@ fi
 watcher_status=$(docker inspect -f '{{.State.Status}}' stargate-watcher 2>/dev/null)
 if [ "$watcher_status" = "running" ]; then
   pass "stargate-watcher"
-elif [ -n "$watcher_status" ]; then
+elif [ -n "$watcher_status" ] && [ "$watcher_status" != "created" ]; then
   warn "stargate-watcher status: $watcher_status (optional service)"
+fi
+
+idagent_status=$(docker inspect -f '{{.State.Status}}' stargate-idagent 2>/dev/null)
+if [ "$idagent_status" = "running" ]; then
+  pass "stargate-idagent"
+elif [ -n "$idagent_status" ] && [ "$idagent_status" != "created" ]; then
+  warn "stargate-idagent status: $idagent_status (optional service)"
 fi
 
 echo ""
@@ -104,7 +110,6 @@ declare -A LIVENESS_ENDPOINTS=(
   [policy]=policy
   [irisagent]=irisagent
   [mxengine]=mxengine
-  [idagent]=idagent
   [mailauth]=mailauth
   [mtaconf]=mtaconf
   [ops-agent]=ops-agent

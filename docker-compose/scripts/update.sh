@@ -283,6 +283,9 @@ fi
 echo ""
 echo "=== Recreating services ==="
 compose up -d --remove-orphans
+if ! compose config --services 2>/dev/null | grep -qx idagent; then
+  docker stop stargate-idagent >/dev/null 2>&1 || true
+fi
 
 # Handle Dozzle enable/disable and credential updates
 update_dozzle() {
