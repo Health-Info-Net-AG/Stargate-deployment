@@ -41,6 +41,7 @@ sync_service_tokens_to_env() {
     else
       : > "$tmp"
     fi
+    echo "VAULT_TOKEN=" >> "$tmp"
     echo "# Per-service Vault tokens - managed by init-vault.sh, do not edit by hand." >> "$tmp"
     cat "$SERVICE_TOKENS_FILE" >> "$tmp"
   ) || { rm -f "$tmp"; return 1; }

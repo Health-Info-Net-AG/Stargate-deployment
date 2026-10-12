@@ -648,11 +648,6 @@ services:
       # Metrics
       METRICS_ADDR: ":2112"
     ports:
-      # Bind to loopback only: the /v1 REST API has no authentication of its own
-      # (message status, config and customer endpoints included). External access
-      # goes through APISIX (/mxengine/*, oidc-bearer). Publishing this on 0.0.0.0
-      # exposed it to the internet AND to every WireGuard peer; localhost keeps
-      # health-check.sh working.
       - "127.0.0.1:8084:8080"
       - "2116:2112"
     tmpfs:
@@ -665,6 +660,7 @@ services:
   idagent:
     image: healthinfonetag/idagent:v0.0.2
     container_name: stargate-idagent
+    profiles: ["keri-idagent"]
     restart: unless-stopped
     logging:
       driver: json-file
@@ -722,7 +718,7 @@ services:
       - autoheal=true
 
   mailauth:
-    image: healthinfonetag/mailauth:v0.0.6
+    image: healthinfonetag/mailauth:v0.0.7
     container_name: stargate-mailauth
     restart: unless-stopped
     logging:
@@ -1000,7 +996,6 @@ services:
       - policy
       - irisagent
       - mxengine
-      - idagent
       - mailauth
     volumes:
       - ./scripts/gather-app-versions.sh:/scripts/gather-app-versions.sh:ro
