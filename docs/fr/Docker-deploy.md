@@ -41,12 +41,6 @@ Les domaines de courrier, le nom d'hôte de messagerie, les certificats S/MIME e
 !!! note "Derrière un NAT ou une IP flottante ?"
     La détection automatique utilise l'IP de l'interface principale du serveur. Si votre serveur est joignable via une *autre* IP publique ou flottante (fréquent avec le NAT), définissez `SERVER_STATIC_IP` sur cette IP publique dans `customer-config.sh` avant l'installation, afin que les URL du tableau de bord et de connexion Keycloak pointent vers l'adresse joignable. Sinon, laissez-le vide.
 
-**Paramètres auto-dérivés — laissez vide sauf si vous devez les remplacer :**
-
-| Paramètre | Dérivé de | Défaut |
-|---------|-------------|---------|
-| `MXENGINE_PUBLIC_ADDRESS` | `SERVER_STATIC_IP` | `http://<SERVER_STATIC_IP>:8084` |
-
 **Paramètres du certificat S/MIME :**
 
 | Paramètre | Description | Défaut |

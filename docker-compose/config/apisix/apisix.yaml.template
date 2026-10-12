@@ -42,6 +42,11 @@ upstreams:
       "seaweedfs:8333": 1
     type: roundrobin
 
+  - id: "watcher"
+    nodes:
+      "watcher:3235": 1
+    type: roundrobin
+
 plugin_configs:
   - id: "oidc-bearer"
     plugins:
@@ -131,6 +136,14 @@ routes:
     plugins:
       proxy-rewrite:
         regex_uri: ["^/seaweedfs/(.*)", "/$1"]
+
+  - id: "watcher-health"
+    uri: "/watcher/health"
+    upstream_id: "watcher"
+    priority: 100
+    plugins:
+      proxy-rewrite:
+        regex_uri: ["^/watcher/(.*)", "/$1"]
 
   # ==================
   # Internal routes — IP-restricted, no auth
