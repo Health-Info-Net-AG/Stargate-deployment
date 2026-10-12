@@ -35,7 +35,7 @@ DEPLOYMENT_NAME="stargate"
 # ==============================================================================
 
 # MXEngine public address (for seal strategy callbacks)
-# Auto-derived from SERVER_STATIC_IP if left empty: http://<SERVER_STATIC_IP>:8084
+# Defaults to http://localhost:8084 if left empty.
 # Override only if behind a reverse proxy or using a custom hostname.
 MXENGINE_PUBLIC_ADDRESS=""
 
