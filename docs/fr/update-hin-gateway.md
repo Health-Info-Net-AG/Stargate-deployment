@@ -35,6 +35,11 @@ Ce document explique:
 
    <br> ![system-version](assets/configuration/step5-updatevm-later-restart.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 
+!!! warning "Mise à jour majeure"
+    La mise à jour de 0.6.x vers 1.1.7 est une mise à jour majeure. Vous devez créer un snapshot de sauvegarde de la VM avant de lancer la mise à jour.
+
+    Cette version inclut une mise à jour de sécurité obligatoire qui fait passer Keycloak à la version 26.8.0. Lors de cette mise à niveau, Keycloak [modifie le schéma de la base de données](https://github.com/keycloak/keycloak/blob/main/model/jpa/src/main/resources/META-INF/jpa-changelog-26.8.0.xml#L348) et supprime une colonne et des index dont la version précédente de Keycloak (26.7.4) a besoin. Par conséquent, le bouton `Roll back` ne permet pas de restaurer une version 0.6.x fonctionnelle. Le snapshot de la VM est le seul moyen de revenir à la version précédente.
+
 ## Comment revenir à une version précédente
 
 1. Accédez à la page `Settings` et faites défiler jusqu'à la section `System version`.
