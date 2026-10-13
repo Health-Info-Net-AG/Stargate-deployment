@@ -12,6 +12,7 @@ Fonctionnement:
 
 - Vous devez avoir accès au tableau de bord HIN Gateway
 - Le domaine d’envoi doit déjà être ajouté dans HIN Gateway et activé (onboarded)
+- TLS doit être activé pour le domaine. Les mots de passe ne sont acceptés que via TLS, les identifiants ne fonctionnent donc pas sans certificat TLS
 - Vous devez avoir accès à la configuration du système d’envoi (MTA / application), car vous y saisirez les nouveaux identifiants
 
 ## Créer des identifiants
@@ -23,6 +24,13 @@ Fonctionnement:
     ![Section SMTP authentication](./assets/inbound-basic-auth-1.png)
 
     Les identifiants qui existent déjà pour le domaine sont répertoriés ici.
+
+    !!! warning "TLS doit être activé"
+        Si le domaine n’a pas encore de certificat TLS, la section affiche le message **No TLS certificate yet**. Les identifiants ne fonctionnent qu’une fois TLS activé, car les mots de passe ne sont acceptés que via TLS.
+
+        ![Avertissement: aucun certificat TLS](./assets/inbound-basic-auth-4.png)
+
+        Pour activer TLS, ouvrez la section **Configure TLS** sur la même page du domaine et ajoutez un certificat, ou cliquez sur **Generate TLS certificate** pour en générer un. Revenez ensuite à cette section.
 
     Le commutateur **Verify a trusted network** détermine depuis où les identifiants peuvent être utilisés. Lorsqu’il est sur **Off**, les identifiants fonctionnent depuis n’importe quelle adresse IP. Activez-le si vous souhaitez limiter les connexions aux `Trusted networks`.
 

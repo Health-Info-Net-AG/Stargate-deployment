@@ -12,6 +12,7 @@ So funktioniert es:
 
 - Sie benötigen Zugriff auf das HIN Gateway Dashboard
 - Die Domain, von der Sie senden möchten, muss bereits in HIN Gateway hinzugefügt und aktiviert (onboarded) sein
+- TLS muss für die Domain aktiviert sein. Passwörter werden nur über TLS akzeptiert, ohne TLS-Zertifikat funktionieren die Zugangsdaten daher nicht
 - Sie benötigen Zugriff auf die Konfiguration des sendenden Systems (MTA / Anwendung), da Sie dort die neuen Zugangsdaten eintragen
 
 ## Zugangsdaten erstellen
@@ -23,6 +24,13 @@ So funktioniert es:
     ![Abschnitt SMTP authentication](./assets/inbound-basic-auth-1.png)
 
     Hier werden alle Zugangsdaten aufgelistet, die für die Domain bereits bestehen.
+
+    !!! warning "TLS muss aktiviert sein"
+        Hat die Domain noch kein TLS-Zertifikat, zeigt der Abschnitt die Meldung **No TLS certificate yet**. Die Zugangsdaten funktionieren erst, wenn TLS aktiviert ist, da Passwörter nur über TLS akzeptiert werden.
+
+        ![Warnung: kein TLS-Zertifikat](./assets/inbound-basic-auth-4.png)
+
+        Um TLS zu aktivieren, öffnen Sie auf derselben Domain-Seite den Abschnitt **Configure TLS** und fügen Sie ein Zertifikat hinzu, oder klicken Sie auf **Generate TLS certificate**, um eines zu erzeugen. Kehren Sie danach zu diesem Abschnitt zurück.
 
     Der Schalter **Verify a trusted network** legt fest, von wo aus die Zugangsdaten verwendet werden können. Steht er auf **Off**, funktionieren die Zugangsdaten von jeder IP-Adresse aus. Aktivieren Sie ihn, wenn Sie Anmeldungen auf `Trusted networks` beschränken möchten.
 

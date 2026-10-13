@@ -12,6 +12,7 @@ Come funziona:
 
 - È necessario l’accesso alla dashboard di HIN Gateway
 - Il dominio da cui si desidera inviare deve essere già aggiunto in HIN Gateway e attivato (onboarded)
+- TLS deve essere attivato per il dominio. Le password sono accettate solo tramite TLS, quindi senza un certificato TLS le credenziali non funzionano
 - È necessario l’accesso alla configurazione del sistema di invio (MTA / applicazione), poiché vi si inseriranno le nuove credenziali
 
 ## Creare le credenziali
@@ -23,6 +24,13 @@ Come funziona:
     ![Sezione SMTP authentication](./assets/inbound-basic-auth-1.png)
 
     Qui sono elencate le credenziali già esistenti per il dominio.
+
+    !!! warning "TLS deve essere attivato"
+        Se il dominio non ha ancora un certificato TLS, la sezione mostra il messaggio **No TLS certificate yet**. Le credenziali funzionano solo dopo l’attivazione di TLS, poiché le password sono accettate solo tramite TLS.
+
+        ![Avviso: nessun certificato TLS](./assets/inbound-basic-auth-4.png)
+
+        Per attivare TLS, aprire la sezione **Configure TLS** nella stessa pagina del dominio e aggiungere un certificato, oppure fare clic su **Generate TLS certificate** per generarne uno. Tornare quindi a questa sezione.
 
     L’interruttore **Verify a trusted network** stabilisce da dove possono essere utilizzate le credenziali. Quando è su **Off**, le credenziali funzionano da qualsiasi indirizzo IP. Attivarlo per limitare gli accessi ai soli `Trusted networks`.
 
