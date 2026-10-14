@@ -183,6 +183,9 @@ nav:
       - Email authentication (DKIM ARC SPF DMARC): Email-authentication-DKIM-ARC-SPF-DMARC.md
       - Update and Roll-back HIN Gateway: update-hin-gateway.md
       - Managing Routed Domains in HIN Gateway: Routed-domains.md
+      - Configure custom NTP: Configure-ntp.md
+      - Inbound basic authentication: inbound-connection-authentication.md
+      - Outbound basic authentication: outbound-connection-authentication.md
   - Server install:
       - Container:
           - Install with Docker: Docker-deploy.md
