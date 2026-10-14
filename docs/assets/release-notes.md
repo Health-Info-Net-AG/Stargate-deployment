@@ -1,3 +1,25 @@
+## v1.1.7
+
+*Released on 14 October 2026.*
+
+### What's new and improved
+
+- Outbound relays can now authenticate with a username and password for each domain.
+- Inbound relays can now authenticate with a username and password for each domain.
+- Outlook Confidential Tag - Emails marked as confidential in Microsoft's sensitivity label field are now delivered through HIN Mail with encryption to non-HIN Members.
+- Time synchronization: HIN Gateway now uses NTP to keep its clock in sync with trusted time servers. NTP can be configured in the dashboard.
+- Log forwarding: Logs can now be sent to Loki using an API token.
+- Migration from v0.5.x: A migration script exports the S/MIME key and certificate when moving from v0.5.x to v0.6.x or above.
+- Network defaults: The default DNS server is now 8.8.8.8 (previously 1.1.1.1) - DNS Server can be changed during configuration.
+
+### Fixes
+
+- Fixed repeated reboots (up to three in a row) after network settings were changed.
+- Fixed an error during onboarding when the certificate import started before the iris agent sync had finished
+- Domains are now trimmed and converted to lowercase when added
+- Fixed the confirmation message after updating a peer
+- The new-version notification is now translated into all supported languages
+
 ## v0.6.2
 
 *Released on 24 September 2026.*
