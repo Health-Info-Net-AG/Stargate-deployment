@@ -313,7 +313,7 @@ Add an IP address on Linux:
 
     ```bash
     sudo -i
-    cd /usr/share/HIN Gateway-deployment/docker-compose
+    cd /usr/share/stargate-deployment/docker-compose
     ./scripts/purge.sh
     ./scripts/install.sh
     ```

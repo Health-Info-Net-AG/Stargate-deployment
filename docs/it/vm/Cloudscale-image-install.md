@@ -35,25 +35,9 @@
 !!! warning "Collega prima il disco dati"
     Prima del primo avvio, collega un secondo disco vuoto di almeno 30 GB. Al primo avvio l'appliance lo formatta come disco dati (`VEREIGN-DATA`, montato su `/var/data`) e vi conserva tutta la configurazione e i dati; senza di esso l'avvio fallisce ed esegue il rollback. Vedi [Guida all'installazione → Passo 4](../Installation-guide.md#passo-4-caricamento-dellimmagine-vm).
 
-## Accedi e inizializza l'istanza Stargate
+## Installare HIN Gateway
 
-- Accedi alla console VM con l'utente `hinadmin` per configurare e installare i componenti Stargate.
-- Per ottenere la password `hinadmin`, invia un'email a <support@hin.ch> con oggetto: **"Password required for VM installation."**
-
-[Clicca qui per inviare un'email](mailto:support@hin.ch?subject=Password%20required%20for%20VM%20installation.&body=Hello%20dear%20Support,%0A%0AI%20would%20like%20to%20receive%20the%20password%20for%20a%20VM%20installation.%0A%0APLEASE%20PROVIDE%20YOUR%20CUSTOMER%20INFO%20HERE){ .md-button style="position:relative;left:50%;transform:translate(-50%,0%);" }
-
-```shell
-sudo su -
-cd ~/stargate-deployment/docker-compose/
-```
-
-- Utilizza vi/nano per modificare `customer-config.sh`
-- I dettagli di configurazione si trovano nel [README - Passo 1: Configurare le impostazioni cliente](../Docker-deploy.md#passo-1-configurare-le-impostazioni-cliente)
-- Esegui lo script di installazione:
-
-```shell
-./scripts/install.sh
-```
+Dopo che la VM è stata creata con successo, procedi con i passaggi di installazione e onboarding come descritto nelle [istruzioni](../Installation-guide.md) fornite.
 
 !!! tip "Supporto"
 
