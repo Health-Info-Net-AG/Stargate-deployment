@@ -201,5 +201,5 @@ nav:
           - Cloudscale: vm/Cloudscale-image-install.md
   - Catalogue d'images VM: vm/VM-Catalog.md
   - Dépannage: Troubleshooting.md
-  - Release Notes: Release-notes.md
+  - Notes de version: Release-notes.md
   - Support / Contactez-nous: Support.md

@@ -1,3 +1,3 @@
-# Release Notes
+# Note di rilascio
 
---8<-- "docs/assets/release-notes.md"
+--8<-- "docs/assets/release-notes-it.md"
