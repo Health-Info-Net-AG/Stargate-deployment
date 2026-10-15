@@ -6,37 +6,35 @@
 
 - Outbound relays can now authenticate with a username and password for each domain.
 - Inbound relays can now authenticate with a username and password for each domain.
-- Outlook Confidential Tag - Emails marked as confidential in Microsoft's sensitivity label field are now delivered through HIN Mail with encryption to non-HIN Members.
+- Outlook confidentiality label: Emails marked as confidential in Microsoft's sensitivity label field are now delivered through HIN Mail with encryption to non-HIN members.
 - Time synchronization: HIN Gateway now uses NTP to keep its clock in sync with trusted time servers. NTP can be configured in the dashboard.
 - Log forwarding: Logs can now be sent to Loki using an API token.
 - Migration from v0.5.x: A migration script exports the S/MIME key and certificate when moving from v0.5.x to v0.6.x or above.
-- Network defaults: The default DNS server is now 8.8.8.8 (previously 1.1.1.1) - DNS Server can be changed during configuration.
+- Network defaults: The default DNS server is now 8.8.8.8 (previously 1.1.1.1). The DNS server can be changed during configuration.
 
 ### Fixes
 
 - Fixed repeated reboots (up to three in a row) after network settings were changed.
-- Fixed an error during onboarding when the certificate import started before the iris agent sync had finished
-- Domains are now trimmed and converted to lowercase when added
-- Fixed the confirmation message after updating a peer
-- The new-version notification is now translated into all supported languages
+- Fixed an error during onboarding when the certificate import started before the Iris Agent sync had finished.
+- Domains are now trimmed and converted to lowercase when added.
+- Fixed the confirmation message after updating a peer.
+- The new-version notification is now translated into all supported languages.
 
 ## v0.6.2
 
 *Released on 24 September 2026.*
 
-This hot-fix release strengthens HIN Gateway security, corrects Stalwart version and Disable SpamFiltering.
+This hotfix release strengthens HIN Gateway security, corrects the Stalwart version and disables spam filtering.
 
 ### What’s new and improved
 
-- Ships Stalwart v0.16.23 which works with the latest ruleset for Spam filter
-- Disable the spam ruleset and SpamFilter, so an upstream ruleset release can't break a pinned version.
-
+- Ships Stalwart v0.16.23, which works with the latest spam filter ruleset.
+- Disables the spam ruleset and SpamFilter, so an upstream ruleset release can't break a pinned version.
 
 ### Fixes
 
-- fix: update spam filter handling in provision script and improve error logging
-- fix: update stalwart image to version v0.16.23 and add DNSBL server removal function
-
+- Updated spam filter handling in the provisioning script and improved error logging.
+- Updated the Stalwart image to v0.16.23 and added a function that removes DNSBL servers.
 
 ## v0.6.1
 
@@ -59,24 +57,24 @@ This maintenance release strengthens HIN Gateway security, corrects email-header
 
 *Released on 31 August 2026.*
 
-This release adds multi-domain migration support, domain-level relay configuration, email authentication(such as DIKM and ARC) and improvements to installation, security and stability.
+This release adds multi-domain migration support, domain-level relay configuration, email authentication (such as DKIM and ARC) and improvements to installation, security and stability.
 
 ### What’s new and improved
 
-- **Multi-domain setups:** Multiple domains can now be configured or migrated to a single HIN Gateway. The updated guidance covers complete and phased migrations, including rollback scenarios
-- **Domain based configuration:** Relay configuration per domain is now available
-- **Email authentication:** DKIM and ARC signing, as well as DKIM, ARC, SPF and DMARC verification, can now be configured for each domain. The required DNS records are shown directly in the HIN Gateway
-- **Installation and migration:** Updated guidance now covers new installations, single-domain and multi-domain migrations, Exchange integration, mail routing, networking and TLS testing
-- **Appliance migration:** A documented process is available for moving an existing Docker Compose installation to the image-based HIN Gateway appliance
-- **Backup and restore:** Persistent data now uses a consistent location, with safer restore handling and warnings when backup and target versions differ
-- **Diagnostics and security:** Health checks, logging and diagnostic collection have been improved. Installation and recovery scripts now provide better protection for credentials and backup data
+- **Multi-domain setups:** Multiple domains can now be configured or migrated to a single HIN Gateway. The updated guidance covers complete and phased migrations, including rollback scenarios.
+- **Domain-based configuration:** Relay configuration per domain is now available.
+- **Email authentication:** DKIM and ARC signing, as well as DKIM, ARC, SPF and DMARC verification, can now be configured for each domain. The required DNS records are shown directly in HIN Gateway.
+- **Installation and migration:** Updated guidance now covers new installations, single-domain and multi-domain migrations, Exchange integration, mail routing, networking and TLS testing.
+- **Appliance migration:** A documented process is available for moving an existing Docker Compose installation to the image-based HIN Gateway appliance.
+- **Backup and restore:** Persistent data now uses a consistent location, with safer restore handling and warnings when backup and target versions differ.
+- **Diagnostics and security:** Health checks, logging and diagnostic collection have been improved. Installation and recovery scripts now provide better protection for credentials and backup data.
 
 ### Fixes
 
-- Improved first-time initialization of Vault and WireGuard settings
-- Improved service startup on slower virtual machines
-- Fixed edge cases affecting backup and restore operations
-- Fixed inaccurate health-check results and configuration fallback handling
+- Improved first-time initialization of Vault and WireGuard settings.
+- Improved service startup on slower virtual machines.
+- Fixed edge cases affecting backup and restore operations.
+- Fixed inaccurate health-check results and configuration fallback handling.
 
 ### Important information for appliance migrations
 
@@ -107,9 +105,9 @@ The fix was applied to the central services. Local virtual machine installations
 - Searching through logs is now easier.
 - A warning is shown when the private key has not been imported.
 - Error messages and diagnostic information have been improved.
- 
+
 ### Fixes
- 
+
 - Improved certificate selection when sending encrypted emails.
 - Fixed the handling of encrypted messages signed with revoked or untrusted certificates.
 - Fixed an issue with session refresh tokens.
