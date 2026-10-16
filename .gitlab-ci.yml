@@ -221,7 +221,8 @@ release_milestone:
 trigger_bootc_pipeline:
   stage: trigger
   needs: []
-  allow_failure: true
+  # Not allowed to fail: trigger_hin_pipeline `needs` this job, and an allowed failure counts as a success there. A red
+  # scan or a cancelled publish_image downstream must keep HIN from deploying an image that never reached Harbor.
   rules:
     # Every tag except an explicit `-test` one, which goes to build_test_image below: release tag names
     # vary, so prod is the default. An unset tag matches !~, hence the presence check.
