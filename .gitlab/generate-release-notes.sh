@@ -26,11 +26,39 @@ service_repo() {   # first-party service NAME (no _VERSION) -> repo slug; empty 
     MXENGINE) echo mxengine ;;
     DASHBOARD) echo dashboard ;;
     MTACONF) echo mtaconf ;;
+    MAILAUTH) echo mailauth ;;
+    OPS_AGENT) echo stargate-ops ;;
     *) echo "" ;;
   esac
 }
 
 is_semver() { printf '%s' "$1" | grep -Eq "$SEMVER_RE"; }
+
+SBOM_INDEX="${SBOM_DIR:+$SBOM_DIR/index.tsv}"
+[ -n "$SBOM_INDEX" ] && [ -f "$SBOM_INDEX" ] || SBOM_INDEX=""
+
+sbom_summary() {
+  jq -r --arg d "$2" '
+    [.components[]? | select(.type == "library")] as $c
+    | [$c[] | (.licenses // [])[] | (.license.id // .license.name // .expression)]
+      | group_by(.) | sort_by(-length) | map(.[0] | gsub("\\|"; "/")) as $l
+    | (if $d == "" then "—" else "`" + ($d | ltrimstr("sha256:") | .[0:12]) + "`" end)
+      + " | \($c | length) | "
+      + (if ($l | length) == 0 then "—"
+         else ($l[0:3] | join(", ")) + (if ($l | length) > 3 then " +\(($l | length) - 3)" else "" end) end)' "$1"
+}
+
+sbom_cells() {
+  local line digest file
+  line="$(awk -F'\t' -v r="$1" '$1 == "image" && $2 == r { print; exit }' "$SBOM_INDEX")"
+  digest="$(printf '%s' "$line" | cut -f3)"
+  file="$(printf '%s' "$line" | cut -f4)"
+  if [ -n "$file" ] && [ -f "$SBOM_DIR/$file" ]; then
+    printf ' %s | `%s` |' "$(sbom_summary "$SBOM_DIR/$file" "$digest")" "$file"
+  else
+    printf ' — | — | — | — |'
+  fi
+}
 
 release_link() {   # $1=NAME $2=VERSION -> markdown cell
   local repo; repo="$(service_repo "$1")"
@@ -87,9 +115,9 @@ parse_compose() {
       name = toupper(seg[n]); gsub(/-/, "_", name)
       if (name in skip) next
       if (name == "STARGATE_OPS") name = "OPS_AGENT"   # manifest key differs
-      if (!(name in value)) { order[++k] = name; value[name] = tag }
+      if (!(name in value)) { order[++k] = name; value[name] = tag; full[name] = ref }
     }
-    END { for (i = 1; i <= k; i++) printf "%s\t%s\n", order[i], value[order[i]] }
+    END { for (i = 1; i <= k; i++) printf "%s\t%s\t%s\n", order[i], value[order[i]], full[order[i]] }
   '
 }
 
@@ -135,13 +163,31 @@ if [ -n "${CI_PIPELINE_URL:-}" ]; then
 fi
 echo "### Service versions"
 echo
-echo "| Service | Version | Release |"
-echo "|---------|---------|---------|"
-while IFS=$'\t' read -r svc ver; do
+if [ -n "$SBOM_INDEX" ]; then
+  echo "| Service | Version | Release | Digest | Components | Licences | SBOM |"
+  echo "|---------|---------|---------|--------|------------|----------|------|"
+else
+  echo "| Service | Version | Release |"
+  echo "|---------|---------|---------|"
+fi
+while IFS=$'\t' read -r svc ver ref; do
   [ -n "$svc" ] || continue
-  printf '| %s | %s | %s |\n' "$svc" "$ver" "$(release_link "$svc" "$ver")"
+  printf '| %s | %s | %s |' "$svc" "$ver" "$(release_link "$svc" "$ver")"
+  [ -z "$SBOM_INDEX" ] || sbom_cells "$ref"
+  echo
 done < "$TMP_PROD"
 echo
+if [ -n "$SBOM_INDEX" ]; then
+  os_file="$(awk -F'\t' '$1 == "os" { print $4; exit }' "$SBOM_INDEX")"
+  if [ -n "$os_file" ] && [ -f "$SBOM_DIR/$os_file" ]; then
+    os_cells="$(sbom_summary "$SBOM_DIR/$os_file" "")"
+    printf 'Appliance OS: %s packages, licences %s (`%s`).\n\n' \
+      "$(printf '%s' "$os_cells" | cut -d'|' -f2 | tr -d ' ')" \
+      "$(printf '%s' "$os_cells" | cut -d'|' -f3- | sed 's/^ //')" "$os_file"
+  fi
+  echo "SBOMs are CycloneDX, one per image plus the appliance OS, generated with Trivy from the images this release ships. They are bundled in the \`.sbom.tar.gz\` asset below."
+  echo
+fi
 
 if [ -n "$PREV_TAG" ]; then
   TMP_PREV="$(mktemp)"
@@ -150,7 +196,7 @@ if [ -n "$PREV_TAG" ]; then
   echo
   seen=""
   changed=0
-  while IFS=$'\t' read -r svc ver; do
+  while IFS=$'\t' read -r svc ver _; do
     repo="$(service_repo "$svc")"; [ -n "$repo" ] || continue
     prev="$(awk -F'\t' -v k="$svc" '$1==k{print $2}' "$TMP_PREV")"
     [ "$ver" != "$prev" ] || continue
