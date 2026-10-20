@@ -36,8 +36,8 @@ variables:
 stages:
   - build
   - manifest
-  - release
   - trigger
+  - release
   - hin
 
 execute_script:
@@ -181,6 +181,8 @@ release_milestone:
     - linux
   # needs:
   #   - generate_manifest
+  needs:
+    - trigger_bootc_pipeline
   variables:
     GIT_DEPTH: 0
   rules:
@@ -188,15 +190,39 @@ release_milestone:
     - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG !~ /-(test|dev)/'
   script:
     - git fetch --tags --force --quiet origin || true
-    - .gitlab/generate-release-notes.sh "${CI_COMMIT_TAG}" > release-notes.md
-    - cat release-notes.md
+    - |
+      images_base="${IMAGES_BASE_URL:-https://images.vereign.io}"
+      if echo "$CI_COMMIT_TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then channel=stable; else channel=staging; fi
+      tag_re=$(printf '%s' "$CI_COMMIT_TAG" | sed 's/[.]/\\./g')
+      release_dir=$(curl -fsS "$images_base/$channel/" | grep -oE "href=\"[0-9]{12}-${tag_re}/\"" | sed -E 's/^href="//; s/\/"$//' | sort | tail -1 || true)
+      links='[]'
+      if [ -n "$release_dir" ]; then
+        release_url="$images_base/$channel/$release_dir"
+        files=$(curl -fsS "$release_url/" | grep -oE 'href="[^"?/][^"]*"' | sed -E 's/^href="//; s/"$//' | grep -v '/$' || true)
+        links=$(printf '%s\n' "$files" | jq -R -s --arg u "$release_url" '
+          split("\n") | map(select(length > 0)) | map({name: ., url: "\($u)/\(.)",
+            link_type: (if test("\\.(qcow2|raw|raw\\.gz|vhd|vhd\\.gz|vhdx|vmdk|ova)$") then "image" else "other" end)})')
+        sbom=$(printf '%s\n' "$files" | grep -E '\.sbom\.tar\.gz$' | head -1 || true)
+        if [ -n "$sbom" ] && curl -fsSO "$release_url/$sbom" \
+           && curl -fsS "$release_url/CHECKSUM" | grep -F "  $sbom" | sha256sum -c - \
+           && mkdir -p sbom && tar -xzf "$sbom" -C sbom; then
+          export SBOM_DIR="$PWD/sbom"
+        else
+          echo "WARNING: no verified SBOM bundle in $release_url - the release notes carry no SBOM columns"
+        fi
+      else
+        echo "WARNING: no image directory for $CI_COMMIT_TAG under $images_base/$channel/ - the release gets no asset links"
+      fi
+      .gitlab/generate-release-notes.sh "${CI_COMMIT_TAG}" > release-notes.md
+      cat release-notes.md
+      jq -n --arg tag "$CI_COMMIT_TAG" --rawfile desc release-notes.md --argjson links "$links" \
+        '{tag_name: $tag, name: $tag, description: $desc, assets: {links: $links}}' > release.json
     - |
       HTTP_STATUS=$(curl --silent --show-error --output response.json --write-out "%{http_code}" \
         --request POST \
         --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
-        --data-urlencode "tag_name=${CI_COMMIT_TAG}" \
-        --data-urlencode "name=${CI_COMMIT_TAG}" \
-        --data-urlencode "description@release-notes.md" \
+        --header "Content-Type: application/json" \
+        --data @release.json \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases")
       case "$HTTP_STATUS" in
         201) echo "Release ${CI_COMMIT_TAG} created." ;;
