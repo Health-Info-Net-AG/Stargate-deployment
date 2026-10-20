@@ -467,7 +467,7 @@ services:
 
   irisagent:
     # renovate: datasource=docker depName=healthinfonetag/irisagent
-    image: healthinfonetag/irisagent:v0.0.14
+    image: healthinfonetag/irisagent:v0.0.16
     container_name: stargate-irisagent
     restart: unless-stopped
     logging:
