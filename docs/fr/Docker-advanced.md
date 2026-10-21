@@ -77,65 +77,118 @@ cat /tmp/20260130_143022/database/mxengine.sql | docker exec -i stargate-postgre
 
 ## Mise à jour de Stargate
 
-### Mettre à jour les scripts de déploiement et la configuration
+La méthode de mise à jour dépend du type d'installation:
 
-Le dépôt de déploiement Stargate reçoit des mises à jour des scripts (`install.sh`, `start.sh`, `health-check.sh`, `restore.sh`, etc.), des modèles de configuration et de la documentation. Pour appliquer ces mises à jour:
+* **Appliance VM (image bootc)** - les images VM du HIN Gateway. L'ensemble du système d'exploitation, y compris Docker, les scripts de déploiement, `docker-compose.yml` et les versions figées des images de services, est livré sous la forme d'une seule image versionnée. La mise à jour consiste à basculer vers une image plus récente puis à redémarrer.
+* **Installation Compose simple** - un `git clone` de ce dépôt sur une machine que vous gérez vous-même. La mise à jour consiste à extraire un tag de version plus récent.
+
+### Appliance VM (bootc)
+
+Sur l'appliance, `/usr/share/stargate-deployment` fait partie de l'image système en lecture seule. Il n'y a pas de copie git à mettre à jour ou à réinitialiser; n'y exécutez donc ni `git` ni `update.sh --release`. Toutes les données - configuration, secrets, e-mails et bases de données - se trouvent sur le Data Disk sous `/var/data` et ne sont pas modifiées par une mise à jour.
+
+#### Mise à jour depuis le tableau de bord
+
+Utilisez la section `System version` de la page `Settings` du tableau de bord - voir [Mettre à jour HIN Gateway](update-hin-gateway.md) pour le guide pas à pas. Lorsque vous lancez le téléchargement, l'ops-agent:
+
+1. Crée une sauvegarde complète avec `backup.sh`, nommée `<version actuelle>-pre_update_to_<version cible>`, dans `/var/data/backups/`. Si la sauvegarde échoue, la mise à jour est annulée et rien n'est modifié. Seule exception: une sauvegarde dont la partie Vault est incomplète; la mise à jour continue et l'ops-agent journalise l'avertissement `pre-update backup is missing Vault secrets; continuing`.
+2. Télécharge et prépare l'image système cible (`bootc switch`). Le système en cours d'exécution n'est pas encore modifié.
+3. Active la nouvelle version au prochain redémarrage - immédiatement avec `Restart now`, ou au prochain redémarrage de la machine avec `Later`.
+
+#### Mise à jour en ligne de commande
+
+Connectez-vous à la VM en tant que `hinadmin` (`ssh hinadmin@<adresse IP de la VM>`) et utilisez les raccourcis fournis avec l'image:
+
+```bash
+hingateway-tags              # list the published versions
+hingateway-switch vX.Y.Z     # download and stage the target version
+sudo systemctl reboot        # boot into it
+hingateway-status            # confirm: Booted: vX.Y.Z, Rollback: <previous version>
+```
+
+!!! note
+    Contrairement au tableau de bord, `hingateway-switch` ne crée pas de sauvegarde au préalable. Exécutez `sudo /usr/share/stargate-deployment/docker-compose/scripts/backup.sh --label <version actuelle>-pre_update_to_vX.Y.Z` avant de basculer, afin que l'archive soit nommée comme celle créée par le tableau de bord. La version actuelle est celle que `hingateway-status` affiche comme démarrée.
+
+#### Retour arrière
+
+L'appliance conserve deux déploiements système sur le disque: celui en cours d'exécution et le précédent. Pour revenir au précédent, utilisez le bouton `Roll back` du tableau de bord (voir [Mettre à jour HIN Gateway](update-hin-gateway.md)) ou exécutez:
+
+```bash
+hingateway-rollback && sudo systemctl reboot
+```
+
+Le retour arrière ne nécessite aucun téléchargement. Pour revenir plus loin que la version précédente, basculez explicitement vers cette version avec `hingateway-switch <tag>`.
+
+!!! warning "Le retour arrière restaure l'image système, pas les données"
+    Un retour arrière remplace uniquement l'image système; les données sous `/var/data` restent telles que la version plus récente les a laissées. Si la version plus récente a modifié un schéma de base de données (par exemple la mise à niveau de Keycloak dans la 1.1.7), l'ancienne version ne peut pas fonctionner avec. Dans ce cas, effectuez le retour arrière de l'image système puis restaurez la sauvegarde créée avant la mise à jour - l'archive de `/var/data/backups/` dont le nom se termine par `pre_update_to_<version cible>.tar.gz` - avec `sudo /usr/share/stargate-deployment/docker-compose/scripts/restore.sh <archive>`. La sauvegarde nocturne supprime les archives de plus de 7 jours, celle-ci comprise; copiez-la donc hors de la VM si vous risquez d'en avoir besoin plus tard. La mise à jour de 0.6.x vers 1.1.7 fait exception: dans ce cas, l'instantané de la VM est le seul moyen de revenir en arrière (voir [Mettre à jour HIN Gateway](update-hin-gateway.md)).
+
+!!! danger "Pas de retour arrière au-delà de la première image avec Data Disk"
+    La première mise à niveau vers une image prenant en charge le Data Disk est irréversible. Une image plus ancienne sans prise en charge du Data Disk ne monte pas ce disque: la pile démarre avec un `/var/data` vide, tandis que vos données réelles restent intactes sur le disque non monté. Cela ressemble à une perte totale de données, mais n'en est pas une - une nouvelle mise à niveau vers la version récente remonte le disque.
+
+#### Ce qu'une mise à jour conserve
+
+`/etc` est fusionné avec la nouvelle image (les modifications locales sont prioritaires) et `/var` - y compris `/home`, les données Docker et les comptes utilisateurs - est conservé. Les paquets installés ponctuellement avec `rpm-ostree install` survivent aux redémarrages mais sont supprimés au prochain basculement; seul le contenu de l'image est permanent.
+
+### Installation Compose simple
+
+Cette section s'applique uniquement à un `git clone` de ce dépôt que vous gérez vous-même, pas à l'appliance VM. Exécutez toutes les commandes depuis le répertoire `docker-compose/` de votre copie. Les scripts lisent et écrivent des fichiers sous `/var/data/vereign/` que seul root peut lire; exécutez-les donc en tant que root ou avec `sudo`. La copie doit également appartenir à root (clonez-la en tant que root): lorsque les scripts s'exécutent en tant que root dans une copie appartenant à un autre utilisateur, git refuse de la lire et la version du déploiement s'affiche comme `unknown`. Si la copie appartient à un autre utilisateur, autorisez-la une fois avec `sudo git config --global --add safe.directory <path to the checkout>` et exécutez les commandes `git` ci-dessous en tant que cet utilisateur, sans `sudo`.
 
 #### 1. Créez une sauvegarde avant la mise à jour
 
 ```bash
-./scripts/backup.sh
+sudo ./scripts/backup.sh
 ```
 
-#### 2. Récupérez et appliquez les dernières modifications
+Copiez l'archive hors de la machine si vous risquez d'en avoir besoin plus tard: la sauvegarde nocturne supprime les archives de plus de 7 jours.
 
-Le dépôt est la source unique de vérité pour les fichiers suivis. Mettez donc à jour en réinitialisant sur la dernière révision. Cela remplace les fichiers suivis (scripts, `docker-compose.yml`, modèles de configuration) par les versions du dépôt:
+#### 2. Extrayez la version cible
+
+Le dépôt est la source unique de vérité pour les fichiers suivis. Mettez donc à jour en extrayant un tag de version. Cela remplace les fichiers suivis (scripts, `docker-compose.yml` avec les versions figées des images, modèles de configuration) par ceux de cette version:
 
 ```bash
-git fetch origin
-git reset --hard origin/main
+sudo git fetch --tags origin
+sudo git tag --sort=-creatordate | head    # most recent releases
+sudo git checkout -f vX.Y.Z
 ```
 
-#### 3. Redémarrez les services pour prendre en compte les modifications de scripts ou de configuration
+#### 3. Vérifiez les nouvelles variables de configuration
+
+Comparez les noms de variables du modèle de configuration de la version avec votre configuration existante pour voir si de nouvelles variables ont été ajoutées. Seuls les noms sont comparés, vos valeurs et identifiants ne sont donc pas affichés; les lignes commençant par `>` sont les nouvelles variables:
 
 ```bash
-./scripts/stop.sh
-./scripts/start.sh
+sudo -v    # enter the sudo password before the comparison starts
+diff <(sudo grep -oE '^[A-Za-z_][A-Za-z0-9_]*=' /var/data/vereign/customer-config.sh | sort) \
+     <(grep -oE '^[A-Za-z_][A-Za-z0-9_]*=' customer-config-prod.example.sh | sort)
 ```
+
+Faites-le avant l'étape suivante: `update.sh` ajoute chaque variable manquante à votre `customer-config.sh` avec la valeur par défaut du modèle, de sorte que les nouvelles variables n'apparaissent plus ensuite comme des différences. Définissez dès maintenant dans `customer-config.sh` toute nouvelle variable qui nécessite une valeur autre que celle par défaut.
+
+#### 4. Appliquez la version
+
+```bash
+sudo ./scripts/update.sh
+```
+
+`update.sh` régénère `.env` à partir de `customer-config.sh`, télécharge les images figées dans `docker-compose.yml` et recrée les services concernés. Sa sortie est ajoutée à `/var/data/vereign/update.log`, l'exécution la plus récente se trouvant à la fin.
+
+#### 5. Redémarrez la pile
+
+```bash
+sudo ./scripts/start.sh
+```
+
+`update.sh` recrée systématiquement Vault (et Dozzle, s'il est activé), mais ne recrée les autres services que si leur définition a changé. Un service dont le fichier de configuration a changé dans la version (par exemple la configuration de Caddy, APISIX ou Loki) peut donc continuer à fonctionner avec l'ancien fichier. `start.sh` recrée tous les conteneurs, de sorte que tous prennent en compte les nouveaux fichiers. La pile redémarre ainsi une seconde fois; planifiez donc la mise à jour dans une fenêtre de maintenance.
 
 !!! note
-    Votre `customer-config.sh`, `.env` et le répertoire `secrets/` sont dans `.gitignore`, donc cette opération n'y touche **pas** - votre configuration et vos identifiants sont préservés. Effectuez toujours vos personnalisations dans `customer-config.sh`, jamais en modifiant des fichiers suivis comme `docker-compose.yml`: une réinitialisation matérielle - et les mises à jour automatiques déclenchées depuis le tableau de bord - annulera toute modification des fichiers suivis. C'est intentionnel; le fait que chaque déploiement reste identique au dépôt est ce qui permet aux mises à jour de s'appliquer de manière fiable et sans résolution manuelle de conflits.
+    Votre `customer-config.sh`, `.env` et le répertoire `secrets/` se trouvent sous `/var/data/vereign/`, entièrement en dehors de la copie du dépôt, donc `git checkout -f` n'y touche jamais - votre configuration et vos identifiants sont préservés. Effectuez toujours vos personnalisations dans `customer-config.sh`, jamais en modifiant des fichiers suivis comme `docker-compose.yml`: la prochaine extraction annule toute modification des fichiers suivis. C'est intentionnel; le fait que chaque déploiement reste identique au dépôt est ce qui permet aux mises à jour de s'appliquer de manière fiable et sans résolution manuelle de conflits.
 
-Si la mise à jour inclut des modifications du modèle de configuration, comparez-le avec votre configuration existante pour voir si de nouvelles variables ont été ajoutées:
+Pour effectuer un retour arrière, extrayez le tag de la version précédente et exécutez à nouveau les étapes 4 et 5. Si la version plus récente a modifié un schéma de base de données, n'exécutez pas les étapes 4 et 5: après avoir extrait le tag précédent, restaurez plutôt la sauvegarde effectuée avant la mise à jour avec `sudo ./scripts/restore.sh <archive>` (voir [Restauration à partir d'une sauvegarde](#restauration-a-partir-dune-sauvegarde)). `restore.sh` arrête la pile, restaure les données et démarre les services de la version extraite.
 
-```bash
-diff customer-config.sh customer-config-prod.example.sh
-```
+`update.sh` supprime déjà les images inutilisées de plus de 24 heures. Pour libérer immédiatement de l'espace disque, exécutez `sudo docker image prune -af`.
 
-### Mettre à jour les images des services
+### Ne pas changer les versions à la main
 
-Les versions des applications sont gérées **exclusivement via le tableau de bord**. Chaque version est un *manifeste* versionné qui fige ensemble une combinaison connue et testée de toutes les versions de services; la page de mise à jour du tableau de bord liste les versions disponibles, et l'application de l'une d'elles récupère les images correspondantes et recrée les services concernés pour vous.
-
-Pour mettre à jour:
-
-1. Ouvrez le tableau de bord et accédez à la page de mise à jour.
-2. Sélectionnez la version cible.
-3. Confirmez - le tableau de bord applique le manifeste de version et recrée les services modifiés.
-
-!!! warning "Ne changez pas les versions à la main"
-    Ne modifiez pas les valeurs `*_VERSION` individuelles dans `customer-config.sh` ou `.env` pour mettre à jour les applications. Les versions sont publiées et testées ensemble en tant qu'ensemble - en choisir une à la main produit une combinaison non testée, et la modification serait de toute façon annulée par la prochaine mise à jour du tableau de bord. Mettez toujours à jour depuis le tableau de bord.
-
-#### Nettoyer les anciennes images
-
-Après les mises à jour, supprimez les images inutilisées pour libérer de l'espace disque:
-
-```bash
-docker image prune -f
-```
-
-#### Retour arrière
-
-Pour effectuer un retour arrière, sélectionnez une version antérieure sur la page de mise à jour du tableau de bord et appliquez-la - le même mécanisme s'exécute en sens inverse et fige l'ensemble testé précédent. N'effectuez pas de retour arrière en modifiant les versions à la main.
+!!! warning
+    Les versions des images sont figées dans `docker-compose.yml`, pas dans `customer-config.sh` ou `.env` - ceux-ci ne contiennent plus de valeurs `*_VERSION`. Ne modifiez pas un tag d'image à la main: les versions sont publiées et testées ensemble en tant qu'ensemble, et en choisir une à la main produit une combinaison non testée. Sur l'appliance VM, le fichier est de toute façon en lecture seule. Changez toujours de version comme décrit ci-dessus.
 
 ## Configuration
 

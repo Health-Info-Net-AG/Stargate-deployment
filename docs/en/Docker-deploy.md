@@ -318,7 +318,7 @@ The `start.sh` script (and the systemd service) automatically unseal Vault using
 | Script | Purpose |
 |--------|--------|
 | `install.sh` | First-time installation (Docker, Vault). Domain/cert/peer setup happens in the dashboard afterwards. |
-| `update.sh` | Update service images (preserves Vault token, recreates containers) |
+| `update.sh` | Regenerate `.env` from `customer-config.sh` (adding new template variables), pull the pinned images and recreate containers (preserves Vault token). On VM appliances, versions are changed from the dashboard instead - see [Update HIN Gateway](update-hin-gateway.md) |
 | `start.sh` | Start services and unseal Vault |
 | `stop.sh` | Stop containers (data preserved) |
 | `backup.sh` | Full backup (database, Vault keys, config, certificates); `--config-only` saves only `customer-config.sh` |

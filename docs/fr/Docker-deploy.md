@@ -317,7 +317,7 @@ Le script `start.sh` (et le service systemd) descellent automatiquement Vault en
 | Script | Objectif |
 |--------|--------|
 | `install.sh` | Première installation (Docker, Vault). La configuration du domaine/certificat/pair se fait ensuite dans le tableau de bord. |
-| `update.sh` | Mettre à jour les images des services (préserve le jeton Vault, recrée les conteneurs) |
+| `update.sh` | Régénérer `.env` à partir de `customer-config.sh` (en ajoutant les nouvelles variables du modèle), télécharger les images figées et recréer les conteneurs (préserve le jeton Vault). Sur les appliances VM, les versions se changent depuis le tableau de bord - voir [Mettre à jour HIN Gateway](update-hin-gateway.md) |
 | `start.sh` | Démarrer les services et desceller Vault |
 | `stop.sh` | Arrêter les conteneurs (données préservées) |
 | `backup.sh` | Sauvegarde complète (base de données, clés Vault, configuration, certificats) ; `--config-only` sauvegarde uniquement `customer-config.sh` |

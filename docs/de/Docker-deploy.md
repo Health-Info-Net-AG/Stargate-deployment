@@ -320,7 +320,7 @@ Das `start.sh`-Skript (und der Systemd-Dienst) entsiegeln Vault automatisch mit 
 | Skript | Zweck |
 |--------|--------|
 | `install.sh` | Erstinstallation (Docker, Vault). Domain-/Zertifikats-/Peer-Setup erfolgt anschließend im Dashboard. |
-| `update.sh` | Service-Images aktualisieren (Vault-Token bleibt erhalten, Container werden neu erstellt) |
+| `update.sh` | `.env` aus `customer-config.sh` neu erzeugen (neue Vorlagenvariablen werden ergänzt), die festgelegten Images herunterladen und Container neu erstellen (Vault-Token bleibt erhalten). Auf VM-Appliances werden Versionen stattdessen über das Dashboard gewechselt - siehe [HIN Gateway aktualisieren](update-hin-gateway.md) |
 | `start.sh` | Dienste starten und Vault entsiegeln |
 | `stop.sh` | Container anhalten (Daten bleiben erhalten) |
 | `backup.sh` | Vollständiges Backup (Datenbank, Vault-Schlüssel, Konfiguration, Zertifikate); `--config-only` sichert nur `customer-config.sh` |

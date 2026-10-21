@@ -317,7 +317,7 @@ Lo script `start.sh` (e il servizio systemd) scongelano automaticamente Vault ut
 | Script | Scopo |
 |--------|--------|
 | `install.sh` | Prima installazione (Docker, Vault). La configurazione di dominio/certificato/peer avviene successivamente nel dashboard. |
-| `update.sh` | Aggiornare le immagini dei servizi (preserva il token Vault, ricrea i container) |
+| `update.sh` | Rigenerare `.env` da `customer-config.sh` (aggiungendo le nuove variabili del modello), scaricare le immagini fissate e ricreare i container (preserva il token Vault). Sulle appliance VM le versioni si cambiano invece dalla dashboard - vedere [Aggiornare HIN Gateway](update-hin-gateway.md) |
 | `start.sh` | Avviare i servizi e scongelare Vault |
 | `stop.sh` | Arrestare i container (dati preservati) |
 | `backup.sh` | Backup completo (database, chiavi Vault, configurazione, certificati); `--config-only` salva solo `customer-config.sh` |

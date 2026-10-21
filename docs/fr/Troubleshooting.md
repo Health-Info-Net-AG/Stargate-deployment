@@ -12,7 +12,7 @@ Guide structuré pour diagnostiquer une appliance Stargate depuis la ligne de co
     ```
 
 !!! info "Où se trouvent les données modifiables"
-    L’arborescence `docker-compose/` ci-dessus (scripts, `docker-compose.yml`, modèles de configuration) est **en lecture seule à l’exécution**. Toutes les données modifiables se trouvent à la place sous **`/var/data`** : `.env`, `customer-config.sh`, `secrets/`, la configuration TLS, Keycloak et APISIX générée, les sauvegardes ainsi que les données propres à chaque service (`STARGATE_DATA_DIR` remplace cette racine à des fins de test). En particulier : la configuration et les secrets se trouvent sous `/var/data/vereign/`, les sauvegardes sous `/var/data/backups/` et le journal de mise à jour dans `/var/data/vereign/update.log`. Pour la description complète, voir [Configuration avancée Docker](Docker-advanced.md). Utilisez de préférence les scripts d’encapsulation (`./scripts/start.sh`, `./scripts/update.sh`, ...) plutôt qu’un simple `docker compose up -d`, qui ne prend pas en compte `/var/data/vereign/.env` de lui-même.
+    L’arborescence `docker-compose/` ci-dessus (scripts, `docker-compose.yml`, modèles de configuration) est **en lecture seule à l’exécution**. Toutes les données modifiables se trouvent à la place sous **`/var/data`** : `.env`, `customer-config.sh`, `secrets/`, la configuration TLS, Keycloak et APISIX générée, les sauvegardes ainsi que les données propres à chaque service (`STARGATE_DATA_DIR` remplace cette racine à des fins de test). En particulier : la configuration et les secrets se trouvent sous `/var/data/vereign/` et les sauvegardes sous `/var/data/backups/`. Pour la description complète, voir [Configuration avancée Docker](Docker-advanced.md). Utilisez de préférence les scripts d’encapsulation (`./scripts/start.sh`, `./scripts/stop.sh`, ...) plutôt qu’un simple `docker compose up -d`, qui ne prend pas en compte `/var/data/vereign/.env` de lui-même.
 
 ---
 
@@ -44,7 +44,8 @@ Elle indique un résultat réussi ou en échec pour : les **conteneurs** (en c
 | Niveau | Commande | Ce qui est affiché |
 | ------- | --------- | --------------- |
 | Démarrage / première installation / démarrage automatique | `sudo journalctl -u stargate -n 200 --no-pager` | Le service systemd qui exécute `start.sh` au démarrage, ainsi que l’installation au premier démarrage |
-| Exécutions de mise à jour | `cat /var/data/vereign/update.log` | Sortie du dernier `update.sh` déclenché depuis le tableau de bord ou l’hôte |
+| Mises à jour (appliance VM) | `hingateway-status`, `docker logs stargate-ops-agent --tail 100` et `journalctl -u greenboot-healthcheck` | Versions système démarrée, préparée et de retour arrière ; sauvegarde, téléchargement et erreurs d’une mise à jour (uniquement jusqu’au prochain redémarrage) ; résultat du contrôle de santé au démarrage |
+| Exécutions de `update.sh` | `cat /var/data/vereign/update.log` | Sortie de toutes les exécutions de `update.sh`, la plus récente à la fin : mises à jour des installations Compose simples, mises à jour depuis le tableau de bord sur les anciennes VM avant bootc et exécutions après une modification de `customer-config.sh` |
 | Un seul service | `docker logs stargate-<service> --tail 100` | p. ex. `stargate-dashboard`, `stargate-mxengine`, `stargate-keycloak` |
 | Suivre un service en direct | `docker logs -f stargate-mxengine` | Temps réel |
 | Tous les conteneurs en direct | `docker ps -a --format '{{.Names}}' \| xargs -I{} sh -c 'docker logs --timestamps -f {} 2>&1 \| sed "s/^/[{}] /"'` | Journaux fusionnés, préfixés par le nom du conteneur |
@@ -152,30 +153,62 @@ docker logs stargate-postgres --tail 50
 
 ### Échec d’une mise à jour
 
+Sur l’appliance VM, une mise à jour lancée depuis le tableau de bord est exécutée par l’ops-agent en trois phases : une **sauvegarde** (`backup.sh`), le **téléchargement** de l’image système cible (`bootc switch`) et le **redémarrage** sur cette image. Commencez par :
+
 ```bash
-docker logs stargate-ops-agent --tail 40      # the update orchestrator
-cat /var/data/vereign/update.log              # the update script output
+docker logs stargate-ops-agent --tail 100     # the update orchestrator: backup, download, errors
+hingateway-status                             # booted, staged and rollback OS versions
 ```
 
-- L’ops-agent extrait le tag de la version cible (dont le `docker-compose.yml` fixe les versions des images), puis exécute `update.sh` sur l’hôte.
-- Une fois l’opération terminée, vérifiez que les versions ont été appliquées : `/usr/share/stargate-deployment/docker-compose/scripts/gather-app-versions.sh` (ou consultez les tags d’image dans `docker compose ps`).
-- Si un service reste bloqué après une mise à jour, recréez-le avec `docker compose up -d <service>`.
+Le conteneur de l’ops-agent est recréé à chaque démarrage ; son journal ne couvre donc une mise à jour que jusqu’au redémarrage de la VM. Après un redémarrage, utilisez plutôt `hingateway-status` et `journalctl -u greenboot-healthcheck`.
+
+- **Échec pendant la sauvegarde.** L’ops-agent annule la mise à jour lorsque la sauvegarde préalable échoue ; rien n’a donc été modifié. Vérifiez l’erreur dans le journal de l’ops-agent et l’espace libre sur le Data Disk (`df -h /var/data`), puis relancez la mise à jour.
+- **Échec pendant le téléchargement.** L’état de la mise à jour dans le tableau de bord affiche l’erreur sous la forme `bootc switch: ...` ; le journal de l’ops-agent n’enregistre que `os select failed` avec le code de sortie. En général, la VM ne peut pas joindre le registre d’images (vérifiez l’accès Internet sortant et le DNS) ou le disque système est plein (`df -h /sysroot`). La version en cours d’exécution n’est pas affectée ; relancez la mise à jour une fois la cause corrigée.
+- **Téléchargée, mais la version n’a pas changé.** La nouvelle version n’est activée que par un redémarrage. Si vous avez choisi `Later`, redémarrez la VM (`sudo systemctl reboot`) et vérifiez à nouveau `hingateway-status`. Si la VM a bien redémarré et affiche toujours l’ancienne version comme démarrée, elle est revenue automatiquement en arrière - voir le point suivant.
+- **Retour arrière automatique après un démarrage en échec.** Après le démarrage d’une nouvelle version, des contrôles de santé s’exécutent - entre autres, si Docker fonctionne, si le Data Disk est monté et si la pile Stargate est en bon état, ainsi que les contrôles par défaut du système d’exploitation. Si un contrôle obligatoire échoue, le démarrage est marqué RED et la VM redémarre d’elle-même sur la version précédente. `journalctl -u greenboot-healthcheck` indique quel contrôle a échoué. Corrigez la cause avant de relancer la mise à jour ; un simple redémarrage répète le même retour arrière. Si la nouvelle version avait déjà modifié un schéma de base de données, ou si la mise à jour en échec était la première mise à niveau vers une image prenant en charge le Data Disk (la pile affiche alors un `/var/data` vide, mais vos données sont intactes), lisez les [avertissements sur le retour arrière](Docker-advanced.md#retour-arriere) avant toute autre action.
+- **La nouvelle version démarre mais ne fonctionne pas correctement.** Vérifiez le contrôle de santé au démarrage avec `journalctl -u greenboot-healthcheck` et la pile avec `/usr/share/stargate-deployment/docker-compose/scripts/health-check.sh -v`. Pour revenir à la version précédente, utilisez `Roll back` dans le tableau de bord ou exécutez `hingateway-rollback && sudo systemctl reboot` - lisez d’abord les [avertissements sur le retour arrière](Docker-advanced.md#retour-arriere).
+- Après une mise à jour réussie, vérifiez que les versions ont été appliquées : `/usr/share/stargate-deployment/docker-compose/scripts/gather-app-versions.sh` (ou les tags d’image dans `docker compose ps`).
+- Si un service reste bloqué après une mise à jour, recréez uniquement ce service : `cd /usr/share/stargate-deployment/docker-compose && sudo docker compose --env-file /var/data/vereign/.env up -d --no-deps --force-recreate <service>`. `sudo` est nécessaire car seul root peut lire `.env`, et `--no-deps` empêche Compose de recréer aussi les dépendances du service, comme Vault, qui redémarrerait scellé. Si `/var/data/vereign/docker-compose.override.yml` (ou `.yaml`) existe, ajoutez `-f docker-compose.yml -f <fichier override>` après `--env-file /var/data/vereign/.env` pour que l’override reste appliqué. Les services qui appartiennent à un profil en ont également besoin : ajoutez `--profile dozzle` pour `dozzle` et `oauth2-proxy`, `--profile keri-idagent` pour `idagent` et `--profile keri-watcher` pour `watcher`.
+
+Sur une installation Compose simple (un `git clone` que vous gérez vous-même), il n’y a pas de mise à jour via l’ops-agent : vous exécutez `update.sh` vous-même, et sa sortie est ajoutée à `/var/data/vereign/update.log`, l’exécution la plus récente se trouvant à la fin. Les étapes de mise à jour sont décrites dans [Installation Compose simple](Docker-advanced.md#installation-compose-simple).
+
+!!! warning
+    N’essayez pas de réparer une mise à jour sur l’appliance VM avec `git` ou `update.sh --release`. `/usr/share/stargate-deployment` fait partie de l’image système en lecture seule et il n’existe aucune copie du dépôt à réinitialiser ; les versions ne changent qu’en basculant d’image système.
+
+#### VM plus anciennes (avant l’image bootc)
+
+Les VM installées à partir d’une image antérieure à l’appliance bootc ont une copie git sous `/usr/share/stargate-deployment` au lieu d’une image système en lecture seule. Les étapes ci-dessus pour l’appliance VM ne s’appliquent pas à elles. À terme, migrez-les vers une appliance bootc comme décrit dans le guide en anglais « Migrating a Compose Deployment to a bootc Appliance ». En attendant, ce qui suit s’applique uniquement à ces anciennes VM. Sur celles-ci, l’ops-agent exécute `update.sh`, dont la sortie est ajoutée à `/var/data/vereign/update.log` (l’exécution la plus récente à la fin) - consultez ce fichier en premier lorsqu’une mise à jour échoue.
 
 **La mise à jour démarre, mais rien ne se passe (mise à jour depuis une version antérieure).** Si le journal de l’ops-agent s’arrête à `pulling deployment repo ...` et que la mise à jour n’avance plus, le dépôt sur la VM contient très probablement des **modifications locales sur un fichier suivi** (le plus souvent un `docker-compose.yml` modifié à la main). Le `git checkout` de l’ops-agent refuse alors de s’exécuter et la mise à jour reste bloquée. Réinitialisez de force le dépôt sur la dernière révision, puis relancez la mise à jour. Git est la source unique de vérité ; cette opération n’annule que les modifications locales apportées aux fichiers **suivis**. `customer-config.sh`, `.env` et `secrets/` se trouvent sous `/var/data/vereign/`, en dehors de la copie du dépôt, et sont toujours préservés :
 
 ```bash
 cd /usr/share/stargate-deployment
-git fetch origin
-git checkout -f main
-git reset --hard origin/main
+sudo git fetch origin
+sudo git checkout -f main
+sudo git reset --hard origin/main
 cd docker-compose
-/usr/share/stargate-deployment/docker-compose/scripts/update.sh
+sudo /usr/share/stargate-deployment/docker-compose/scripts/update.sh
 ```
 
-`update.sh` régénère `.env`, télécharge les images et recrée les services concernés : vous n’avez **pas** besoin de redémarrer Stargate manuellement. Une fois l’opération terminée, relancez la mise à jour depuis le tableau de bord ; elle se déroulera alors normalement.
+`update.sh` régénère `.env`, télécharge les images et recrée les services concernés. Si la version a modifié des fichiers de configuration, exécutez ensuite `sudo /usr/share/stargate-deployment/docker-compose/scripts/start.sh` pour que tous les conteneurs prennent en compte les nouveaux fichiers. Une fois l’opération terminée, relancez la mise à jour depuis le tableau de bord ; elle se déroulera alors normalement.
 
 !!! warning
     N’utilisez pas `git pull` ici. Sur une copie de travail comportant des modifications locales, cette commande s’interrompt avec le message « local changes would be overwritten », ce qui oblige à passer par un `git stash`, un conflit de fusion ou une récupération manuelle. La séquence `git checkout -f` + `git reset --hard` ci-dessus évite entièrement ce détour : c’est la méthode sûre et reproductible pour mettre le dépôt à jour.
+
+#### VM en v0.5.1
+
+Les étapes suivantes mettent à jour une VM de la version v0.5.1 vers la version v0.5.3. En v0.5.x, `.env`, `customer-config.sh` et `secrets/` se trouvent dans la copie, sous `/usr/share/stargate-deployment/docker-compose/`, et non sous `/var/data/vereign/`. Connectez-vous à la VM avec le compte administrateur Linux.
+
+1. Modifiez `/usr/share/stargate-deployment/docker-compose/.env` et définissez la version de l’ops-agent sur v0.0.3.
+2. Modifiez `/usr/share/stargate-deployment/docker-compose/customer-config.sh` et définissez-y également la version de l’ops-agent sur v0.0.3.
+3. Récupérez les tags de version : `cd /usr/share/stargate-deployment && sudo git fetch --tags origin`
+4. Extrayez la version cible : `sudo git checkout v0.5.3`. N’extrayez pas `main` : cette branche contient les scripts actuels, qui attendent la nouvelle organisation sous `/var/data`.
+5. Mettez à jour le conteneur ops-agent : `cd docker-compose && sudo docker compose up -d ops-agent`
+6. Connectez-vous au tableau de bord.
+7. Ouvrez Settings.
+8. Dans la section Update, en bas de la page, saisissez la version cible (v0.5.3) et lancez la mise à jour.
+
+Migrez ensuite la VM vers une appliance bootc comme décrit dans le guide en anglais « Migrating a Compose Deployment to a bootc Appliance ».
 
 ### Dozzle (visualiseur de journaux) inaccessible
 
@@ -324,22 +357,6 @@ Si le contrôle d’état signale toujours des échecs après les étapes ci-des
 - Le lien vers le **lot de journaux** généré par `/usr/share/stargate-deployment/docker-compose/scripts/send-logs-to-support.sh` (voir [Fournir les journaux au support](Docker-advanced.md#fournir-les-logs-au-support)).
 - Ce que vous faisiez au moment de la panne, ainsi que d’éventuelles captures d’écran.
 
-## Mettre à jour une instance Verimesh
-
-Les instructions suivantes décrivent la mise à jour d’une instance Verimesh de la version v0.5.1 vers la version v0.5.3.
-
-*Remarque :* vous devez vous connecter à la VM avec le compte administrateur Linux.
-
-### Étapes de mise à jour
-
-1. Modifiez le fichier `.env` et définissez la version de l’ops-agent sur v0.0.3.
-2. Modifiez la configuration client et définissez-y également la version de l’ops-agent sur v0.0.3.
-3. Passez sur la branche main : `git checkout main`
-4. Récupérez les dernières modifications : `git pull`
-5. Mettez à jour le conteneur ops-agent : `docker compose up -d ops-agent`
-6. Connectez-vous au tableau de bord.
-7. Ouvrez Settings.
-8. Dans la section Update, en bas de la page, saisissez la version cible (v0.5.3) et lancez la mise à jour.
 
 ## Configurer Keycloak après la mise à jour
 
