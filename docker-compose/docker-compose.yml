@@ -256,6 +256,40 @@ services:
     networks:
       - stargate-network
 
+  keycloak-sync:
+    # renovate: datasource=docker depName=quay.io/keycloak/keycloak
+    image: quay.io/keycloak/keycloak:26.8.0
+    container_name: stargate-keycloak-sync
+    user: "0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"
+      KC_DB_USERNAME: ${POSTGRES_USER:-postgres}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HOSTNAME: "${KEYCLOAK_PUBLIC_URL:-https://localhost:8180}"
+      KC_HOSTNAME_STRICT: "false"
+      LIQUIBASE_ANALYTICS_ENABLED: "false"
+      JAVA_OPTS_APPEND: "-Dliquibase.analytics.enabled=false"
+      DASHBOARD_PUBLIC_URL: "${DASHBOARD_PUBLIC_URL:-}"
+      DOZZLE_PUBLIC_URL: "${DOZZLE_PUBLIC_URL:-}"
+    mem_limit: 1024m
+    volumes:
+      - ./scripts:/scripts:ro
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/secrets:/secrets
+    entrypoint: ["/bin/bash", "/scripts/sync-keycloak-clients.sh"]
+    networks:
+      - stargate-network
+
   # Generates /config/apisix/generated/apisix.yaml from the template by
   # substituting KEYCLOAK_APISIX_CLIENT_SECRET with envsubst.
   apisix-init:
