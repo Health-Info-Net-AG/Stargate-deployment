@@ -223,35 +223,7 @@ if [ ! -f "$KEYS_FILE" ]; then
   exit 1
 fi
 
-# Load customer config (validates required fields, derives defaults)
-load_customer_config
-
-# Sync new variables from the example template into customer-config.sh
-# (append-only - never overwrites existing values)
-EXAMPLE_FILE="$(detect_example_file "$PROJECT_DIR" "$CONFIG_FILE")"
-sync_customer_config "$EXAMPLE_FILE" "$CONFIG_FILE"
-
-# Re-load config: sync_customer_config may have appended new variables from
-# the template; load_customer_config re-sources the file AND re-derives
-# defaults (e.g. KEYCLOAK_PUBLIC_URL from SERVER_STATIC_IP). A bare
-# `source "$CONFIG_FILE"` would overwrite those derived values with the
-# empty strings still in customer-config.sh.
-load_customer_config
-
-# Regenerate .env
-generate_env_file
-
-# generate_env_file drops the tokens; restore the provisioned ones at once so an
-# --env-only run or a failed pull below does not leave .env without them.
-if [ -f "$SERVICE_TOKENS_FILE" ]; then
-  sync_service_tokens_to_env
-fi
-
-purge_root_token_from_config
-
-# Re-assert permissions on the rendered realm file (older installs left it 0644
-# with live client secrets). Mode only -- the file is not re-rendered here.
-secure_keycloak_realm
+regenerate_env_file
 
 if [ "$ENV_ONLY" = true ]; then
   echo "Done. .env updated (--env-only, services not restarted)."

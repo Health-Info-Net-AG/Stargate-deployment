@@ -139,7 +139,7 @@ Per eseguire un rollback, selezionare una release precedente nella pagina di agg
 
 ## Configurazione
 
-Il file `.env` viene generato da `install.sh` da `customer-config.sh`. Le impostazioni di dominio, certificato e WireGuard sono gestite in fase di esecuzione dal dashboard (`/installation`, `/onboarding`, `/mail`) — non sono conservate in `.env`. Per personalizzare le impostazioni di installazione, modificare `customer-config.sh` e rieseguire `install.sh`.
+Il file `.env` viene generato da `install.sh` da `customer-config.sh`. Le impostazioni di dominio, certificato e WireGuard sono gestite in fase di esecuzione dal dashboard (`/installation`, `/onboarding`, `/mail`) — non sono conservate in `.env`. Per personalizzare le impostazioni di installazione, modificare `customer-config.sh` e riavviare lo stack (`systemctl restart stargate`); ogni avvio rigenera `.env` a partire da questo file.
 
 Sezioni chiave nel `.env` generato:
 
