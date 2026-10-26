@@ -192,7 +192,7 @@ Pour effectuer un retour arrière, extrayez le tag de la version précédente et
 
 ## Configuration
 
-Le fichier `.env` est généré par `install.sh` à partir de `customer-config.sh`. Les paramètres de domaine, de certificat et de WireGuard sont gérés à l'exécution par le tableau de bord (`/installation`, `/onboarding`, `/mail`) — ils ne sont pas conservés dans `.env`. Pour personnaliser les paramètres d'installation, modifiez `customer-config.sh` et réexécutez `install.sh`.
+Le fichier `.env` est généré par `install.sh` à partir de `customer-config.sh`. Les paramètres de domaine, de certificat et de WireGuard sont gérés à l'exécution par le tableau de bord (`/installation`, `/onboarding`, `/mail`) — ils ne sont pas conservés dans `.env`. Pour personnaliser les paramètres d'installation, modifiez `customer-config.sh` et redémarrez la pile (`systemctl restart stargate`) ; chaque démarrage régénère `.env` à partir de ce fichier.
 
 Sections clés dans le `.env` généré:
 

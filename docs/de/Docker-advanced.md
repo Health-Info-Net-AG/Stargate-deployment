@@ -192,7 +192,7 @@ Für ein Rollback checken Sie den vorherigen Release-Tag aus und führen die Sch
 
 ## Konfiguration
 
-Die `.env`-Datei wird von `install.sh` aus `customer-config.sh` generiert. Domain-, Zertifikats- und WireGuard-Einstellungen werden zur Laufzeit über das Dashboard (`/installation`, `/onboarding`, `/mail`) verwaltet – sie werden nicht in `.env` gespeichert. Um die Installationszeiteinstellungen anzupassen, bearbeiten Sie `customer-config.sh` und führen Sie `install.sh` erneut aus.
+Die `.env`-Datei wird von `install.sh` aus `customer-config.sh` generiert. Domain-, Zertifikats- und WireGuard-Einstellungen werden zur Laufzeit über das Dashboard (`/installation`, `/onboarding`, `/mail`) verwaltet – sie werden nicht in `.env` gespeichert. Um die Installationszeiteinstellungen anzupassen, bearbeiten Sie `customer-config.sh` und starten Sie den Stack neu (`systemctl restart stargate`); jeder Start erzeugt `.env` daraus neu.
 
 Wichtige Abschnitte in der generierten `.env`:
 
