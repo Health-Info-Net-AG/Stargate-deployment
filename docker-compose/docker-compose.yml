@@ -258,7 +258,7 @@ services:
 
   keycloak-sync:
     # renovate: datasource=docker depName=quay.io/keycloak/keycloak
-    image: quay.io/keycloak/keycloak:26.8.0
+    image: quay.io/keycloak/keycloak:26.8.1
     container_name: stargate-keycloak-sync
     user: "0"
     logging:
@@ -874,7 +874,7 @@ services:
 
   dashboard:
     # renovate: datasource=docker depName=healthinfonetag/dashboard
-    image: healthinfonetag/dashboard:v0.0.140
+    image: healthinfonetag/dashboard:v0.0.158
     container_name: stargate-dashboard
     restart: unless-stopped
     logging:
