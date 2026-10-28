@@ -47,6 +47,10 @@ if ! STARGATE_SOURCE_ONLY=1 bash -c 'set -eo pipefail; source "$1/install.sh"; r
   echo "WARNING: could not regenerate $ENV_FILE from $CONFIG_FILE - starting with the existing one." >&2
 fi
 
+if ! STARGATE_SOURCE_ONLY=1 bash -c 'set -eo pipefail; source "$1/install.sh"; load_customer_config > /dev/null; generate_tls_cert' _ "$SCRIPT_DIR"; then
+  echo "WARNING: could not refresh the TLS certificate in $TLS_DIR - starting with the existing one." >&2
+fi
+
 # Recreate every container, all profiles included, before Vault is unsealed. After a
 # network config change compose otherwise keeps stale network IDs and drops DNS aliases.
 compose --profile '*' up --no-start --force-recreate

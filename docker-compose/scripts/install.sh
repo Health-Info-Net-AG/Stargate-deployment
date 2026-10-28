@@ -393,32 +393,62 @@ EOF
   echo ""
 }
 
+tls_cert_is_stale() {
+  local crt="$1" host="$2" subject issuer san entry
+  [ -n "$host" ] || return 1
+  subject=$(openssl x509 -in "$crt" -noout -subject -nameopt RFC2253 2>/dev/null) || return 1
+  issuer=$(openssl x509 -in "$crt" -noout -issuer -nameopt RFC2253 2>/dev/null) || return 1
+  subject="${subject#subject=}"
+  [ "$subject" = "${issuer#issuer=}" ] || return 1
+  case ",$subject," in
+    *",O=Stargate,"*) ;;
+    *) return 1 ;;
+  esac
+  san=$(openssl x509 -in "$crt" -noout -ext subjectAltName 2>/dev/null) || return 1
+  while IFS= read -r entry; do
+    entry="${entry#"${entry%%[![:space:]]*}"}"
+    case "$entry" in
+      "IP Address:$host" | "DNS:$host") return 1 ;;
+    esac
+  done <<< "${san//,/$'\n'}"
+  return 0
+}
+
 # Generate a self-signed TLS certificate for the Caddy proxy.
 # The cert is written to config/caddy/ssl/ and mounted read-only into the
-# caddy container.  Skipped on re-runs when the cert already exists.
+# caddy container.  Skipped on re-runs when the cert already exists, unless it is
+# our own self-signed cert and no longer covers the current server address.
 #
 # A subjectAltName matching the server IP (or hostname) is required — modern
 # browsers ignore the CN and reject certs that only have a CN with no SAN,
 # showing NET::ERR_CERT_COMMON_NAME_INVALID instead of the bypassable
 # NET::ERR_CERT_AUTHORITY_INVALID.
 generate_tls_cert() {
+  local ssl_dir="$TLS_DIR"
+  mkdir -p "$ssl_dir"
+
+  # Extract hostname/IP from KEYCLOAK_PUBLIC_URL (strip scheme and port)
+  local kc_host
+  kc_host=$(echo "$KEYCLOAK_PUBLIC_URL" | sed 's|https\?://||' | cut -d: -f1 | cut -d/ -f1)
+
+  local replacing=""
+  if [ -f "$ssl_dir/server.crt" ] && [ -f "$ssl_dir/server.key" ]; then
+    if ! tls_cert_is_stale "$ssl_dir/server.crt" "$kc_host"; then
+      echo "TLS certificate already exists, skipping generation."
+      echo ""
+      return
+    fi
+    replacing=1
+  fi
+
   echo "============================================"
   echo "  Generating TLS Certificate"
   echo "============================================"
   echo ""
 
-  local ssl_dir="$TLS_DIR"
-  mkdir -p "$ssl_dir"
-
-  if [ -f "$ssl_dir/server.crt" ] && [ -f "$ssl_dir/server.key" ]; then
-    echo "TLS certificate already exists, skipping generation."
-    echo ""
-    return
+  if [ -n "$replacing" ]; then
+    echo "The existing self-signed certificate does not cover $kc_host, replacing it."
   fi
-
-  # Extract hostname/IP from KEYCLOAK_PUBLIC_URL (strip scheme and port)
-  local kc_host
-  kc_host=$(echo "$KEYCLOAK_PUBLIC_URL" | sed 's|https\?://||' | cut -d: -f1 | cut -d/ -f1)
 
   # Use IP: prefix for bare IP addresses, DNS: for hostnames.
   local san
@@ -428,13 +458,19 @@ generate_tls_cert() {
     san="DNS:${kc_host},DNS:localhost"
   fi
 
-  openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
-    -keyout "$ssl_dir/server.key" \
-    -out    "$ssl_dir/server.crt" \
-    -subj   "/CN=${kc_host}/O=Stargate" \
-    -addext "subjectAltName=${san}" 2>/dev/null
+  (
+    umask 077
+    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+      -keyout "$ssl_dir/server.key.new" \
+      -out    "$ssl_dir/server.crt.new" \
+      -subj   "/CN=${kc_host}/O=Stargate" \
+      -addext "subjectAltName=${san}" 2>/dev/null
+  )
 
-  chmod 600 "$ssl_dir/server.key"
+  chmod 600 "$ssl_dir/server.key.new"
+  chmod 644 "$ssl_dir/server.crt.new"
+  mv -f "$ssl_dir/server.key.new" "$ssl_dir/server.key"
+  mv -f "$ssl_dir/server.crt.new" "$ssl_dir/server.crt"
   echo "TLS certificate generated: $ssl_dir/server.crt"
   echo "  CN: $kc_host  |  SAN: $san  |  Valid: 10 years"
   echo ""
