@@ -9,6 +9,7 @@ KEYS_FILE="$SECRETS_DIR/vault-keys.json"
 . "$SCRIPT_DIR/lib/env.sh"
 . "$SCRIPT_DIR/lib/vault-tokens.sh"
 . "$SCRIPT_DIR/lib/network.sh"
+. "$SCRIPT_DIR/lib/keycloak-sync.sh"
 
 cd "$PROJECT_DIR"
 
@@ -113,6 +114,13 @@ if ! ensure_service_tokens; then
   echo "WARNING: could not provision per-service Vault tokens." >&2
   echo "  Vault-backed services will fail to start until this is resolved." >&2
   echo "  Check: docker compose logs vault-init" >&2
+fi
+
+echo ""
+echo "Checking the Keycloak client sync account..."
+if ! ensure_keycloak_sync_client; then
+  echo "WARNING: could not provision the Keycloak client $KEYCLOAK_SYNC_CLIENT_ID." >&2
+  echo "  Keycloak redirect URIs will not follow address changes until this is resolved." >&2
 fi
 
 # Start application services

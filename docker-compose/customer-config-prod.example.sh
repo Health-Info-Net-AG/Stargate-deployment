@@ -148,6 +148,7 @@ KEYCLOAK_ADMIN_PASSWORD=""  # Auto-generated if empty
 KEYCLOAK_APISIX_CLIENT_SECRET=""    # Auto-generated if empty
 KEYCLOAK_DASHBOARD_CLIENT_SECRET="" # Auto-generated if empty
 KEYCLOAK_DOZZLE_CLIENT_SECRET=""    # Auto-generated if empty (Dozzle login via oauth2-proxy)
+KEYCLOAK_SYNC_CLIENT_SECRET=""      # Auto-generated if empty (stargate-sync, keeps Keycloak redirect URIs in line with the server address)
 OAUTH2_PROXY_COOKIE_SECRET=""       # Auto-generated if empty (oauth2-proxy session cookie)
 
 # Initial password for the sg-admin gateway login in the "stargate" realm.

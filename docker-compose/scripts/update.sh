@@ -50,6 +50,7 @@ STARGATE_SOURCE_ONLY=1 source "$SCRIPT_DIR/install.sh"
 . "$SCRIPT_DIR/lib/env.sh"
 . "$SCRIPT_DIR/lib/config-sync.sh"
 . "$SCRIPT_DIR/lib/manifest.sh"
+. "$SCRIPT_DIR/lib/keycloak-sync.sh"
 
 # Parse arguments. ENV_ONLY defaults from STARGATE_UPDATE_ENV_ONLY so that
 # `--release <tag> --env-only` survives the flag-less re-exec below: without
@@ -278,6 +279,17 @@ echo "=== Provisioning per-service Vault tokens ==="
 if ! ensure_service_tokens; then
   echo "ERROR: could not provision per-service Vault tokens; services not recreated." >&2
   exit 1
+fi
+
+echo ""
+echo "=== Checking the Keycloak client sync account ==="
+compose up -d postgres
+if ! keycloak_sync_client_ready; then
+  compose stop keycloak
+  if ! ensure_keycloak_sync_client; then
+    echo "WARNING: could not provision the Keycloak client $KEYCLOAK_SYNC_CLIENT_ID." >&2
+    echo "  Keycloak redirect URIs will not follow address changes until this is resolved." >&2
+  fi
 fi
 
 echo ""

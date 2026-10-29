@@ -1,4 +1,19 @@
 # Docker Compose configuration for Stargate Alpha environment
+x-keycloak-environment: &keycloak-environment
+  KC_DB: postgres
+  KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"
+  KC_DB_USERNAME: ${POSTGRES_USER:-postgres}
+  KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+  KC_HTTP_ENABLED: "true"
+  KC_PROXY_HEADERS: xforwarded
+  KC_HOSTNAME: "${KEYCLOAK_PUBLIC_URL:-https://localhost:8180}"
+  KC_HOSTNAME_STRICT: "false"
+  KC_HEALTH_ENABLED: "true"
+  KC_METRICS_ENABLED: "true"
+  # Disable Liquibase's analytics phone-home to config.liquibase.com / config-endpoint.liquibase.com
+  LIQUIBASE_ANALYTICS_ENABLED: "false"
+  JAVA_OPTS_APPEND: "-Dliquibase.analytics.enabled=false"
+
 services:
   # ===================
   # Infrastructure
@@ -200,21 +215,9 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      KC_DB: postgres
-      KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"
-      KC_DB_USERNAME: ${POSTGRES_USER:-postgres}
-      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      KC_HTTP_ENABLED: "true"
-      KC_PROXY_HEADERS: xforwarded
-      KC_HOSTNAME: "${KEYCLOAK_PUBLIC_URL:-https://localhost:8180}"
-      KC_HOSTNAME_STRICT: "false"
-      KC_HEALTH_ENABLED: "true"
-      KC_METRICS_ENABLED: "true"
+      <<: *keycloak-environment
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER:-admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
-      # Disable Liquibase's analytics phone-home to config.liquibase.com / config-endpoint.liquibase.com
-      LIQUIBASE_ANALYTICS_ENABLED: "false"
-      JAVA_OPTS_APPEND: "-Dliquibase.analytics.enabled=false"
     mem_limit: 1024m
     command:
       - start
@@ -270,22 +273,14 @@ services:
       keycloak:
         condition: service_healthy
     environment:
-      KC_DB: postgres
-      KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"
-      KC_DB_USERNAME: ${POSTGRES_USER:-postgres}
-      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      KC_HTTP_ENABLED: "true"
-      KC_PROXY_HEADERS: xforwarded
-      KC_HOSTNAME: "${KEYCLOAK_PUBLIC_URL:-https://localhost:8180}"
-      KC_HOSTNAME_STRICT: "false"
-      LIQUIBASE_ANALYTICS_ENABLED: "false"
-      JAVA_OPTS_APPEND: "-Dliquibase.analytics.enabled=false"
+      <<: *keycloak-environment
       DASHBOARD_PUBLIC_URL: "${DASHBOARD_PUBLIC_URL:-}"
       DOZZLE_PUBLIC_URL: "${DOZZLE_PUBLIC_URL:-}"
+      KEYCLOAK_SYNC_CLIENT_SECRET: "${KEYCLOAK_SYNC_CLIENT_SECRET:-}"
     mem_limit: 1024m
     volumes:
       - ./scripts:/scripts:ro
-      - ${STARGATE_DATA_DIR:-/var/data}/vereign/secrets:/secrets
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/secrets/keycloak-sync:/bootstrap
     entrypoint: ["/bin/bash", "/scripts/sync-keycloak-clients.sh"]
     networks:
       - stargate-network

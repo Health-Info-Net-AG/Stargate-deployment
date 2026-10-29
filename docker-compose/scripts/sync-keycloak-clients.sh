@@ -5,75 +5,88 @@ KC_URL="http://keycloak:8080"
 REALM="stargate"
 SYNC_CLIENT="stargate-sync"
 TEMP_PREFIX="stargate-bootstrap"
-SECRET_FILE="/secrets/keycloak-sync-client-secret"
-KCADM_CONFIG="$(mktemp -d)/kcadm.config"
+BOOTSTRAP_FILE="/bootstrap/admin"
+SYNC_SECRET="${KEYCLOAK_SYNC_CLIENT_SECRET:-}"
+unset KEYCLOAK_SYNC_CLIENT_SECRET
+KCADM_DIR="$(mktemp -d)"
+KCADM_CONFIG="$KCADM_DIR/kcadm.config"
+TEMP_ID=""
+
+cleanup() {
+  if [ -n "$TEMP_ID" ]; then
+    delete_temp_admins || echo "WARNING: could not delete the temporary admin $TEMP_ID" >&2
+  fi
+  rm -rf "$KCADM_DIR"
+}
+trap cleanup EXIT
 
 kcadm() { /opt/keycloak/bin/kcadm.sh "$@" --config "$KCADM_CONFIG"; }
 
-random_secret() { od -An -tx1 -N24 /dev/urandom | tr -d ' \n'; }
+login() {
+  KC_CLI_CLIENT_SECRET="$3" /opt/keycloak/bin/kcadm.sh config credentials --config "$KCADM_CONFIG" \
+    --server "$KC_URL" --realm "$1" --client "$2" > /dev/null 2>&1
+}
+
+json_string() {
+  local s=$1
+  s=${s//\\/\\\\}
+  s=${s//\"/\\\"}
+  printf '"%s"' "$s"
+}
 
 client_uuid() {
   kcadm get clients -r "$1" -q clientId="$2" --fields id --format csv --noquotes
 }
 
-login_sync() {
-  [ -s "$SECRET_FILE" ] || return 1
-  kcadm config credentials --server "$KC_URL" --realm "$REALM" \
-    --client "$SYNC_CLIENT" --secret "$(cat "$SECRET_FILE")" > /dev/null 2>&1
-}
-
 delete_temp_admins() {
-  local current=$1 uuid name
+  local uuid name
   while IFS=, read -r uuid name; do
     case "$name" in
-      "$current") ;;
+      "$TEMP_ID") ;;
       "$TEMP_PREFIX"*)
-        kcadm delete "clients/$uuid" -r master > /dev/null \
-          || echo "WARNING: could not delete the leftover temporary admin $name" >&2
+        if kcadm delete "clients/$uuid" -r master > /dev/null; then
+          echo "==> removed the leftover temporary admin $name"
+        else
+          echo "WARNING: could not delete the leftover temporary admin $name" >&2
+        fi
         ;;
     esac
   done < <(kcadm get clients -r master --fields id,clientId --format csv --noquotes)
-  kcadm delete "clients/$(client_uuid master "$current")" -r master > /dev/null
+  kcadm delete "clients/$(client_uuid master "$TEMP_ID")" -r master > /dev/null
+  echo "==> removed the temporary admin $TEMP_ID"
+  TEMP_ID=""
 }
 
 provision_sync_client() {
-  local suffix temp_id temp_secret new_secret uuid
-  suffix=$(random_secret)
-  temp_id="$TEMP_PREFIX-${suffix:0:8}"
-  temp_secret=$(random_secret)
-
-  echo "==> $SYNC_CLIENT cannot log in: provisioning it through a temporary admin ($temp_id)"
-  TEMP_ADMIN_SECRET="$temp_secret" /opt/keycloak/bin/kc.sh bootstrap-admin service \
-    --client-id="$temp_id" --client-secret:env=TEMP_ADMIN_SECRET --no-prompt > /tmp/bootstrap-admin.log 2>&1 || true
-  if ! kcadm config credentials --server "$KC_URL" --realm master \
-       --client "$temp_id" --secret "$temp_secret" > /dev/null 2>&1; then
-    cat /tmp/bootstrap-admin.log >&2
-    echo "ERROR: the temporary admin $temp_id could not log in" >&2
-    exit 1
+  local temp_id temp_secret uuid secret_json
+  { read -r temp_id && read -r temp_secret; } < "$BOOTSTRAP_FILE" || true
+  rm -f "$BOOTSTRAP_FILE"
+  if [ -z "${temp_id:-}" ] || [ -z "${temp_secret:-}" ]; then
+    echo "ERROR: $BOOTSTRAP_FILE is incomplete" >&2
+    return 1
   fi
+  if ! login master "$temp_id" "$temp_secret"; then
+    echo "ERROR: the temporary admin $temp_id could not log in" >&2
+    return 1
+  fi
+  TEMP_ID="$temp_id"
+  echo "==> provisioning $SYNC_CLIENT through the temporary admin $TEMP_ID"
 
-  new_secret=$(random_secret)
+  secret_json=$(json_string "$SYNC_SECRET")
   uuid=$(client_uuid "$REALM" "$SYNC_CLIENT")
   if [ -z "$uuid" ]; then
-    kcadm create clients -r "$REALM" -s clientId="$SYNC_CLIENT" -s enabled=true \
-      -s publicClient=false -s serviceAccountsEnabled=true -s standardFlowEnabled=false \
-      -s directAccessGrantsEnabled=false -s clientAuthenticatorType=client-secret \
-      -s secret="$new_secret" -i > /dev/null
+    kcadm create clients -r "$REALM" -f - > /dev/null <<EOF
+{"clientId":"$SYNC_CLIENT","enabled":true,"protocol":"openid-connect","publicClient":false,"clientAuthenticatorType":"client-secret","secret":$secret_json,"serviceAccountsEnabled":true,"standardFlowEnabled":false,"implicitFlowEnabled":false,"directAccessGrantsEnabled":false,"bearerOnly":false}
+EOF
     echo "==> created $SYNC_CLIENT"
   else
-    kcadm update "clients/$uuid" -r "$REALM" -s secret="$new_secret" > /dev/null
-    echo "==> $SYNC_CLIENT exists: set a new secret"
+    kcadm update "clients/$uuid" -r "$REALM" --merge -f - > /dev/null <<< "{\"secret\":$secret_json,\"enabled\":true,\"serviceAccountsEnabled\":true}"
+    echo "==> $SYNC_CLIENT exists: set the configured secret"
   fi
   kcadm add-roles -r "$REALM" --uusername "service-account-$SYNC_CLIENT" \
     --cclientid realm-management --rolename manage-clients
 
-  (umask 077 && printf '%s' "$new_secret" > "$SECRET_FILE.tmp")
-  mv "$SECRET_FILE.tmp" "$SECRET_FILE"
-
-  delete_temp_admins "$temp_id"
-  echo "==> removed the temporary admin"
-
-  login_sync || { echo "ERROR: $SYNC_CLIENT cannot log in after provisioning" >&2; exit 1; }
+  delete_temp_admins
 }
 
 sync_client() {
@@ -94,7 +107,20 @@ sync_client() {
   echo "==> $name: was $current, now $want"
 }
 
-login_sync || provision_sync_client
+if [ -z "$SYNC_SECRET" ]; then
+  rm -f "$BOOTSTRAP_FILE"
+  echo "WARNING: KEYCLOAK_SYNC_CLIENT_SECRET is empty: Keycloak clients not synced" >&2
+  exit 0
+fi
+
+if [ -e "$BOOTSTRAP_FILE" ]; then
+  provision_sync_client
+fi
+
+if ! login "$REALM" "$SYNC_CLIENT" "$SYNC_SECRET"; then
+  echo "ERROR: $SYNC_CLIENT cannot log in to Keycloak: clients not synced" >&2
+  exit 1
+fi
 
 dashboard_url="${DASHBOARD_PUBLIC_URL:-}"
 dashboard_url="${dashboard_url%/}"
