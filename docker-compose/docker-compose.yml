@@ -380,7 +380,7 @@ services:
 
   smimekeys-client:
     # renovate: datasource=docker depName=healthinfonetag/smimekeys
-    image: healthinfonetag/smimekeys:v0.0.29
+    image: healthinfonetag/smimekeys:v0.0.34
     container_name: stargate-smimekeys-client
     restart: unless-stopped
     logging:
