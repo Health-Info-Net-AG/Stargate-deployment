@@ -28,6 +28,7 @@ service_repo() {   # first-party service NAME (no _VERSION) -> repo slug; empty 
     MTACONF) echo mtaconf ;;
     MAILAUTH) echo mailauth ;;
     OPS_AGENT) echo stargate-ops ;;
+    VERIMESH_GATEWAY_INIT) echo verimesh-gateway-init ;;
     *) echo "" ;;
   esac
 }

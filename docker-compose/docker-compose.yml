@@ -177,8 +177,8 @@ services:
 
   # Vault initialization container
   vault-init:
-    # renovate: datasource=docker depName=hashicorp/vault
-    image: hashicorp/vault:1.21.4
+    # renovate: datasource=docker depName=registry.vereign.io/svdh/verimesh-gateway-init
+    image: registry.vereign.io/svdh/verimesh-gateway-init:v0.0.1
     container_name: stargate-vault-init
     user: root
     logging:
@@ -196,7 +196,7 @@ services:
     volumes:
       - ./scripts:/scripts:ro
       - ${STARGATE_DATA_DIR:-/var/data}/vereign/secrets:/secrets
-    entrypoint: /bin/sh -c "apk add --no-cache jq && /scripts/init-vault.sh"
+    entrypoint: ["/scripts/init-vault.sh"]
     networks:
       - stargate-network
 
@@ -239,8 +239,8 @@ services:
   # Idempotent: if the admin already changed their password (auth with the
   # configured value fails), the script exits cleanly without touching anything.
   keycloak-init:
-    # renovate: datasource=docker depName=alpine
-    image: alpine:3.24.2
+    # renovate: datasource=docker depName=registry.vereign.io/svdh/verimesh-gateway-init
+    image: registry.vereign.io/svdh/verimesh-gateway-init:v0.0.1
     container_name: stargate-keycloak-init
     logging:
       driver: json-file
@@ -255,7 +255,7 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
     volumes:
       - ./scripts:/scripts:ro
-    entrypoint: /bin/sh -c "apk add --no-cache curl jq > /dev/null && /scripts/init-keycloak.sh"
+    entrypoint: ["/scripts/init-keycloak.sh"]
     networks:
       - stargate-network
 
@@ -288,8 +288,8 @@ services:
   # Generates /config/apisix/generated/apisix.yaml from the template by
   # substituting KEYCLOAK_APISIX_CLIENT_SECRET with envsubst.
   apisix-init:
-    # renovate: datasource=docker depName=alpine
-    image: alpine:3.24.2
+    # renovate: datasource=docker depName=registry.vereign.io/svdh/verimesh-gateway-init
+    image: registry.vereign.io/svdh/verimesh-gateway-init:v0.0.1
     container_name: stargate-apisix-init
     logging:
       driver: json-file
@@ -304,8 +304,7 @@ services:
     # Holds a client secret in cleartext. 636 is the apache/apisix image's gid;
     # root-owned + :ro so the gateway can read but not rewrite its own routes.
     command: >
-      sh -c "apk add --no-cache gettext &&
-             STARGATE_NETWORK_SUBNET=$$(ip -4 route show scope link | cut -d' ' -f1) &&
+      sh -c "STARGATE_NETWORK_SUBNET=$$(ip -4 route show scope link | cut -d' ' -f1) &&
              { echo $$STARGATE_NETWORK_SUBNET | grep -qxE '([0-9]{1,3}[.]){3}[0-9]{1,3}/[0-9]{1,2}' || { echo 'apisix-init needs exactly one IPv4 network (stargate-network), found:' $$STARGATE_NETWORK_SUBNET >&2; false; }; } &&
              export STARGATE_NETWORK_SUBNET &&
              envsubst '$$KEYCLOAK_APISIX_CLIENT_SECRET $$STARGATE_NETWORK_SUBNET' < /templates/apisix.yaml.template > /output/apisix.yaml &&
@@ -1129,9 +1128,8 @@ services:
       - autoheal=true
 
   stalwart-provision:
-    build:
-      context: ./config/stalwart
-      dockerfile: Dockerfile.provision
+    # renovate: datasource=docker depName=registry.vereign.io/svdh/verimesh-gateway-init
+    image: registry.vereign.io/svdh/verimesh-gateway-init:v0.0.1
     container_name: stargate-stalwart-provision
     restart: "no"
     logging:
@@ -1154,6 +1152,9 @@ services:
       MTACONF_SVC_PASSWORD: "${MTACONF_SVC_PASSWORD}"
       CLAMAV_MILTER_HOST: "clamav"
       CLAMAV_MILTER_PORT: "7357"
+    volumes:
+      - ./config/stalwart/provision.sh:/scripts/provision.sh:ro
+    entrypoint: ["/bin/sh", "/scripts/provision.sh"]
     networks:
       - stargate-network
 
