@@ -101,9 +101,32 @@
       },
       "redirectUris": ["${DASHBOARD_PUBLIC_URL}/*"],
       "webOrigins": ["${DASHBOARD_PUBLIC_URL}"]
+    },
+    {
+      "clientId": "stargate-sync",
+      "name": "Stargate client sync",
+      "description": "Service account that keeps the redirect URIs of the other clients in line with the public URLs",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${KEYCLOAK_SYNC_CLIENT_SECRET}",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "bearerOnly": false
     }
   ],
   "users": [
+    {
+      "username": "service-account-stargate-sync",
+      "enabled": true,
+      "serviceAccountClientId": "stargate-sync",
+      "clientRoles": {
+        "realm-management": ["manage-clients"]
+      }
+    },
     {
       "username": "sg-admin",
       "enabled": true,

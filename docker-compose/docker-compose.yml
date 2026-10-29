@@ -1,4 +1,19 @@
 # Docker Compose configuration for Stargate Alpha environment
+x-keycloak-environment: &keycloak-environment
+  KC_DB: postgres
+  KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"
+  KC_DB_USERNAME: ${POSTGRES_USER:-postgres}
+  KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+  KC_HTTP_ENABLED: "true"
+  KC_PROXY_HEADERS: xforwarded
+  KC_HOSTNAME: "${KEYCLOAK_PUBLIC_URL:-https://localhost:8180}"
+  KC_HOSTNAME_STRICT: "false"
+  KC_HEALTH_ENABLED: "true"
+  KC_METRICS_ENABLED: "true"
+  # Disable Liquibase's analytics phone-home to config.liquibase.com / config-endpoint.liquibase.com
+  LIQUIBASE_ANALYTICS_ENABLED: "false"
+  JAVA_OPTS_APPEND: "-Dliquibase.analytics.enabled=false"
+
 services:
   # ===================
   # Infrastructure
@@ -200,21 +215,9 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      KC_DB: postgres
-      KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"
-      KC_DB_USERNAME: ${POSTGRES_USER:-postgres}
-      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      KC_HTTP_ENABLED: "true"
-      KC_PROXY_HEADERS: xforwarded
-      KC_HOSTNAME: "${KEYCLOAK_PUBLIC_URL:-https://localhost:8180}"
-      KC_HOSTNAME_STRICT: "false"
-      KC_HEALTH_ENABLED: "true"
-      KC_METRICS_ENABLED: "true"
+      <<: *keycloak-environment
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER:-admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
-      # Disable Liquibase's analytics phone-home to config.liquibase.com / config-endpoint.liquibase.com
-      LIQUIBASE_ANALYTICS_ENABLED: "false"
-      JAVA_OPTS_APPEND: "-Dliquibase.analytics.enabled=false"
     mem_limit: 1024m
     command:
       - start
@@ -253,6 +256,32 @@ services:
     volumes:
       - ./scripts:/scripts:ro
     entrypoint: /bin/sh -c "apk add --no-cache curl jq > /dev/null && /scripts/init-keycloak.sh"
+    networks:
+      - stargate-network
+
+  keycloak-sync:
+    # renovate: datasource=docker depName=quay.io/keycloak/keycloak
+    image: quay.io/keycloak/keycloak:26.8.1
+    container_name: stargate-keycloak-sync
+    user: "0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    environment:
+      <<: *keycloak-environment
+      DASHBOARD_PUBLIC_URL: "${DASHBOARD_PUBLIC_URL:-}"
+      DOZZLE_PUBLIC_URL: "${DOZZLE_PUBLIC_URL:-}"
+      KEYCLOAK_SYNC_CLIENT_SECRET: "${KEYCLOAK_SYNC_CLIENT_SECRET:-}"
+    mem_limit: 1024m
+    volumes:
+      - ./scripts:/scripts:ro
+      - ${STARGATE_DATA_DIR:-/var/data}/vereign/secrets/keycloak-sync:/bootstrap
+    entrypoint: ["/bin/bash", "/scripts/sync-keycloak-clients.sh"]
     networks:
       - stargate-network
 
@@ -840,7 +869,7 @@ services:
 
   dashboard:
     # renovate: datasource=docker depName=healthinfonetag/dashboard
-    image: healthinfonetag/dashboard:v0.0.140
+    image: healthinfonetag/dashboard:v0.0.158
     container_name: stargate-dashboard
     restart: unless-stopped
     logging:
@@ -872,6 +901,7 @@ services:
 
       # Keycloak OIDC
       KEYCLOAK_URL: "${KEYCLOAK_PUBLIC_URL:-https://localhost:8180}"
+      KEYCLOAK_INTERNAL_URL: "http://keycloak:8080"
       KEYCLOAK_REALM: stargate
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_DASHBOARD_CLIENT_ID:-dashboard}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_DASHBOARD_CLIENT_SECRET:-changeme}
@@ -1356,6 +1386,10 @@ services:
     environment:
       OAUTH2_PROXY_PROVIDER: keycloak-oidc
       OAUTH2_PROXY_OIDC_ISSUER_URL: "${KEYCLOAK_PUBLIC_URL}/realms/stargate"
+      OAUTH2_PROXY_SKIP_OIDC_DISCOVERY: "true"
+      OAUTH2_PROXY_LOGIN_URL: "${KEYCLOAK_PUBLIC_URL}/realms/stargate/protocol/openid-connect/auth"
+      OAUTH2_PROXY_REDEEM_URL: "http://keycloak:8080/realms/stargate/protocol/openid-connect/token"
+      OAUTH2_PROXY_OIDC_JWKS_URL: "http://keycloak:8080/realms/stargate/protocol/openid-connect/certs"
       OAUTH2_PROXY_CLIENT_ID: dozzle
       OAUTH2_PROXY_CLIENT_SECRET: "${KEYCLOAK_DOZZLE_CLIENT_SECRET}"
       OAUTH2_PROXY_COOKIE_SECRET: "${OAUTH2_PROXY_COOKIE_SECRET}"
@@ -1369,9 +1403,6 @@ services:
       OAUTH2_PROXY_INSECURE_OIDC_ALLOW_UNVERIFIED_EMAIL: "true"
       # Pass identity to Dozzle as X-Forwarded-User / -Email / -Preferred-Username.
       OAUTH2_PROXY_PASS_USER_HEADERS: "true"
-      # Keycloak presents a self-signed cert on the VM IP; skip TLS verify for the
-      # discovery/token calls (mirrors the dashboard's NODE_TLS_REJECT_UNAUTHORIZED=0).
-      OAUTH2_PROXY_SSL_INSECURE_SKIP_VERIFY: "true"
       # Host-only secure cookie (no Domain attribute -> valid for a bare IP host).
       OAUTH2_PROXY_COOKIE_SECURE: "true"
     extra_hosts:
