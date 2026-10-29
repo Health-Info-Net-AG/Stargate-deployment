@@ -1264,7 +1264,7 @@ services:
   # Ops Agent - executes infrastructure commands (updates, restarts) from dashboard via NATS
   ops-agent:
     # renovate: datasource=docker depName=healthinfonetag/stargate-ops
-    image: healthinfonetag/stargate-ops:v0.0.12
+    image: healthinfonetag/stargate-ops:8af92bfc
     container_name: stargate-ops-agent
     restart: unless-stopped
     logging:
