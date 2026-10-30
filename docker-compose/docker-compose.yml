@@ -495,7 +495,7 @@ services:
 
   irisagent:
     # renovate: datasource=docker depName=healthinfonetag/irisagent
-    image: healthinfonetag/irisagent:v0.0.18
+    image: healthinfonetag/irisagent:v0.0.19
     container_name: stargate-irisagent
     restart: unless-stopped
     logging:
@@ -577,7 +577,7 @@ services:
 
   mxengine:
     # renovate: datasource=docker depName=healthinfonetag/mxengine
-    image: healthinfonetag/mxengine:v0.0.57
+    image: healthinfonetag/mxengine:v0.0.58
     container_name: stargate-mxengine
     restart: unless-stopped
     logging:
