@@ -58,7 +58,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/docs \
             --entrypoint sh \
-            squidfunk/mkdocs-material \
+            squidfunk/mkdocs-material:9.7 \
             -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build --clean -f config_docs/de/mkdocs.yml"
 
       - name: Build documentation - fr
@@ -66,7 +66,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/docs \
             --entrypoint sh \
-            squidfunk/mkdocs-material \
+            squidfunk/mkdocs-material:9.7 \
             -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build --clean -f config_docs/fr/mkdocs.yml"
 
       - name: Build documentation - it
@@ -74,7 +74,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/docs \
             --entrypoint sh \
-            squidfunk/mkdocs-material \
+            squidfunk/mkdocs-material:9.7 \
             -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build --clean -f config_docs/it/mkdocs.yml"
 
       - name: Build documentation - en
@@ -82,7 +82,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/docs \
             --entrypoint sh \
-            squidfunk/mkdocs-material \
+            squidfunk/mkdocs-material:9.7 \
             -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build --clean -f config_docs/en/mkdocs.yml"
 
       - name: Fix ownership

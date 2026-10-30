@@ -27,7 +27,7 @@ Build and test docs locally:
 You will be able to open documentation under http://localhost:8000
 
 ```shell
-docker run --rm -it -p 8000:8000 --entrypoint /bin/sh -v ${PWD}:/docs squidfunk/mkdocs-material -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs serve --dev-addr=0.0.0.0:8000 --livereload -f config_docs/en/mkdocs.yml"
+docker run --rm -it -p 8000:8000 --entrypoint /bin/sh -v ${PWD}:/docs squidfunk/mkdocs-material:9.7 -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs serve --dev-addr=0.0.0.0:8000 --livereload -f config_docs/en/mkdocs.yml"
 ```
 
 </details>
@@ -36,10 +36,10 @@ docker run --rm -it -p 8000:8000 --entrypoint /bin/sh -v ${PWD}:/docs squidfunk/
 <summary>Multi languages build</summary>
 
 ```shell
-docker run --rm -it -p 8000:8000 --entrypoint /bin/sh -v ${PWD}:/docs squidfunk/mkdocs-material -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build -f config_docs/en/mkdocs.yml" && \
-docker run --rm -it -p 8000:8000 --entrypoint /bin/sh -v ${PWD}:/docs squidfunk/mkdocs-material -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build -f config_docs/de/mkdocs.yml" && \
-docker run --rm -it -p 8000:8000 --entrypoint /bin/sh -v ${PWD}:/docs squidfunk/mkdocs-material -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build -f config_docs/fr/mkdocs.yml" && \
-docker run --rm -it -p 8000:8000 --entrypoint /bin/sh -v ${PWD}:/docs squidfunk/mkdocs-material -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build -f config_docs/it/mkdocs.yml"
+docker run --rm -it --entrypoint /bin/sh -v ${PWD}:/docs squidfunk/mkdocs-material:9.7 -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build -f config_docs/en/mkdocs.yml" && \
+docker run --rm -it --entrypoint /bin/sh -v ${PWD}:/docs squidfunk/mkdocs-material:9.7 -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build -f config_docs/de/mkdocs.yml" && \
+docker run --rm -it --entrypoint /bin/sh -v ${PWD}:/docs squidfunk/mkdocs-material:9.7 -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build -f config_docs/fr/mkdocs.yml" && \
+docker run --rm -it --entrypoint /bin/sh -v ${PWD}:/docs squidfunk/mkdocs-material:9.7 -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build -f config_docs/it/mkdocs.yml"
 ```
 
 </details>
