@@ -577,7 +577,7 @@ services:
 
   mxengine:
     # renovate: datasource=docker depName=healthinfonetag/mxengine
-    image: healthinfonetag/mxengine:v0.0.55
+    image: healthinfonetag/mxengine:v0.0.57
     container_name: stargate-mxengine
     restart: unless-stopped
     logging:
