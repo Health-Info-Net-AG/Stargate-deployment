@@ -1020,7 +1020,7 @@ services:
   # Collects app versions from /liveness endpoints for node-exporter
   version-collector:
     # renovate: datasource=docker depName=alpine
-    image: alpine:3.24.2
+    image: alpine:3.24.3
     container_name: stargate-version-collector
     restart: unless-stopped
     logging:
