@@ -450,7 +450,7 @@ services:
 
   policy:
     # renovate: datasource=docker depName=healthinfonetag/policy
-    image: healthinfonetag/policy:v0.0.13
+    image: healthinfonetag/policy:v0.0.14
     container_name: stargate-policy
     restart: unless-stopped
     logging:
