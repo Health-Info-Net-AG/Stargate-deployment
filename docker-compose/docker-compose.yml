@@ -1264,7 +1264,7 @@ services:
   # Automatically syncs policies when POLICY_SYNC_REPO_URL is configured
   policy-sync:
     # renovate: datasource=docker depName=healthinfonetag/policy-sync
-    image: healthinfonetag/policy-sync:v0.0.12
+    image: healthinfonetag/policy-sync:v0.0.14
     container_name: stargate-policy-sync
     restart: unless-stopped
     logging:
