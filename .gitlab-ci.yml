@@ -186,8 +186,8 @@ release_milestone:
   variables:
     GIT_DEPTH: 0
   rules:
-    # Release tags only. A -test/-dev tag is a QA image build and skips the release side of the pipeline.
-    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG !~ /-(test|dev)/'
+    # Stable (v1.2.3) and release-candidate (v1.2.3-rcN) tags only; other tags still build images but get no release.
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$/'
   script:
     - git fetch --tags --force --quiet origin || true
     - |
