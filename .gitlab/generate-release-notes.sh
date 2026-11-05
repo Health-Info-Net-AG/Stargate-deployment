@@ -40,11 +40,12 @@ SBOM_INDEX="${SBOM_DIR:+$SBOM_DIR/index.tsv}"
 
 sbom_summary() {
   jq -r --arg d "$2" '
-    [.components[]? | select(.type == "library")] as $c
+    any(.compositions[]?; .aggregate == "incomplete") as $incomplete
+    | [.components[]? | select(.type == "library")] as $c
     | [$c[] | (.licenses // [])[] | (.license.id // .license.name // .expression)]
       | group_by(.) | sort_by(-length) | map(.[0] | gsub("\\|"; "/")) as $l
     | (if $d == "" then "—" else "`" + ($d | ltrimstr("sha256:") | .[0:12]) + "`" end)
-      + " | \($c | length) | "
+      + " | \($c | length)" + (if $incomplete then " (incomplete)" else "" end) + " | "
       + (if ($l | length) == 0 then "—"
          else ($l[0:3] | join(", ")) + (if ($l | length) > 3 then " +\(($l | length) - 3)" else "" end) end)' "$1"
 }
@@ -59,6 +60,16 @@ sbom_cells() {
   else
     printf ' — | — | — | — |'
   fi
+}
+
+sbom_gaps() {
+  awk -F'\t' '$1 == "image" { print $2 "\t" $4 }' "$SBOM_INDEX" | while IFS=$'\t' read -r ref file; do
+    [ -f "$SBOM_DIR/$file" ] || continue
+    jq -r --arg r "$ref" '
+      ([.metadata.component.properties[]? | select(.name == "vereign:sbom:incomplete") | .value][0]
+        // (if any(.compositions[]?; .aggregate == "incomplete") then "marked incomplete" else empty end))
+      | "- `\($r)`: \(.)"' "$SBOM_DIR/$file"
+  done
 }
 
 release_link() {   # $1=NAME $2=VERSION -> markdown cell
@@ -162,6 +173,26 @@ if [ -n "${CI_PIPELINE_URL:-}" ]; then
   echo "[Build pipeline](${CI_PIPELINE_URL})"
   echo
 fi
+if [ -n "$SBOM_INDEX" ]; then
+  sbom_os="$(awk -F'\t' '$1 == "os" { print $4; exit }' "$SBOM_INDEX")"
+  sbom_spec="$(jq -r '.specVersion // empty' "$SBOM_DIR/$sbom_os" 2>/dev/null || true)"
+  echo "### Software Bill of Materials (SBOM)"
+  echo
+  if [ -n "${SBOM_URL:-}" ]; then
+    printf '**[Download the SBOM](%s)** (`%s`): ' "$SBOM_URL" "${SBOM_URL##*/}"
+  else
+    printf 'The SBOM is the `.sbom.tar.gz` asset below: '
+  fi
+  echo "CycloneDX${sbom_spec:+ $sbom_spec}, one file per container image plus the appliance OS, generated with Trivy from the images this release ships. Its SHA-256 is in the \`CHECKSUM\` asset."
+  echo
+  gaps="$(sbom_gaps)"
+  if [ -n "$gaps" ]; then
+    echo "Marked incomplete, because the SBOM is known to miss something:"
+    echo
+    printf '%s\n' "$gaps"
+    echo
+  fi
+fi
 echo "### Service versions"
 echo
 if [ -n "$SBOM_INDEX" ]; then
@@ -186,8 +217,6 @@ if [ -n "$SBOM_INDEX" ]; then
       "$(printf '%s' "$os_cells" | cut -d'|' -f2 | tr -d ' ')" \
       "$(printf '%s' "$os_cells" | cut -d'|' -f3- | sed 's/^ //')" "$os_file"
   fi
-  echo "SBOMs are CycloneDX, one per image plus the appliance OS, generated with Trivy from the images this release ships. They are bundled in the \`.sbom.tar.gz\` asset below."
-  echo
 fi
 
 if [ -n "$PREV_TAG" ]; then
