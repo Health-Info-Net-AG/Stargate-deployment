@@ -87,7 +87,7 @@ services:
 
   seaweedfs:
     # renovate: datasource=docker depName=chrislusf/seaweedfs
-    image: chrislusf/seaweedfs:4.51
+    image: chrislusf/seaweedfs:4.52
     container_name: stargate-seaweedfs
     restart: unless-stopped
     logging:
@@ -151,7 +151,7 @@ services:
   # SeaweedFS bucket initialization
   seaweedfs-init:
     # renovate: datasource=docker depName=amazon/aws-cli
-    image: amazon/aws-cli:2.39.3
+    image: amazon/aws-cli:2.39.5
     container_name: stargate-seaweedfs-init
     logging:
       driver: json-file
@@ -202,7 +202,7 @@ services:
 
   keycloak:
     # renovate: datasource=docker depName=quay.io/keycloak/keycloak
-    image: quay.io/keycloak/keycloak:26.8.1
+    image: quay.io/keycloak/keycloak:26.8.2
     container_name: stargate-keycloak
     restart: unless-stopped
     logging:
@@ -261,7 +261,7 @@ services:
 
   keycloak-sync:
     # renovate: datasource=docker depName=quay.io/keycloak/keycloak
-    image: quay.io/keycloak/keycloak:26.8.1
+    image: quay.io/keycloak/keycloak:26.8.2
     container_name: stargate-keycloak-sync
     user: "0"
     logging:
@@ -354,7 +354,7 @@ services:
         max-file: "5"
     # https://hub.docker.com/r/willfarrell/autoheal
     # renovate: datasource=docker depName=willfarrell/autoheal
-    image: willfarrell/autoheal:latest@sha256:0e783376714f96bde403dd919dde7416cc3ad07418366677d33d758b204d5025
+    image: willfarrell/autoheal:latest@sha256:7c9c34206a6c30dbc67a2d4f9b54adf0aec32348cf18c7e25f34452a56eea94e
     network_mode: none
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -836,7 +836,7 @@ services:
 
   apisix:
     # renovate: datasource=docker depName=apache/apisix
-    image: apache/apisix:3.19.0-debian
+    image: apache/apisix:3.19.0-redhat
     container_name: stargate-apisix
     restart: unless-stopped
     logging:
@@ -959,7 +959,7 @@ services:
   # dashboard (:443), and redirects plain HTTP (:80) to HTTPS.
   caddy:
     # renovate: datasource=docker depName=caddy
-    image: caddy:2.11.7-alpine
+    image: caddy:2.11.9-alpine
     container_name: stargate-caddy
     restart: unless-stopped
     logging:
@@ -1020,7 +1020,7 @@ services:
   # Collects app versions from /liveness endpoints for node-exporter
   version-collector:
     # renovate: datasource=docker depName=alpine
-    image: alpine:3.24.3
+    image: alpine:3.24.4
     container_name: stargate-version-collector
     restart: unless-stopped
     logging:
@@ -1329,7 +1329,7 @@ services:
   # Access at: http://localhost:8090
   dozzle:
     # renovate: datasource=docker depName=amir20/dozzle
-    image: amir20/dozzle:v11.4.0
+    image: amir20/dozzle:v11.4.1
     container_name: stargate-dozzle
     restart: unless-stopped
     profiles: [dozzle]
@@ -1370,7 +1370,7 @@ services:
   # Any authenticated realm user is allowed (no email-domain restriction).
   oauth2-proxy:
     # renovate: datasource=docker depName=quay.io/oauth2-proxy/oauth2-proxy
-    image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.5
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.6
     container_name: stargate-oauth2-proxy
     restart: unless-stopped
     profiles: [dozzle]
