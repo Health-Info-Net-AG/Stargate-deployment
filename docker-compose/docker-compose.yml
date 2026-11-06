@@ -380,7 +380,7 @@ services:
 
   smimekeys-client:
     # renovate: datasource=docker depName=healthinfonetag/smimekeys
-    image: healthinfonetag/smimekeys:v0.0.34
+    image: healthinfonetag/smimekeys:v0.0.29
     container_name: stargate-smimekeys-client
     restart: unless-stopped
     logging:
@@ -495,7 +495,7 @@ services:
 
   irisagent:
     # renovate: datasource=docker depName=healthinfonetag/irisagent
-    image: healthinfonetag/irisagent:v0.0.18
+    image: healthinfonetag/irisagent:v0.0.14
     container_name: stargate-irisagent
     restart: unless-stopped
     logging:
@@ -577,7 +577,7 @@ services:
 
   mxengine:
     # renovate: datasource=docker depName=healthinfonetag/mxengine
-    image: healthinfonetag/mxengine:v0.0.57
+    image: healthinfonetag/mxengine:v0.0.55
     container_name: stargate-mxengine
     restart: unless-stopped
     logging:
@@ -752,7 +752,7 @@ services:
 
   mailauth:
     # renovate: datasource=docker depName=healthinfonetag/mailauth
-    image: healthinfonetag/mailauth:v0.0.10
+    image: healthinfonetag/mailauth:v0.0.7
     container_name: stargate-mailauth
     restart: unless-stopped
     logging:
@@ -868,7 +868,7 @@ services:
 
   dashboard:
     # renovate: datasource=docker depName=healthinfonetag/dashboard
-    image: healthinfonetag/dashboard:v0.0.164
+    image: healthinfonetag/dashboard:v0.0.140
     container_name: stargate-dashboard
     restart: unless-stopped
     logging:
@@ -1160,7 +1160,7 @@ services:
 
   mtaconf:
     # renovate: datasource=docker depName=healthinfonetag/mtaconf
-    image: healthinfonetag/mtaconf:v0.0.12
+    image: healthinfonetag/mtaconf:v0.0.11
     container_name: stargate-mtaconf
     restart: unless-stopped
     logging:
