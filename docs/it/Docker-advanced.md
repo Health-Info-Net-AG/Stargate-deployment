@@ -108,6 +108,23 @@ hingateway-status            # confirm: Booted: vX.Y.Z, Rollback: <previous vers
 !!! note
     A differenza della dashboard, `hingateway-switch` non crea prima un backup. Eseguire `sudo /usr/share/stargate-deployment/docker-compose/scripts/backup.sh --label <versione attuale>-pre_update_to_vX.Y.Z` prima del passaggio, in modo che l'archivio abbia lo stesso nome di quello creato dalla dashboard. La versione attuale è quella che `hingateway-status` mostra come avviata.
 
+#### Aggiornamento forzato
+
+HIN può pianificare un aggiornamento per un'appliance: una versione di destinazione e il momento a partire dal quale è dovuto. L'ops-agent chiede a HIN a un intervallo configurabile (`FORCE_UPDATE_POLL_INTERVAL`, predefinito: 30 minuti) se è pianificato un aggiornamento, tramite il tunnel WireGuard che l'irisagent mantiene già aperto. Non viene quindi inviato nulla all'appliance dall'esterno e non è necessaria alcuna porta aggiuntiva. Una volta raggiunto il momento pianificato, il controllo successivo esegue l'aggiornamento senza che nessuno utilizzi la dashboard:
+
+1. Lo stesso backup di un aggiornamento dalla dashboard, denominato `<versione attuale>-pre_update_to_<versione di destinazione>`, in `/var/data/backups/`. Se il backup non riesce, l'aggiornamento viene annullato e non viene modificato nulla.
+2. Il download e la preparazione dell'immagine del sistema operativo di destinazione (`bootc switch`).
+3. Un riavvio immediato sulla nuova versione. Non esiste l'opzione `Later`: prevedere una breve interruzione al momento pianificato.
+
+Al primo controllo dopo il riavvio, un intervallo di controllo dopo l'avvio, l'ops-agent comunica il risultato a HIN: riuscito se l'appliance esegue la versione di destinazione, non riuscito altrimenti - anche quando il controllo di integrità all'avvio ha riportato l'appliance alla versione precedente. Un errore prima del riavvio viene segnalato con la sua causa e la versione in esecuzione non è interessata.
+
+Note:
+
+* Durante un aggiornamento forzato, la dashboard rifiuta altri aggiornamenti, rollback e riavvii con un errore finché non è terminato. Se un aggiornamento dalla dashboard è già in corso quando l'aggiornamento forzato diventa dovuto, quest'ultimo attende il controllo successivo.
+* Se l'appliance esegue già la versione di destinazione, non viene fatto nulla e HIN ne viene informato.
+* Se HIN non è raggiungibile, ad esempio perché il tunnel è interrotto, l'ops-agent riprova al controllo successivo. Un aggiornamento forzato non si avvia mai senza che HIN ne sia a conoscenza.
+* Gli aggiornamenti forzati si applicano solo all'appliance VM. Un'installazione Compose semplice non li esegue.
+
 #### Rollback
 
 L'appliance conserva su disco due deployment del sistema operativo: quello in esecuzione e quello precedente. Per tornare a quello precedente, utilizzare il pulsante `Roll back` della dashboard (vedere [Aggiornare HIN Gateway](update-hin-gateway.md)) oppure eseguire:

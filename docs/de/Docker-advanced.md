@@ -108,6 +108,23 @@ hingateway-status            # confirm: Booted: vX.Y.Z, Rollback: <previous vers
 !!! note
     Anders als das Dashboard erstellt `hingateway-switch` vorher kein Backup. Führen Sie vor dem Wechsel `sudo /usr/share/stargate-deployment/docker-compose/scripts/backup.sh --label <aktuelle Version>-pre_update_to_vX.Y.Z` aus, damit das Archiv so benannt ist wie das vom Dashboard erstellte. Die aktuelle Version ist die, die `hingateway-status` als gestartet anzeigt.
 
+#### Erzwungenes Update
+
+HIN kann ein Update für eine Appliance planen: eine Zielversion und den Zeitpunkt, ab dem es fällig ist. Der Ops-Agent fragt HIN in einem konfigurierbaren Intervall (`FORCE_UPDATE_POLL_INTERVAL`, Standard: 30 Minuten) nach einem geplanten Update, über den WireGuard-Tunnel, den der irisagent ohnehin offen hält. Es wird also nichts an die Appliance gepusht, und es ist kein zusätzlicher Port nötig. Sobald der geplante Zeitpunkt erreicht ist, führt die nächste Abfrage das Update aus, ohne dass jemand das Dashboard bedient:
+
+1. Dasselbe Backup wie bei einem Update über das Dashboard, benannt `<aktuelle Version>-pre_update_to_<Zielversion>`, in `/var/data/backups/`. Schlägt das Backup fehl, wird das Update abgebrochen und nichts geändert.
+2. Download und Bereitstellung des Ziel-Betriebssystem-Images (`bootc switch`).
+3. Ein sofortiger Neustart in die neue Version. Es gibt keine Option `Later`: Planen Sie zum geplanten Zeitpunkt einen kurzen Ausfall ein.
+
+Bei seiner ersten Abfrage nach dem Neustart, ein Abfrageintervall nach dem Start, meldet der Ops-Agent das Ergebnis an HIN: erfolgreich, wenn die Appliance die Zielversion ausführt, sonst fehlgeschlagen - auch dann, wenn der Boot-Health-Check die Appliance auf die vorherige Version zurückgesetzt hat. Ein Fehler vor dem Neustart wird mit seinem Grund gemeldet, und die laufende Version ist nicht betroffen.
+
+Hinweise:
+
+* Während ein erzwungenes Update läuft, lehnt das Dashboard andere Updates, Rollbacks und Neustarts mit einer Fehlermeldung ab, bis es abgeschlossen ist. Läuft bereits ein Update über das Dashboard, wenn das erzwungene Update fällig wird, wartet dieses auf die nächste Abfrage.
+* Führt die Appliance die Zielversion bereits aus, geschieht nichts, und HIN wird darüber informiert.
+* Ist HIN nicht erreichbar, zum Beispiel weil der Tunnel unterbrochen ist, versucht es der Ops-Agent bei der nächsten Abfrage erneut. Ein erzwungenes Update startet nie, ohne dass HIN davon weiss.
+* Erzwungene Updates gelten nur für die VM-Appliance. Eine reine Compose-Installation führt sie nicht aus.
+
 #### Rollback
 
 Die Appliance behält zwei Betriebssystem-Deployments auf der Festplatte: das laufende und das vorherige. Um zum vorherigen zurückzukehren, verwenden Sie die Schaltfläche `Roll back` im Dashboard (siehe [HIN Gateway aktualisieren](update-hin-gateway.md)) oder führen Sie Folgendes aus:

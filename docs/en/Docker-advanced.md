@@ -132,6 +132,23 @@ hingateway-status            # confirm: Booted: vX.Y.Z, Rollback: <previous vers
 !!! note
     Unlike the dashboard, `hingateway-switch` does not take a backup first. Run `sudo /usr/share/stargate-deployment/docker-compose/scripts/backup.sh --label <current version>-pre_update_to_vX.Y.Z` before switching, so the archive is named like the one the dashboard creates. The current version is the one `hingateway-status` shows as booted.
 
+#### Forced update
+
+HIN can schedule an update for an appliance: a target version and the time it becomes due. The ops-agent asks HIN for a scheduled update at a configurable interval (`FORCE_UPDATE_POLL_INTERVAL`, default: 30 minutes), through the WireGuard tunnel the irisagent already keeps open, so nothing is pushed to the appliance and no extra port is needed. Once the scheduled time has passed, the next check runs the update without anyone using the dashboard:
+
+1. The same backup as a dashboard update, labelled `<current version>-pre_update_to_<target version>`, in `/var/data/backups/`. If the backup fails, the update is cancelled and nothing is changed.
+2. The download and staging of the target OS image (`bootc switch`).
+3. An immediate reboot into the new version. There is no `Later` option: plan for a short outage at the scheduled time.
+
+At its first check after the reboot, one check interval after the boot, the ops-agent reports the result to HIN: done if the appliance runs the target version, failed otherwise - including when the boot health check rolled the appliance back to the previous version. A failure before the reboot is reported with its reason, and the running version is not affected.
+
+Notes:
+
+* While a forced update runs, the dashboard rejects other updates, rollbacks and restarts with an error until it has finished. If a dashboard update is already running when the update becomes due, the forced update waits for the next check.
+* If the appliance already runs the target version, nothing is done and HIN is told so.
+* If HIN cannot be reached, for example because the tunnel is down, the ops-agent tries again at the next check. A forced update never starts without HIN knowing about it.
+* Forced updates apply only to the VM appliance. A plain Compose install does not run them.
+
 #### Rollback
 
 The appliance keeps two OS deployments on disk: the running one and the previous one. To go back to the previous one, use the `Roll back` button on the dashboard (see [Update HIN Gateway](update-hin-gateway.md)) or run:

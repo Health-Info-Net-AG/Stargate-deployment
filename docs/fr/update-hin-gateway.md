@@ -40,6 +40,9 @@ Ce document explique:
 
     Cette version inclut une mise à jour de sécurité obligatoire qui fait passer Keycloak à la version 26.8.0. Lors de cette mise à niveau, Keycloak [modifie le schéma de la base de données](https://github.com/keycloak/keycloak/blob/main/model/jpa/src/main/resources/META-INF/jpa-changelog-26.8.0.xml#L348) et supprime une colonne et des index dont la version précédente de Keycloak (26.7.4) a besoin. Par conséquent, le bouton `Roll back` ne permet pas de restaurer une version 0.6.x fonctionnelle. Le snapshot de la VM est le seul moyen de revenir à la version précédente.
 
+!!! note "Mises à jour forcées"
+    HIN peut aussi planifier une mise à jour pour votre HIN Gateway. Au plus tard un intervalle de vérification après le moment planifié (configurable, par défaut : 30 minutes), la passerelle lance la mise à jour d'elle-même : elle crée la même sauvegarde qu'une mise à jour que vous lancez vous-même, télécharge la version cible puis redémarre, sans l'option `Later`. Voir [Mise à jour forcée](Docker-advanced.md#mise-a-jour-forcee) pour les détails.
+
 ## Comment revenir à une version précédente
 
 1. Accédez à la page `Settings` et faites défiler jusqu'à la section `System version`.

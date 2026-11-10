@@ -108,6 +108,23 @@ hingateway-status            # confirm: Booted: vX.Y.Z, Rollback: <previous vers
 !!! note
     Contrairement au tableau de bord, `hingateway-switch` ne crée pas de sauvegarde au préalable. Exécutez `sudo /usr/share/stargate-deployment/docker-compose/scripts/backup.sh --label <version actuelle>-pre_update_to_vX.Y.Z` avant de basculer, afin que l'archive soit nommée comme celle créée par le tableau de bord. La version actuelle est celle que `hingateway-status` affiche comme démarrée.
 
+#### Mise à jour forcée
+
+HIN peut planifier une mise à jour pour une appliance : une version cible et le moment à partir duquel elle est due. L'ops-agent demande à HIN à un intervalle configurable (`FORCE_UPDATE_POLL_INTERVAL`, par défaut : 30 minutes) si une mise à jour est planifiée, via le tunnel WireGuard que l'irisagent maintient déjà ouvert. Rien n'est donc poussé vers l'appliance et aucun port supplémentaire n'est nécessaire. Une fois le moment planifié atteint, la vérification suivante exécute la mise à jour sans que personne n'utilise le tableau de bord :
+
+1. La même sauvegarde que pour une mise à jour depuis le tableau de bord, nommée `<version actuelle>-pre_update_to_<version cible>`, dans `/var/data/backups/`. Si la sauvegarde échoue, la mise à jour est annulée et rien n'est modifié.
+2. Le téléchargement et la préparation de l'image système cible (`bootc switch`).
+3. Un redémarrage immédiat sur la nouvelle version. Il n'y a pas d'option `Later` : prévoyez une courte interruption au moment planifié.
+
+Lors de sa première vérification après le redémarrage, un intervalle de vérification après le démarrage, l'ops-agent communique le résultat à HIN : réussi si l'appliance exécute la version cible, en échec sinon - y compris lorsque le contrôle de santé au démarrage a ramené l'appliance à la version précédente. Un échec avant le redémarrage est signalé avec sa cause, et la version en cours d'exécution n'est pas affectée.
+
+Remarques :
+
+* Pendant une mise à jour forcée, le tableau de bord refuse les autres mises à jour, retours arrière et redémarrages avec une erreur jusqu'à ce qu'elle soit terminée. Si une mise à jour depuis le tableau de bord est déjà en cours lorsque la mise à jour forcée devient due, celle-ci attend la vérification suivante.
+* Si l'appliance exécute déjà la version cible, rien n'est fait et HIN en est informé.
+* Si HIN n'est pas joignable, par exemple parce que le tunnel est interrompu, l'ops-agent réessaie à la vérification suivante. Une mise à jour forcée ne démarre jamais sans que HIN le sache.
+* Les mises à jour forcées s'appliquent uniquement à l'appliance VM. Une installation Compose simple ne les exécute pas.
+
 #### Retour arrière
 
 L'appliance conserve deux déploiements système sur le disque: celui en cours d'exécution et le précédent. Pour revenir au précédent, utilisez le bouton `Roll back` du tableau de bord (voir [Mettre à jour HIN Gateway](update-hin-gateway.md)) ou exécutez:

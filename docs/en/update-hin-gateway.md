@@ -40,6 +40,9 @@ This document explains:
 
     This release includes a required security update, which upgrades Keycloak to 26.8.0. During this upgrade Keycloak [changes the database schema](https://github.com/keycloak/keycloak/blob/main/model/jpa/src/main/resources/META-INF/jpa-changelog-26.8.0.xml#L348) and removes a column and indexes that the previous Keycloak version (26.7.4) depends on. Because of this, the `Roll back` button cannot restore a working 0.6.x version. The VM snapshot is the only way to return to the previous version.
 
+!!! note "Forced updates"
+    HIN can also schedule an update for your HIN Gateway. Within one check interval after the scheduled time (configurable, default: 30 minutes), the gateway starts the update on its own: it takes the same backup as an update you start yourself, downloads the target version and then restarts, without the `Later` option. See [Forced update](Docker-advanced.md#forced-update) for details.
+
 ## How to Roll Back
 
 1. Go to the `Settings` page and scroll to the `System version` section.
