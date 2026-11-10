@@ -1314,6 +1314,9 @@ services:
     environment:
       LOG_LEVEL: "info"
       OS_IMAGE: "docker.io/healthinfonetag/vm-bootc"
+      IRISAGENT_ADDR: "http://irisagent:8080"
+      ROOT_DOMAIN: "${DASHBOARD_ROOT_DOMAIN:-hin}"
+      FORCE_UPDATE_POLL_INTERVAL: "30m"
     networks:
       - stargate-network
     healthcheck:
