@@ -26,6 +26,7 @@ service_repo() {   # first-party service NAME (no _VERSION) -> repo slug; empty 
     MXENGINE) echo mxengine ;;
     DASHBOARD) echo dashboard ;;
     MTACONF) echo mtaconf ;;
+    VERIMESH_GATEWAY_INIT) echo verimesh-gateway-init ;;
     *) echo "" ;;
   esac
 }
