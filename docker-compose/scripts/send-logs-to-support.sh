@@ -63,7 +63,8 @@ echo -e "\n# RAM\n" >> "$TEMP_FILE"
 free -h >> "$TEMP_FILE"
 
 echo -e "\n# Disk: size and type (rotational=1 means HDD, 0 means SSD)\n" >> "$TEMP_FILE"
-df -hT /  >> "$TEMP_FILE"
+# On a bootc appliance / is read-only composefs (always 100%); /var (Docker images) and /var/data are the writable disks.
+df -hT / /var /var/data >> "$TEMP_FILE" 2>&1 || true
 lsblk -d -o NAME,SIZE,ROTA,MODEL  >> "$TEMP_FILE"
 echo -e "\n######\n" >> "$TEMP_FILE"
 
@@ -81,6 +82,29 @@ else
   echo "(no update.log -- no update has been run yet)" >> "$TEMP_FILE"
 fi
 echo -e "\n######\n" >> "$TEMP_FILE"
+
+echo -e "\n# HEALTH CHECK\n" >> "$TEMP_FILE"
+"$SCRIPT_DIR/health-check.sh" >> "$TEMP_FILE" 2>&1 || true
+echo -e "\n######\n" >> "$TEMP_FILE"
+
+# bootc appliance only: OS versions and the boot-time units. The ops-agent log is lost when its
+# container is recreated at boot, so these are what show whether an update failed after the reboot.
+# The previous boot is included because after a greenboot rollback the failed boot is boot -1.
+run_as_root() {
+  if [ "$(id -u)" -eq 0 ]; then "$@"; else sudo -n "$@"; fi
+}
+if command -v bootc >/dev/null 2>&1; then
+  echo -e "\n# OS STATUS (bootc)\n" >> "$TEMP_FILE"
+  run_as_root bootc status >> "$TEMP_FILE" 2>&1 || echo "(bootc status failed -- error above)" >> "$TEMP_FILE"
+  echo -e "\n# BOOT UNITS\n" >> "$TEMP_FILE"
+  systemctl status stargate verimesh-preload-images greenboot-healthcheck --no-pager >> "$TEMP_FILE" 2>&1 || true
+  for boot in 0 -1; do
+    echo -e "\n# JOURNAL boot $boot (stargate, verimesh-preload-images, greenboot-healthcheck)\n" >> "$TEMP_FILE"
+    run_as_root journalctl -b "$boot" -u stargate -u verimesh-preload-images -u greenboot-healthcheck \
+      --no-pager -n 300 >> "$TEMP_FILE" 2>&1 || echo "(journalctl failed -- error above)" >> "$TEMP_FILE"
+  done
+  echo -e "\n######\n" >> "$TEMP_FILE"
+fi
 
 while IFS= read -r container; do
     docker logs "${args[@]}" --timestamps "$container" 2>&1 |
