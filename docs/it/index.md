@@ -137,7 +137,7 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
 | Server di posta di destinazione | `25` | TCP | Consegna posta in uscita tramite ricerca MX, o consegna all'MTA successivo configurato come server in uscita. |
 | Server DNS | `53` | UDP+TCP | In uscita verso server DNS pubblici |
 | `ntp.metas.ch` (server NTP predefinito) | `123` | UDP | NTP sincronizza gli orologi di computer, server, dispositivi di rete e macchine virtuali con fonti di tempo precise |
-| Peer WireGuard (rete HIN) | `19818` | UDP+TCP | WireGuard - tunnel crittografato per la comunicazione agente-agente |
+| Peer WireGuard (rete HIN) | `19818` | UDP+TCP | WireGuard - tunnel crittografato per la comunicazione agente-agente <br> Attualmente, HIN Central Stargate utilizza il seguente indirizzo IPv4: `185.98.123.16`. In circostanze improbabili, potrebbe essere utilizzato anche uno qualsiasi degli indirizzi IP presenti nell'[elenco ASN di Cloudscale](https://www.ip2location.com/as59414). |
 | `witness-{1,2,3}.verify-mail.hin-infra.ch` | `443` | TCP | Pool di witness KERI di HIN - richiesto per la verifica delle identità degli agenti (idagent / watcher) |
 | `app.hin.ch` | `443` | TCP | Elenco membri / domini di posta HIN (mxengine) |
 | `apisix.verify-mail.hin-infra.ch` | `443` | TCP | Registrazione del gateway HIN durante l'onboarding (dashboard) |
