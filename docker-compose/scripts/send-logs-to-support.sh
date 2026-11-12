@@ -63,7 +63,8 @@ echo -e "\n# RAM\n" >> "$TEMP_FILE"
 free -h >> "$TEMP_FILE"
 
 echo -e "\n# Disk: size and type (rotational=1 means HDD, 0 means SSD)\n" >> "$TEMP_FILE"
-df -hT /  >> "$TEMP_FILE"
+# On a bootc appliance / is read-only composefs (always 100%); /var (Docker images) and /var/data are the writable disks.
+df -hT / /var /var/data >> "$TEMP_FILE" 2>&1 || true
 lsblk -d -o NAME,SIZE,ROTA,MODEL  >> "$TEMP_FILE"
 echo -e "\n######\n" >> "$TEMP_FILE"
 
@@ -80,6 +81,10 @@ if [ -f "$UPDATE_LOG" ]; then
 else
   echo "(no update.log -- no update has been run yet)" >> "$TEMP_FILE"
 fi
+echo -e "\n######\n" >> "$TEMP_FILE"
+
+echo -e "\n# HEALTH CHECK\n" >> "$TEMP_FILE"
+"$SCRIPT_DIR/health-check.sh" >> "$TEMP_FILE" 2>&1 || true
 echo -e "\n######\n" >> "$TEMP_FILE"
 
 # bootc appliance only: OS versions and the boot-time units. The ops-agent log is lost when its
