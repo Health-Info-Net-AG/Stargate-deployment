@@ -1,3 +1,21 @@
+## v1.1.8
+
+*Veröffentlicht am 10. November 2026.*
+
+Dieses Wartungs- und Sicherheitsrelease behebt eine Schwachstelle im Linux-Kernel und aktualisiert mehrere zugrunde liegende Komponenten, um die Sicherheit, Stabilität und Zuverlässigkeit von HIN Gateway zu verbessern.
+
+### Neuerungen und Verbesserungen
+
+- **Sicherheit:** Der Linux-Kernel wurde aktualisiert, um CVE-2026-98432 zu beheben.
+- **Komponenten-Updates:** Mehrere zugrunde liegende Dienste und Abhängigkeiten wurden aktualisiert, darunter Keycloak, Stalwart, Caddy, NATS, Loki und weitere Infrastrukturkomponenten.
+- **Systemwartung:** Container-Images und Komponenten des Basisbetriebssystems wurden aktualisiert, um Wartungs- und Sicherheitsverbesserungen einzubinden.
+
+### Wichtige Informationen
+
+Wir empfehlen, alle HIN Gateway-Installationen auf v1.1.8 zu aktualisieren, damit die neuesten Sicherheitspatches angewendet werden.
+
+Das Update kann direkt über das HIN Gateway Dashboard durchgeführt werden. Ein manueller Download des VM-Images ist nicht erforderlich.
+
 ## v1.1.7
 
 *Veröffentlicht am 14. Oktober 2026.*
