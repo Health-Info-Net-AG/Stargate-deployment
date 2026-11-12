@@ -59,7 +59,7 @@ jobs:
             -v ${{ github.workspace }}:/docs \
             --entrypoint sh \
             docker.io/squidfunk/mkdocs-material:9.8 \
-            -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build --clean -f config_docs/de/mkdocs.yml"
+            -c "pip install mkdocs-glightbox mkdocs-print-site-plugin mkdocs-redirects && mkdocs build --clean -f config_docs/de/mkdocs.yml"
 
       - name: Build documentation - fr
         run: |
@@ -67,7 +67,7 @@ jobs:
             -v ${{ github.workspace }}:/docs \
             --entrypoint sh \
             docker.io/squidfunk/mkdocs-material:9.8 \
-            -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build --clean -f config_docs/fr/mkdocs.yml"
+            -c "pip install mkdocs-glightbox mkdocs-print-site-plugin mkdocs-redirects && mkdocs build --clean -f config_docs/fr/mkdocs.yml"
 
       - name: Build documentation - it
         run: |
@@ -75,7 +75,7 @@ jobs:
             -v ${{ github.workspace }}:/docs \
             --entrypoint sh \
             docker.io/squidfunk/mkdocs-material:9.8 \
-            -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build --clean -f config_docs/it/mkdocs.yml"
+            -c "pip install mkdocs-glightbox mkdocs-print-site-plugin mkdocs-redirects && mkdocs build --clean -f config_docs/it/mkdocs.yml"
 
       - name: Build documentation - en
         run: |
@@ -83,7 +83,7 @@ jobs:
             -v ${{ github.workspace }}:/docs \
             --entrypoint sh \
             docker.io/squidfunk/mkdocs-material:9.8 \
-            -c "pip install mkdocs-glightbox mkdocs-print-site-plugin && mkdocs build --clean -f config_docs/en/mkdocs.yml"
+            -c "pip install mkdocs-glightbox mkdocs-print-site-plugin mkdocs-redirects && mkdocs build --clean -f config_docs/en/mkdocs.yml"
 
       - name: Fix ownership
         run: sudo chown -R runner:docker site
