@@ -44,6 +44,19 @@ case "$relay_meta" in
 esac
 [ -z "$relay_data" ] || fail "a narrower relay data rule would shadow the blanket write grant for no gain"
 
+tls_meta=$(echo "$wo" | grep 'path "secret-mtaconf/metadata/stalwart/tls-key/\*"' || true)
+tls_data=$(echo "$wo" | grep 'path "secret-mtaconf/data/stalwart/tls-key/\*"' || true)
+
+[ -n "$tls_meta" ] || fail "no rule for the tls-key metadata path; deleting a TLS key 403s"
+case "$tls_meta" in
+  *'"delete"'*) ;;
+  *) fail "tls-key metadata cannot be deleted; a removed certificate orphans its key" ;;
+esac
+case "$tls_meta" in
+  *'"read"'*|*'"list"'*) fail "nothing reads or lists tls-key metadata" ;;
+esac
+[ -z "$tls_data" ] || fail "a tls-key data rule could expose private keys to the dashboard"
+
 ro=$(policy_hcl secret-mailauth ro)
 rw=$(policy_hcl secret-mtaconf rw)
 case "$ro" in *'"read"'*) ;; *) fail "ro lost its read" ;; esac
@@ -54,7 +67,7 @@ case "$mailauth_wo" in
   *stalwart/*) fail "the stalwart submission rules are granted on secret-mailauth too" ;;
 esac
 dashboard_wo=$(policy_hcl secret-mtaconf,secret-mailauth wo)
-[ "$(echo "$dashboard_wo" | grep -c 'stalwart/')" = 3 ] || fail "the dashboard policy should carry exactly three stalwart rules"
+[ "$(echo "$dashboard_wo" | grep -c 'stalwart/')" = 4 ] || fail "the dashboard policy should carry exactly four stalwart rules"
 echo "$dashboard_wo" | grep 'stalwart/' | grep -qv 'secret-mtaconf/' && fail "a stalwart rule is granted outside secret-mtaconf"
 
 echo "PASS"
