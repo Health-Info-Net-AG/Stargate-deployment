@@ -186,8 +186,11 @@ release_milestone:
   variables:
     GIT_DEPTH: 0
   rules:
-    # Stable (v1.2.3) and release-candidate (v1.2.3-rcN) tags only; other tags still build images but get no release.
+    # Stable (v1.2.3) and release-candidate (v1.2.3-rcN) tags get a release automatically; other tags only manually.
     - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$/'
+    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG !~ /-(test|dev)/'
+      when: manual
+      allow_failure: true
   script:
     - git fetch --tags --force --quiet origin || true
     - |
