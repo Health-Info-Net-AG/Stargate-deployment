@@ -18,15 +18,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        # https://github.com/actions/checkout/releases/tag/v6.0.2
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        # https://github.com/actions/checkout/releases/tag/v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           # 0 is required to scan full git history
           fetch-depth: 10
 
       - name: Run Gitleaks on docs/
-        # https://github.com/gacts/gitleaks/releases/tag/v1.3.2
-        uses: gacts/gitleaks@c9a0338361dc45a01aa7ebaaa5330179f3c62873
+        # https://github.com/gacts/gitleaks/releases/tag/v1.3.3
+        uses: gacts/gitleaks@4fd785dcdaf557fda64e05b0ae033b8f7d82fb81
         with:
           # Scan only the docs folder
           path: ./docs
@@ -40,8 +40,8 @@ jobs:
     steps:
 
       - name: Checkout repository
-        # https://github.com/actions/checkout/releases/tag/v6.0.2
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        # https://github.com/actions/checkout/releases/tag/v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
 
@@ -100,5 +100,5 @@ jobs:
           path: site
 
       - name: Deploy to GitHub Pages
-        # https://github.com/actions/deploy-pages/releases/tag/v5.0.0
-        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128
+        # https://github.com/actions/deploy-pages/releases/tag/v5.0.1
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346
