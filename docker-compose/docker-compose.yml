@@ -218,6 +218,19 @@ services:
       <<: *keycloak-environment
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER:-admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_DB: postgres
+      KC_DB_URL: "jdbc:postgresql://postgres:5432/keycloak"
+      KC_DB_USERNAME: ${POSTGRES_USER:-postgres}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HOSTNAME: "${KEYCLOAK_PUBLIC_URL:-https://localhost:8180}"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      # Disable Liquibase's analytics phone-home to config.liquibase.com / config-endpoint.liquibase.com
+      LIQUIBASE_ANALYTICS_ENABLED: "false"
+      JAVA_OPTS_APPEND: "-Dliquibase.analytics.enabled=false"
     mem_limit: 1024m
     command:
       - start
@@ -644,6 +657,8 @@ services:
       # Policy
       POLICY_ADDR: "http://policy:8080"
       POLICY_OUTBOUND: "outbound/delivery"
+      POLICY_HEADER_CHECK_ENABLED: "true"
+      POLICY_HEADER_CHECK_POLICY: "headers/check"
 
       # Outbound (disabled for local)
       OUTBOUND_WORKERS: "15"
