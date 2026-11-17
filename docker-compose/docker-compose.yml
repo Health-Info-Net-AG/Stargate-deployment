@@ -752,7 +752,7 @@ services:
 
   mailauth:
     # renovate: datasource=docker depName=healthinfonetag/mailauth
-    image: healthinfonetag/mailauth:v0.0.10
+    image: healthinfonetag/mailauth:v0.0.13
     container_name: stargate-mailauth
     restart: unless-stopped
     logging:
