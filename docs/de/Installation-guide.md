@@ -299,10 +299,16 @@ Stellen Sie sicher, dass die VM über eine Netzwerkverbindung verfügt und ihr e
 2. Navigieren Sie mit den Pfeiltasten und drücken Sie dann "Enter", um die "Ethernet-Verbindung" auszuwählen, deren IP-Adresse Sie ändern möchten. <br> ![IP-Adresse hinzufügen](assets/ip_addr_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 3. Navigieren Sie zu "IPv4-Konfiguration" und ändern Sie die Einstellung von "Automatisch" auf "Manuell". <br> ![IP-Adresse hinzufügen](assets/ip_addr_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 4. Navigieren Sie mit den Pfeiltasten zu den Feldern, in denen Sie die IP-Adresse, das Gateway und den DNS-Server eingeben können. Wählen Sie anschliessend "OK". <br> ![IP-Adresse hinzufügen](assets/ip_addr_3.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-5. Führen Sie nach dem Speichern der IP-Adresskonfiguration den folgenden Befehl in der Konsole aus:
+5. Aktivieren Sie die Verbindung nach dem Speichern der IP-Adresskonfiguration neu, damit sie übernommen wird. Ersetzen Sie "Wired connection 1" durch den Namen der Verbindung, die Sie in nmtui bearbeitet haben:
 
     ```bash
-    sudo systemctl restart NetworkManager
+    sudo nmcli connection up "Wired connection 1"
+    ```
+
+6. Prüfen Sie, dass die neue IP-Adresse verwendet wird. Die Adresse nach `src` muss die neue IP-Adresse sein:
+
+    ```bash
+    ip -4 route get 1.1.1.1
     ```
 
 !!! tip

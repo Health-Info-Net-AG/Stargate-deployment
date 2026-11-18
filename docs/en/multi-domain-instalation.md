@@ -315,10 +315,16 @@ Add an IP address on Linux:
 2. Use the arrow keys to navigate, then press "Enter" to select the "Ethernet connection" for which you want to change the IP address. <br> ![Add IP Addr](assets/ip_addr_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 3. Navigate to "IPv4 Configuration" and change the setting from "Automatic" to "Manual". <br> ![Add IP Addr](assets/ip_addr_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 4. Use the arrow keys to navigate to the fields where you can enter the IP address, gateway, and DNS server. Then select "OK". <br> ![Add IP Addr](assets/ip_addr_3.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-5. After saving the IP address configuration, run the following command in the console:
+5. After saving the IP address configuration, re-activate the connection to apply it. Replace "Wired connection 1" with the name of the connection you edited in nmtui:
 
     ```bash
-    sudo systemctl restart NetworkManager
+    sudo nmcli connection up "Wired connection 1"
+    ```
+
+6. Check that the new IP address is in use. The address after `src` must be the new IP address:
+
+    ```bash
+    ip -4 route get 1.1.1.1
     ```
 
 ??? warning "Network must be configured before first boot"
