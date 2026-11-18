@@ -495,7 +495,7 @@ services:
 
   irisagent:
     # renovate: datasource=docker depName=healthinfonetag/irisagent
-    image: healthinfonetag/irisagent:v0.0.21
+    image: healthinfonetag/irisagent:0381eb99
     container_name: stargate-irisagent
     restart: unless-stopped
     logging:
@@ -561,7 +561,7 @@ services:
       CERT_CA_IRISAGENT_DOMAIN: "${CERT_CA_IRISAGENT_DOMAIN:-}"
 
       # message size limit
-      HTTP_MAX_REQUEST_BODY_SIZE: "31457280"
+      HTTP_MAX_REQUEST_BODY_SIZE: "52428800"
 
       LOG_LEVEL: "info"
     ports:
@@ -605,7 +605,7 @@ services:
       INBOUND_HTTP_READ_TIMEOUT: "10s"
       INBOUND_HTTP_WRITE_TIMEOUT: "10s"
       INBOUND_HTTP_IDLE_TIMEOUT: "60s"
-      INBOUND_HTTP_MAX_SIZE: "20971520"
+      INBOUND_HTTP_MAX_SIZE: "45088768"
       INBOUND_HTTP_PUBLIC_ADDRESS: "${MXENGINE_PUBLIC_ADDRESS:-http://localhost:8084}"
 
       # SMTP
@@ -613,7 +613,7 @@ services:
       INBOUND_SMTP_HOST: ""
       INBOUND_SMTP_PORT: "1587"
       INBOUND_SMTP_APP_NAME: "mxengine local"
-      INBOUND_SMTP_MAX_SIZE: "20971520"
+      INBOUND_SMTP_MAX_SIZE: "52428800"
       INBOUND_SMTP_TLS: "false"
       INBOUND_SMTP_AUTH: "false"
       INBOUND_SMTP_FORWARD_ENCRYPTED_ON_FAILURE: "false"
@@ -768,7 +768,7 @@ services:
         condition: service_completed_successfully
     environment:
       MAILAUTH_BIND_ADDR: "0.0.0.0:8080"
-      MAILAUTH_MAX_BODY_MB: "30"
+      MAILAUTH_MAX_BODY_MB: "50"
 
       # Vault (reads DKIM/ARC private keys per request)
       MAILAUTH_VAULT_ADDRESS: "http://vault:8200"
