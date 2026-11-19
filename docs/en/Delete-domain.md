@@ -2,15 +2,8 @@
 
 You can delete a domain from HIN Gateway when it should no longer send or receive email through the gateway, for example after the domain has been retired or moved to another system.
 
-How it works:
+## Before you delete
 
-- A domain is deleted from the **Domain details** page in the HIN Gateway dashboard
-- Before the domain is deleted, a confirmation window opens
-- In the confirmation window you can choose to also revoke the domain's certificate
-
-## Before you start
-
-- You need access to the HIN Gateway dashboard
 - Make sure no system still sends email for the domain through HIN Gateway. After the domain is deleted, HIN Gateway no longer processes messages for it
 - Decide whether the domain certificate should be revoked. Revoking cannot be undone
 
@@ -36,4 +29,4 @@ How it works:
 The domain is removed from the **Domains** list.
 
 !!! warning
-    If you select **Revoke domain's certificate**, the certificate is revoked and cannot be used again. Revoking cannot be undone. For more information, see [Renew and revoke domain certificates](renew-revoke.md).
+    If you select **Revoke domain's certificate**, the certificate is revoked and cannot be used again. Revoking cannot be undone.

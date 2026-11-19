@@ -2,27 +2,16 @@
 
 Each domain in HIN Gateway has a domain certificate. HIN Gateway uses it to sign and encrypt messages for the domain. In the dashboard you can let HIN Gateway renew the certificate automatically, revoke a certificate and issue a new one.
 
-How it works:
-
-- A certificate has one of three statuses: **Good**, **Revoked** or **Expired**
-- With **Auto renew** switched on, HIN Gateway renews the certificate automatically before it expires
-- A revoked certificate can no longer be used. Revoking cannot be undone
-- From an expired or revoked certificate you can issue a new certificate. HIN Gateway generates new public and private keys for it
-
-## Before you start
-
-- You need access to the HIN Gateway dashboard
-- The domain must already be added in HIN Gateway and onboarded
-
 ## View the domain certificates
 
-1. Log in to the HIN Gateway dashboard.
-2. Go to **Domains** and select the domain.
-3. Go to the **Domain certificates** section.
+1. Log in to the HIN Gateway dashboard
+2. Go to **Domains** and select the domain
+3. Go to the **Domain certificates** section
 
     ![Domain certificates section with a certificate in status Good](./assets/domain-certs-1.png)
 
-    For each certificate the section shows the **Serial Number**, the validity period (**Valid from** and **Valid until**) and the **Status**. A certificate that expires soon is marked **Expiring soon**, and its **Valid until** date is shown in red.
+    For each certificate the section shows the **Serial Number**, the validity period (**Valid from** and **Valid until**) and the **Status**. 
+    A certificate that expires soon is marked **Expiring soon**, and its **Valid until** date is shown in red.
 
 ## Filter certificates by status
 
@@ -34,7 +23,7 @@ Use the **Status** filter in the top right corner of the section to choose which
 
 ![Domain certificates filtered by status Revoked](./assets/domain-certs-4.png)
 
-## Turn auto renew on or off
+## Turn auto renew On or Off
 
 The **Auto renew** switch controls whether HIN Gateway renews the certificate automatically:
 
@@ -58,7 +47,7 @@ Revoke a certificate if you no longer want it to be used, for example if you sus
 3. Click **Revoke** to confirm, or **Cancel** to keep the certificate.
 
 !!! warning
-    Revoking a certificate cannot be undone. The certificate now has the status **Revoked** and appears under the **Revoked** filter.
+    Revoking a certificate cannot be undone. The certificate now has the status **Revoked** and appears under the **Revoked** status filter.
 
 ## Issue a new certificate
 
