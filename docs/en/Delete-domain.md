@@ -2,6 +2,8 @@
 
 You can delete a domain from HIN Gateway when it should no longer send or receive email through the gateway, for example after the domain has been retired or moved to another system.
 
+These steps apply to both domain types listed on the **Domains** page: **Secure** (HIN Secure domains) and **Routed** domains. For more about Routed domains, see [Managing Routed Domains in HIN Gateway](Routed-domains.md).
+
 ## Before you delete
 
 - Make sure no system still sends email for the domain through HIN Gateway. After the domain is deleted, HIN Gateway no longer processes messages for it
