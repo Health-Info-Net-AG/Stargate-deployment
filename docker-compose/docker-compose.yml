@@ -561,7 +561,7 @@ services:
       CERT_CA_IRISAGENT_DOMAIN: "${CERT_CA_IRISAGENT_DOMAIN:-}"
 
       # message size limit
-      HTTP_MAX_REQUEST_BODY_SIZE: "31457280"
+      HTTP_MAX_REQUEST_BODY_SIZE: "52428800"
 
       LOG_LEVEL: "info"
     ports:
