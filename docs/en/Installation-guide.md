@@ -460,6 +460,9 @@ On this screen, configure your initial settings:
 - Select which trusted domain(s) should be **Enabled** to obtain peer certificates from the HIN Certification Authority (HIN CA).
 - Indicate for which domain(s) the `sec.<domain>` prefix is already configured ("Use sec-prefix").
 
+    !!! note "Why is the \"Use sec-prefix\" option grayed out?"
+        The system checks DNS for an MX record on `sec.<domain>`. If no MX record can be found for `sec.<domain>`, the **Use sec-prefix** option is grayed out and cannot be selected for that domain. If you expect the prefix to be available, check that the MX record for `sec.<domain>` exists in your DNS and has propagated, then reload the page.
+
 ??? tip "How to check if my domain is set up with a Security Prefix?"
     You can open our online tool in your browser: <https://trust.hin.ls-infra.me/>, enter `sec.<domain>`, and click the **Check** button. If you see the message:
 
