@@ -564,6 +564,8 @@ services:
       HTTP_MAX_REQUEST_BODY_SIZE: "31457280"
 
       LOG_LEVEL: "info"
+      GOMEMLIMIT: "900MiB"
+    mem_limit: 1g
     ports:
       # Bind to loopback only: unauthenticated API; external access goes through
       # APISIX (/irisagent/*, oidc-bearer). localhost keeps health-check.sh working.
@@ -646,7 +648,7 @@ services:
       POLICY_OUTBOUND: "outbound/delivery"
 
       # Outbound (disabled for local)
-      OUTBOUND_WORKERS: "15"
+      OUTBOUND_WORKERS: "3"
       OUTBOUND_QUEUE_POLL_INTERVAL: "1s"
       OUTBOUND_MAX_MESSAGE_RETRIES: "30"
       NACK_WAIT_RETRY: "5m"
@@ -679,6 +681,9 @@ services:
 
       # Metrics
       METRICS_ADDR: ":2112"
+
+      GOMEMLIMIT: "1800MiB"
+    mem_limit: 2g
     ports:
       - "127.0.0.1:8084:8080"
       - "2116:2112"
@@ -1106,6 +1111,7 @@ services:
     volumes:
       - ./config/stalwart/config.json:/etc/stalwart/config.json:ro
       - ${STARGATE_DATA_DIR:-/var/data}/stalwart:/var/lib/stalwart
+    mem_limit: 2g
     ports:
       # :25 is the public MX listener (external SMTP traffic arrives here).
       # :10026 is the internal reinject port — mxengine reaches it via the
