@@ -58,7 +58,7 @@ delete_temp_admins() {
 }
 
 provision_sync_client() {
-  local temp_id temp_secret uuid secret_json
+  local temp_id temp_secret uuid secret_json scope_id
   { read -r temp_id && read -r temp_secret; } < "$BOOTSTRAP_FILE" || true
   rm -f "$BOOTSTRAP_FILE"
   if [ -z "${temp_id:-}" ] || [ -z "${temp_secret:-}" ]; then
@@ -85,6 +85,16 @@ EOF
   fi
   kcadm add-roles -r "$REALM" --uusername "service-account-$SYNC_CLIENT" \
     --cclientid realm-management --rolename manage-clients
+
+  # Keycloak 26.8.2+ rejects Admin REST API tokens without the kc-admin-api scope (HTTP 401).
+  scope_id=$(kcadm get client-scopes -r "$REALM" --fields id,name --format csv --noquotes \
+    | grep ',kc-admin-api$' | cut -d, -f1 || true)
+  if [ -z "$scope_id" ]; then
+    echo "ERROR: client scope kc-admin-api not found in realm $REALM" >&2
+    return 1
+  fi
+  uuid=$(client_uuid "$REALM" "$SYNC_CLIENT")
+  kcadm update "clients/$uuid/default-client-scopes/$scope_id" -r "$REALM" > /dev/null
 
   delete_temp_admins
 }
