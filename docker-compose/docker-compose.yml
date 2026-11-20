@@ -495,7 +495,7 @@ services:
 
   irisagent:
     # renovate: datasource=docker depName=healthinfonetag/irisagent
-    image: healthinfonetag/irisagent:v0.0.21
+    image: healthinfonetag/irisagent:v0.0.22-rc2
     container_name: stargate-irisagent
     restart: unless-stopped
     logging:
@@ -561,10 +561,10 @@ services:
       CERT_CA_IRISAGENT_DOMAIN: "${CERT_CA_IRISAGENT_DOMAIN:-}"
 
       # message size limit
-      HTTP_MAX_REQUEST_BODY_SIZE: "31457280"
+      HTTP_MAX_REQUEST_BODY_SIZE: "52428800"
 
       LOG_LEVEL: "info"
-      GOMEMLIMIT: "900MiB"
+      GOMEMLIMIT: "1350MiB"
     mem_limit: 1g
     ports:
       # Bind to loopback only: unauthenticated API; external access goes through
@@ -607,7 +607,7 @@ services:
       INBOUND_HTTP_READ_TIMEOUT: "10s"
       INBOUND_HTTP_WRITE_TIMEOUT: "10s"
       INBOUND_HTTP_IDLE_TIMEOUT: "60s"
-      INBOUND_HTTP_MAX_SIZE: "20971520"
+      INBOUND_HTTP_MAX_SIZE: "52428800"
       INBOUND_HTTP_PUBLIC_ADDRESS: "${MXENGINE_PUBLIC_ADDRESS:-http://localhost:8084}"
 
       # SMTP
@@ -615,7 +615,7 @@ services:
       INBOUND_SMTP_HOST: ""
       INBOUND_SMTP_PORT: "1587"
       INBOUND_SMTP_APP_NAME: "mxengine local"
-      INBOUND_SMTP_MAX_SIZE: "20971520"
+      INBOUND_SMTP_MAX_SIZE: "52428800"
       INBOUND_SMTP_TLS: "false"
       INBOUND_SMTP_AUTH: "false"
       INBOUND_SMTP_FORWARD_ENCRYPTED_ON_FAILURE: "false"
@@ -897,6 +897,7 @@ services:
       HOSPITAL_DATA_CACHE_TTL_SECONDS: "21600"
       CUSTOMER_DEVICE_DATA_CACHE_TTL_SECONDS: "1800"
       CERTIFICATE_EXPIRING_SOON_PERIOD_SECONDS: "2592000"
+      EXPIRING_CERTIFICATES_CACHE_TTL_SECONDS: "1800"
 
       # Stargate deployment release tag (server-side; read at runtime).
       APP_VERSION: "${APP_VERSION:-unknown}"
