@@ -21,7 +21,7 @@ services:
 
   postgres:
     # renovate: datasource=docker depName=postgres
-    image: postgres:18.6-alpine
+    image: postgres:18.7-alpine
     container_name: stargate-postgres
     restart: unless-stopped
     logging:
@@ -87,7 +87,7 @@ services:
 
   seaweedfs:
     # renovate: datasource=docker depName=chrislusf/seaweedfs
-    image: chrislusf/seaweedfs:4.52
+    image: chrislusf/seaweedfs:4.54
     container_name: stargate-seaweedfs
     restart: unless-stopped
     logging:
@@ -151,7 +151,7 @@ services:
   # SeaweedFS bucket initialization
   seaweedfs-init:
     # renovate: datasource=docker depName=amazon/aws-cli
-    image: amazon/aws-cli:2.39.5
+    image: amazon/aws-cli:2.41.2
     container_name: stargate-seaweedfs-init
     logging:
       driver: json-file
@@ -319,7 +319,7 @@ services:
 
   nats:
     # renovate: datasource=docker depName=nats
-    image: nats:2.15.2-alpine
+    image: nats:2.15.3-alpine
     container_name: stargate-nats
     restart: unless-stopped
     logging:
@@ -843,7 +843,7 @@ services:
 
   apisix:
     # renovate: datasource=docker depName=apache/apisix
-    image: apache/apisix:3.19.0-redhat
+    image: apache/apisix:3.20.0-redhat
     container_name: stargate-apisix
     restart: unless-stopped
     logging:
@@ -875,7 +875,7 @@ services:
 
   dashboard:
     # renovate: datasource=docker depName=healthinfonetag/dashboard
-    image: healthinfonetag/dashboard:v0.0.186
+    image: healthinfonetag/dashboard:v0.0.187
     container_name: stargate-dashboard
     restart: unless-stopped
     logging:
@@ -1206,7 +1206,7 @@ services:
 
   loki:
     # renovate: datasource=docker depName=grafana/loki
-    image: grafana/loki:3.7.9
+    image: grafana/loki:3.7.10
     container_name: stargate-loki
     restart: unless-stopped
     logging:
@@ -1233,7 +1233,7 @@ services:
 
   alloy:
     # renovate: datasource=docker depName=grafana/alloy
-    image: grafana/alloy:v1.21.3
+    image: grafana/alloy:v1.22.0
     container_name: stargate-alloy
     restart: unless-stopped
     logging:
@@ -1304,7 +1304,7 @@ services:
   # Ops Agent - executes infrastructure commands (updates, restarts) from dashboard via NATS
   ops-agent:
     # renovate: datasource=docker depName=healthinfonetag/stargate-ops
-    image: healthinfonetag/stargate-ops:v0.0.13
+    image: healthinfonetag/stargate-ops:v0.0.15
     container_name: stargate-ops-agent
     restart: unless-stopped
     logging:
@@ -1338,7 +1338,7 @@ services:
   # Access at: http://localhost:8090
   dozzle:
     # renovate: datasource=docker depName=amir20/dozzle
-    image: amir20/dozzle:v11.4.1
+    image: amir20/dozzle:v11.5.0
     container_name: stargate-dozzle
     restart: unless-stopped
     profiles: [dozzle]
