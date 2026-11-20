@@ -380,7 +380,7 @@ services:
 
   smimekeys-client:
     # renovate: datasource=docker depName=healthinfonetag/smimekeys
-    image: healthinfonetag/smimekeys:v0.0.40
+    image: healthinfonetag/smimekeys:v0.0.41
     container_name: stargate-smimekeys-client
     restart: unless-stopped
     logging:
@@ -579,7 +579,7 @@ services:
 
   mxengine:
     # renovate: datasource=docker depName=healthinfonetag/mxengine
-    image: healthinfonetag/mxengine:v0.0.62
+    image: healthinfonetag/mxengine:v0.0.64
     container_name: stargate-mxengine
     restart: unless-stopped
     logging:
@@ -645,6 +645,8 @@ services:
 
       # Policy
       POLICY_ADDR: "http://policy:8080"
+      POLICY_HEADER_CHECK_ENABLED: "true"
+      POLICY_HEADER_CHECK_POLICY: "headers/check"
       POLICY_OUTBOUND: "outbound/delivery"
 
       # Outbound (disabled for local)
@@ -757,7 +759,7 @@ services:
 
   mailauth:
     # renovate: datasource=docker depName=healthinfonetag/mailauth
-    image: healthinfonetag/mailauth:v0.0.10
+    image: healthinfonetag/mailauth:v0.0.13
     container_name: stargate-mailauth
     restart: unless-stopped
     logging:
@@ -773,7 +775,7 @@ services:
         condition: service_completed_successfully
     environment:
       MAILAUTH_BIND_ADDR: "0.0.0.0:8080"
-      MAILAUTH_MAX_BODY_MB: "30"
+      MAILAUTH_MAX_BODY_MB: "50"
 
       # Vault (reads DKIM/ARC private keys per request)
       MAILAUTH_VAULT_ADDRESS: "http://vault:8200"
@@ -873,7 +875,7 @@ services:
 
   dashboard:
     # renovate: datasource=docker depName=healthinfonetag/dashboard
-    image: healthinfonetag/dashboard:v0.0.175
+    image: healthinfonetag/dashboard:v0.0.186
     container_name: stargate-dashboard
     restart: unless-stopped
     logging:
@@ -893,7 +895,8 @@ services:
       SHOW_DEV_PAGES: "${DASHBOARD_SHOW_DEV_PAGES:-false}"
       IS_ROOT: "false"
       HOSPITAL_DATA_CACHE_TTL_SECONDS: "21600"
-      CUSTOMER_DEVICE_DATA_CACHE_TTL_SECONDS: "21600"
+      CUSTOMER_DEVICE_DATA_CACHE_TTL_SECONDS: "1800"
+      CERTIFICATE_EXPIRING_SOON_PERIOD_SECONDS: "2592000"
 
       # Stargate deployment release tag (server-side; read at runtime).
       APP_VERSION: "${APP_VERSION:-unknown}"
