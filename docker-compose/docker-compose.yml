@@ -648,6 +648,8 @@ services:
       POLICY_HEADER_CHECK_ENABLED: "true"
       POLICY_HEADER_CHECK_POLICY: "headers/check"
       POLICY_OUTBOUND: "outbound/delivery"
+      POLICY_HEADER_CHECK_ENABLED: "true"
+      POLICY_HEADER_CHECK_POLICY: "headers/check"
 
       # Outbound (disabled for local)
       OUTBOUND_WORKERS: "5"
