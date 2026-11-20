@@ -86,29 +86,6 @@ create_listener() {
     --field "useTls=${tls}"
 }
 
-set_listener_max_connections() {
-  local name="$1" max="$2" lid current
-
-  lid=$(cli query NetworkListener 2>/dev/null | awk -v n="$name" 'NR > 1 && $2 == n { print $1; exit }') || true
-  if [ -z "$lid" ]; then
-    log "WARNING: listener '$name' not found; maxConnections not set"
-    return 0
-  fi
-
-  current=$(cli get NetworkListener "$lid" --json 2>/dev/null | sed -n 's/.*"maxConnections":\([0-9]*\).*/\1/p') || true
-  if [ "$current" = "$max" ]; then
-    log "listener '$name' maxConnections already ${max}"
-    return 0
-  fi
-
-  log "setting listener '$name' maxConnections ${current:-unset} -> ${max}"
-  if cli update NetworkListener "$lid" --field "maxConnections=${max}"; then
-    log "restart required: listener '$name' maxConnections changed"
-  else
-    log "WARNING: could not set maxConnections on listener '$name'"
-  fi
-}
-
 set_virtual_queue_threads() {
   local name="$1" threads="$2" qid current
 
@@ -205,8 +182,6 @@ create_listener "smtp" "0.0.0.0:25" "smtp" "false"
 create_listener "reinject" "0.0.0.0:10026" "smtp" "false"
 
 create_listener "submission" "0.0.0.0:587" "smtp" "true"
-
-set_listener_max_connections "smtp" 4
 
 SUBMISSION_DENY='{"allowRelaying":{"match":{"0":{"if":"local_port == 587","then":"false"}},"else":"!is_empty(authenticated_as)"}}'
 

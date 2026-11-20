@@ -648,7 +648,7 @@ services:
       POLICY_OUTBOUND: "outbound/delivery"
 
       # Outbound (disabled for local)
-      OUTBOUND_WORKERS: "3"
+      OUTBOUND_WORKERS: "5"
       OUTBOUND_QUEUE_POLL_INTERVAL: "1s"
       OUTBOUND_MAX_MESSAGE_RETRIES: "30"
       NACK_WAIT_RETRY: "5m"
