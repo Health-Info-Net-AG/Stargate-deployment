@@ -836,7 +836,7 @@ services:
 
   apisix:
     # renovate: datasource=docker depName=apache/apisix
-    image: apache/apisix:3.19.0-redhat
+    image: apache/apisix:3.20.0-redhat
     container_name: stargate-apisix
     restart: unless-stopped
     logging:
