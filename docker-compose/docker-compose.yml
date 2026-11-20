@@ -1224,7 +1224,7 @@ services:
 
   alloy:
     # renovate: datasource=docker depName=grafana/alloy
-    image: grafana/alloy:v1.21.3
+    image: grafana/alloy:v1.22.0
     container_name: stargate-alloy
     restart: unless-stopped
     logging:
