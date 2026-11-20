@@ -298,10 +298,16 @@ Aggiungere un indirizzo IP su Linux:
 2. Usa i tasti freccia per navigare, quindi premi "Enter" per selezionare la "Ethernet connection" per la quale desideri modificare l'indirizzo IP. <br> ![Add IP Addr](assets/ip_addr_1.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 3. Naviga a "IPv4 Configuration" e modifica l'impostazione da "Automatic" a "Manual". <br> ![Add IP Addr](assets/ip_addr_2.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
 4. Usa i tasti freccia per navigare ai campi dove puoi inserire l'indirizzo IP, il gateway e il server DNS. Quindi seleziona "OK". <br> ![Add IP Addr](assets/ip_addr_3.png){ style="position:relative;left:50%;transform:translate(-50%,0%);" }
-5. Dopo aver salvato la configurazione dell'indirizzo IP, esegui il seguente comando nella console:
+5. Dopo aver salvato la configurazione dell'indirizzo IP, riattiva la connessione per applicarla. Sostituisci "Wired connection 1" con il nome della connessione che hai modificato in nmtui:
 
     ```bash
-    sudo systemctl restart NetworkManager
+    sudo nmcli connection up "Wired connection 1"
+    ```
+
+6. Verifica che venga utilizzato il nuovo indirizzo IP. L'indirizzo dopo `src` deve essere il nuovo indirizzo IP:
+
+    ```bash
+    ip -4 route get 1.1.1.1
     ```
 
 !!! tip
