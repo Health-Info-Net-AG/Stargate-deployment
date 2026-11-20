@@ -87,7 +87,7 @@ services:
 
   seaweedfs:
     # renovate: datasource=docker depName=chrislusf/seaweedfs
-    image: chrislusf/seaweedfs:4.52
+    image: chrislusf/seaweedfs:4.54
     container_name: stargate-seaweedfs
     restart: unless-stopped
     logging:
