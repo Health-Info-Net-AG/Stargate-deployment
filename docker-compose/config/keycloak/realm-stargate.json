@@ -112,6 +112,7 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "${KEYCLOAK_SYNC_CLIENT_SECRET}",
       "serviceAccountsEnabled": true,
+      "defaultClientScopes": ["web-origins", "acr", "profile", "roles", "basic", "email", "kc-admin-api"],
       "standardFlowEnabled": false,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,

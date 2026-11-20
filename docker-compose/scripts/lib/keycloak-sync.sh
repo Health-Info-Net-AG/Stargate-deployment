@@ -32,7 +32,7 @@ keycloak_sync_client_state() {
   local schema
   schema=$(keycloak_db_query <<< "SELECT to_regclass('public.realm') IS NOT NULL;") || return 1
   if [ "$schema" != "t" ]; then
-    echo "0 - 0"
+    echo "0 - 0 0"
     return 0
   fi
   keycloak_db_query <<SQL
@@ -51,18 +51,25 @@ SELECT
      JOIN client rm ON rm.id = kr.client
     WHERE r.name = 'stargate' AND c.client_id = '$KEYCLOAK_SYNC_CLIENT_ID'
       AND rm.realm_id = r.id AND rm.client_id = 'realm-management'
-      AND kr.name = 'manage-clients');
+      AND kr.name = 'manage-clients'),
+  (SELECT count(*)
+     FROM client c
+     JOIN realm r ON r.id = c.realm_id
+     JOIN client_scope_client csc ON csc.client_id = c.id
+     JOIN client_scope s ON s.id = csc.scope_id
+    WHERE r.name = 'stargate' AND c.client_id = '$KEYCLOAK_SYNC_CLIENT_ID'
+      AND s.name = 'kc-admin-api' AND csc.default_scope);
 SQL
 }
 
 keycloak_sync_client_ready() {
-  local secret state realm hash roles
+  local secret state realm hash roles admin_scope
   secret=$(read_env_var KEYCLOAK_SYNC_CLIENT_SECRET "$ENV_FILE")
   wait_for_keycloak_db || return 2
   state=$(keycloak_sync_client_state) || return 2
-  read -r realm hash roles <<< "$state"
+  read -r realm hash roles admin_scope <<< "$state"
   [ "$realm" = "1" ] || return 0
-  [ "$roles" = "1" ] && [ "$hash" = "$(printf '%s' "$secret" | sha256sum | cut -d' ' -f1)" ]
+  [ "$roles" = "1" ] && [ "$admin_scope" = "1" ] && [ "$hash" = "$(printf '%s' "$secret" | sha256sum | cut -d' ' -f1)" ]
 }
 
 ensure_keycloak_sync_client() {
