@@ -258,13 +258,14 @@ The TLS certificate and several service URLs are derived from the IP at first bo
 ## 5. Storage & disk
 
 ```bash
-df -h /                              # is the disk full?
-docker system df                     # space used by images / containers / volumes
-du -sh /var/lib/docker/volumes/*     # per-volume usage (Postgres, SeaweedFS, Loki, ...)
+df -h /sysroot /var/data             # OS disk (on a plain Docker install: /) and Data Disk
+sudo docker system df                # space used by images / containers
+sudo du -sh /var/data/*              # per-service usage on the Data Disk (postgres, seaweedfs, loki, ...)
 ```
 
-- Container logs are capped (json-file, 100 MB × 5 per container) so they shouldn't fill the disk, but images and volumes can.
-- Reclaim space safely: `docker image prune -af` (removes unused images only). Avoid `docker system prune --volumes` - it deletes data volumes.
+- The OS disk holds Docker images, containers and their logs. All service data (databases, mail, object storage) is on the Data Disk under `/var/data`.
+- Container logs are capped (json-file, 100 MB × 5 per container), but together with images and the system journal they can still fill a small OS disk.
+- Reclaim space on the OS disk: `sudo docker image prune -af` (removes unused images only). Avoid `docker system prune --volumes`.
 - Object storage is **SeaweedFS** (`stargate-seaweedfs`): `docker logs stargate-seaweedfs --tail 50`.
 
 ### Docker does not start because the OS disk is full
@@ -279,9 +280,10 @@ df -h /sysroot                                                                  
 sudo systemctl reset-failed docker docker.socket containerd
 sudo systemctl start docker.socket docker
 sudo systemctl is-active docker                                                 # expect: active
+sudo docker image prune -af                                                     # remove unused images
 ```
 
-Once Docker is `active`, check the stack with `systemctl status stargate` and start it with `sudo systemctl start stargate` if needed. Then reclaim space as described above.
+Once Docker is `active`, check the stack with `systemctl status stargate` and start it with `sudo systemctl start stargate` if needed.
 
 ---
 
