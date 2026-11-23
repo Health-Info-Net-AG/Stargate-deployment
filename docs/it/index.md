@@ -133,7 +133,7 @@ I seguenti elementi devono essere disponibili o confermati prima dell'installazi
 | `quay.io` | `443` | TCP | Registry dei container (Keycloak, oauth2-proxy) |
 | `github.com` | `443` | TCP | Repository delle policy (policy-sync) |
 | Il proprio endpoint Loki (es. `loki.example.com`) | `443` | TCP | Opzionale. Necessario solo se si fornisce una propria istanza Loki a cui lo stack deve inviare i log (Alloy → Loki) |
-| Server di aggiornamento di Alpine, AlmaLinux, ecc. | `80` | TCP | Vari server di aggiornamento - https://hub.docker.com/ |
+| Server di aggiornamento di Alpine, AlmaLinux, clamav ecc. | `80, 443` | TCP | Vari server di aggiornamento - https://hub.docker.com/ https://database.clamav.net |
 | Server di posta di destinazione | `25` | TCP | Consegna posta in uscita tramite ricerca MX, o consegna all'MTA successivo configurato come server in uscita. |
 | Server DNS | `53` | UDP+TCP | In uscita verso server DNS pubblici |
 | `ntp.metas.ch` (server NTP predefinito) | `123` | UDP | NTP sincronizza gli orologi di computer, server, dispositivi di rete e macchine virtuali con fonti di tempo precise |
