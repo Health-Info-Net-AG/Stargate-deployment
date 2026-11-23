@@ -258,14 +258,32 @@ Il certificato TLS e diversi URL dei servizi vengono derivati dall'IP al primo a
 ## 5. Archiviazione e disco
 
 ```bash
-df -h /                              # is the disk full?
-docker system df                     # space used by images / containers / volumes
-du -sh /var/lib/docker/volumes/*     # per-volume usage (Postgres, SeaweedFS, Loki, ...)
+df -h /sysroot /var/data             # OS disk (on a plain Docker install: /) and Data Disk
+sudo docker system df                # space used by images / containers
+sudo du -sh /var/data/*              # per-service usage on the Data Disk (postgres, seaweedfs, loki, ...)
 ```
 
-- I log dei container hanno un limite massimo (json-file, 100 MB × 5 per container), quindi non dovrebbero riempire il disco; immagini e volumi, invece, possono farlo.
-- Per liberare spazio in sicurezza: `docker image prune -af` (rimuove solo le immagini non utilizzate). Evitare `docker system prune --volumes`, che elimina i volumi dei dati.
+- Il disco del sistema contiene le immagini Docker, i container e i relativi log. Tutti i dati dei servizi (database, posta, archiviazione a oggetti) si trovano sul Data Disk in `/var/data`.
+- I log dei container hanno un limite massimo (json-file, 100 MB × 5 per container), ma insieme alle immagini e al journal di sistema possono comunque riempire un disco del sistema di piccole dimensioni.
+- Per liberare spazio sul disco del sistema: `sudo docker image prune -af` (rimuove solo le immagini non utilizzate). Evitare `docker system prune --volumes`.
 - L'archiviazione a oggetti è gestita da **SeaweedFS** (`stargate-seaweedfs`): `docker logs stargate-seaweedfs --tail 50`.
+
+### Docker non si avvia perché il disco del sistema è pieno
+
+Quando sul disco del sistema non c'è più spazio libero, Docker non si avvia e lo stack resta fermo. Liberare spazio, quindi avviare di nuovo Docker:
+
+```bash
+sudo journalctl --vacuum-size=100M                                              # shrink the system journal
+sudo find /var/lib/docker/containers -name '*-json.log' -exec truncate -s 0 {} +  # empty container logs
+df -h /sysroot                                                                  # confirm free space
+
+sudo systemctl reset-failed docker docker.socket containerd
+sudo systemctl start docker.socket docker
+sudo systemctl is-active docker                                                 # expect: active
+sudo docker image prune -af                                                     # remove unused images
+```
+
+Quando Docker è `active`, controllare lo stack con `systemctl status stargate` e, se necessario, avviarlo con `sudo systemctl start stargate`.
 
 ---
 

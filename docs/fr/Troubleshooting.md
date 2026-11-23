@@ -258,14 +258,32 @@ Le certificat TLS et plusieurs URL de services sont dérivés de l’adresse IP 
 ## 5. Stockage et disque
 
 ```bash
-df -h /                              # is the disk full?
-docker system df                     # space used by images / containers / volumes
-du -sh /var/lib/docker/volumes/*     # per-volume usage (Postgres, SeaweedFS, Loki, ...)
+df -h /sysroot /var/data             # OS disk (on a plain Docker install: /) and Data Disk
+sudo docker system df                # space used by images / containers
+sudo du -sh /var/data/*              # per-service usage on the Data Disk (postgres, seaweedfs, loki, ...)
 ```
 
-- Les journaux des conteneurs sont plafonnés (json-file, 100 MB × 5 par conteneur) et ne devraient donc pas remplir le disque, contrairement aux images et aux volumes.
-- Pour libérer de l’espace sans risque : `docker image prune -af` (supprime uniquement les images inutilisées). Évitez `docker system prune --volumes`, qui supprime les volumes de données.
+- Le disque du système contient les images Docker, les conteneurs et leurs journaux. Toutes les données des services (bases de données, e-mails, stockage objet) se trouvent sur le Data Disk, sous `/var/data`.
+- Les journaux des conteneurs sont plafonnés (json-file, 100 MB × 5 par conteneur), mais avec les images et le journal système, ils peuvent tout de même remplir un petit disque système.
+- Pour libérer de l’espace sur le disque du système : `sudo docker image prune -af` (supprime uniquement les images inutilisées). Évitez `docker system prune --volumes`.
 - Le stockage objet est assuré par **SeaweedFS** (`stargate-seaweedfs`) : `docker logs stargate-seaweedfs --tail 50`.
+
+### Docker ne démarre pas car le disque du système est plein
+
+Lorsque le disque du système n’a plus d’espace libre, Docker ne démarre pas et la pile reste arrêtée. Libérez de l’espace, puis redémarrez Docker :
+
+```bash
+sudo journalctl --vacuum-size=100M                                              # shrink the system journal
+sudo find /var/lib/docker/containers -name '*-json.log' -exec truncate -s 0 {} +  # empty container logs
+df -h /sysroot                                                                  # confirm free space
+
+sudo systemctl reset-failed docker docker.socket containerd
+sudo systemctl start docker.socket docker
+sudo systemctl is-active docker                                                 # expect: active
+sudo docker image prune -af                                                     # remove unused images
+```
+
+Dès que Docker est `active`, vérifiez la pile avec `systemctl status stargate` et démarrez-la si nécessaire avec `sudo systemctl start stargate`.
 
 ---
 

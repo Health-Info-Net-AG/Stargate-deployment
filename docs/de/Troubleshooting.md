@@ -258,14 +258,32 @@ Das TLS-Zertifikat und mehrere Dienst-URLs werden beim ersten Start aus der IP-A
 ## 5. Speicher und Festplatte
 
 ```bash
-df -h /                              # is the disk full?
-docker system df                     # space used by images / containers / volumes
-du -sh /var/lib/docker/volumes/*     # per-volume usage (Postgres, SeaweedFS, Loki, ...)
+df -h /sysroot /var/data             # OS disk (on a plain Docker install: /) and Data Disk
+sudo docker system df                # space used by images / containers
+sudo du -sh /var/data/*              # per-service usage on the Data Disk (postgres, seaweedfs, loki, ...)
 ```
 
-- Container-Logs sind begrenzt (json-file, 100 MB × 5 pro Container) und sollten die Festplatte daher nicht füllen; Images und Volumes hingegen können das.
-- Speicherplatz sicher freigeben: `docker image prune -af` (entfernt nur nicht verwendete Images). Vermeiden Sie `docker system prune --volumes`, denn dieser Befehl löscht Daten-Volumes.
+- Die OS-Festplatte enthält Docker-Images, Container und deren Logs. Alle Dienstdaten (Datenbanken, E-Mails, Objektspeicher) liegen auf dem Data Disk unter `/var/data`.
+- Container-Logs sind begrenzt (json-file, 100 MB × 5 pro Container), können aber zusammen mit Images und dem System-Journal eine kleine OS-Festplatte trotzdem füllen.
+- Speicherplatz auf der OS-Festplatte freigeben: `sudo docker image prune -af` (entfernt nur nicht verwendete Images). Vermeiden Sie `docker system prune --volumes`.
 - Als Objektspeicher dient **SeaweedFS** (`stargate-seaweedfs`): `docker logs stargate-seaweedfs --tail 50`.
+
+### Docker startet nicht, weil die OS-Festplatte voll ist
+
+Ist auf der OS-Festplatte kein Speicherplatz mehr frei, startet Docker nicht und der Stack bleibt gestoppt. Geben Sie Speicherplatz frei und starten Sie Docker anschliessend erneut:
+
+```bash
+sudo journalctl --vacuum-size=100M                                              # shrink the system journal
+sudo find /var/lib/docker/containers -name '*-json.log' -exec truncate -s 0 {} +  # empty container logs
+df -h /sysroot                                                                  # confirm free space
+
+sudo systemctl reset-failed docker docker.socket containerd
+sudo systemctl start docker.socket docker
+sudo systemctl is-active docker                                                 # expect: active
+sudo docker image prune -af                                                     # remove unused images
+```
+
+Sobald Docker `active` ist, prüfen Sie den Stack mit `systemctl status stargate` und starten Sie ihn bei Bedarf mit `sudo systemctl start stargate`.
 
 ---
 
