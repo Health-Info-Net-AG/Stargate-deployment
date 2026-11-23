@@ -267,6 +267,22 @@ du -sh /var/lib/docker/volumes/*     # per-volume usage (Postgres, SeaweedFS, Lo
 - Pour libérer de l’espace sans risque : `docker image prune -af` (supprime uniquement les images inutilisées). Évitez `docker system prune --volumes`, qui supprime les volumes de données.
 - Le stockage objet est assuré par **SeaweedFS** (`stargate-seaweedfs`) : `docker logs stargate-seaweedfs --tail 50`.
 
+### Docker ne démarre pas car le disque du système est plein
+
+Lorsque le disque du système n’a plus d’espace libre, Docker ne démarre pas et la pile reste arrêtée. Libérez de l’espace, puis redémarrez Docker :
+
+```bash
+sudo journalctl --vacuum-size=100M                                              # shrink the system journal
+sudo find /var/lib/docker/containers -name '*-json.log' -exec truncate -s 0 {} +  # empty container logs
+df -h /sysroot                                                                  # confirm free space
+
+sudo systemctl reset-failed docker docker.socket containerd
+sudo systemctl start docker.socket docker
+sudo systemctl is-active docker                                                 # expect: active
+```
+
+Dès que Docker est `active`, vérifiez la pile avec `systemctl status stargate` et démarrez-la si nécessaire avec `sudo systemctl start stargate`. Libérez ensuite davantage d’espace comme décrit ci-dessus.
+
 ---
 
 ## 6. Ressources de la VM

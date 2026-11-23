@@ -267,6 +267,22 @@ du -sh /var/lib/docker/volumes/*     # per-volume usage (Postgres, SeaweedFS, Lo
 - Per liberare spazio in sicurezza: `docker image prune -af` (rimuove solo le immagini non utilizzate). Evitare `docker system prune --volumes`, che elimina i volumi dei dati.
 - L'archiviazione a oggetti è gestita da **SeaweedFS** (`stargate-seaweedfs`): `docker logs stargate-seaweedfs --tail 50`.
 
+### Docker non si avvia perché il disco del sistema è pieno
+
+Quando sul disco del sistema non c'è più spazio libero, Docker non si avvia e lo stack resta fermo. Liberare spazio, quindi avviare di nuovo Docker:
+
+```bash
+sudo journalctl --vacuum-size=100M                                              # shrink the system journal
+sudo find /var/lib/docker/containers -name '*-json.log' -exec truncate -s 0 {} +  # empty container logs
+df -h /sysroot                                                                  # confirm free space
+
+sudo systemctl reset-failed docker docker.socket containerd
+sudo systemctl start docker.socket docker
+sudo systemctl is-active docker                                                 # expect: active
+```
+
+Quando Docker è `active`, controllare lo stack con `systemctl status stargate` e, se necessario, avviarlo con `sudo systemctl start stargate`. Liberare poi altro spazio come descritto sopra.
+
 ---
 
 ## 6. Risorse della VM

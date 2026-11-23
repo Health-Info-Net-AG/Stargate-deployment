@@ -267,6 +267,22 @@ du -sh /var/lib/docker/volumes/*     # per-volume usage (Postgres, SeaweedFS, Lo
 - Reclaim space safely: `docker image prune -af` (removes unused images only). Avoid `docker system prune --volumes` - it deletes data volumes.
 - Object storage is **SeaweedFS** (`stargate-seaweedfs`): `docker logs stargate-seaweedfs --tail 50`.
 
+### Docker does not start because the OS disk is full
+
+When the OS disk has no free space left, Docker fails to start and the stack stays down. Free space, then start Docker again:
+
+```bash
+sudo journalctl --vacuum-size=100M                                              # shrink the system journal
+sudo find /var/lib/docker/containers -name '*-json.log' -exec truncate -s 0 {} +  # empty container logs
+df -h /sysroot                                                                  # confirm free space
+
+sudo systemctl reset-failed docker docker.socket containerd
+sudo systemctl start docker.socket docker
+sudo systemctl is-active docker                                                 # expect: active
+```
+
+Once Docker is `active`, check the stack with `systemctl status stargate` and start it with `sudo systemctl start stargate` if needed. Then reclaim space as described above.
+
 ---
 
 ## 6. VM resources

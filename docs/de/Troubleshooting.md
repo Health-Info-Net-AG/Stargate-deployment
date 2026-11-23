@@ -267,6 +267,22 @@ du -sh /var/lib/docker/volumes/*     # per-volume usage (Postgres, SeaweedFS, Lo
 - Speicherplatz sicher freigeben: `docker image prune -af` (entfernt nur nicht verwendete Images). Vermeiden Sie `docker system prune --volumes`, denn dieser Befehl löscht Daten-Volumes.
 - Als Objektspeicher dient **SeaweedFS** (`stargate-seaweedfs`): `docker logs stargate-seaweedfs --tail 50`.
 
+### Docker startet nicht, weil die OS-Festplatte voll ist
+
+Ist auf der OS-Festplatte kein Speicherplatz mehr frei, startet Docker nicht und der Stack bleibt gestoppt. Geben Sie Speicherplatz frei und starten Sie Docker anschliessend erneut:
+
+```bash
+sudo journalctl --vacuum-size=100M                                              # shrink the system journal
+sudo find /var/lib/docker/containers -name '*-json.log' -exec truncate -s 0 {} +  # empty container logs
+df -h /sysroot                                                                  # confirm free space
+
+sudo systemctl reset-failed docker docker.socket containerd
+sudo systemctl start docker.socket docker
+sudo systemctl is-active docker                                                 # expect: active
+```
+
+Sobald Docker `active` ist, prüfen Sie den Stack mit `systemctl status stargate` und starten Sie ihn bei Bedarf mit `sudo systemctl start stargate`. Geben Sie danach wie oben beschrieben weiteren Speicherplatz frei.
+
 ---
 
 ## 6. VM-Ressourcen
