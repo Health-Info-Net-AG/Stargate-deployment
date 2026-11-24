@@ -564,7 +564,7 @@ services:
       HTTP_MAX_REQUEST_BODY_SIZE: "52428800"
 
       LOG_LEVEL: "info"
-      GOMEMLIMIT: "1350MiB"
+      GOMEMLIMIT: "900MiB"
     mem_limit: 1g
     ports:
       # Bind to loopback only: unauthenticated API; external access goes through
@@ -897,7 +897,7 @@ services:
       HOSPITAL_DATA_CACHE_TTL_SECONDS: "21600"
       CUSTOMER_DEVICE_DATA_CACHE_TTL_SECONDS: "1800"
       CERTIFICATE_EXPIRING_SOON_PERIOD_SECONDS: "2592000"
-      EXPIRING_CERTIFICATES_CACHE_TTL_SECONDS: "1800"
+      CERTIFICATE_EXPIRING_CACHE_TTL_SECONDS: "1800"
 
       # Stargate deployment release tag (server-side; read at runtime).
       APP_VERSION: "${APP_VERSION:-unknown}"
