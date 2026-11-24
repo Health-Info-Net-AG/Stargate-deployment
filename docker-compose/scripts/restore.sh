@@ -11,6 +11,7 @@ INVOCATION_DIR="$PWD"  # caller's working directory, captured before the cd belo
 . "$SCRIPT_DIR/lib/docker.sh"
 . "$SCRIPT_DIR/lib/env.sh"
 . "$SCRIPT_DIR/lib/vault-tokens.sh"  # needs SECRETS_DIR/ENV_FILE from paths.sh
+. "$SCRIPT_DIR/lib/vault-kv.sh"
 . "$SCRIPT_DIR/init-data-layout.sh"   # defines init_data_layout (does not auto-run when sourced)
 
 # Detect distribution / package manager (sets DIST_ID, PKGMGR).
@@ -668,20 +669,7 @@ if [ -d "$BACKUP_CONTENT/vault" ]; then
     [ -d "$mount_dir" ] || continue
     mount_name=$(basename "$mount_dir")
     echo "    Restoring: $mount_name..."
-    for secret_file in "$mount_dir"*.json; do
-      [ -f "$secret_file" ] || continue
-      key_name=$(basename "$secret_file" .json)
-      SECRET_DATA=$(jq -r '.data.data // empty' "$secret_file" 2>/dev/null)
-      if [ -n "$SECRET_DATA" ]; then
-        if echo "$SECRET_DATA" | docker exec -i -e VAULT_TOKEN stargate-vault \
-          vault kv put -address=http://127.0.0.1:8200 "$mount_name/$key_name" - > /dev/null 2>&1; then
-          echo "      ✓ $key_name"
-          ((RESTORED_SECRETS++)) || true
-        else
-          echo "      ✗ Failed to restore $key_name"
-        fi
-      fi
-    done
+    vault_kv_restore_mount_dir "$mount_dir"
   done
   if [ "$RESTORED_SECRETS" -gt 0 ]; then
     echo ""
