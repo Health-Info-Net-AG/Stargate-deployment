@@ -664,6 +664,7 @@ if [ -z "$VAULT_TOKEN" ]; then
 fi
 
 VAULT_RESTORE_INCOMPLETE=false
+VAULT_IN_ARCHIVE=false
 
 # -----------------------------------------------------------------
 # Restore Vault KV secrets from backup (runs on every path)
@@ -671,6 +672,7 @@ VAULT_RESTORE_INCOMPLETE=false
 if [ -d "$BACKUP_CONTENT/vault" ]; then
   echo ""
   echo "  Restoring Vault secrets from backup..."
+  VAULT_IN_ARCHIVE=true
   RESTORED_SECRETS=0
   VAULT_RESTORE_FAILED=0
   for mount_dir in "$BACKUP_CONTENT/vault"/*/; do
@@ -805,7 +807,7 @@ echo "  ------------------"
 echo "  ✓ Customer configuration"
 echo "  ✓ Database (all tables and data)"
 echo "  ✓ Vault keys"
-if [ -d "$BACKUP_CONTENT/vault" ]; then
+if [ "$VAULT_IN_ARCHIVE" = true ]; then
   if [ "$VAULT_RESTORE_INCOMPLETE" = true ]; then
     echo "  ✗ Vault secrets: INCOMPLETE, $RESTORED_SECRETS restored"
   else
