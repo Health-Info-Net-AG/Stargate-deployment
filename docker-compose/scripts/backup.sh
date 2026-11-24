@@ -65,8 +65,7 @@ POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-postgres}"
 S3_ACCESS_KEY="${S3_ACCESS_KEY:-minioadmin}"
 S3_SECRET_KEY="${S3_SECRET_KEY:-minioadmin}"
 S3_BUCKET_NAME="${S3_BUCKET_NAME:-stargate-bucket}"
-# Pinned aws-cli image used for S3 object backup/restore.
-AWS_CLI_IMAGE="amazon/aws-cli:2.27.31"
+AWS_CLI_IMAGE="$(compose_service_image seaweedfs-init)"
 
 backup_customer_config() {
   local rc=0
@@ -400,7 +399,9 @@ echo ""
 
 S3_OBJ_COUNT=0
 mkdir -p "$BACKUP_SUBDIR/s3"
-if docker ps --format '{{.Names}}' | grep -q "stargate-seaweedfs"; then
+if [ -z "$AWS_CLI_IMAGE" ]; then
+  echo "  ✗ WARNING: no aws-cli image found in compose (seaweedfs-init); skipping object backup"
+elif docker ps --format '{{.Names}}' | grep -q "stargate-seaweedfs"; then
   # Sync the bucket out via a throwaway aws-cli container that shares the
   # seaweedfs container's network namespace, so 127.0.0.1:8333 reaches it
   # without depending on the bridge-network name.

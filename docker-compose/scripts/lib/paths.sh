@@ -71,3 +71,7 @@ compose() {
     docker compose --project-directory "$PROJECT_DIR" --env-file "$ENV_FILE" "$@"
   fi
 }
+
+compose_service_image() {
+  compose config --format json 2>/dev/null | jq -r --arg svc "$1" '.services[$svc].image // empty'
+}

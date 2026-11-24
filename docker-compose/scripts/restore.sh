@@ -702,7 +702,7 @@ echo "  Restoring S3 objects"
 echo "============================================"
 echo ""
 
-AWS_CLI_IMAGE="amazon/aws-cli:2.27.31"
+AWS_CLI_IMAGE="$(compose_service_image seaweedfs-init)"
 # Support both new (s3/) and legacy (minio/) backup directory layouts
 if [ -d "$BACKUP_CONTENT/s3/${S3_BUCKET_NAME}" ]; then
   S3_BACKUP_DIR="$BACKUP_CONTENT/s3"
@@ -712,7 +712,9 @@ else
   S3_BACKUP_DIR=""
 fi
 
-if [ -n "$S3_BACKUP_DIR" ]; then
+if [ -n "$S3_BACKUP_DIR" ] && [ -z "$AWS_CLI_IMAGE" ]; then
+  echo "  ✗ WARNING: no aws-cli image found in compose (seaweedfs-init); S3 objects not restored"
+elif [ -n "$S3_BACKUP_DIR" ]; then
   # Sync objects back via a throwaway aws-cli container sharing seaweedfs's
   # network namespace. The bucket is created by seaweedfs-init beforehand.
   if docker run --rm --network "container:stargate-seaweedfs" \
