@@ -142,8 +142,13 @@ if [ "$CONFIG_ONLY" -ne 1 ]; then
   echo "============================================"
   echo ""
 
-  if compose ps -q 2>/dev/null | grep -q .; then
-    echo "Stopping existing services..."
+  if command -v systemctl > /dev/null 2>&1 && systemctl is-active --quiet stargate 2>/dev/null; then
+    echo "Stopping the stargate service..."
+    systemctl stop stargate || true
+  fi
+
+  if compose ps -aq 2>/dev/null | grep -q .; then
+    echo "Removing existing containers..."
     compose down --remove-orphans 2>/dev/null || true
     echo "  ✓ Services stopped"
   else
