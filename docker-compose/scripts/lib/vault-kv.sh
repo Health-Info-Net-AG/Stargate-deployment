@@ -79,6 +79,7 @@ vault_kv_restore_mount_dir() {
       ((RESTORED_SECRETS++)) || true
     else
       echo "      ✗ Failed to restore $key"
+      ((VAULT_RESTORE_FAILED++)) || true
     fi
   done 3< <(find "$mount_dir" -type f -name '*.json' -print0 | sort -z)
 }

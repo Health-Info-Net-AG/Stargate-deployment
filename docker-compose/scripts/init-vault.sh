@@ -69,9 +69,22 @@ if [ "$INITIALIZED" = "true" ]; then
   if [ -f "$KEYS_FILE" ] && jq empty "$KEYS_FILE" 2>/dev/null; then
     ROOT_TOKEN=$(jq -r '.root_token' "$KEYS_FILE")
     export VAULT_TOKEN="$ROOT_TOKEN"
+  else
+    echo "ERROR: Vault is initialized, but $KEYS_FILE is missing or not valid JSON." >&2
+    echo "  The KV mounts and the per-service tokens cannot be checked or created without it." >&2
+    exit 1
   fi
   
 else
+  if [ -f "$KEYS_FILE" ] && jq -e '.unseal_keys_b64 | length > 0' "$KEYS_FILE" >/dev/null 2>&1 \
+     && [ "${VAULT_ALLOW_REINIT:-false}" != "true" ]; then
+    echo "ERROR: Vault reports it is not initialized, but $KEYS_FILE holds unseal keys." >&2
+    echo "  Initializing now would replace those keys, and the Vault data they belong to could never be unsealed again." >&2
+    echo "  Most likely the Vault data directory is empty or not the expected one (Data Disk not mounted, wrong path)." >&2
+    echo "  Nothing was changed. If this Vault really has to start empty, move $KEYS_FILE away first." >&2
+    exit 1
+  fi
+
   echo "Initializing Vault for the first time..."
   
   # Initialize Vault with 5 key shares and 3 key threshold
@@ -79,9 +92,18 @@ else
   # The root token will be auto-generated
   INIT_ARGS="-address=http://vault:8200 -key-shares=5 -key-threshold=3 -format=json"
   
-  # Initialize Vault with 5 key shares and 3 key threshold
-  ( umask 077; vault operator init $INIT_ARGS > "$KEYS_FILE" )
-  
+  KEYS_TMP="$SECRETS_DIR/.vault-keys.json.$$"
+  if ! ( umask 077; vault operator init $INIT_ARGS > "$KEYS_TMP" ); then
+    echo "ERROR: vault operator init failed; $KEYS_FILE was not changed." >&2
+    echo "  Any output it produced is in $KEYS_TMP." >&2
+    exit 1
+  fi
+  if ! jq -e '.root_token and (.unseal_keys_b64 | length >= 3)' "$KEYS_TMP" >/dev/null 2>&1; then
+    echo "ERROR: vault operator init returned no usable keys; $KEYS_FILE was not changed." >&2
+    echo "  Its output is in $KEYS_TMP." >&2
+    exit 1
+  fi
+  mv -f "$KEYS_TMP" "$KEYS_FILE"
   chmod 600 "$KEYS_FILE"
   
   echo "Vault initialized. Keys stored in $KEYS_FILE"

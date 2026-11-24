@@ -179,6 +179,7 @@ services:
       VAULT_ADDR: "http://vault:8200"
       # WireGuard private key (optional - if set, will be written to Vault for irisagent)
       WG_PRIVATE_KEY: ${WG_PRIVATE_KEY:-}
+      VAULT_ALLOW_REINIT: ${VAULT_ALLOW_REINIT:-false}
     volumes:
       - ./scripts:/scripts:ro
       - ${STARGATE_DATA_DIR:-/var/data}/vereign/secrets:/secrets

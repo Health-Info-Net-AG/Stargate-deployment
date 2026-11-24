@@ -70,4 +70,11 @@ done
 [ "$(vx kv get -field=private_key secret-mailauth/dkim/example.com/sel1)" = dkim-key ] || fail "nested DKIM key not restored"
 [ "$(vx kv get -field=private_key secret-mailauth/arc/example.com/sel1)" = arc-key ] || fail "nested ARC key not restored"
 
+vx secrets disable secret-mailauth > /dev/null
+RESTORED_SECRETS=0
+VAULT_RESTORE_FAILED=0
+vault_kv_restore_mount_dir "$work/vault/secret-mailauth/" >> "$work/restore.log"
+[ "$VAULT_RESTORE_FAILED" -eq 2 ] || fail "expected 2 failed imports into a missing mount, got $VAULT_RESTORE_FAILED"
+[ "$RESTORED_SECRETS" -eq 0 ] || fail "imports into a missing mount counted as restored"
+
 echo "PASS"

@@ -633,7 +633,7 @@ echo ""
 # Detached + `docker wait` captures the init container's exit code; compose's
 # `depends_on: vault (service_healthy)` makes vault-init wait for Vault first.
 echo "Initializing / unsealing Vault via vault-init..."
-compose up -d vault-init
+VAULT_ALLOW_REINIT=true compose up -d vault-init
 
 VAULT_INIT_EXIT=$(docker wait stargate-vault-init 2>/dev/null) || VAULT_INIT_EXIT=1
 if [ "$VAULT_INIT_EXIT" != "0" ]; then
@@ -663,6 +663,8 @@ if [ -z "$VAULT_TOKEN" ]; then
   exit 1
 fi
 
+VAULT_RESTORE_INCOMPLETE=false
+
 # -----------------------------------------------------------------
 # Restore Vault KV secrets from backup (runs on every path)
 # -----------------------------------------------------------------
@@ -670,16 +672,24 @@ if [ -d "$BACKUP_CONTENT/vault" ]; then
   echo ""
   echo "  Restoring Vault secrets from backup..."
   RESTORED_SECRETS=0
+  VAULT_RESTORE_FAILED=0
   for mount_dir in "$BACKUP_CONTENT/vault"/*/; do
     [ -d "$mount_dir" ] || continue
     mount_name=$(basename "$mount_dir")
     echo "    Restoring: $mount_name..."
     vault_kv_restore_mount_dir "$mount_dir"
   done
-  if [ "$RESTORED_SECRETS" -gt 0 ]; then
-    echo ""
-    echo "  ✓ $RESTORED_SECRETS Vault secrets restored"
+  ARCHIVED_SECRETS=$(jq -r '.contents.vault_secrets // empty' "$BACKUP_CONTENT/manifest.json" 2>/dev/null || true)
+  echo ""
+  if [ "$VAULT_RESTORE_FAILED" -gt 0 ]; then
+    echo "  ✗ ERROR: $VAULT_RESTORE_FAILED Vault secret(s) could not be restored (see above)"
+    VAULT_RESTORE_INCOMPLETE=true
   fi
+  if [ -n "$ARCHIVED_SECRETS" ] && [ "$RESTORED_SECRETS" -ne "$ARCHIVED_SECRETS" ]; then
+    echo "  ✗ ERROR: the archive lists $ARCHIVED_SECRETS Vault secret(s), $RESTORED_SECRETS were restored"
+    VAULT_RESTORE_INCOMPLETE=true
+  fi
+  echo "  $([ "$VAULT_RESTORE_INCOMPLETE" = true ] && echo "✗" || echo "✓") $RESTORED_SECRETS Vault secret(s) restored"
 else
   echo ""
   echo "  ⚠ No Vault secrets in backup (older backup format)"
@@ -796,7 +806,11 @@ echo "  ✓ Customer configuration"
 echo "  ✓ Database (all tables and data)"
 echo "  ✓ Vault keys"
 if [ -d "$BACKUP_CONTENT/vault" ]; then
-  echo "  ✓ Vault secrets (S/MIME keys, WG keys, etc.)"
+  if [ "$VAULT_RESTORE_INCOMPLETE" = true ]; then
+    echo "  ✗ Vault secrets: INCOMPLETE, $RESTORED_SECRETS restored"
+  else
+    echo "  ✓ Vault secrets: $RESTORED_SECRETS (S/MIME keys, DKIM/ARC and TLS keys, WG key, ...)"
+  fi
 fi
 if [ $CERT_COUNT -gt 0 ]; then
   echo "  ✓ S/MIME certificates ($CERT_COUNT files)"
@@ -835,5 +849,12 @@ if [ "${BACKUP_FILE#"$DATA_DIR/restore/"}" != "$BACKUP_FILE" ]; then
   else
     echo "  NOTE: could not move consumed archive out of the drop zone (restore still succeeded)."
   fi
+fi
+
+if [ "$VAULT_RESTORE_INCOMPLETE" = true ]; then
+  echo "" >&2
+  echo "ERROR: the Vault secrets were restored INCOMPLETELY (see above)." >&2
+  echo "  Mail signing, TLS or S/MIME may fail until the missing secrets are re-created." >&2
+  exit 3
 fi
 exit 0

@@ -431,7 +431,12 @@ echo "  ---------"
 echo "  • Full PostgreSQL dump (all databases)"
 echo "  • Individual database dumps"
 echo "  • Vault unseal keys and tokens"
-echo "  • Vault KV secrets (S/MIME keys, WG keys, etc.)"
+if [ "$VAULT_BACKUP_INCOMPLETE" = true ]; then
+  echo "  ✗ Vault KV secrets: INCOMPLETE, ${VAULT_SECRETS_COUNT:-0} backed up"
+else
+  echo "  • Vault KV secrets: ${VAULT_SECRETS_COUNT:-0} (S/MIME keys, DKIM/ARC and TLS keys, WG key, ...)"
+fi
+echo "  • S3 objects: ${S3_OBJ_COUNT:-0}"
 echo "  • Customer configuration (with WireGuard key)"
 echo "  • S/MIME CSR and certificates"
 echo ""
