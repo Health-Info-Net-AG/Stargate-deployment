@@ -705,6 +705,8 @@ if [ -n "$S3_BACKUP_DIR" ] && [ -z "$AWS_CLI_IMAGE" ]; then
 elif [ -n "$S3_BACKUP_DIR" ]; then
   # Sync objects back via a throwaway aws-cli container sharing seaweedfs's
   # network namespace. The bucket is created by seaweedfs-init beforehand.
+  compose up -d seaweedfs-init > /dev/null 2>&1 || true
+  docker wait stargate-seaweedfs-init > /dev/null 2>&1 || true
   if docker run --rm --network "container:stargate-seaweedfs" \
       -e "AWS_ACCESS_KEY_ID=${S3_ACCESS_KEY}" \
       -e "AWS_SECRET_ACCESS_KEY=${S3_SECRET_KEY}" \
