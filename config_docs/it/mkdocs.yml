@@ -188,6 +188,8 @@ nav:
       - Configurare un NTP personalizzato: Configure-ntp.md
       - Autenticazione basic delle connessioni in entrata: inbound-connection-authentication.md
       - Autenticazione basic delle connessioni in uscita: outbound-connection-authentication.md
+      - Rinnovare e revocare i certificati di dominio: renew-revoke.md
+      - Eliminare un dominio: Delete-domain.md
   - Installazione server:
       - Container:
           - Installazione con Docker: Docker-deploy.md

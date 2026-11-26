@@ -1,3 +1,72 @@
+## v1.2.0
+
+*Publiée le 26 novembre 2026.*
+
+Cette version vous permet de gérer entièrement les certificats de domaine dans le tableau de bord: les certificats sont désormais renouvelés automatiquement, et vous pouvez révoquer un certificat ou en émettre un nouveau vous-même. Les domaines peuvent désormais être supprimés, HIN peut planifier les mises à jour de votre HIN Gateway et les pièces jointes plus volumineuses sont prises en charge. Cette version comprend également plusieurs corrections du traitement des e-mails.
+
+### Points forts
+
+#### Renouveler, révoquer et réémettre les certificats de domaine
+
+- **Renouvellement automatique:** HIN Gateway renouvelle automatiquement le certificat de domaine avant son expiration et révoque l'ancien. Le renouvellement automatique (**Auto renew**) est activé par défaut pour tous les certificats existants et nouveaux et peut être désactivé pour chaque certificat.
+- Le bouton **Renew** permet d'émettre un nouveau certificat à partir d'un certificat expiré ou révoqué. HIN Gateway génère de nouvelles clés, et un certificat encore valide est révoqué.
+- Un certificat peut être révoqué directement dans le tableau de bord, par exemple si vous soupçonnez que la clé est compromise.
+- La section **Domain certificates** bénéficie d'un nouveau design et d'un filtre **Status** (Good, Revoked, Expired). Les certificats qui expirent bientôt sont marqués **Expiring soon**.
+- Une bannière de notification signale les certificats qui arrivent à expiration, la page **Domains** dispose d'un nouveau filtre **Expires in 30 days**, et les domaines dont le certificat expire bientôt ou est manquant sont signalés dans le tableau des domaines.
+
+Voir [Renouveler et révoquer les certificats de domaine](renew-revoke.md).
+
+#### Supprimer des domaines
+
+- Les domaines Secure et Routed peuvent désormais être supprimés depuis la page **Domain details**. La fenêtre de confirmation affiche le nom du domaine, et vous pouvez révoquer en même temps le certificat du domaine.
+- Les certificats TLS peuvent être supprimés depuis la page **Domain details**.
+
+Voir [Supprimer un domaine](Delete-domain.md).
+
+#### Mises à jour planifiées
+
+- HIN peut désormais planifier une mise à jour de votre HIN Gateway vers une version donnée, à une date et une heure fixées. HIN Gateway vérifie régulièrement si une mise à jour est planifiée et l'exécute au moment prévu. La connexion est toujours initiée par HIN Gateway, via son tunnel existant.
+- Une sauvegarde est créée automatiquement avant chaque mise à jour, afin que le système puisse être restauré si la mise à jour échoue.
+- Le tableau de bord affiche la progression d'une mise à jour en cours.
+
+### Nouveautés et améliorations
+
+- **Pièces jointes plus volumineuses:** les e-mails dont les pièces jointes atteignent au total 25 Mo peuvent désormais être envoyés via HIN Gateway et SEAL.
+- **Sécurité:** HIN Gateway vérifie désormais que le certificat de l'expéditeur appartient au domaine de l'expéditeur. La révocation d'un certificat est associée au compte du tableau de bord qui l'a demandée.
+- **En-têtes:** les en-têtes configurés dans le tableau de bord sont enregistrés exactement tels qu'ils ont été saisis et sont validés avant l'enregistrement.
+- **Réseaux de confiance:** le tableau de bord affiche une notification si les réseaux de confiance (trusted networks) ne peuvent pas être résolus.
+- **Préfixe sec:** l'option **Use sec-prefix** est grisée lorsqu'aucun enregistrement MX n'existe pour `sec.<domain>`.
+- **Onboarding:** les domaines que vous choisissez de configurer plus tard sont ajoutés avec le statut Inactive.
+- **Pairs:** la liste des pairs dans le tableau de bord est synchronisée avec le service central.
+- **WireGuard:** l'adresse IP WireGuard ne peut plus être modifiée dans le tableau de bord.
+- **SEAL:** les personnes qui continuent sans choisir de rester connectées se voient proposer de mémoriser l'appareil, afin de pouvoir lire leurs prochains messages sécurisés sans nouveau code de vérification. SEAL utilise également un nouveau fournisseur SMS pour les codes de vérification.
+- **Mises à jour des composants:** mise à jour des services et dépendances sous-jacents et correction des vulnérabilités signalées dans des paquets tiers.
+
+### Corrections
+
+- Correction de l'augmentation de la taille des pièces jointes (environ 2,5 fois), qui faisait dépasser la limite de 25 Mo à des fichiers d'environ 11 Mo.
+- Correction des signatures DKIM dont la vérification du body hash échouait.
+- Correction de la perte du corps de l'e-mail lorsqu'une règle entrante modifiait l'objet deux fois.
+- HIN Gateway conserve désormais l'ordre et la casse d'origine des en-têtes d'e-mail.
+- Les e-mails générés par Lobos ne sont plus rejetés par l'analyseur MIME.
+- Amélioration de la validation dans le gestionnaire de courrier.
+- Correction d'une erreur 500 Internal Server Error lors de l'enregistrement des paramètres d'authentification des e-mails sans sélecteur ARC.
+- Correction de la création d'un enregistrement de pair lorsque la deuxième étape de l'installation échouait.
+- La régénération du code d'activation réinitialise désormais correctement le pair lorsque sa connexion avait déjà été supprimée.
+- Le bon message d'erreur s'affiche désormais lorsqu'un code d'activation erroné est saisi.
+- Correction d'une erreur lors de la suppression d'un domaine. L'importation d'un certificat fonctionne de nouveau après la suppression puis le nouvel ajout de son domaine.
+- Les espaces en début et en fin sont désormais supprimés lors de la création ou de la mise à jour d'un domaine.
+- Le retour de l'Iris Agent à une version antérieure n'endommage plus l'installation.
+- SEAL: correction des messages d'erreur TOTP, notamment lorsqu'un nouveau secret TOTP porte le nom d'un secret inactif.
+- Le tableau de bord en français utilise désormais un seul terme pour désigner un pair.
+
+### Informations importantes
+
+Après la mise à jour, le renouvellement automatique est activé pour tous les certificats de domaine existants. Si vous ne souhaitez pas qu'un certificat soit renouvelé automatiquement, désactivez **Auto renew** dans la section **Domain certificates** du domaine.
+
+La mise à jour peut être effectuée directement depuis le tableau de bord HIN Gateway. Aucun téléchargement manuel de l'image VM n'est nécessaire.
+
+
 ## v1.1.8
 
 *Publiée le 10 novembre 2026.*

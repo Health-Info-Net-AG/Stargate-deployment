@@ -1,3 +1,72 @@
+## v1.2.0
+
+*Veröffentlicht am 26. November 2026.*
+
+Mit diesem Release verwalten Sie Domain-Zertifikate vollständig im Dashboard: Zertifikate werden jetzt automatisch erneuert, und Sie können ein Zertifikat selbst widerrufen oder ein neues ausstellen. Domains können jetzt gelöscht werden, HIN kann Updates für Ihr HIN Gateway planen, und grössere Anhänge werden unterstützt. Ausserdem enthält das Release mehrere Fehlerbehebungen bei der E-Mail-Verarbeitung.
+
+### Highlights
+
+#### Domain-Zertifikate erneuern, widerrufen und neu ausstellen
+
+- **Automatische Erneuerung:** HIN Gateway erneuert das Domain-Zertifikat automatisch vor dem Ablauf und widerruft das alte Zertifikat. Die automatische Erneuerung (**Auto renew**) ist für alle bestehenden und neuen Zertifikate standardmässig aktiviert und kann pro Zertifikat ausgeschaltet werden.
+- Mit der Schaltfläche **Renew** stellen Sie aus einem abgelaufenen oder widerrufenen Zertifikat ein neues aus. HIN Gateway erzeugt neue Schlüssel, und ein noch gültiges Zertifikat wird widerrufen.
+- Zertifikate lassen sich direkt im Dashboard widerrufen, etwa wenn Sie vermuten, dass der Schlüssel kompromittiert ist.
+- Der Bereich **Domain certificates** hat ein neues Design und einen **Status**-Filter (Good, Revoked, Expired). Bald ablaufende Zertifikate sind mit **Expiring soon** markiert.
+- Ein Hinweisbanner warnt vor ablaufenden Zertifikaten, die Seite **Domains** hat einen neuen Filter **Expires in 30 days**, und Domains mit ablaufendem oder fehlendem Zertifikat sind in der Domain-Tabelle gekennzeichnet.
+
+Siehe [Domain-Zertifikate erneuern und widerrufen](renew-revoke.md).
+
+#### Domains löschen
+
+- Secure- und Routed-Domains können jetzt auf der Seite **Domain details** gelöscht werden. Das Bestätigungsfenster zeigt den Domain-Namen an, und Sie können gleichzeitig das Domain-Zertifikat widerrufen.
+- TLS-Zertifikate können auf der Seite **Domain details** gelöscht werden.
+
+Siehe [Eine Domain löschen](Delete-domain.md).
+
+#### Geplante Updates
+
+- HIN kann jetzt ein Update Ihres HIN Gateway auf eine bestimmte Version zu einem festgelegten Zeitpunkt planen. HIN Gateway prüft regelmässig, ob ein Update geplant ist, und führt es zum festgelegten Zeitpunkt aus. Die Verbindung geht immer vom HIN Gateway aus, über den bestehenden Tunnel.
+- Vor jedem Update wird automatisch ein Backup erstellt, damit das System bei einem fehlgeschlagenen Update wiederhergestellt werden kann.
+- Das Dashboard zeigt den Fortschritt eines laufenden Updates an.
+
+### Neuerungen und Verbesserungen
+
+- **Grössere Anhänge:** E-Mails mit Anhängen bis insgesamt 25 MB können jetzt über HIN Gateway und SEAL versendet werden.
+- **Sicherheit:** HIN Gateway prüft jetzt, ob das Absenderzertifikat zur Domain des Absenders gehört. Der Widerruf eines Zertifikats ist mit dem Dashboard-Benutzerkonto verknüpft, über das er angefordert wurde.
+- **Header:** Im Dashboard konfigurierte Header werden genau so gespeichert, wie sie eingegeben wurden, und vor dem Speichern validiert.
+- **Trusted Networks:** Das Dashboard zeigt eine Benachrichtigung an, wenn die Trusted Networks nicht aufgelöst werden können.
+- **sec-Präfix:** Die Option **Use sec-prefix** ist ausgegraut, wenn für `sec.<domain>` kein MX-Eintrag existiert.
+- **Onboarding:** Domains, die Sie erst später einrichten möchten, werden mit dem Status Inactive hinzugefügt.
+- **Peers:** Die Peer-Liste im Dashboard wird mit dem zentralen Dienst synchronisiert.
+- **WireGuard:** Die WireGuard-IP-Adresse kann im Dashboard nicht mehr geändert werden.
+- **SEAL:** Wer fortfährt, ohne die Option zum Angemeldetbleiben zu wählen, wird gefragt, ob das Gerät gespeichert werden soll. So lassen sich künftige sichere Nachrichten ohne neuen Bestätigungscode lesen. SEAL nutzt zudem einen neuen SMS-Anbieter für Bestätigungscodes.
+- **Komponenten-Updates:** Zugrunde liegende Dienste und Abhängigkeiten wurden aktualisiert und gemeldete Schwachstellen in Paketen von Drittanbietern behoben.
+
+### Fehlerbehebungen
+
+- Problem behoben, bei dem Anhänge auf etwa das 2,5-Fache ihrer Grösse anwuchsen, sodass Dateien von rund 11 MB das Limit von 25 MB überschritten.
+- Fehlgeschlagene Body-Hash-Prüfung von DKIM-Signaturen behoben.
+- Verlust des E-Mail-Texts behoben, wenn eine eingehende Regel den Betreff zweimal änderte.
+- HIN Gateway behält jetzt die ursprüngliche Reihenfolge sowie die Gross- und Kleinschreibung der E-Mail-Header bei.
+- Von Lobos erzeugte E-Mails werden vom MIME-Parser nicht mehr abgelehnt.
+- Validierung im Mail-Handler verbessert.
+- 500 Internal Server Error beim Speichern der E-Mail-Authentifizierungseinstellungen ohne ARC-Selektor behoben.
+- Problem behoben, bei dem ein Peer-Eintrag erstellt wurde, wenn der zweite Installationsschritt fehlschlug.
+- Beim Neugenerieren des Aktivierungscodes wird der Peer jetzt korrekt zurückgesetzt, wenn seine Verbindung bereits gelöscht war.
+- Bei einem falschen Aktivierungscode wird jetzt die richtige Fehlermeldung angezeigt.
+- Fehler beim Löschen einer Domain behoben. Ein Zertifikat lässt sich jetzt wieder importieren, nachdem seine Domain gelöscht und erneut hinzugefügt wurde.
+- Führende und nachgestellte Leerzeichen werden beim Erstellen oder Aktualisieren einer Domain jetzt entfernt.
+- Ein Rollback des Iris Agent auf eine frühere Version beschädigt die Installation nicht mehr.
+- SEAL: Fehlermeldungen zu TOTP korrigiert, auch wenn ein neues TOTP-Secret den Namen eines inaktiven Secrets trägt.
+- Das französische Dashboard verwendet jetzt einen einheitlichen Begriff für Peer.
+
+### Wichtige Informationen
+
+Nach dem Update ist die automatische Erneuerung für alle bestehenden Domain-Zertifikate aktiviert. Wenn ein Zertifikat nicht automatisch erneuert werden soll, schalten Sie **Auto renew** im Bereich **Domain certificates** der Domain aus.
+
+Das Update kann direkt über das HIN Gateway Dashboard durchgeführt werden. Ein manueller Download des VM-Images ist nicht erforderlich.
+
+
 ## v1.1.8
 
 *Veröffentlicht am 10. November 2026.*

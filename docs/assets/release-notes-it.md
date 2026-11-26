@@ -1,3 +1,72 @@
+## v1.2.0
+
+*Rilasciata il 26 novembre 2026.*
+
+Con questa release i certificati di dominio si gestiscono interamente dalla dashboard: i certificati vengono ora rinnovati automaticamente ed è possibile revocare un certificato o emetterne uno nuovo in autonomia. È ora possibile eliminare i domini, HIN può pianificare gli aggiornamenti del vostro HIN Gateway e sono supportati allegati più grandi. La release include inoltre diverse correzioni nell'elaborazione delle e-mail.
+
+### Punti salienti
+
+#### Rinnovare, revocare e riemettere i certificati di dominio
+
+- **Rinnovo automatico:** HIN Gateway rinnova automaticamente il certificato di dominio prima della scadenza e revoca quello precedente. Il rinnovo automatico (**Auto renew**) è attivo per impostazione predefinita per tutti i certificati esistenti e nuovi e può essere disattivato per ogni certificato.
+- Con il pulsante **Renew** è possibile emettere un nuovo certificato a partire da uno scaduto o revocato. HIN Gateway genera nuove chiavi e un certificato ancora valido viene revocato.
+- I certificati possono essere revocati direttamente dalla dashboard, ad esempio se si sospetta che la chiave sia compromessa.
+- La sezione **Domain certificates** ha un nuovo design e un filtro **Status** (Good, Revoked, Expired). I certificati in scadenza sono contrassegnati con **Expiring soon**.
+- Un banner di notifica avvisa dei certificati in scadenza, la pagina **Domains** ha un nuovo filtro **Expires in 30 days** e i domini con un certificato in scadenza o mancante sono evidenziati nella tabella dei domini.
+
+Vedere [Rinnovare e revocare i certificati di dominio](renew-revoke.md).
+
+#### Eliminare i domini
+
+- I domini Secure e Routed possono ora essere eliminati dalla pagina **Domain details**. La finestra di conferma mostra il nome del dominio ed è possibile revocare contemporaneamente il certificato del dominio.
+- I certificati TLS possono essere eliminati dalla pagina **Domain details**.
+
+Vedere [Eliminare un dominio](Delete-domain.md).
+
+#### Aggiornamenti pianificati
+
+- HIN può ora pianificare l'aggiornamento del vostro HIN Gateway a una determinata versione, in una data e a un'ora stabilite. HIN Gateway verifica regolarmente se è pianificato un aggiornamento e lo esegue al momento stabilito. La connessione viene sempre avviata da HIN Gateway, tramite il tunnel esistente.
+- Prima di ogni aggiornamento viene creato automaticamente un backup, così che il sistema possa essere ripristinato se l'aggiornamento non va a buon fine.
+- La dashboard mostra l'avanzamento di un aggiornamento in corso.
+
+### Novità e miglioramenti
+
+- **Allegati più grandi:** le e-mail con allegati fino a un totale di 25 MB possono ora essere inviate tramite HIN Gateway e SEAL.
+- **Sicurezza:** HIN Gateway verifica ora che il certificato del mittente appartenga al dominio del mittente. La revoca di un certificato è associata all'account della dashboard che l'ha richiesta.
+- **Intestazioni:** le intestazioni configurate nella dashboard vengono salvate esattamente come inserite e vengono convalidate prima del salvataggio.
+- **Reti attendibili:** la dashboard mostra una notifica se le reti attendibili (trusted networks) non possono essere risolte.
+- **Prefisso sec:** l'opzione **Use sec-prefix** è disattivata (in grigio) quando non esiste un record MX per `sec.<domain>`.
+- **Onboarding:** i domini che si sceglie di configurare in un secondo momento vengono aggiunti con lo stato Inactive.
+- **Peer:** l'elenco dei peer nella dashboard è sincronizzato con il servizio centrale.
+- **WireGuard:** l'indirizzo IP di WireGuard non può più essere modificato dalla dashboard.
+- **SEAL:** chi prosegue senza scegliere di restare connesso riceve la proposta di memorizzare il dispositivo, per poter leggere i futuri messaggi sicuri senza un nuovo codice di verifica. SEAL utilizza inoltre un nuovo provider SMS per i codici di verifica.
+- **Aggiornamenti dei componenti:** aggiornati i servizi e le dipendenze sottostanti e risolte le vulnerabilità segnalate in pacchetti di terze parti.
+
+### Correzioni
+
+- Corretto l'aumento delle dimensioni degli allegati (circa 2,5 volte), che faceva superare il limite di 25 MB a file di circa 11 MB.
+- Corrette le firme DKIM la cui verifica del body hash non andava a buon fine.
+- Corretta la perdita del corpo dell'e-mail quando una regola in entrata modificava l'oggetto due volte.
+- HIN Gateway mantiene ora l'ordine originale e le maiuscole e minuscole delle intestazioni delle e-mail.
+- Le e-mail generate da Lobos non vengono più rifiutate dal parser MIME.
+- Migliorata la convalida nel gestore della posta.
+- Corretto un errore 500 Internal Server Error durante il salvataggio delle impostazioni di autenticazione delle e-mail senza selettore ARC.
+- Corretta la creazione di un record peer quando il secondo passaggio dell'installazione non andava a buon fine.
+- La rigenerazione del codice di attivazione reimposta ora correttamente il peer quando la sua connessione era già stata eliminata.
+- In caso di codice di attivazione errato viene ora mostrato il messaggio di errore corretto.
+- Corretto un errore durante l'eliminazione di un dominio. L'importazione di un certificato funziona di nuovo dopo che il relativo dominio è stato eliminato e aggiunto nuovamente.
+- Gli spazi iniziali e finali vengono ora rimossi alla creazione o all'aggiornamento di un dominio.
+- Il ritorno dell'Iris Agent a una versione precedente non compromette più l'installazione.
+- SEAL: corretti i messaggi di errore TOTP, anche quando un nuovo secret TOTP ha il nome di uno inattivo.
+- La dashboard in francese utilizza ora un unico termine per «peer».
+
+### Informazioni importanti
+
+Dopo l'aggiornamento il rinnovo automatico è attivo per tutti i certificati di dominio esistenti. Se non si desidera che un certificato venga rinnovato automaticamente, disattivare **Auto renew** nella sezione **Domain certificates** del dominio.
+
+L'aggiornamento può essere eseguito direttamente dalla dashboard di HIN Gateway. Non è necessario scaricare manualmente l'immagine VM.
+
+
 ## v1.1.8
 
 *Rilasciata il 10 novembre 2026.*
