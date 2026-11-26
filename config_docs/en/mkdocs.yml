@@ -188,6 +188,7 @@ nav:
       - Outbound basic authentication: outbound-connection-authentication.md
       - Renew and revoke domain certificates: renew-revoke.md
       - Delete a domain: Delete-domain.md
+      - Install external Linux tools: Install-external-Linux-tools.md
   - Server install:
       - Container:
           - Install with Docker: Docker-deploy.md

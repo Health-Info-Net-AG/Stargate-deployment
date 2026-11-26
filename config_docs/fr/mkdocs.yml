@@ -190,6 +190,7 @@ nav:
       - Authentification basique des connexions sortantes: outbound-connection-authentication.md
       - Renouveler et révoquer les certificats de domaine: renew-revoke.md
       - Supprimer un domaine: Delete-domain.md
+      - Installer des outils Linux externes: Install-external-Linux-tools.md
   - Installation serveur:
       - Conteneur:
           - Installation avec Docker: Docker-deploy.md
