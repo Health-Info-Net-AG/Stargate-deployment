@@ -1,6 +1,6 @@
 ## v1.2.0
 
-*Veröffentlicht am 26. November 2026.*
+*Veröffentlicht am 30. November 2026.*
 
 Mit diesem Release verwalten Sie Domain-Zertifikate vollständig im Dashboard: Zertifikate werden jetzt automatisch erneuert, und Sie können ein Zertifikat selbst widerrufen oder ein neues ausstellen. Domains können jetzt gelöscht werden, HIN kann Updates für Ihr HIN Gateway planen, und grössere Anhänge werden unterstützt. Ausserdem enthält das Release mehrere Fehlerbehebungen bei der E-Mail-Verarbeitung.
 

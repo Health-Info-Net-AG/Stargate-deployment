@@ -1,6 +1,6 @@
 ## v1.2.0
 
-*Rilasciata il 26 novembre 2026.*
+*Rilasciata il 30 novembre 2026.*
 
 Con questa release i certificati di dominio si gestiscono interamente dalla dashboard: i certificati vengono ora rinnovati automaticamente ed è possibile revocare un certificato o emetterne uno nuovo in autonomia. È ora possibile eliminare i domini, HIN può pianificare gli aggiornamenti del vostro HIN Gateway e sono supportati allegati più grandi. La release include inoltre diverse correzioni nell'elaborazione delle e-mail.
 

@@ -1,7 +1,7 @@
 
 ## v1.2.0
 
-*Released on 26 November 2026.*
+*Released on 30 November 2026.*
 
 This release gives you full control over domain certificates in the dashboard: certificates now renew automatically, and you can revoke a certificate or issue a new one yourself. Domains can now be deleted, HIN can schedule updates for your HIN Gateway, and larger attachments are supported. It also includes a number of email-processing fixes.
 

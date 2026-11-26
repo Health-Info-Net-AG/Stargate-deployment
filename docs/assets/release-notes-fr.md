@@ -1,6 +1,6 @@
 ## v1.2.0
 
-*Publiée le 26 novembre 2026.*
+*Publiée le 30 novembre 2026.*
 
 Cette version vous permet de gérer entièrement les certificats de domaine dans le tableau de bord: les certificats sont désormais renouvelés automatiquement, et vous pouvez révoquer un certificat ou en émettre un nouveau vous-même. Les domaines peuvent désormais être supprimés, HIN peut planifier les mises à jour de votre HIN Gateway et les pièces jointes plus volumineuses sont prises en charge. Cette version comprend également plusieurs corrections du traitement des e-mails.
 
