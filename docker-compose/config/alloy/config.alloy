@@ -105,8 +105,63 @@ loki.process "stargate" {
     values = { level = "level" }
   }
 
-  forward_to = concat([loki.write.local.receiver], dashboard.log_collection.default.receivers)
+  forward_to = concat([loki.process.trace_ids.receiver], dashboard.log_collection.default.receivers)
 
+}
+
+// Per-message trace IDs for the dashboard's Messages view. Local Loki only: remote receivers
+// may not accept structured metadata, and Message-IDs should not leave the box.
+loki.process "trace_ids" {
+  stage.match {
+    selector = "{service=\"stalwart\"}"
+
+    stage.regex {
+      expression = "queueId = (?P<queue_id>\\d+)"
+    }
+
+    stage.structured_metadata {
+      values = { queue_id = "" }
+    }
+  }
+
+  stage.match {
+    selector = "{service=\"mxengine\"}"
+
+    stage.json {
+      expressions = { mx_id = "id", mx_origin_id = "originalID", message_id = "emailMessageID", hin_id = "hinMessageID" }
+    }
+
+    stage.structured_metadata {
+      values = { mx_id = "", mx_origin_id = "", message_id = "", hin_id = "" }
+    }
+  }
+
+  // irisagent logs the sender mxengine id on both ends of a tunnel.
+  stage.match {
+    selector = "{service=\"irisagent\"}"
+
+    stage.json {
+      expressions = { mx_id = "id" }
+    }
+
+    stage.structured_metadata {
+      values = { mx_id = "" }
+    }
+  }
+
+  stage.match {
+    selector = "{service=\"mailauth\"}"
+
+    stage.json {
+      expressions = { queue_id = "fields.queue_id", message_id = "fields.message_id", hin_id = "fields.hin_id" }
+    }
+
+    stage.structured_metadata {
+      values = { queue_id = "", message_id = "", hin_id = "" }
+    }
+  }
+
+  forward_to = [loki.write.local.receiver]
 }
 
 // Always write to local Loki (used by the dashboard for log export).
