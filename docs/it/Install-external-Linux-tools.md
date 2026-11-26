@@ -12,5 +12,3 @@ HIN Gateway non gestisce né supporta software di terze parti installato sulla m
 
 Ogni aggiornamento di HIN Gateway sostituisce l'ambiente della macchina virtuale. Gli strumenti aggiuntivi vengono rimossi e devono essere reinstallati dopo l'aggiornamento.
 
-!!! tip "Suggerimento"
-    Conservare un breve script o un elenco degli strumenti installati, per poterli reinstallare rapidamente dopo ogni aggiornamento. Per i dettagli sul processo di aggiornamento, consultare [Aggiornamento e rollback di HIN Gateway](update-hin-gateway.md).

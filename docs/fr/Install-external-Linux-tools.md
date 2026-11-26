@@ -12,5 +12,3 @@ HIN Gateway ne gère pas et ne prend pas en charge les logiciels tiers installé
 
 Chaque mise à jour de HIN Gateway remplace l’environnement de la machine virtuelle. Les outils supplémentaires sont supprimés et vous devez les réinstaller après la mise à jour.
 
-!!! tip "Conseil"
-    Conservez un court script ou une liste des outils que vous installez, afin de pouvoir les réinstaller rapidement après chaque mise à jour. Pour en savoir plus sur le processus de mise à jour, consultez [Mise à jour et retour à une version antérieure de HIN Gateway](update-hin-gateway.md).

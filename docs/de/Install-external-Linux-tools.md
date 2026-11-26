@@ -11,6 +11,3 @@ HIN Gateway verwaltet und unterstützt keine Software von Drittanbietern, die au
 ## Installierte Tools werden bei Updates entfernt
 
 Bei jedem Update von HIN Gateway wird die Umgebung der virtuellen Maschine ersetzt. Zusätzliche Tools werden dabei entfernt und müssen nach dem Update erneut installiert werden.
-
-!!! tip
-    Führen Sie ein kurzes Skript oder eine Liste der installierten Tools, damit Sie diese nach jedem Update schnell wieder installieren können. Details zum Update-Prozess finden Sie unter [Update und Rollback von HIN Gateway](update-hin-gateway.md).
