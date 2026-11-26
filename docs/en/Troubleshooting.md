@@ -122,7 +122,9 @@ docker logs stargate-vault-init
 ```
 
 - Vault must be **unsealed** for smimekeys/mxengine/policy to work. Keys live in `/var/data/vereign/secrets/vault-keys.json`.
-- If `vault-init` exited non-zero, the keys file may be missing/corrupt - check its logs; re-running `/usr/share/stargate-deployment/docker-compose/scripts/init-vault.sh` re-attempts unseal.
+- **Signs of a sealed Vault:** services restart over and over with `503 Service Unavailable` from Vault in their logs, mail is deferred, and the dashboard login page may show "Minified React error #441". `docker ps` still shows `stargate-vault` as `healthy`, because its healthcheck accepts a sealed Vault on purpose.
+- **Fix:** `sudo systemctl restart stargate`. It stops the stack and runs `start.sh`, which unseals Vault with the keys file and starts the services in order. Expect a few minutes of downtime; sending servers retry, so no mail is lost. Vault seals itself whenever its container restarts (for example after an out-of-memory kill or a Docker restart), and nothing unseals it until the stack is restarted.
+- If `vault-init` exited non-zero, the keys file may be missing/corrupt - check its logs.
 
 !!! danger "Do not delete `/var/data/vereign/secrets/vault-keys.json`"
     Losing it means losing access to all stored secrets. Keep a backup.

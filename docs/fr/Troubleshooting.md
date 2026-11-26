@@ -122,7 +122,9 @@ docker logs stargate-vault-init
 ```
 
 - Vault doit être **descellé** pour que smimekeys, mxengine et policy fonctionnent. Les clés se trouvent dans `/var/data/vereign/secrets/vault-keys.json`.
-- Si `vault-init` s’est terminé avec un code différent de zéro, le fichier de clés est peut-être absent ou corrompu. Consultez ses journaux ; une nouvelle exécution de `/usr/share/stargate-deployment/docker-compose/scripts/init-vault.sh` tente à nouveau le descellement.
+- **Signes que Vault est scellé :** des services redémarrent en boucle avec `503 Service Unavailable` de Vault dans leurs journaux, les e-mails sont différés, et la page de connexion du tableau de bord peut afficher « Minified React error #441 ». `docker ps` indique tout de même `stargate-vault` comme `healthy`, car son contrôle d’état accepte volontairement un Vault scellé.
+- **Solution :** `sudo systemctl restart stargate`. La commande arrête la pile et exécute `start.sh`, qui descelle Vault avec le fichier de clés et démarre les services dans l’ordre. Comptez quelques minutes d’interruption ; les serveurs d’envoi réessaient, aucun e-mail n’est donc perdu. Vault se scelle à chaque redémarrage de son conteneur (par exemple après un arrêt pour manque de mémoire ou un redémarrage de Docker), et rien ne le descelle tant que la pile n’est pas redémarrée.
+- Si `vault-init` s’est terminé avec un code différent de zéro, le fichier de clés est peut-être absent ou corrompu. Consultez ses journaux.
 
 !!! danger "Ne supprimez pas `/var/data/vereign/secrets/vault-keys.json`"
     Perdre ce fichier, c’est perdre l’accès à tous les secrets enregistrés. Conservez-en une sauvegarde.
