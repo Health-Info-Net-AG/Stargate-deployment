@@ -25,8 +25,8 @@ jobs:
           fetch-depth: 10
 
       - name: Run Gitleaks on docs/
-        # https://github.com/gacts/gitleaks/releases/tag/v1.3.2
-        uses: gacts/gitleaks@c9a0338361dc45a01aa7ebaaa5330179f3c62873
+        # https://github.com/gacts/gitleaks/releases/tag/v1.4.0
+        uses: gacts/gitleaks@cefb14c48dd747562cb3de7727c1fdb4001839ec
         with:
           # Scan only the docs folder
           path: ./docs
