@@ -645,7 +645,7 @@ services:
 
   idagent:
     # renovate: datasource=docker depName=healthinfonetag/idagent
-    image: healthinfonetag/idagent:v0.0.4
+    image: healthinfonetag/idagent:v0.0.5
     container_name: stargate-idagent
     profiles: ["keri-idagent"]
     restart: unless-stopped
