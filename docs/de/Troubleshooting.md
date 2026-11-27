@@ -122,7 +122,9 @@ docker logs stargate-vault-init
 ```
 
 - Vault muss **entsiegelt** sein, damit smimekeys, mxengine und policy funktionieren. Die Schlüssel liegen in `/var/data/vereign/secrets/vault-keys.json`.
-- Wenn `vault-init` mit einem Exit-Code ungleich null beendet wurde, fehlt die Schlüsseldatei möglicherweise oder ist beschädigt. Prüfen Sie die Logs dieses Containers; ein erneuter Aufruf von `/usr/share/stargate-deployment/docker-compose/scripts/init-vault.sh` versucht die Entsiegelung erneut.
+- **Anzeichen, dass Vault versiegelt ist:** Dienste starten immer wieder neu und melden in ihren Logs `503 Service Unavailable` von Vault, Mails werden zurückgestellt, und die Login-Seite des Dashboards zeigt möglicherweise «Minified React error #441». `docker ps` zeigt `stargate-vault` trotzdem als `healthy` an, weil der Healthcheck einen versiegelten Zustand absichtlich akzeptiert.
+- **Behebung:** `sudo systemctl restart stargate`. Der Befehl stoppt den Stack und führt `start.sh` aus, das Vault mit der Schlüsseldatei entsiegelt und die Dienste in der richtigen Reihenfolge startet. Rechnen Sie mit einigen Minuten Ausfall; sendende Server versuchen es erneut, es gehen also keine Mails verloren. Vault versiegelt sich bei jedem Neustart seines Containers (zum Beispiel nach einem Abbruch wegen Speichermangels oder einem Neustart von Docker), und nichts entsiegelt es, bis der Stack neu gestartet wird.
+- Wenn `vault-init` mit einem Exit-Code ungleich null beendet wurde, fehlt die Schlüsseldatei möglicherweise oder ist beschädigt. Prüfen Sie die Logs dieses Containers.
 
 !!! danger "`/var/data/vereign/secrets/vault-keys.json` nicht löschen"
     Geht diese Datei verloren, verlieren Sie den Zugriff auf alle gespeicherten Secrets. Bewahren Sie ein Backup auf.

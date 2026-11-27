@@ -11,6 +11,7 @@ INVOCATION_DIR="$PWD"  # caller's working directory, captured before the cd belo
 . "$SCRIPT_DIR/lib/docker.sh"
 . "$SCRIPT_DIR/lib/env.sh"
 . "$SCRIPT_DIR/lib/vault-tokens.sh"  # needs SECRETS_DIR/ENV_FILE from paths.sh
+. "$SCRIPT_DIR/lib/vault-kv.sh"
 . "$SCRIPT_DIR/init-data-layout.sh"   # defines init_data_layout (does not auto-run when sourced)
 
 # Detect distribution / package manager (sets DIST_ID, PKGMGR).
@@ -141,8 +142,13 @@ if [ "$CONFIG_ONLY" -ne 1 ]; then
   echo "============================================"
   echo ""
 
-  if compose ps -q 2>/dev/null | grep -q .; then
-    echo "Stopping existing services..."
+  if command -v systemctl > /dev/null 2>&1 && systemctl is-active --quiet stargate 2>/dev/null; then
+    echo "Stopping the stargate service..."
+    systemctl stop stargate || true
+  fi
+
+  if compose ps -aq 2>/dev/null | grep -q .; then
+    echo "Removing existing containers..."
     compose down --remove-orphans 2>/dev/null || true
     echo "  ✓ Services stopped"
   else
@@ -627,7 +633,7 @@ echo ""
 # Detached + `docker wait` captures the init container's exit code; compose's
 # `depends_on: vault (service_healthy)` makes vault-init wait for Vault first.
 echo "Initializing / unsealing Vault via vault-init..."
-compose up -d vault-init
+VAULT_ALLOW_REINIT=true compose up -d vault-init
 
 VAULT_INIT_EXIT=$(docker wait stargate-vault-init 2>/dev/null) || VAULT_INIT_EXIT=1
 if [ "$VAULT_INIT_EXIT" != "0" ]; then
@@ -657,36 +663,35 @@ if [ -z "$VAULT_TOKEN" ]; then
   exit 1
 fi
 
+VAULT_RESTORE_INCOMPLETE=false
+VAULT_IN_ARCHIVE=false
+
 # -----------------------------------------------------------------
 # Restore Vault KV secrets from backup (runs on every path)
 # -----------------------------------------------------------------
 if [ -d "$BACKUP_CONTENT/vault" ]; then
   echo ""
   echo "  Restoring Vault secrets from backup..."
+  VAULT_IN_ARCHIVE=true
   RESTORED_SECRETS=0
+  VAULT_RESTORE_FAILED=0
   for mount_dir in "$BACKUP_CONTENT/vault"/*/; do
     [ -d "$mount_dir" ] || continue
     mount_name=$(basename "$mount_dir")
     echo "    Restoring: $mount_name..."
-    for secret_file in "$mount_dir"*.json; do
-      [ -f "$secret_file" ] || continue
-      key_name=$(basename "$secret_file" .json)
-      SECRET_DATA=$(jq -r '.data.data // empty' "$secret_file" 2>/dev/null)
-      if [ -n "$SECRET_DATA" ]; then
-        if echo "$SECRET_DATA" | docker exec -i -e VAULT_TOKEN stargate-vault \
-          vault kv put -address=http://127.0.0.1:8200 "$mount_name/$key_name" - > /dev/null 2>&1; then
-          echo "      ✓ $key_name"
-          ((RESTORED_SECRETS++)) || true
-        else
-          echo "      ✗ Failed to restore $key_name"
-        fi
-      fi
-    done
+    vault_kv_restore_mount_dir "$mount_dir"
   done
-  if [ "$RESTORED_SECRETS" -gt 0 ]; then
-    echo ""
-    echo "  ✓ $RESTORED_SECRETS Vault secrets restored"
+  ARCHIVED_SECRETS=$(jq -r '.contents.vault_secrets // empty' "$BACKUP_CONTENT/manifest.json" 2>/dev/null || true)
+  echo ""
+  if [ "$VAULT_RESTORE_FAILED" -gt 0 ]; then
+    echo "  ✗ ERROR: $VAULT_RESTORE_FAILED Vault secret(s) could not be restored (see above)"
+    VAULT_RESTORE_INCOMPLETE=true
   fi
+  if [ -n "$ARCHIVED_SECRETS" ] && [ "$RESTORED_SECRETS" -ne "$ARCHIVED_SECRETS" ]; then
+    echo "  ✗ ERROR: the archive lists $ARCHIVED_SECRETS Vault secret(s), $RESTORED_SECRETS were restored"
+    VAULT_RESTORE_INCOMPLETE=true
+  fi
+  echo "  $([ "$VAULT_RESTORE_INCOMPLETE" = true ] && echo "✗" || echo "✓") $RESTORED_SECRETS Vault secret(s) restored"
 else
   echo ""
   echo "  ⚠ No Vault secrets in backup (older backup format)"
@@ -702,7 +707,7 @@ echo "  Restoring S3 objects"
 echo "============================================"
 echo ""
 
-AWS_CLI_IMAGE="amazon/aws-cli:2.27.31"
+AWS_CLI_IMAGE="$(compose_service_image seaweedfs-init)"
 # Support both new (s3/) and legacy (minio/) backup directory layouts
 if [ -d "$BACKUP_CONTENT/s3/${S3_BUCKET_NAME}" ]; then
   S3_BACKUP_DIR="$BACKUP_CONTENT/s3"
@@ -712,9 +717,13 @@ else
   S3_BACKUP_DIR=""
 fi
 
-if [ -n "$S3_BACKUP_DIR" ]; then
+if [ -n "$S3_BACKUP_DIR" ] && [ -z "$AWS_CLI_IMAGE" ]; then
+  echo "  ✗ WARNING: no aws-cli image found in compose (seaweedfs-init); S3 objects not restored"
+elif [ -n "$S3_BACKUP_DIR" ]; then
   # Sync objects back via a throwaway aws-cli container sharing seaweedfs's
   # network namespace. The bucket is created by seaweedfs-init beforehand.
+  compose up -d seaweedfs-init > /dev/null 2>&1 || true
+  docker wait stargate-seaweedfs-init > /dev/null 2>&1 || true
   if docker run --rm --network "container:stargate-seaweedfs" \
       -e "AWS_ACCESS_KEY_ID=${S3_ACCESS_KEY}" \
       -e "AWS_SECRET_ACCESS_KEY=${S3_SECRET_KEY}" \
@@ -798,8 +807,12 @@ echo "  ------------------"
 echo "  ✓ Customer configuration"
 echo "  ✓ Database (all tables and data)"
 echo "  ✓ Vault keys"
-if [ -d "$BACKUP_CONTENT/vault" ]; then
-  echo "  ✓ Vault secrets (S/MIME keys, WG keys, etc.)"
+if [ "$VAULT_IN_ARCHIVE" = true ]; then
+  if [ "$VAULT_RESTORE_INCOMPLETE" = true ]; then
+    echo "  ✗ Vault secrets: INCOMPLETE, $RESTORED_SECRETS restored"
+  else
+    echo "  ✓ Vault secrets: $RESTORED_SECRETS (S/MIME keys, DKIM/ARC and TLS keys, WG key, ...)"
+  fi
 fi
 if [ $CERT_COUNT -gt 0 ]; then
   echo "  ✓ S/MIME certificates ($CERT_COUNT files)"
@@ -838,5 +851,12 @@ if [ "${BACKUP_FILE#"$DATA_DIR/restore/"}" != "$BACKUP_FILE" ]; then
   else
     echo "  NOTE: could not move consumed archive out of the drop zone (restore still succeeded)."
   fi
+fi
+
+if [ "$VAULT_RESTORE_INCOMPLETE" = true ]; then
+  echo "" >&2
+  echo "ERROR: the Vault secrets were restored INCOMPLETELY (see above)." >&2
+  echo "  Mail signing, TLS or S/MIME may fail until the missing secrets are re-created." >&2
+  exit 3
 fi
 exit 0

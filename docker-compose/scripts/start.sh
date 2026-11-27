@@ -53,7 +53,7 @@ fi
 
 # Recreate every container, all profiles included, before Vault is unsealed. After a
 # network config change compose otherwise keeps stale network IDs and drops DNS aliases.
-compose --profile '*' up --no-start --force-recreate
+compose --profile '*' up --no-start --force-recreate --remove-orphans
 
 # Start infrastructure first
 echo "Starting infrastructure services..."
@@ -139,13 +139,20 @@ compose up -d
 echo "Waiting for Stalwart provisioning to complete..."
 docker wait stargate-stalwart-provision >/dev/null 2>&1 || true
 
+stalwart_restarted=false
 for port in 25 587 10026; do
   if ! stalwart_listening "$port"; then
     echo "Stalwart is not listening on ${port}; restarting it so provisioned listeners bind..."
     compose restart stalwart || echo "WARNING: could not restart stalwart" >&2
+    stalwart_restarted=true
     break
   fi
 done
+
+if [ "$stalwart_restarted" = false ] && stalwart_restart_requested; then
+  echo "Stalwart listener settings changed; restarting it so they apply..."
+  compose restart stalwart || echo "WARNING: could not restart stalwart" >&2
+fi
 
 # Start Dozzle if enabled. --force-recreate because `docker compose down`
 # leaves inactive-profile containers holding the removed network's id, and a

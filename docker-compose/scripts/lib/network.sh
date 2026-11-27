@@ -49,3 +49,9 @@ stalwart_listening() {
   tables=$(docker exec stargate-stalwart sh -c 'cat /proc/net/tcp /proc/net/tcp6 2>/dev/null; true' 2>/dev/null) || return 1
   awk -v p="$hexport" '$4 == "0A" && toupper($2) ~ (p "$") { found = 1 } END { exit !found }' <<< "$tables"
 }
+
+stalwart_restart_requested() {
+  local started
+  started=$(docker inspect -f '{{.State.StartedAt}}' stargate-stalwart-provision 2>/dev/null) || return 1
+  docker logs --since "$started" stargate-stalwart-provision 2>&1 | grep -q '^\[provision\] restart required'
+}

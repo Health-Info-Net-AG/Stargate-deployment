@@ -51,6 +51,7 @@ STARGATE_SOURCE_ONLY=1 source "$SCRIPT_DIR/install.sh"
 . "$SCRIPT_DIR/lib/config-sync.sh"
 . "$SCRIPT_DIR/lib/manifest.sh"
 . "$SCRIPT_DIR/lib/keycloak-sync.sh"
+. "$SCRIPT_DIR/lib/network.sh"
 
 # Parse arguments. ENV_ONLY defaults from STARGATE_UPDATE_ENV_ONLY so that
 # `--release <tag> --env-only` survives the flag-less re-exec below: without
@@ -269,6 +270,12 @@ echo "=== Recreating services ==="
 compose up -d --remove-orphans
 if ! compose config --services 2>/dev/null | grep -qx idagent; then
   docker stop stargate-idagent >/dev/null 2>&1 || true
+fi
+
+docker wait stargate-stalwart-provision >/dev/null 2>&1 || true
+if stalwart_restart_requested; then
+  echo "Stalwart listener settings changed; restarting it so they apply..."
+  compose restart stalwart || echo "WARNING: could not restart stalwart" >&2
 fi
 
 # Handle Dozzle enable/disable and credential updates
