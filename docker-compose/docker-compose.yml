@@ -707,11 +707,10 @@ services:
     restart: unless-stopped
     logging: *default-logging
     depends_on:
-      # NOT dashboard: the per-domain config fetch is async + non-fatal (falls back to
-      # POST /config), so waiting on dashboard:service_healthy (-> keycloak -> apisix)
-      # only widens the window where the fail-closed hook 451s inbound mail.
       vault-init:
         condition: service_completed_successfully
+      dashboard:
+        condition: service_healthy
     environment:
       MAILAUTH_BIND_ADDR: "0.0.0.0:8080"
       MAILAUTH_MAX_BODY_MB: "50"
