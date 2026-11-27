@@ -5,7 +5,7 @@ here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMPOSE_DIR="$(cd "$here/../docker-compose" && pwd)"
 COMPOSE_FILE="$COMPOSE_DIR/docker-compose.yml"
 VAULT_IMAGE="$(grep -m1 -oE 'hashicorp/vault:[^" ]+' "$COMPOSE_FILE")"
-INIT_IMAGE="$(grep -m1 -oE 'registry\.vereign\.io/svdh/verimesh-gateway-init:[^" ]+' "$COMPOSE_FILE")"
+INIT_IMAGE="$(grep -m1 -oE 'healthinfonetag/gateway-init:[^" ]+' "$COMPOSE_FILE")"
 
 fail() { echo "FAIL: $*"; exit 1; }
 
