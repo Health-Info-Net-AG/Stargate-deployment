@@ -167,8 +167,8 @@ services:
 
   # Vault initialization container
   vault-init:
-    # renovate: datasource=docker depName=registry.vereign.io/svdh/verimesh-gateway-init
-    image: registry.vereign.io/svdh/verimesh-gateway-init:v0.0.1
+    # renovate: datasource=docker depName=healthinfonetag/gateway-init
+    image: healthinfonetag/gateway-init:v0.0.2
     container_name: stargate-vault-init
     user: root
     logging: *default-logging
@@ -222,8 +222,8 @@ services:
   # Idempotent: if the admin already changed their password (auth with the
   # configured value fails), the script exits cleanly without touching anything.
   keycloak-init:
-    # renovate: datasource=docker depName=registry.vereign.io/svdh/verimesh-gateway-init
-    image: registry.vereign.io/svdh/verimesh-gateway-init:v0.0.1
+    # renovate: datasource=docker depName=healthinfonetag/gateway-init
+    image: healthinfonetag/gateway-init:v0.0.2
     container_name: stargate-keycloak-init
     logging: *default-logging
     depends_on:
@@ -263,8 +263,8 @@ services:
   # Generates /config/apisix/generated/apisix.yaml from the template by
   # substituting KEYCLOAK_APISIX_CLIENT_SECRET with envsubst.
   apisix-init:
-    # renovate: datasource=docker depName=registry.vereign.io/svdh/verimesh-gateway-init
-    image: registry.vereign.io/svdh/verimesh-gateway-init:v0.0.1
+    # renovate: datasource=docker depName=healthinfonetag/gateway-init
+    image: healthinfonetag/gateway-init:v0.0.2
     container_name: stargate-apisix-init
     logging: *default-logging
     volumes:
@@ -1045,8 +1045,8 @@ services:
       - autoheal=true
 
   stalwart-provision:
-    # renovate: datasource=docker depName=registry.vereign.io/svdh/verimesh-gateway-init
-    image: registry.vereign.io/svdh/verimesh-gateway-init:v0.0.1
+    # renovate: datasource=docker depName=healthinfonetag/gateway-init
+    image: healthinfonetag/gateway-init:v0.0.2
     container_name: stargate-stalwart-provision
     restart: "no"
     logging: *default-logging
